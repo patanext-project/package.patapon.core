@@ -1,15 +1,14 @@
 {
-    "name": "pack.p4.core.editor",
+    "name": "package.patapon.core.editor",
     "references": [
-        "pack.guerro.shared",
+        "package.guerro.shared",
         "Unity.Entities",
         "Unity.Entities.Hybrid",
         "Unity.Transforms",
         "Unity.Mathematics",
         "Unity.Collections",
         "Unity.Jobs",
-        "Unity.Burst",
-        "pack.p4.core"
+        "Unity.Burst"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [

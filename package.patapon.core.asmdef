@@ -1,5 +1,5 @@
 {
-    "name": "package.p4.core",
+    "name": "package.patapon.core",
     "references": [
         "package.guerro.shared",
         "Unity.Entities",
