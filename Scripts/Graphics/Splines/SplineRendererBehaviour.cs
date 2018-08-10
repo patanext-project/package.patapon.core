@@ -1,6 +1,6 @@
 ﻿using System;
-using Packages.pack.guerro.shared.Scripts.Utilities;
-using Packet.Guerro.Shared.Game;
+using package.stormiumteam.shared;
+using Scripts.Utilities;
 using Unity.Entities;
 using Unity.Mathematics;
 #if UNITY_EDITOR
