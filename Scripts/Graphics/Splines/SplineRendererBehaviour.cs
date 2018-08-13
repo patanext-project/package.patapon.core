@@ -3,10 +3,10 @@ using package.stormiumteam.shared;
 using Scripts.Utilities;
 using Unity.Entities;
 using Unity.Mathematics;
+using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-using UnityEngine;
 
 namespace P4.Core.Graphics
 {
@@ -25,7 +25,7 @@ namespace P4.Core.Graphics
         public float2 Max;
     }
 
-    public class SplineRendererBehaviour : CGameEntityCreatorBehaviour<SplineRendererCreatorSystem>
+    public class SplineRendererBehaviour : MonoBehaviour
     {
         // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
         // Fields
@@ -48,22 +48,28 @@ namespace P4.Core.Graphics
         // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
         // Unity Methods
         // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
-        protected override void AwakeAfterFilling()
+        private void Awake()
         {
+            var goEntity = GetComponent<GameObjectEntity>();
+            var e        = goEntity.Entity;
+            var em       = goEntity.EntityManager;
+
+            em.AddComponentData(e, GetData());
+            em.AddComponentData(e, new DSplineBoundsData());
+
             m_CurrentPointsLength = Points.Length;
 
-            var goEntity = GetComponent<GameObjectEntity>();
             World.Active.GetExistingManager<SplineSystem>().SendUpdateEvent(goEntity.Entity);
         }
 
         private void OnValidate()
         {
             var goEntity = GetComponent<GameObjectEntity>();
-            if (!UnityEngine.Application.isPlaying || goEntity?.EntityManager == null)
+            if (!Application.isPlaying || goEntity?.EntityManager == null)
                 return;
             if (Points.Length != m_CurrentPointsLength)
             {
-                Debug.LogError("Can't add/remove points of a spline while playing!");
+                Debug.LogError("Can't add/remove points of a spline while the gameobject is active!");
                 return;
             }
 
@@ -79,12 +85,12 @@ namespace P4.Core.Graphics
 
             var isSelected = Selection.activeGameObject == gameObject;
             Gizmos.color = isSelected ? Color.blue : Color.magenta;
-            
+
             if (RefreshType == EActivationZone.Bounds)
             {
                 var boundsMin = new Vector3();
                 var boundsMax = new Vector3();
-                for (int i = 0; i != Points.Length; i++)
+                for (var i = 0; i != Points.Length; i++)
                 {
                     var point = (float3) Points[i].transform.position;
 
@@ -112,13 +118,19 @@ namespace P4.Core.Graphics
                 if (camBounds.Intersects(bounds))
                     Gizmos.color = isSelected ? new Color(0.5f, 0.75f, 0.35f) : Color.green;
                 else
-                    Gizmos.color = isSelected ? new Color(0.75f, 0.35f, 0.5f) : Color.red; 
-                
+                    Gizmos.color = isSelected ? new Color(0.75f, 0.35f, 0.5f) : Color.red;
+
                 Gizmos.DrawWireCube(camBounds.center, camBounds.size);
                 Gizmos.DrawWireCube(bounds.center, bounds.size);
             }
         }
 #endif
+
+        private void OnDisable()
+        {
+            var goEntity = GetComponent<GameObjectEntity>();
+            World.Active?.GetExistingManager<SplineSystem>().SendUpdateEvent(goEntity.Entity);
+        }
 
         private void OnDestroy()
         {
@@ -147,24 +159,6 @@ namespace P4.Core.Graphics
         public void SetPoint(int i, Vector3 value)
         {
             Points[i].position = value;
-        }
-    }
-
-    public class SplineRendererCreatorSystem : CGameEntityCreatorSystem
-    {
-        // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
-        // Base Methods
-        // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
-        protected override void OnUpdate()
-        {
-        }
-
-        public override void FillEntityData(GameObject gameObject, Entity entity)
-        {
-            var component = gameObject.GetComponent<SplineRendererBehaviour>();
-
-            AddComponentData(entity, component.GetData());
-            AddComponentData(entity, new DSplineBoundsData());
         }
     }
 }
