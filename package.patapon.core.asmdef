@@ -5,6 +5,7 @@
         "Unity.Entities",
         "Unity.Entities.Hybrid",
         "Unity.Transforms",
+        "Unity.Transforms.Hybrid",
         "Unity.Mathematics",
         "Unity.Collections",
         "Unity.Jobs",
