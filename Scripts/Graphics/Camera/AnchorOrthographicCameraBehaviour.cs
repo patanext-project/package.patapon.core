@@ -88,8 +88,6 @@ namespace package.patapon.core
 
         private void Update()
         {
-            SetAnchor(new Vector2(Mathf.Sin(Time.time), Mathf.Cos(Time.time)));
-            
             if (!m_Camera.orthographic || Application.isPlaying)
                 return;
 
