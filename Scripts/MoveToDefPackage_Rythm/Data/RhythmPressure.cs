@@ -2,7 +2,7 @@
 
 namespace package.patapon.def.Data
 {
-    public class RythmEngineData : IComponentData
+    public struct RhythmPressure : IComponentData
     {
         
     }
