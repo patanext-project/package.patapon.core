@@ -1,6 +1,5 @@
 ﻿using System;
 using package.stormiumteam.shared;
-using Scripts.Utilities;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;

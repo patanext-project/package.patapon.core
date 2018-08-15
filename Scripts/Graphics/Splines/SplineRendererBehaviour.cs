@@ -1,6 +1,5 @@
 ﻿using System;
 using package.stormiumteam.shared;
-using Scripts.Utilities;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
