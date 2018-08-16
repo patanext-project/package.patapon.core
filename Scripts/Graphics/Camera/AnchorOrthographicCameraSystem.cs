@@ -1,20 +1,20 @@
 ﻿using System;
 using package.stormiumteam.shared;
-using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.Experimental.PlayerLoop;
-using UnityEngine.Jobs;
 
 namespace package.patapon.core
 {
-    [UpdateBefore(typeof(CopyTransformToGameObjectSystem))]
-    [UpdateAfter(typeof(PreLateUpdate.DirectorUpdateAnimationEnd))]
+    [UpdateBefore(typeof(CopyTransformToGameObjectSystem))] // We need to force "CopyTransformToGameObject" to be performed in PreLateUpdate
+    [UpdateAfter(typeof(PreLateUpdate.DirectorUpdateAnimationEnd))] // Update after animators
     public class AnchorOrthographicCameraSystem : ComponentSystem
     {
+        /// <summary>
+        /// The target group that the camera will use
+        /// </summary>
         public struct TargetGroup
         {
             public ComponentDataArray<CameraTargetData>     Data;
@@ -28,6 +28,9 @@ namespace package.patapon.core
 
         [Inject] private TargetGroup m_TargetGroup;
 
+        /// <summary>
+        /// The camera group
+        /// </summary>
         public struct CameraGroup
         {
             public ComponentArray<Camera> Cameras;
@@ -44,30 +47,42 @@ namespace package.patapon.core
 
         protected override void OnUpdate()
         {
+            // ------------------------------------------------------ //
+            // Update camera data
+            // ------------------------------------------------------ //
             for (int i = 0; i != m_CameraGroup.Length; i++)
             {
+                // Get components
                 var camera = m_CameraGroup.Cameras[i];
                 
                 var height = camera.orthographicSize;
                 var width  = camera.aspect * height;
 
+                // Update data with the correct height and width
                 m_CameraGroup.Data[i] = new AnchorOrthographicCameraData(height, width);
             }
             
+            // Update injected groups
             UpdateInjectedComponentGroups();
             
-            var highestPriority = int.MinValue;
-            for (int i = 0; i != m_TargetGroup.Length; i++)
+            // ------------------------------------------------------ //
+            // Update camera positions from targets
+            // ------------------------------------------------------ //
+            for (int i = 0, highestPriority = int.MinValue; i != m_TargetGroup.Length; i++)
             {
+                // Get components
                 var data     = m_TargetGroup.Data[i];
                 var anchor   = m_TargetGroup.AnchorData[i];
                 var position = m_TargetGroup.PositionData[i];
 
+                // Don't update the camera if it got a lower priority
                 if (data.Priority < highestPriority)
                     continue;
 
+                // Update the priority
                 data.Priority = highestPriority;
 
+                // Update target
                 UpdateTarget(data, anchor, position.Value);
             }
         }
@@ -77,6 +92,7 @@ namespace package.patapon.core
             Entity                       entity     = default;
             AnchorOrthographicCameraData cameraData = default;
             
+            // Verify the camera target is correct
             for (int i = 0; i != m_CameraGroup.Length; i++)
             {
                 if (m_CameraGroup.Entities[i] != data.CameraId) continue;
@@ -99,6 +115,8 @@ namespace package.patapon.core
             var up   = math.float2(0, 1) * (anchorPos.y * camSize.y);
 
             entity.SetComponentData(new Position(new float3(targetPosition + left + up, -100)));
+            
+            // Debug usage, render an output
             if (entity.HasComponent<AnchorOrthographicCameraOutput>())
             {
                 entity.SetComponentData
