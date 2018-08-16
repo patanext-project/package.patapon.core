@@ -1,4 +1,6 @@
-﻿using Unity.Burst;
+﻿using System;
+using package.stormiumteam.shared;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -9,45 +11,105 @@ using UnityEngine.Jobs;
 
 namespace package.patapon.core
 {
-    [UpdateAfter(typeof(PreLateUpdate))]
+    [UpdateBefore(typeof(CopyTransformToGameObjectSystem))]
+    [UpdateAfter(typeof(PreLateUpdate.DirectorUpdateAnimationEnd))]
     public class AnchorOrthographicCameraSystem : ComponentSystem
     {
-        public struct Group
+        public struct TargetGroup
         {
-            public ComponentDataArray<AnchorOrthographicCameraData> Data;
-            public ComponentDataArray<AnchorOrthographicCameraTarget> Targets;
-            public ComponentDataArray<Position> Positions;
-            public TransformAccessArray Transforms;
+            public ComponentDataArray<CameraTargetData>     Data;
+            public ComponentDataArray<CameraTargetAnchor>   AnchorData;
+            public ComponentDataArray<CameraTargetPosition> PositionData;
+
+            public SubtractiveComponent<VoidSystem<AnchorOrthographicCameraSystem>> Void1;
 
             public readonly int Length;
         }
 
-        [Inject] private Group m_Group;
+        [Inject] private TargetGroup m_TargetGroup;
+
+        public struct CameraGroup
+        {
+            public ComponentArray<Camera> Cameras;
+            public ComponentDataArray<AnchorOrthographicCameraData> Data;
+            public ComponentDataArray<Position>                     Positions;
+            public EntityArray                                      Entities;
+
+            public SubtractiveComponent<VoidSystem<AnchorOrthographicCameraSystem>> Void1;
+
+            public readonly int Length;
+        }
+
+        [Inject] private CameraGroup m_CameraGroup;
 
         protected override void OnUpdate()
         {
-            new CalculatePositionJob().Run(this);
-            for (int i = 0; i != m_Group.Length; i++)
+            for (int i = 0; i != m_CameraGroup.Length; i++)
             {
-                m_Group.Transforms[i].position = m_Group.Positions[i].Value;
+                var camera = m_CameraGroup.Cameras[i];
+                
+                var height = camera.orthographicSize;
+                var width  = camera.aspect * height;
+
+                m_CameraGroup.Data[i] = new AnchorOrthographicCameraData(height, width);
+            }
+            
+            UpdateInjectedComponentGroups();
+            
+            var highestPriority = int.MinValue;
+            for (int i = 0; i != m_TargetGroup.Length; i++)
+            {
+                var data     = m_TargetGroup.Data[i];
+                var anchor   = m_TargetGroup.AnchorData[i];
+                var position = m_TargetGroup.PositionData[i];
+
+                if (data.Priority < highestPriority)
+                    continue;
+
+                data.Priority = highestPriority;
+
+                UpdateTarget(data, anchor, position.Value);
             }
         }
 
-        [BurstCompile]
-        public struct CalculatePositionJob : IJobProcessComponentData
-            <AnchorOrthographicCameraData, AnchorOrthographicCameraTarget, Position>
+        private void UpdateTarget(CameraTargetData data, CameraTargetAnchor anchor, float2 targetPosition)
         {
-            public void Execute
-            (
-                [ReadOnly] ref  AnchorOrthographicCameraData   data,
-                [ReadOnly] ref  AnchorOrthographicCameraTarget target,
-                [WriteOnly] ref Position                       position
-            )
+            Entity                       entity     = default;
+            AnchorOrthographicCameraData cameraData = default;
+            
+            for (int i = 0; i != m_CameraGroup.Length; i++)
             {
-                var up   = math.float3(0, 1, 0) * (data.Anchor.y * data.Height);
-                var left = math.float3(1, 0, 0) * (data.Anchor.x * data.Width);
+                if (m_CameraGroup.Entities[i] != data.CameraId) continue;
 
-                position.Value = target.Target + left + up;
+                entity     = m_CameraGroup.Entities[i];
+                cameraData = m_CameraGroup.Data[i];
+            }
+
+            if (entity == Entity.Null) return;
+
+            var camSize = new float2(cameraData.Width, cameraData.Height);
+            var anchorPos = new float2(anchor.Value.x, anchor.Value.y);
+            if (anchor.Type == AnchorType.World)
+            {
+                // todo: bla bla... world to screen point...
+                throw new NotImplementedException();
+            }
+
+            var left = math.float2(1, 0) * (anchorPos.x * camSize.x);
+            var up   = math.float2(0, 1) * (anchorPos.y * camSize.y);
+
+            entity.SetComponentData(new Position(new float3(targetPosition + left + up, -100)));
+            if (entity.HasComponent<AnchorOrthographicCameraOutput>())
+            {
+                entity.SetComponentData
+                (
+                    new AnchorOrthographicCameraOutput
+                    {
+                        Target     = targetPosition,
+                        AnchorType = anchor.Type,
+                        Anchor     = anchorPos
+                    }
+                );
             }
         }
     }
