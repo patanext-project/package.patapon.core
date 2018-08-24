@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using package.stormiumteam.shared;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -40,7 +41,12 @@ namespace P4.Core.Graphics
         public LineRenderer LineRenderer;
 
         private int m_CurrentPointsLength;
-
+        
+        #if UNITY_EDITOR
+        private List<Vector3> m_EditorFillerArray;
+        private Vector3[] m_EditorResultArray;
+        #endif
+        
         internal int LastLineRendererPositionCount;
         internal int CameraRenderCount;
 
@@ -84,6 +90,40 @@ namespace P4.Core.Graphics
 
             var isSelected = Selection.activeGameObject == gameObject;
             Gizmos.color = isSelected ? Color.blue : Color.magenta;
+
+            if (!Application.isPlaying
+                && LineRenderer != null)
+            {
+                // Render spline
+                m_EditorFillerArray = m_EditorFillerArray ?? new List<Vector3>(Points.Length * Step);
+                m_EditorFillerArray.Clear();
+                
+                CGraphicalCatmullromSplineUtility.CalculateCatmullromSpline
+                (
+                    Points, 0, Points.Length,
+                    m_EditorFillerArray, 0,
+                    Step, Tension, IsLooping
+                );
+
+                if (Points.Length > 0 && m_EditorFillerArray.Count > 0)
+                {
+                    m_EditorFillerArray[0]                             = Points[0].localPosition;
+                    m_EditorFillerArray[m_EditorFillerArray.Count - 1] = Points[Points.Length - 1].localPosition;
+                }
+
+                if (m_EditorResultArray == null || m_EditorResultArray.Length != m_EditorFillerArray.Count)
+                {
+                    m_EditorResultArray = new Vector3[m_EditorFillerArray.Count];
+                }
+                
+                for (int i = 0; i != m_EditorResultArray.Length; i++)
+                {
+                    m_EditorResultArray[i] = m_EditorFillerArray[i];
+                }
+
+                LineRenderer.positionCount = m_EditorResultArray.Length;
+                LineRenderer.SetPositions(m_EditorResultArray);
+            }
 
             if (RefreshType == EActivationZone.Bounds)
             {

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -143,7 +144,7 @@ namespace P4.Core.Graphics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CalculateCatmullromSpline(LocalPosition[] nodes, int nodesStart, int nodesEnd, Vector3[] m_fillerArray,
+        public static void CalculateCatmullromSpline(Position[] nodes, int nodesStart, int nodesEnd, Vector3[] m_fillerArray,
                                                      int             fillerStart,
                                                      int             fillerEnd, int slices, float tension,
                                                      bool            loop = false)

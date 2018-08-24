@@ -1,4 +1,7 @@
 
+using Unity.Entities;
+using Unity.Mathematics;
+
 namespace package.patapon.core
 {
     public struct CameraTargetAnchor : IComponentData

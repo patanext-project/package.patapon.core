@@ -114,7 +114,7 @@ namespace package.patapon.core
             var left = math.float2(1, 0) * (anchorPos.x * camSize.x);
             var up   = math.float2(0, 1) * (anchorPos.y * camSize.y);
 
-            entity.SetComponentData(new Position(new float3(targetPosition + left + up, -100)));
+            entity.SetComponentData(new Position {Value = math.float3(targetPosition + left + up, -100)});
             
             // Debug usage, render an output
             if (entity.HasComponent<AnchorOrthographicCameraOutput>())
