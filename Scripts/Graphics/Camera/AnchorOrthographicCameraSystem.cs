@@ -87,7 +87,7 @@ namespace package.patapon.core
             }
         }
 
-        private void UpdateTarget(CameraTargetData data, CameraTargetAnchor anchor, float2 targetPosition)
+        private void UpdateTarget(CameraTargetData data, CameraTargetAnchor anchor, float3 targetPosition)
         {
             Entity                       entity     = default;
             AnchorOrthographicCameraData cameraData = default;
@@ -114,7 +114,7 @@ namespace package.patapon.core
             var left = math.float2(1, 0) * (anchorPos.x * camSize.x);
             var up   = math.float2(0, 1) * (anchorPos.y * camSize.y);
 
-            entity.SetComponentData(new Position {Value = math.float3(targetPosition + left + up, -100)});
+            entity.SetComponentData(new Position {Value = math.float3(targetPosition.xy + left + up, -100)});
             
             // Debug usage, render an output
             if (entity.HasComponent<AnchorOrthographicCameraOutput>())
@@ -123,7 +123,7 @@ namespace package.patapon.core
                 (
                     new AnchorOrthographicCameraOutput
                     {
-                        Target     = targetPosition,
+                        Target     = targetPosition.xy,
                         AnchorType = anchor.Type,
                         Anchor     = anchorPos
                     }

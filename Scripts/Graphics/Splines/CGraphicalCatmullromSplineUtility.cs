@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.Mathematics.Experimental;
 using Unity.Transforms;
 using UnityEngine;
 
@@ -43,7 +42,7 @@ namespace P4.Core.Graphics
                 // and end for next when you at the ends of the nodes array
                 int end, next, nodePreviousIndex;
                 // end...
-                if (math.equal(current, last))
+                if (current == last)
                 {
                     if (loop) end = 0;
                     else end      = current;
@@ -51,7 +50,7 @@ namespace P4.Core.Graphics
                 else end = current + 1;
 
                 // next...
-                if (math.equal(end, last))
+                if (end == last)
                 {
                     if (loop) next = 0;
                     else next      = end;
@@ -59,7 +58,7 @@ namespace P4.Core.Graphics
                 else next = end + 1;
 
                 // nodePreviousIndex...
-                if (math.equal(current, 0))
+                if (current == 0)
                 {
                     if (loop) nodePreviousIndex = last;
                     else nodePreviousIndex      = current;
@@ -222,7 +221,7 @@ namespace P4.Core.Graphics
 
 
             var percentComplete        = elapsedTime / duration;
-            var percentCompleteSquared = math.lengthSquared(percentComplete);
+            var percentCompleteSquared = math.lengthsq(percentComplete);
             var percentCompleteCubed   = math.dot(percentCompleteSquared, percentComplete);
 
             var p  = -tension * percentCompleteCubed + percentCompleteSquared - tension * percentComplete;

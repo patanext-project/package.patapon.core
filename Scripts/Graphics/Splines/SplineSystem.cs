@@ -18,7 +18,6 @@ namespace P4.Core.Graphics
     public class SplineSystem : JobComponentSystem
     {
         private          JobHandle           LastJobHandle;
-        [Inject] private EndFrameBarrier     m_EndFrameBarrier;
         private          EntityArchetype     m_EventArchetype;
         private          int                 m_Events;
         private          NativeArray<float3> m_FinalFillerArray;
@@ -49,7 +48,7 @@ namespace P4.Core.Graphics
             m_Events++;
         }
 
-        protected override void OnCreateManager(int capacity)
+        protected override void OnCreateManager()
         {
             // TODO: Use NativeEvent from the shared package, much more future proof
             Camera.onPreCull   += OnCameraPreCull;
@@ -89,7 +88,7 @@ namespace P4.Core.Graphics
             //> -------- -------- -------- -------- -------- -------- -------- ------- //
             var cameraBounds = new NativeArray<Bounds>(1, Allocator.TempJob);
             cameraBounds[0] = new Bounds(cam.transform.position, cam.GetExtents()).Flat2D();
-            var resultsInterestBounds = new NativeArray<byte>(m_Group.Length, Allocator.Temp);
+            var resultsInterestBounds = new NativeArray<byte>(m_Group.Length, Allocator.TempJob);
 
             Profiler.BeginSample("Job");
             LastJobHandle.Complete();
@@ -314,7 +313,7 @@ namespace P4.Core.Graphics
             }
         }
 
-        [BurstCompile]
+        //[BurstCompile]
         private struct JobFillArray : IJob
         {
             [ReadOnly]                             public NativeArray<DSplineData>       Datas;

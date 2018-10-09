@@ -25,6 +25,7 @@ namespace P4.Core.Graphics
         public float2 Max;
     }
 
+    [RequireComponent(typeof(GameObjectEntity))]
     public class SplineRendererBehaviour : MonoBehaviour
     {
         // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
@@ -55,7 +56,9 @@ namespace P4.Core.Graphics
         // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
         private void Awake()
         {
-            var goEntity = GetComponent<GameObjectEntity>();
+            var referencable = ReferencableGameObject.GetComponent<ReferencableGameObject>(gameObject);
+            var goEntity = referencable.GetOrAddComponent<GameObjectEntity>();
+
             var e        = goEntity.Entity;
             var em       = goEntity.EntityManager;
 
@@ -63,6 +66,12 @@ namespace P4.Core.Graphics
             em.AddComponentData(e, new DSplineBoundsData());
 
             m_CurrentPointsLength = Points.Length;
+
+            if (LineRenderer == null)
+            {
+                Debug.LogWarning("LineRender == null");
+                LineRenderer = GetComponentInChildren<LineRenderer>();
+            }
 
             World.Active.GetExistingManager<SplineSystem>().SendUpdateEvent(goEntity.Entity);
         }
