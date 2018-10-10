@@ -2,7 +2,7 @@
 
 namespace package.patapon.def.Data
 {
-    public struct RhythmShardTarget : ISharedComponentData
+    public struct RhythmShardTarget : IComponentData
     {
         public Entity Target;
 

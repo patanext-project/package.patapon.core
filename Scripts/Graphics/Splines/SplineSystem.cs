@@ -83,13 +83,16 @@ namespace P4.Core.Graphics
 
         private void OnCameraPreCull(Camera cam)
         {
+            var length = m_Group.Length;
+            
             //< -------- -------- -------- -------- -------- -------- -------- ------- //
             // Finish the current job
             //> -------- -------- -------- -------- -------- -------- -------- ------- //
             var cameraBounds = new NativeArray<Bounds>(1, Allocator.TempJob);
             cameraBounds[0] = new Bounds(cam.transform.position, cam.GetExtents()).Flat2D();
-            var resultsInterestBounds = new NativeArray<byte>(m_Group.Length, Allocator.TempJob);
+            var resultsInterestBounds = new NativeArray<byte>(length, Allocator.TempJob);
 
+            
             Profiler.BeginSample("Job");
             LastJobHandle.Complete();
             new JobCheckInterestects
@@ -98,23 +101,23 @@ namespace P4.Core.Graphics
                 CameraBounds  = cameraBounds,
                 BoundsOutline = m_JobBoundsOutline,
                 Results       = resultsInterestBounds
-            }.Run(m_Group.Length);
+            }.Run(length);
             Profiler.EndSample();
 
             var array = new Vector3[0];
 
             Profiler.BeginSample("Loop");
             var currentFillerArrayLength = 0;
-            for (var i = 0; i < m_Group.Length; i++)
+            for (var i = 0; i < length; i++)
             {
                 var fillArrayAddLength = m_jobFormulaAddLength[i];
-                if (m_refreshTypes[i] == EActivationZone.Bounds)
-                    if (resultsInterestBounds[i] == 0)
-                    {
-                        // ignore spline...
-                        currentFillerArrayLength += fillArrayAddLength;
-                        continue;
-                    }
+                if (m_refreshTypes[i] == EActivationZone.Bounds
+                    && resultsInterestBounds[i] == 0)
+                {
+                    // ignore spline...
+                    currentFillerArrayLength += fillArrayAddLength;
+                    continue;
+                }
 
                 var data     = m_Group.SplineData[i];
                 var renderer = m_Group.SplineRenderers[i];

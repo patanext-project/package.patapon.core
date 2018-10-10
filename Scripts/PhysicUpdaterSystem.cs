@@ -134,7 +134,7 @@ namespace package.stormium.core
                     manager.PreSimulateItem(delta);
                 }
                 
-                Physics.Simulate(delta);
+                Physics2D.Simulate(delta);
                 
                 foreach (var manager in AppEvent<IPhysicPostSimulateItem>.objList)
                 {
@@ -143,7 +143,7 @@ namespace package.stormium.core
                 }
             }
 
-            Physics.SyncTransforms();
+            Physics2D.SyncTransforms();
 
             foreach (var manager in AppEvent<IPhysicPostSimulate>.objList)
             {
