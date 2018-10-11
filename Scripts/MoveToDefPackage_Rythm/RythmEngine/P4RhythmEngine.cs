@@ -1,15 +1,26 @@
 ﻿using System;
 using package.patapon.def;
 using package.patapon.def.Data;
+using package.stormiumteam.shared;
+using Scripts;
 using Unity.Entities;
 using UnityEngine;
 
 namespace package.patapon.core
 {
     // Currently a WIP, so there are a lot of tests and unit tests in this class
-    [AlwaysUpdateSystem]
+    // TODO: Make it inheriting a special class for managing rhythm engine
+    [UpdateInGroup(typeof(PlayUpdateOrder.RhythmEngineOrder))]
     public class P4RhythmEngine : ComponentSystem
     {
+        struct EngineGroups
+        {
+            public          ComponentDataArray<ShardRhythmEngine>         ShardArray;
+            public          ComponentDataArray<P4ShardEngineProcessData>  ProcessArray;
+            public          ComponentDataArray<P4ShardEngineSettingsData> SettingsArray;
+            public readonly int                                           Length;
+        }
+
         #region Constants
 
         public const int KeyInvalid = 0;
@@ -24,34 +35,17 @@ namespace package.patapon.core
         #region Injections
 
         [Inject] private RhythmFlowManager m_RhythmFlowMgr;
+        [Inject] private EngineGroups m_EngineGroups;
 
         #endregion
-
-        #region Public Fields
-
-        public Entity ShardTarget;
-
-        #endregion
-
-        protected override void OnCreateManager()
-        {
-            ShardTarget = EntityManager.CreateEntity
-            (
-                typeof(ShardRhythmEngine),
-                typeof(P4ShardEngineProcessData),
-                typeof(P4ShardEngineSettingsData)
-            );
-
-            EntityManager.SetComponentData(ShardTarget, new ShardRhythmEngine {EngineType = ComponentType.Create<P4RythmEngineTypeDefinition>()});
-            
-            SetSettingsData(new P4ShardEngineSettingsData(DefaultBeatInterval));
-        }
 
         protected override void OnUpdate()
         {
             var deltaTime = Time.deltaTime;
-            
-            // Pata
+
+            #region Decomment and move this to an unit test
+
+            /*// Pata
             if (Input.GetKeyDown(KeyCode.Keypad4))
             {
                 DoPressure(KeyPata);
@@ -70,35 +64,43 @@ namespace package.patapon.core
             else if (Input.GetKeyDown(KeyCode.Keypad8))
             {
                 DoPressure(KeyChaka);
-            }
-            
+            }*/
+
+            #endregion
+
             // Update engine data
-            var settingsData = GetSettingsData();
-            var processData = GetProcessData();
-
-            processData.Time += deltaTime;
-            processData.TimeDelta += deltaTime;
-
-            while (processData.TimeDelta > settingsData.BeatInterval)
+            for (var i = 0; i != m_EngineGroups.Length; i++)
             {
-                processData.TimeDelta -= settingsData.BeatInterval;
+                var processData  = m_EngineGroups.ProcessArray[i];
+                var settingsData = m_EngineGroups.SettingsArray[i];
 
-                processData.Beat += 1;
-                
-                Debug.Log($"Beat: {processData.Beat}; Time: {processData.Time:F2}; Left: {processData.TimeDelta:F2}");
-                
-                // todo: trigger events
+                processData.Time      += deltaTime;
+                processData.TimeDelta += deltaTime;
+
+                while (processData.TimeDelta > settingsData.BeatInterval)
+                {
+                    processData.TimeDelta -= settingsData.BeatInterval;
+
+                    processData.Beat += 1;
+
+                    // TODO: Find a better way to make an event, it should be done after the iteration
+                    /*foreach (var manager in AppEvent<EventRhythmFlowNewBeat.IEv>.eventList)
+                    {
+                        AppEvent<EventRhythmFlowNewBeat.IEv>.Caller = this;
+                        manager.Callback(new EventRhythmFlowNewBeat.Arguments(engine, pressureEntity));
+                    }*/
+                }
+
+                processData.TimeDelta = Mathf.Max(processData.TimeDelta, 0f);
+
+                m_EngineGroups.ProcessArray[i] = processData;
             }
-
-            processData.TimeDelta = Mathf.Max(processData.TimeDelta, 0f);
-
-            SetProcessData(processData);
         }
 
-        private void DoPressure(int keyType)
+        public void AddPressure(Entity shardEngine, int keyType)
         {
-            var processData  = GetProcessData();
-            var settingsData = GetSettingsData();
+            var processData = EntityManager.GetComponentData<P4ShardEngineProcessData>(shardEngine);
+            var settingsData = EntityManager.GetComponentData<P4ShardEngineSettingsData>(shardEngine);
 
             var actualBeat   = processData.Beat;
             var actualTime   = processData.Time;
@@ -113,39 +115,44 @@ namespace package.patapon.core
             PostUpdateCommands.CreateEntity();
             PostUpdateCommands.AddComponent(new RhythmPressure());
             PostUpdateCommands.AddComponent(new P4PressureData(keyType, actualBeat, correctedBeat, score));
-            PostUpdateCommands.AddComponent(new RhythmShardTarget(ShardTarget));
+            PostUpdateCommands.AddComponent(new RhythmShardTarget(shardEngine));
         }
 
-        public P4ShardEngineProcessData GetProcessData()
+        // TODO: Make it as an abstract method
+        /// <summary>
+        /// Create a new rhythm engine.
+        /// </summary>
+        /// <returns>The new entity which contain engine data</returns>
+        public Entity AddEngine()
         {
-            return EntityManager.GetComponentData<P4ShardEngineProcessData>(ShardTarget);
-        }
-        
-        public P4ShardEngineSettingsData GetSettingsData()
-        {
-            return EntityManager.GetComponentData<P4ShardEngineSettingsData>(ShardTarget);
+            var entity = EntityManager.CreateEntity
+            (
+                typeof(ShardRhythmEngine),
+                typeof(P4ShardEngineProcessData),
+                typeof(P4ShardEngineSettingsData)
+            );
+
+            EntityManager.SetComponentData(entity, new ShardRhythmEngine {EngineType = ComponentType.Create<P4RythmEngineTypeDefinition>()});
+            EntityManager.SetComponentData(entity, new P4ShardEngineSettingsData(DefaultBeatInterval));
+
+            return entity;
         }
 
-        public void SetProcessData(P4ShardEngineProcessData data)
-        {
-            EntityManager.SetComponentData(ShardTarget, data);
-        }
-        
-        public void SetSettingsData(P4ShardEngineSettingsData data)
-        {
-            EntityManager.SetComponentData(ShardTarget, data);
-        }
-
+        /// <summary>
+        /// Compute the score from a beat and time.
+        /// </summary>
+        /// <param name="time">The time</param>
+        /// <param name="beat">The beat</param>
+        /// <param name="beatInterval">The interval between each beat</param>
+        /// <param name="correctedBeat">The new corrected beat (as it can be shifted to the next one)</param>
+        /// <returns></returns>
         public float GetScore(double time, int beat, float beatInterval, out int correctedBeat)
         {
-            correctedBeat = beat;
-
             var beatTimeDelta = time % beatInterval;
             var halvedInterval = beatInterval * 0.5f;
+            var correctedTime = (beatTimeDelta - halvedInterval);
 
-            var correctedTime = (beatTimeDelta - beatInterval * 0.5);
-            if (correctedTime >= 0)
-                correctedBeat = beat + 1;
+            correctedBeat = correctedTime >= 0 ? beat + 1 : beat;
 
             return (float) (correctedTime + -Math.Sign(correctedTime) * halvedInterval);
         }

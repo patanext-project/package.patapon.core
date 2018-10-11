@@ -8,7 +8,14 @@ namespace package.patapon.def
     {
         public struct Arguments : IDelayComponentArguments
         {
-            public RhythmBeatData Data;
+            public ShardRhythmEngine Engine;
+            public Entity BeatEntity;
+
+            public Arguments(ShardRhythmEngine engine, Entity entity)
+            {
+                Engine = engine;
+                BeatEntity = entity;
+            }
         }
 
         public interface IEv : IAppEvent
