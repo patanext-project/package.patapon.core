@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Xml.Schema;
 using package.stormiumteam.shared;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.AI;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -23,6 +25,11 @@ namespace P4.Core.Graphics
     {
         public float2 Min;
         public float2 Max;
+    }
+
+    public struct DSplineValidTag : IComponentData
+    {
+        
     }
 
     [RequireComponent(typeof(GameObjectEntity))]
@@ -72,8 +79,18 @@ namespace P4.Core.Graphics
                 Debug.LogWarning("LineRender == null");
                 LineRenderer = GetComponentInChildren<LineRenderer>();
             }
+        }
 
-            World.Active.GetExistingManager<SplineSystem>().SendUpdateEvent(goEntity.Entity);
+        private void OnEnable()
+        {
+            var referencable = ReferencableGameObject.GetComponent<ReferencableGameObject>(gameObject);
+            var goEntity     = referencable.GetComponentFast<GameObjectEntity>();
+            if (!goEntity.HasValue)
+            {
+                Debug.LogError("No GameObjectEntity found on " + gameObject.name);
+            }
+            
+            World.Active.GetExistingManager<SplineSystem>().SendUpdateEvent(goEntity.Value.Entity);
         }
 
         private void OnValidate()
@@ -92,6 +109,35 @@ namespace P4.Core.Graphics
             World.Active.GetExistingManager<SplineSystem>().SendUpdateEvent(goEntity.Entity);
         }
 
+        private void Update()
+        {
+            var referencable = ReferencableGameObject.GetComponent<ReferencableGameObject>(gameObject);
+            var goEntity     = referencable.GetComponentFast<GameObjectEntity>();
+
+            var em = goEntity.Value.EntityManager;
+            var e = goEntity.Value.Entity;
+            
+            var canBeProcessed = Points.Length > 0
+                                 && LineRenderer != null;
+
+            var needToUpdate = false;
+            if (canBeProcessed && !em.HasComponent<DSplineValidTag>(e))
+            {
+                em.AddComponentData(e, new DSplineValidTag());
+                needToUpdate = true;
+            }
+            else if (!canBeProcessed && em.HasComponent<DSplineValidTag>(e))
+            {
+                em.RemoveComponent<DSplineValidTag>(e);
+                needToUpdate = true;
+            }
+
+            if (needToUpdate)
+            {
+                World.Active.GetExistingManager<SplineSystem>().SendUpdateEvent(e); 
+            }
+        }
+        
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
@@ -176,14 +222,14 @@ namespace P4.Core.Graphics
 
         private void OnDisable()
         {
-            var goEntity = GetComponent<GameObjectEntity>();
-            World.Active?.GetExistingManager<SplineSystem>().SendUpdateEvent(goEntity.Entity);
-        }
-
-        private void OnDestroy()
-        {
-            var goEntity = GetComponent<GameObjectEntity>();
-            World.Active?.GetExistingManager<SplineSystem>().SendUpdateEvent(goEntity.Entity);
+            var referencable = ReferencableGameObject.GetComponent<ReferencableGameObject>(gameObject);
+            var goEntity     = referencable.GetComponentFast<GameObjectEntity>();
+            if (!goEntity.HasValue)
+            {
+                Debug.LogError("No GameObjectEntity found on " + gameObject.name);
+            }
+            
+            World.Active.GetExistingManager<SplineSystem>().SendUpdateEvent(goEntity.Value.Entity);
         }
 
         // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.

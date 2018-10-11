@@ -179,7 +179,7 @@ namespace P4.Core.Graphics
             // Check for any changes
             //> -------- -------- -------- -------- -------- -------- -------- ------- //
             var hasChange = m_Events > 0;
-            if (hasChange)
+            if (hasChange || Input.GetKeyDown(KeyCode.A))
             {
                 m_OrderedPoints.Dispose();
                 m_OrderedPoints = new TransformAccessArray(0);
@@ -269,7 +269,7 @@ namespace P4.Core.Graphics
 
             if (m_FinalFillerArray.Length != fillerArrayLength)
                 m_FinalFillerArray = new NativeArray<float3>(fillerArrayLength, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-
+            
             var fillArrayJob = new JobFillArray();
             fillArrayJob.Datas                   = m_JobDatas;
             fillArrayJob.BoundsDatas             = m_JobBoundsDatas;
@@ -294,6 +294,8 @@ namespace P4.Core.Graphics
             [ReadOnly] public ComponentDataArray<DSplineBoundsData> SplineBoundsData;
 
             [ReadOnly] public ComponentArray<SplineRendererBehaviour> SplineRenderers;
+            // We only want valid spline
+            public ComponentDataArray<DSplineValidTag> Valided;
 
             //[ReadOnly] public FixedArrayArray<DSplinePositionData>     Positions; // Useless?
             public          EntityArray Entities;
