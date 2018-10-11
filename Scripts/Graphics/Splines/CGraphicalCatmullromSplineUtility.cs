@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Unity.Collections;
-using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
 
-namespace P4.Core.Graphics
+namespace package.patapon.core
 {
     public static class CGraphicalCatmullromSplineUtility
     {

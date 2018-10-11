@@ -9,7 +9,8 @@ using UnityEngine.Experimental.PlayerLoop;
 namespace package.patapon.core
 {
     [UpdateBefore(typeof(CopyTransformToGameObjectSystem))] // We need to force "CopyTransformToGameObject" to be performed in PreLateUpdate
-    [UpdateAfter(typeof(PreLateUpdate.DirectorUpdateAnimationEnd))] // Update after animators
+    [UpdateAfter(typeof(PreLateUpdate.DirectorUpdateAnimationEnd))]
+    // Update after animators
     public class AnchorOrthographicCameraSystem : ComponentSystem
     {
         /// <summary>
@@ -33,7 +34,7 @@ namespace package.patapon.core
         /// </summary>
         public struct CameraGroup
         {
-            public ComponentArray<Camera> Cameras;
+            public ComponentArray<Camera>                           Cameras;
             public ComponentDataArray<AnchorOrthographicCameraData> Data;
             public ComponentDataArray<Position>                     Positions;
             public EntityArray                                      Entities;
@@ -54,17 +55,17 @@ namespace package.patapon.core
             {
                 // Get components
                 var camera = m_CameraGroup.Cameras[i];
-                
+
                 var height = camera.orthographicSize;
                 var width  = camera.aspect * height;
 
                 // Update data with the correct height and width
                 m_CameraGroup.Data[i] = new AnchorOrthographicCameraData(height, width);
             }
-            
+
             // Update injected groups
             UpdateInjectedComponentGroups();
-            
+
             // ------------------------------------------------------ //
             // Update camera positions from targets
             // ------------------------------------------------------ //
@@ -89,9 +90,9 @@ namespace package.patapon.core
 
         private void UpdateTarget(CameraTargetData data, CameraTargetAnchor anchor, float3 targetPosition)
         {
-            Entity                       entity     = default;
-            AnchorOrthographicCameraData cameraData = default;
-            
+            var entity     = default(Entity);
+            var cameraData = default(AnchorOrthographicCameraData);
+
             // Verify the camera target is correct
             for (int i = 0; i != m_CameraGroup.Length; i++)
             {
@@ -103,7 +104,7 @@ namespace package.patapon.core
 
             if (entity == Entity.Null) return;
 
-            var camSize = new float2(cameraData.Width, cameraData.Height);
+            var camSize   = new float2(cameraData.Width, cameraData.Height);
             var anchorPos = new float2(anchor.Value.x, anchor.Value.y);
             if (anchor.Type == AnchorType.World)
             {
@@ -115,7 +116,7 @@ namespace package.patapon.core
             var up   = math.float2(0, 1) * (anchorPos.y * camSize.y);
 
             entity.SetComponentData(new Position {Value = math.float3(targetPosition.xy + left + up, -100)});
-            
+
             // Debug usage, render an output
             if (entity.HasComponent<AnchorOrthographicCameraOutput>())
             {

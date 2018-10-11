@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using package.stormium.core;
 using package.stormiumteam.shared;
-using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
-namespace P4.Core.Scripts
+namespace package.patapon.core
 {
     [Flags]
     public enum CharacterController2DHitEventType

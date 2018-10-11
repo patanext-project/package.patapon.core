@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Xml.Schema;
 using package.stormiumteam.shared;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.AI;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-namespace P4.Core.Graphics
+namespace package.patapon.core
 {
     [Serializable]
     public struct DSplineData : IComponentData

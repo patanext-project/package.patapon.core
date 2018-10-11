@@ -1,6 +1,6 @@
 ﻿using Unity.Entities;
 
-namespace Scripts
+namespace package.patapon.core
 {
     public class PlayUpdateOrder
     {

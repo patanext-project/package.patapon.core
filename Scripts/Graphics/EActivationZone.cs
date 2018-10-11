@@ -1,4 +1,4 @@
-﻿namespace P4.Core.Graphics
+﻿namespace package.patapon.core
 {
     public enum EActivationZone
     {

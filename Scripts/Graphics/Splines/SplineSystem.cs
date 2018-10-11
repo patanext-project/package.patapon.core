@@ -11,7 +11,7 @@ using UnityEngine.Experimental.PlayerLoop;
 using UnityEngine.Jobs;
 using UnityEngine.Profiling;
 
-namespace P4.Core.Graphics
+namespace package.patapon.core
 {
     [UpdateAfter(typeof(PreLateUpdate.DirectorUpdateAnimationEnd))]
     //< Update after the 'LateUpdate', so all animations can be finished 
