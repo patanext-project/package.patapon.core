@@ -226,6 +226,9 @@ namespace package.patapon.core
             {
                 Debug.LogError("No GameObjectEntity found on " + gameObject.name);
             }
+
+            if (World.Active == null)
+                return;
             
             World.Active.GetExistingManager<SplineSystem>().SendUpdateEvent(goEntity.Value.Entity);
         }

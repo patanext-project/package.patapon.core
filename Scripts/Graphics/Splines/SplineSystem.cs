@@ -91,7 +91,6 @@ namespace package.patapon.core
             var cameraBounds = new NativeArray<Bounds>(1, Allocator.TempJob);
             cameraBounds[0] = new Bounds(cam.transform.position, cam.GetExtents()).Flat2D();
             var resultsInterestBounds = new NativeArray<byte>(length, Allocator.TempJob);
-
             
             Profiler.BeginSample("Job");
             LastJobHandle.Complete();
@@ -105,6 +104,8 @@ namespace package.patapon.core
             Profiler.EndSample();
 
             var array = new Vector3[0];
+            
+            UpdateInjectedComponentGroups();
 
             Profiler.BeginSample("Loop");
             var currentFillerArrayLength = 0;
@@ -268,8 +269,11 @@ namespace package.patapon.core
             }
 
             if (m_FinalFillerArray.Length != fillerArrayLength)
+            {
+                m_FinalFillerArray.Dispose();
                 m_FinalFillerArray = new NativeArray<float3>(fillerArrayLength, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-            
+            }
+
             var fillArrayJob = new JobFillArray();
             fillArrayJob.Datas                   = m_JobDatas;
             fillArrayJob.BoundsDatas             = m_JobBoundsDatas;
