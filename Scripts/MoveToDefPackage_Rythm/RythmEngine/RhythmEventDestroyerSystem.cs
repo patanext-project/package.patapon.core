@@ -4,7 +4,7 @@ using Unity.Entities;
 
 namespace package.patapon.core
 {
-    [UpdateAfter(typeof(PlayUpdateOrder.RhythmEngineOrder))]
+    [UpdateAfter(typeof(EndFrameBarrier))]
     public class RhythmEventDestroyerSystem : ComponentSystem
     {
         struct Group
@@ -19,20 +19,11 @@ namespace package.patapon.core
         
         [Inject] private Group m_Group;
 
-        private EndFrameBarrier m_EndFrameBarrier;
-
-        protected override void OnCreateManager()
-        {
-            m_EndFrameBarrier = World.GetExistingManager<EndFrameBarrier>();
-        }
-
         protected override void OnUpdate()
         {
-            var endFrameCb = m_EndFrameBarrier.CreateCommandBuffer();
-            
             for (int i = 0; i != m_Group.Length; i++)
             {
-                endFrameCb.DestroyEntity(m_Group.Entities[i]);
+                PostUpdateCommands.DestroyEntity(m_Group.Entities[i]);
             }
         }
     }

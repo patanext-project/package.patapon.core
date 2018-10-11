@@ -131,13 +131,13 @@ namespace package.patapon.core
         /// <returns></returns>
         public float GetScore(double time, int beat, float beatInterval, out int correctedBeat)
         {
-            var beatTimeDelta = time % beatInterval;
+            var beatTimeDelta  = time % beatInterval;
             var halvedInterval = beatInterval * 0.5f;
-            var correctedTime = (beatTimeDelta - halvedInterval);
+            var correctedTime  = (beatTimeDelta - halvedInterval);
 
             correctedBeat = correctedTime >= 0 ? beat + 1 : beat;
 
-            return (float) (correctedTime + -Math.Sign(correctedTime) * halvedInterval);
+            return (float) (correctedTime + -Math.Sign(correctedTime) * halvedInterval) / halvedInterval;
         }
     }
 
