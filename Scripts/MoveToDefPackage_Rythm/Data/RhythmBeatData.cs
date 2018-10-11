@@ -4,6 +4,5 @@ namespace package.patapon.def.Data
 {
     public struct RhythmBeatData : IComponentData
     {
-        public int Beat;
     }
 }
