@@ -22,7 +22,7 @@ namespace package.patapon.core
 
         private void Update()
         {
-            m_SortingGroup.sortingLayerID = Mathf.FloorToInt(m_OrderInLayer);
+            m_SortingGroup.sortingOrder = Mathf.FloorToInt(m_OrderInLayer);
         }
 
         private void OnDisable()
