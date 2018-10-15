@@ -11,13 +11,13 @@ namespace package.patapon.core
     // Currently a WIP, so there are a lot of tests and unit tests in this class
     // TODO: Make it inheriting a special class for managing rhythm engine
     [UpdateInGroup(typeof(PlayUpdateOrder.RhythmEngineOrder))]
-    public class SequenceRhythmEngine : ComponentSystem
+    public class FlowRhythmEngine : ComponentSystem
     {
         struct EngineGroups
         {
             public ComponentDataArray<ShardRhythmEngine>                ShardArray;
-            public ComponentDataArray<SequenceRhythmEngineProcessData>  ProcessArray;
-            public ComponentDataArray<SequenceRhythmEngineSettingsData> SettingsArray;
+            public ComponentDataArray<FlowRhythmEngineProcessData>  ProcessArray;
+            public ComponentDataArray<FlowRhythmEngineSettingsData> SettingsArray;
             public EntityArray                                          Entities;
 
             public readonly int Length;
@@ -62,11 +62,11 @@ namespace package.patapon.core
                     processData.Beat += 1;
 
                     PostUpdateCommands.CreateEntity();
-                    PostUpdateCommands.AddComponent(new SequenceRythmEngineTypeDefinition());
+                    PostUpdateCommands.AddComponent(new FlowRythmEngineTypeDefinition());
                     PostUpdateCommands.AddComponent(new RhythmShardEvent(Time.frameCount));
                     PostUpdateCommands.AddComponent(new RhythmShardTarget(entity));
                     PostUpdateCommands.AddComponent(new RhythmBeatData());
-                    PostUpdateCommands.AddComponent(new SequenceRhythmBeatData(processData.Beat));
+                    PostUpdateCommands.AddComponent(new FlowRhythmBeatData(processData.Beat));
 
                     // TODO: Find a way to make a direct event, it should be done after the iteration
                 }
@@ -79,8 +79,8 @@ namespace package.patapon.core
 
         public void AddPressure(Entity shardEngine, int keyType, EntityCommandBuffer ecf)
         {
-            var processData = EntityManager.GetComponentData<SequenceRhythmEngineProcessData>(shardEngine);
-            var settingsData = EntityManager.GetComponentData<SequenceRhythmEngineSettingsData>(shardEngine);
+            var processData = EntityManager.GetComponentData<FlowRhythmEngineProcessData>(shardEngine);
+            var settingsData = EntityManager.GetComponentData<FlowRhythmEngineSettingsData>(shardEngine);
 
             var actualBeat   = processData.Beat;
             var actualTime   = processData.Time;
@@ -93,11 +93,11 @@ namespace package.patapon.core
             Debug.Log($"Beat|Corrected: {actualBeat}|{correctedBeat}, time: {actualTime}, score: {Mathf.Abs(score)}");
             
             ecf.CreateEntity();
-            ecf.AddComponent(new SequenceRythmEngineTypeDefinition());
+            ecf.AddComponent(new FlowRythmEngineTypeDefinition());
             ecf.AddComponent(new RhythmShardEvent(Time.frameCount));
             ecf.AddComponent(new RhythmShardTarget(shardEngine));
             ecf.AddComponent(new RhythmPressure());
-            ecf.AddComponent(new SequenceRhythmPressureData(keyType, actualBeat, correctedBeat, score));
+            ecf.AddComponent(new FlowRhythmPressureData(keyType, actualBeat, correctedBeat, score));
         }
 
         // TODO: Make it as an abstract method
@@ -110,13 +110,13 @@ namespace package.patapon.core
             var entity = EntityManager.CreateEntity
             (
                 typeof(ShardRhythmEngine),
-                typeof(SequenceRythmEngineTypeDefinition),
-                typeof(SequenceRhythmEngineProcessData),
-                typeof(SequenceRhythmEngineSettingsData)
+                typeof(FlowRythmEngineTypeDefinition),
+                typeof(FlowRhythmEngineProcessData),
+                typeof(FlowRhythmEngineSettingsData)
             );
 
-            EntityManager.SetComponentData(entity, new ShardRhythmEngine {EngineType = ComponentType.Create<SequenceRythmEngineTypeDefinition>()});
-            EntityManager.SetComponentData(entity, new SequenceRhythmEngineSettingsData(DefaultBeatInterval));
+            EntityManager.SetComponentData(entity, new ShardRhythmEngine {EngineType = ComponentType.Create<FlowRythmEngineTypeDefinition>()});
+            EntityManager.SetComponentData(entity, new FlowRhythmEngineSettingsData(DefaultBeatInterval));
 
             return entity;
         }
@@ -142,18 +142,18 @@ namespace package.patapon.core
     }
 
     // this is a header
-    public struct SequenceRythmEngineTypeDefinition : IComponentData
+    public struct FlowRythmEngineTypeDefinition : IComponentData
     {
         
     }
 
-    public struct SequenceRhythmEngineProcessData : IComponentData
+    public struct FlowRhythmEngineProcessData : IComponentData
     {
         public int    Beat;
         public float  TimeDelta;
         public double Time;
 
-        public SequenceRhythmEngineProcessData(int beat, float timeDelta, float time)
+        public FlowRhythmEngineProcessData(int beat, float timeDelta, float time)
         {
             Beat      = beat;
             TimeDelta = timeDelta;
@@ -161,17 +161,17 @@ namespace package.patapon.core
         }
     }
 
-    public struct SequenceRhythmEngineSettingsData : IComponentData
+    public struct FlowRhythmEngineSettingsData : IComponentData
     {
         public float BeatInterval;
 
-        public SequenceRhythmEngineSettingsData(float beatInterval)
+        public FlowRhythmEngineSettingsData(float beatInterval)
         {
             BeatInterval = beatInterval;
         }
     }
 
-    public struct SequenceRhythmPressureData : IComponentData
+    public struct FlowRhythmPressureData : IComponentData
     {
         /// <summary>
         /// Our custom Rhythm Key (Pata 1, Pon 2, Don 3, Chaka 4) 
@@ -200,7 +200,7 @@ namespace package.patapon.core
         /// </example>
         public float Score;
 
-        public SequenceRhythmPressureData(int keyId, int originBeat, int correctedBeat, float score)
+        public FlowRhythmPressureData(int keyId, int originBeat, int correctedBeat, float score)
         {
             KeyId         = keyId;
             OriginalBeat  = originBeat;
@@ -214,11 +214,11 @@ namespace package.patapon.core
         }
     }
 
-    public struct SequenceRhythmBeatData : IComponentData
+    public struct FlowRhythmBeatData : IComponentData
     {
         public int Beat;
 
-        public SequenceRhythmBeatData(int beat)
+        public FlowRhythmBeatData(int beat)
         {
             Beat = beat;
         }
