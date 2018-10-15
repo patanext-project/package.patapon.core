@@ -28,11 +28,29 @@ namespace package.patapon.core
         {
         }
 
-        public float GetBeatAt(Entity shard, NativeArray<FlowCommandSequence> commandSequences, int index)
+        public RangeFloat GetBeatProgressionAt(Entity shard, NativeArray<FlowCommandSequence> commandSequences, int index)
         {
+            if (commandSequences.Length <= index)
+                return new RangeFloat(float.NaN, float.NaN);
+            
             var settings = EntityManager.GetComponentData<FlowCommandManagerSettingsData>(shard);
 
-            return (float) (commandSequences[index].BeatFract + 1) / settings.MaxBeats;
+            
+            
+            var start = (float) (commandSequences[index].BeatRange.start + 1) / settings.MaxBeats;
+            var length = (float) (commandSequences[index].BeatRange.length) / settings.MaxBeats;
+            
+            return new RangeFloat(start, length);
+        }
+
+        public RangeInt GetBeatAt(Entity shard, NativeArray<FlowCommandSequence> commandSequences, int index)
+        {
+            if (commandSequences.Length <= index)
+                return new RangeInt(-1, -1);
+            
+            var settings = EntityManager.GetComponentData<FlowCommandManagerSettingsData>(shard);
+
+            return commandSequences[index].BeatRange;
         }
 
         // TODO: Make it as an abstract method
@@ -62,14 +80,22 @@ namespace package.patapon.core
 
     public struct FlowCommandSequence
     {
-        public int BeatFract;
+        public RangeInt BeatRange;
         public int Key;
 
         public FlowCommandSequence(int beatFract, int key)
         {
-            BeatFract = beatFract;
+            BeatRange = new RangeInt(beatFract, 0);
             Key = key;
         }
+        
+        public FlowCommandSequence(int beatFract, int beatFractLength, int key)
+        {
+            BeatRange = new RangeInt(beatFract, beatFractLength);
+            Key       = key;
+        }
+
+        public int BeatEnd => BeatRange.end;
     }
 
     public struct FlowCommandManagerSettingsData : IComponentData

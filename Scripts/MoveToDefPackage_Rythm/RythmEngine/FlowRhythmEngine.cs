@@ -90,7 +90,7 @@ namespace package.patapon.core
             
             var score = GetScore(actualTime, actualBeat, beatInterval, out correctedBeat);
 
-            Debug.Log($"Beat|Corrected: {actualBeat}|{correctedBeat}, time: {actualTime}, score: {Mathf.Abs(score)}");
+            //Debug.Log($"Beat|Corrected: {actualBeat}|{correctedBeat}, time: {actualTime}, score: {Mathf.Abs(score)}");
             
             ecf.CreateEntity();
             ecf.AddComponent(new FlowRythmEngineTypeDefinition());
