@@ -1,10 +1,12 @@
 ﻿using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Experimental.PlayerLoop;
 using UnityEngine.Jobs;
 
 namespace package.patapon.core
 {
+    [UpdateAfter(typeof(PreLateUpdate.DirectorUpdateAnimationEnd))]
     public class CGraphicalUpdateMaskLookAnimatorProcessSystem : ComponentSystem
     {
         public const string AnimatorAimlookXParameter = "AimlookX";
@@ -47,6 +49,9 @@ namespace package.patapon.core
 
                 animator.SetFloat(m_HashedAimlookXParameter, targetAim.x);
                 animator.SetFloat(m_HashedAimlookYParameter, targetAim.y);
+
+                animator.speed = 0f;
+                animator.Update(Time.deltaTime);
             }
         }
     }

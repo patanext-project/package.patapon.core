@@ -4,6 +4,7 @@ using UnityEngine.Rendering;
 namespace package.patapon.core
 {
     [RequireComponent(typeof(SortingGroup))]
+    [ExecuteInEditMode]
     public class SortingGroupFloatAnimation : MonoBehaviour
     {
         private                  SortingGroup m_SortingGroup;
