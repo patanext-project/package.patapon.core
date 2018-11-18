@@ -44,8 +44,8 @@ namespace package.patapon.core
                 var targetOffsetPosition = eyeDetail == null ? Vector2.zero : eyeDetail.PositionOffset;
                 var targetAim = eyeDetail == null ? Vector2.zero : eyeDetail.Aim;
 
-                targetAim.x = math.min(targetAim.x, 1);
-                targetAim.y = math.min(targetAim.y, 1);
+                targetAim.x = math.clamp(targetAim.x, -1f, 1f);
+                targetAim.y = math.clamp(targetAim.y, -1f, 1f);
 
                 animator.SetFloat(m_HashedAimlookXParameter, targetAim.x);
                 animator.SetFloat(m_HashedAimlookYParameter, targetAim.y);
