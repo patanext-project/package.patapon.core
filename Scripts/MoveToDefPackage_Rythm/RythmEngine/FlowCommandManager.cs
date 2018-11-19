@@ -63,7 +63,8 @@ namespace package.patapon.core
             var entity = EntityManager.CreateEntity
             (
                 typeof(FlowCommandManagerTypeDefinition),
-                typeof(FlowCommandManagerSettingsData)
+                typeof(FlowCommandManagerSettingsData),
+                typeof(FlowCurrentCommand)
             );
 
             EntityManager.SetComponentData(entity, new FlowCommandManagerSettingsData(DefaultMaxBeats));
@@ -76,6 +77,20 @@ namespace package.patapon.core
     public struct FlowCommandManagerTypeDefinition : IComponentData
     {
         
+    }
+
+    public struct FlowCurrentCommand : IComponentData
+    {
+        public int CommandId;
+        public int ActiveAtBeat;
+        public byte IsActive;
+
+        public FlowCurrentCommand(int commandId, int activeAtBeat, bool isActive)
+        {
+            CommandId = commandId;
+            ActiveAtBeat = activeAtBeat;
+            IsActive = (byte)(isActive ? 1 : 0);
+        }
     }
 
     public struct FlowCommandSequence
