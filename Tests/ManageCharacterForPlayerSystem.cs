@@ -1,3 +1,4 @@
+using package.stormiumteam.networking;
 using Patapon4TLB.Core.Networking;
 using Unity.Burst;
 using Unity.Entities;
@@ -7,7 +8,7 @@ using UnityEngine;
 namespace Patapon4TLB.Core.Tests
 {
     [ExecuteAlways]
-    public class ManageCharacterForPlayerSystem : JobComponentSystem
+    public class ManageCharacterForPlayerSystem : JobComponentSystem, IModelCreateEntityCallback
     {
         [RequireSubtractiveComponent(typeof(PlayerToCharacterLink))]
         struct CreateCharacterForClientJob : IJobProcessComponentDataWithEntity<Patapon4Client>
@@ -49,10 +50,25 @@ namespace Patapon4TLB.Core.Tests
         }
 
         private EntityArchetype m_CharacterArchetype;
-
+        private int m_LocalCharacterArchetypeId;
+        
         protected override void OnCreateManager()
         {
-            m_CharacterArchetype = EntityManager.CreateArchetype(typeof(PlayerCharacter), typeof(GenerateEntitySnapshot));
+            m_CharacterArchetype = EntityManager.CreateArchetype
+            (
+                typeof(PlayerCharacter),
+                typeof(GenerateEntitySnapshot),
+                typeof(SimulateEntity)
+            );
+        }
+
+        protected override void OnStartRunning()
+        {
+            var localBank = World.GetExistingManager<NetPatternSystem>().GetLocalBank();
+            m_LocalCharacterArchetypeId = localBank.Register(new PatternIdent(nameof(m_CharacterArchetype))).Id;
+
+            var modelMgr = World.GetExistingManager<EntityModelManager>();
+            modelMgr.Register(nameof(m_LocalCharacterArchetypeId), this);
         }
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -79,6 +95,11 @@ namespace Patapon4TLB.Core.Tests
             }.Schedule(this, inputDeps);
 
             return inputDeps;
+        }
+
+        public Entity SnapshotCreateEntity(Entity origin, StSnapshotRuntime snapshotRuntime)
+        {
+            return EntityManager.CreateEntity(m_CharacterArchetype);
         }
     }
 }

@@ -10,6 +10,7 @@ namespace Patapon4TLB.Core.Tests
     public class ManagePlayerPosition : JobComponentSystem
     {
         [BurstCompile]
+        [RequireComponentTag(typeof(SimulateEntity))]
         private struct Job : IJobProcessComponentDataWithEntity<Position, PlayerCharacter>
         {
             public float                                DeltaTime;
