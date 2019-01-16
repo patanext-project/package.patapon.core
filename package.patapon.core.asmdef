@@ -2,6 +2,7 @@
     "name": "package.patapon.core",
     "references": [
         "package.guerro.shared",
+        "package.stormiumteam.networking",
         "Unity.Entities",
         "Unity.Entities.Hybrid",
         "Unity.Transforms",

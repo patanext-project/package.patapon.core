@@ -1,4 +1,5 @@
 ﻿using package.stormiumteam.shared;
+using System;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Experimental.PlayerLoop;
@@ -12,39 +13,39 @@ namespace package.patapon.core
         FrameCustom,
         Custom
     }
-    
+
     public interface IPhysicPreSimulate : IAppEvent
     {
         void PreSimulate();
     }
-    
+
     public interface IPhysicPreSimulateItem : IAppEvent
     {
         void PreSimulateItem(float dt);
     }
-    
+
     public interface IPhysicPostSimulateItem : IAppEvent
     {
         void PostSimulateItem(float dt);
     }
-    
+
     public interface IPhysicPostSimulate : IAppEvent
     {
         void PostSimulate();
     }
-    
+
     [UpdateAfter(typeof(Update))]
     [AlwaysUpdateSystem]
     public class PhysicUpdaterSystem : ComponentSystem
     {
-        private float m_Timer;
+        private          float          m_Timer;
         [Inject] private AppEventSystem m_AppEventSystem;
-        
-        public int LastIterationCount;
+
+        public int   LastIterationCount;
         public float LastFixedTimeStep;
 
         public float CustomFixedTimeStep = 0.02f;
-        public int CustomIterationCount;
+        public int   CustomIterationCount;
 
         public PhysicUpdateMode UpdateMode;
 
@@ -57,16 +58,15 @@ namespace package.patapon.core
         {
             m_Timer += Time.deltaTime;
 
-            foreach (var manager in AppEvent<IPhysicPreSimulate>.objList)
+            foreach (var manager in AppEvent<IPhysicPreSimulate>.GetObjEvents())
             {
-                AppEvent<IPhysicPreSimulate>.Caller = this;
                 manager.PreSimulate();
             }
-            
+
             var delta = 0f;
 
             LastIterationCount = 0;
-            LastFixedTimeStep = 0f;
+            LastFixedTimeStep  = 0f;
 
             if (UpdateMode == PhysicUpdateMode.FrameCustom
                 && Application.targetFrameRate <= 0
@@ -76,12 +76,11 @@ namespace package.patapon.core
                 UpdateMode = PhysicUpdateMode.Framerate;
             }
 
-            var currentmode = UpdateMode;
-
-            if (currentmode == PhysicUpdateMode.TimeSettings)
+            var currentMode = UpdateMode;
+            if (currentMode == PhysicUpdateMode.TimeSettings)
             {
                 delta = Time.fixedDeltaTime;
-                
+
                 while (m_Timer >= delta)
                 {
                     m_Timer           -= delta;
@@ -93,60 +92,67 @@ namespace package.patapon.core
             {
                 m_Timer = 0f;
 
-                if (currentmode == PhysicUpdateMode.Framerate)
+                switch (currentMode)
                 {
-                    delta = Time.deltaTime;
-                    
-                    LastFixedTimeStep = delta;
-                    LastIterationCount = 1;
-                }
-                else if (currentmode == PhysicUpdateMode.FrameCustom)
-                {
-                    var frameRate = Application.targetFrameRate;
-                    if (QualitySettings.vSyncCount == 1)
-                        frameRate = 60;
-                    else if (QualitySettings.vSyncCount == 2)
-                        frameRate = 30;
-
-                    if (frameRate == 0)
+                    case PhysicUpdateMode.Framerate:
                     {
-                        Debug.LogWarning("FrameCustom mode returned a 0 framerate");
-                    }
+                        delta = Time.deltaTime;
 
-                    delta = 1f / frameRate;
-                    
-                    LastFixedTimeStep = delta;
-                    LastIterationCount = Mathf.Max(1, CustomIterationCount);
-                }
-                else if (currentmode == PhysicUpdateMode.Custom)
-                {
-                    LastFixedTimeStep = CustomFixedTimeStep;
-                    LastIterationCount = CustomIterationCount;
+                        LastFixedTimeStep  = delta;
+                        LastIterationCount = 1;
+                        break;
+                    }
+                    case PhysicUpdateMode.FrameCustom:
+                    {
+                        var frameRate = Application.targetFrameRate;
+                        if (QualitySettings.vSyncCount == 1)
+                            frameRate = 60;
+                        else if (QualitySettings.vSyncCount == 2)
+                            frameRate = 30;
+
+                        if (frameRate == 0)
+                        {
+                            Debug.LogWarning("FrameCustom mode returned a 0 framerate");
+                        }
+
+                        delta = 1f / frameRate;
+
+                        LastFixedTimeStep  = delta;
+                        LastIterationCount = Mathf.Max(1, CustomIterationCount);
+                        break;
+                    }
+                    case PhysicUpdateMode.Custom:
+                    {
+                        LastFixedTimeStep  = CustomFixedTimeStep;
+                        LastIterationCount = CustomIterationCount;
+                        break;
+                    }
+                    case PhysicUpdateMode.TimeSettings:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
 
             for (int i = 0; i != LastIterationCount; i++)
             {
-                foreach (var manager in AppEvent<IPhysicPreSimulateItem>.objList)
+                foreach (var manager in AppEvent<IPhysicPreSimulateItem>.GetObjEvents())
                 {
-                    AppEvent<IPhysicPreSimulateItem>.Caller = this;
                     manager.PreSimulateItem(delta);
                 }
-                
-                Physics2D.Simulate(delta);
-                
-                foreach (var manager in AppEvent<IPhysicPostSimulateItem>.objList)
+
+                Physics.Simulate(delta);
+
+                foreach (var manager in AppEvent<IPhysicPostSimulateItem>.GetObjEvents())
                 {
-                    AppEvent<IPhysicPostSimulateItem>.Caller = this;
                     manager.PostSimulateItem(delta);
                 }
             }
 
-            Physics2D.SyncTransforms();
+            Physics.SyncTransforms();
 
-            foreach (var manager in AppEvent<IPhysicPostSimulate>.objList)
+            foreach (var manager in AppEvent<IPhysicPostSimulate>.GetObjEvents())
             {
-                AppEvent<IPhysicPostSimulate>.Caller = this;
                 manager.PostSimulate();
             }
         }
