@@ -2,12 +2,12 @@ using Unity.Entities;
 
 namespace Patapon4TLB.Core.Networking
 {
-    public struct StormiumClient : IComponentData
+    public struct Patapon4Client : IComponentData
     {
         
     }
 
-    public struct StormiumLocalTag : IComponentData
+    public struct Patapon4LocalTag : IComponentData
     {
         
     }

@@ -41,9 +41,9 @@ namespace Patapon4TLB.Core.Networking
 
         protected override void OnCreateManager()
         {
-            m_LocalClientGroup = GetComponentGroup(typeof(StormiumClient), typeof(StormiumLocalTag));
+            m_LocalClientGroup = GetComponentGroup(typeof(Patapon4Client), typeof(Patapon4LocalTag));
             m_NetworkInstanceFromEntity = GetComponentDataFromEntity<NetworkInstanceData>();
-            m_NetworkClientGroup = GetComponentGroup(typeof(StormiumClient), typeof(ClientToNetworkInstance));
+            m_NetworkClientGroup = GetComponentGroup(typeof(Patapon4Client), typeof(ClientToNetworkInstance));
             m_GenerateSnapshotEntityGroup = GetComponentGroup(typeof(GenerateEntitySnapshot));
         }
         

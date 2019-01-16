@@ -23,7 +23,7 @@ namespace Patapon4TLB.Core.Networking
         }
     }
 
-    [UpdateInGroup(typeof(UpdateLoop.InDataChange))]
+    [UpdateInGroup(typeof(UpdateLoop.UpdateDataChangeComponents))]
     [DisableAutoCreation]
     [UsedImplicitly]
     public class DataChangedSystem<T> : ComponentSystem

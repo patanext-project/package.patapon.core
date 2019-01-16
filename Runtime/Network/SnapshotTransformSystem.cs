@@ -9,12 +9,13 @@ using Random = UnityEngine.Random;
 
 namespace Patapon4TLB.Core.Networking
 {
-    public class SnapshotEntityDataTransformSystem : SnapshotEntityDataStreamer<SnapshotEntityDataTransformSystem.State>
+    public class TransformStateDataStreamer : SnapshotEntityDataStreamer<TransformState>
     {
-        public struct State : IStateData, IComponentData
-        {
-            public half3 Position;
-            public half3 Rotation;
-        }
+    }
+
+    public struct TransformState : IStateData, IComponentData
+    {
+        public half3 Position;
+        public half3 Rotation;
     }
 }

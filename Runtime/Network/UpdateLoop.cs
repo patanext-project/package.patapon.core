@@ -4,29 +4,38 @@ namespace Patapon4TLB.Core.Networking
 {
     public static class UpdateLoop
     {
-        public class BeforeDataChange : ComponentSystem
+        public class ReadStates : ComponentSystem
         {
             protected override void OnUpdate()
             {
 
             }
         }
-
-        [UpdateAfter(typeof(BeforeDataChange))]
-        public class InDataChange : ComponentSystem
+        
+        [UpdateAfter(typeof(ReadStates))]
+        public class ManageSnapshot : ComponentSystem
         {
             protected override void OnUpdate()
             {
 
             }
         }
-
-        [UpdateAfter(typeof(InDataChange))]
-        public class AfterDataChange : ComponentSystem
+        
+        [UpdateAfter(typeof(ManageSnapshot))]
+        public class WriteStates : ComponentSystem
         {
             protected override void OnUpdate()
             {
-                
+
+            }
+        }
+        
+        [UpdateAfter(typeof(WriteStates))]
+        public class UpdateDataChangeComponents : ComponentSystem
+        {
+            protected override void OnUpdate()
+            {
+
             }
         }
     }
