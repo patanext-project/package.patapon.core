@@ -139,8 +139,6 @@ namespace Patapon4TLB.Core.Tests
                     var foreignPatternId = reader.ReadValue<int>();
                     var localPattern     = bank.GetPatternResult(foreignPatternId);
 
-                    Debug.Log(foreignPatternId + ", " + localPattern);
-
                     if (localPattern != m_SyncPattern)
                         continue;
 

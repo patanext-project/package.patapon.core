@@ -1,5 +1,8 @@
 using System;
+using System.IO;
+using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using ENet;
 using package.stormiumteam.networking.runtime.highlevel;
 using package.stormiumteam.networking.runtime.lowlevel;
@@ -17,15 +20,28 @@ namespace Patapon4TLB.Core.Tests
         public Entity HostEntity;
         public string HostAddr = "127.0.0.1";
         public int HostPort = 8590;
-        
+
+
         protected override void OnCreateManager()
         {
             World.GetExistingManager<AppEventSystem>()
                  .SubscribeToAll(this);
-        }
+            
+            var gameLogPath = Application.dataPath + "/game_log.txt";
+            if (!File.Exists(gameLogPath))
+                File.Create(gameLogPath);
+            else
+            {
+                File.WriteAllText(gameLogPath, string.Empty);
 
+            }
+
+            Application.logMessageReceived += (condition, trace, type) => { File.AppendAllText(gameLogPath, $"<{condition}> [{type}] {trace}"); };
+        }
+        
         protected override void OnUpdate()
         {
+
             if (HostEntity == Entity.Null)
                 return;
             
@@ -36,6 +52,20 @@ namespace Patapon4TLB.Core.Tests
 
             var snapshotMgr = World.GetExistingManager<SnapshotManager>();
             //snapshotMgr.GenerateSnapshot();
+        }
+        
+        private IPAddress LocalIPAddress()
+        {
+            if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+            {
+                return null;
+            }
+
+            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
+
+            return host
+                   .AddressList
+                   .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
         }
 
         public void NativeOnGUI()
@@ -70,8 +100,11 @@ namespace Patapon4TLB.Core.Tests
                         networkMgr.Stop(HostEntity, true);
                     
                     var targetEp = new IPEndPoint(IPAddress.Parse(HostAddr), HostPort);
-                    var localEp = new IPEndPoint(IPAddress.Loopback, 0);
-                    var r = networkMgr.StartClient(targetEp, localEp, NetDriverConfiguration.@default());
+                    var localEp = new IPEndPoint(LocalIPAddress(), 0);
+                    
+                    Debug.Log($"Connecting to : Host: {HostAddr}:{HostPort}, LocalIp: {LocalIPAddress().ToString()}");
+                    
+                    var r = networkMgr.StartClient(targetEp, null, NetDriverConfiguration.@default());
 
                     HostEntity = r.ClientInstanceEntity;
                 }
