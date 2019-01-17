@@ -1,8 +1,10 @@
 using package.stormiumteam.networking;
 using Patapon4TLB.Core.Networking;
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Transforms;
 using UnityEngine;
 
 namespace Patapon4TLB.Core.Tests
@@ -28,10 +30,15 @@ namespace Patapon4TLB.Core.Tests
         [BurstCompile]
         private struct LinkPlayerToCharacterJob : IJobProcessComponentDataWithEntity<PlayerCharacter>
         {
+            [NativeDisableParallelForRestriction]
             public ComponentDataFromEntity<PlayerToCharacterLink> LinkArray;
 
             public void Execute(Entity entity, int index, ref PlayerCharacter playerCharacter)
             {
+                // If the entity is null or destroyed, don't run the iteration
+                if (!LinkArray.Exists(playerCharacter.Owner))
+                    return;
+                    
                 LinkArray[playerCharacter.Owner] = new PlayerToCharacterLink(entity);
             }
         }
@@ -39,8 +46,10 @@ namespace Patapon4TLB.Core.Tests
         [BurstCompile]
         private struct RemoveUselessCharacterJob : IJobProcessComponentDataWithEntity<PlayerCharacter>
         {
+            [NativeDisableParallelForRestriction]
             public ComponentDataFromEntity<Patapon4Client> ClientArray;
-            public EntityCommandBuffer.Concurrent          Ecb;
+
+            public EntityCommandBuffer.Concurrent Ecb;
 
             public void Execute(Entity entity, int index, ref PlayerCharacter playerCharacter)
             {
@@ -50,12 +59,13 @@ namespace Patapon4TLB.Core.Tests
         }
 
         private EntityArchetype m_CharacterArchetype;
-        private int m_LocalCharacterArchetypeId;
-        
+        private int             m_LocalCharacterArchetypeId;
+
         protected override void OnCreateManager()
         {
             m_CharacterArchetype = EntityManager.CreateArchetype
             (
+                typeof(Position),
                 typeof(PlayerCharacter),
                 typeof(GenerateEntitySnapshot),
                 typeof(SimulateEntity)
