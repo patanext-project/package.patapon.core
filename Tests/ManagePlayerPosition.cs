@@ -1,3 +1,4 @@
+using Patapon4TLB.Core.Networking;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -8,6 +9,7 @@ using static Unity.Mathematics.math;
 
 namespace Patapon4TLB.Core.Tests
 {
+    [UpdateAfter(typeof(ManageCharacterForPlayerSystem))]
     public class ManagePlayerPosition : JobComponentSystem
     {
         [BurstCompile]
@@ -22,6 +24,9 @@ namespace Patapon4TLB.Core.Tests
 
             public void Execute(Entity entity, int index, ref Position position, ref PlayerCharacter playerCharacter)
             {
+                if (!PlayerInputArray.Exists(playerCharacter.Owner))
+                    return;
+                    
                 var inputs = PlayerInputArray[playerCharacter.Owner];
 
                 position.Value += float3(inputs.Value * DeltaTime, 0);

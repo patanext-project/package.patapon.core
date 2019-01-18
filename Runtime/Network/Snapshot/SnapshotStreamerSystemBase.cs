@@ -37,7 +37,6 @@ namespace Patapon4TLB.Core.Networking
                 if (ChangeFromEntity.Exists(entity))
                     change = ChangeFromEntity[entity];
 
-                //Debug.Log(change.Update(ref state));
                 if (SnapshotOutputUtils.ShouldSkip(Receiver, change))
                 {
                     Data.WriteDynInteger(0);
@@ -160,6 +159,11 @@ namespace Patapon4TLB.Core.Networking
 
                 ecb.Playback(EntityManager);
             }
+        }
+
+        protected override JobHandle OnUpdate(JobHandle inputDeps)
+        {
+            return inputDeps;
         }
     }
 }

@@ -10,6 +10,7 @@ using UnityEngine;
 namespace Patapon4TLB.Core.Tests
 {
     [ExecuteAlways]
+    [UpdateAfter(typeof(CreateClientForNetworkInstanceSystem))]
     public class ManageCharacterForPlayerSystem : JobComponentSystem, IModelCreateEntityCallback
     {
         [RequireSubtractiveComponent(typeof(PlayerToCharacterLink))]
@@ -22,8 +23,8 @@ namespace Patapon4TLB.Core.Tests
             {
                 Ecb.AddComponent(index, entity, new PlayerToCharacterLink(Entity.Null));
 
-                Ecb.CreateEntity(index, Archetype);
-                Ecb.SetComponent(index, new PlayerCharacter(entity));
+                var newEntity = Ecb.CreateEntity(index, Archetype);
+                Ecb.SetComponent(index, newEntity, new PlayerCharacter(entity));
             }
         }
 

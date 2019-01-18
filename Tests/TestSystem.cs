@@ -11,6 +11,7 @@ using Patapon4TLB.Core.Networking;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
+using Unity.Transforms;
 using UnityEngine;
 
 namespace Patapon4TLB.Core.Tests
@@ -79,46 +80,66 @@ namespace Patapon4TLB.Core.Tests
                 GUILayout.Label("TestSystem Actions:");
                 GUILayout.Space(1);
 
-                using (new GUILayout.HorizontalScope())
+                if (!EntityManager.Exists(HostEntity))
+                    DoConnectAndCreate(networkMgr);
+                else
                 {
-                    GUILayout.Label("Server Address: ");
-                    HostAddr = GUILayout.TextField(HostAddr);
+                    DoCancelOrStop(networkMgr);
                 }
+            }
+        }
 
-                using (new GUILayout.HorizontalScope())
+        public void DoConnectAndCreate(NetworkManager networkMgr)
+        {
+            using (new GUILayout.HorizontalScope())
+            {
+                GUILayout.Label("Server Address: ");
+                HostAddr = GUILayout.TextField(HostAddr);
+            }
+
+            using (new GUILayout.HorizontalScope())
+            {
+                GUILayout.Label("Server Port:   ");
+                if (int.TryParse(GUILayout.TextField(HostPort.ToString()), out HostPort))
                 {
-                    GUILayout.Label("Server Port:   ");
-                    if (int.TryParse(GUILayout.TextField(HostPort.ToString()), out HostPort))
-                    {
-                    }
                 }
+            }
 
-                GUILayout.Space(5);
-                if (GUILayout.Button("Connect"))
-                {
-                    if (EntityManager.Exists(HostEntity))
-                        networkMgr.Stop(HostEntity, true);
+            GUILayout.Space(5);
+            if (GUILayout.Button("Connect"))
+            {
+                if (EntityManager.Exists(HostEntity))
+                    networkMgr.Stop(HostEntity, true);
                     
-                    var targetEp = new IPEndPoint(IPAddress.Parse(HostAddr), HostPort);
-                    var localEp = new IPEndPoint(LocalIPAddress(), 0);
+                var targetEp = new IPEndPoint(IPAddress.Parse(HostAddr), HostPort);
+                var localEp  = new IPEndPoint(LocalIPAddress(), 0);
                     
-                    Debug.Log($"Connecting to : Host: {HostAddr}:{HostPort}, LocalIp: {LocalIPAddress().ToString()}");
+                Debug.Log($"Connecting to : Host: {HostAddr}:{HostPort}, LocalIp: {LocalIPAddress().ToString()}");
                     
-                    var r = networkMgr.StartClient(targetEp, null, NetDriverConfiguration.@default());
+                var r = networkMgr.StartClient(targetEp, null, NetDriverConfiguration.@default());
 
-                    HostEntity = r.ClientInstanceEntity;
-                }
+                HostEntity = r.ClientInstanceEntity;
+            }
 
-                if (GUILayout.Button("Create"))
-                {
-                    if (EntityManager.Exists(HostEntity))
-                        networkMgr.Stop(HostEntity, true);
+            if (GUILayout.Button("Create"))
+            {
+                if (EntityManager.Exists(HostEntity))
+                    networkMgr.Stop(HostEntity, true);
                     
-                    var localEp  = new IPEndPoint(IPAddress.Any, HostPort);
-                    var r = networkMgr.StartServer(localEp, NetDriverConfiguration.@default());
+                var localEp = new IPEndPoint(IPAddress.Any, HostPort);
+                var r       = networkMgr.StartServer(localEp, NetDriverConfiguration.@default());
 
-                    HostEntity = r.Entity;
-                }
+                HostEntity = r.Entity;
+            }
+        }
+
+        public void DoCancelOrStop(NetworkManager networkMgr)
+        {
+            var isValid = EntityManager.HasComponent(HostEntity, typeof(ValidInstanceTag));
+            if (GUILayout.Button(isValid ? "Stop" : "Cancel"))
+            {
+                networkMgr.StopAll();
+                HostEntity = default;
             }
         }
     }

@@ -67,60 +67,46 @@ namespace Patapon4TLB.Core.Tests
 
         private void DealWithGroupWithInputs()
         {
-            var length           = m_Group.CalculateLength();
-            var entityArray      = m_Group.GetEntityArray();
-            var playerInputArray = m_Group.GetComponentDataArray<PlayerInput>();
-
-            for (var i = 0; i != length; i++)
+            ForEach((Entity entity, ref PlayerInput playerInput) =>
             {
-                var input = playerInputArray[i] = new PlayerInput
-                {
-                    Value = new float2
-                    (
-                        Input.GetAxisRaw("Horizontal"),
-                        Input.GetAxisRaw("Vertical")
-                    )
-                };
+                playerInput.Value = new float2
+                (
+                    Input.GetAxisRaw("Horizontal"),
+                    Input.GetAxisRaw("Vertical")     
+                );
 
-                if (!EntityManager.HasComponent<ClientToNetworkInstance>(entityArray[i]))
-                    continue;
+                if (EntityManager.HasComponent<ClientToNetworkInstance>(entity))
+                    return;
 
-                var instanceEntity = EntityManager.GetComponentData<ClientToNetworkInstance>(entityArray[i]).Target;
+                var instanceEntity = EntityManager.GetComponentData<ClientToNetworkInstance>(entity).Target;
                 if (!EntityManager.Exists(instanceEntity))
                 {
                     Debug.LogError("Error");
-                    continue;
+                    return;
                 }
 
                 var data = EntityManager.GetComponentData<NetworkInstanceData>(instanceEntity);
                 if (data.InstanceType != InstanceType.LocalClient)
-                    continue;
-                    
-                var buffer   = new DataBufferWriter(Allocator.Temp);
+                    return;
+                
+                var buffer = new DataBufferWriter(Allocator.Temp);
                 buffer.CpyWrite(MessageType.MessagePattern);
                 buffer.CpyWrite(m_SyncPattern.Id);
-                buffer.Write(ref input);
+                buffer.Write(ref playerInput);
 
                 data.Commands.Send(buffer, default, Delivery.Unreliable);
-            }
+
+            }, m_Group);
         }
 
         private void SyncMessages()
         {
-            var length = m_EventInstances.CalculateLength();
-            if (length == 0)
-                return;
+            var netPatternSystem = World.GetExistingManager<NetPatternSystem>();
+            var networkMgr       = World.GetExistingManager<NetworkManager>();
 
-            var dataArray        = m_EventInstances.GetComponentDataArray<NetworkInstanceData>();
-            var eventBufferArray = m_EventInstances.GetBufferArray<EventBuffer>();
-            for (var i = 0; i != length; i++)
+            ForEach((DynamicBuffer<EventBuffer> eventBuffer, ref NetworkInstanceData instanceData) =>
             {
-                var data         = dataArray[i];
-                var eventBuffer  = eventBufferArray[i];
-
-                var bank = World.GetExistingManager<NetPatternSystem>()
-                                .GetBank(data.Id);
-                var networkMgr = World.GetExistingManager<NetworkManager>();
+                var bank = netPatternSystem.GetBank(instanceData.Id);
 
                 // Process events
                 for (var evIndex = 0; evIndex != eventBuffer.Length; evIndex++)
@@ -142,14 +128,14 @@ namespace Patapon4TLB.Core.Tests
                     if (localPattern != m_SyncPattern)
                         continue;
 
-                    var input = reader.ReadValue<PlayerInput>();
+                    var input        = reader.ReadValue<PlayerInput>();
                     var entityOrigin = networkMgr.GetNetworkInstanceEntity(ev.Invoker.Id);
                     var clientEntity = EntityManager.GetComponentData<NetworkInstanceToClient>(entityOrigin)
                                                     .Target;
 
                     EntityManager.SetComponentData(clientEntity, input);
                 }
-            }
+            }, m_EventInstances);
         }
 
         protected override void OnUpdate()

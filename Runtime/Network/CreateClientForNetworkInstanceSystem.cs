@@ -2,51 +2,41 @@ using package.stormiumteam.networking.runtime.highlevel;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
+using UnityEngine.Experimental.PlayerLoop;
 
 namespace Patapon4TLB.Core.Networking
 {
     [ExecuteAlways]
+    [UpdateInGroup(typeof(PostLateUpdate))]
     public class CreateClientForNetworkInstanceSystem : ComponentSystem
     {
         private EntityArchetype m_ClientArchetype;
-        private ComponentGroup  m_Group;
+        private ComponentGroup  m_Group, m_DestroyClientGroup;
 
         protected override void OnCreateManager()
         {
-            m_ClientArchetype = EntityManager.CreateArchetype(typeof(ClientTag), typeof(Patapon4Client), typeof(ClientToNetworkInstance));
-            m_Group           = GetComponentGroup(typeof(NetworkInstanceData), ComponentType.Subtractive<NetworkInstanceToClient>());
+            m_ClientArchetype    = EntityManager.CreateArchetype(typeof(ClientTag), typeof(Patapon4Client), typeof(ClientToNetworkInstance));
+            m_Group              = GetComponentGroup(typeof(NetworkInstanceData), ComponentType.Subtractive<NetworkInstanceToClient>());
+            m_DestroyClientGroup = GetComponentGroup(typeof(ClientTag), typeof(ClientToNetworkInstance));
         }
 
         protected override void OnUpdate()
         {
-            var length = m_Group.CalculateLength();
-            if (length == 0)
-                return;
-
-            var entityArray = m_Group.GetEntityArray();
-            var naEntities  = new NativeArray<Entity>(length, Allocator.Temp);
-            for (var i = 0; i != length; i++)
-                naEntities[i] = entityArray[i];
-
-            var dataArray = m_Group.GetComponentDataArray<NetworkInstanceData>();
-            var naData = new NativeArray<NetworkInstanceData>(length, Allocator.Temp);
-            for (var i = 0; i != length; i++)
-                naData[i] = dataArray[i];
-            
-            for (var i = 0; i != length; i++)
+            ForEach((Entity instanceEntity, ref NetworkInstanceData instanceData) =>
             {
-                var instanceEntity = naEntities[i];
+                var clientEntity = PostUpdateCommands.CreateEntity(m_ClientArchetype);
+                PostUpdateCommands.SetComponent(clientEntity, new ClientToNetworkInstance(instanceEntity));
+                PostUpdateCommands.AddComponent(instanceEntity, new NetworkInstanceToClient(clientEntity));
+            }, m_Group);
 
-                var clientEntity = EntityManager.CreateEntity(m_ClientArchetype);
-                EntityManager.SetComponentData(clientEntity, new ClientToNetworkInstance(instanceEntity));
-                EntityManager.AddComponentData(instanceEntity, new NetworkInstanceToClient(clientEntity));
-                
-                if (naData[i].IsLocal())
-                    EntityManager.AddComponent(clientEntity, typeof(Patapon4LocalTag));
-            }
+            ForEach((Entity clientEntity, ref ClientToNetworkInstance clientToNetworkInstance) =>
+            {
+                if (EntityManager.Exists(clientToNetworkInstance.Target))
+                    return;
 
-            naEntities.Dispose();
-            naData.Dispose();
+                Debug.Log("Destroyed client.");
+                PostUpdateCommands.DestroyEntity(clientEntity);
+            }, m_DestroyClientGroup);
         }
     }
 }
