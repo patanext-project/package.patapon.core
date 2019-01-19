@@ -39,6 +39,8 @@ namespace Patapon4TLB.Core.Networking
                     }
                 }
             }
+            
+            //ForEach((ref NetworkInstanceData data) => { Debug.Log($"DataId={data.Id}, Type={data.InstanceType}, State={data.Commands.PeerState}"); });
 
             ForEach((Entity clientEntity, ref ClientToNetworkInstance clientToNetworkInstance) =>
             {

@@ -3,17 +3,19 @@ using System.Diagnostics;
 using package.stormiumteam.networking;
 using package.stormiumteam.networking.runtime.highlevel;
 using package.stormiumteam.networking.runtime.lowlevel;
+using package.stormiumteam.shared;
 using Patapon4TLB.Core.Networking;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using UnityEngine;
 using UnityEngine.Profiling;
 using Debug = UnityEngine.Debug;
 
 namespace Patapon4TLB.Core.Tests
 {
     [AlwaysUpdateSystem]
-    public unsafe class NetworkSnapshotMgr : ComponentSystem
+    public unsafe class NetworkSnapshotMgr : ComponentSystem, INativeEventOnGUI
     {
         public struct ClientSnapshotState : ISystemStateComponentData
         {
@@ -37,6 +39,9 @@ namespace Patapon4TLB.Core.Tests
         private Dictionary<Entity, StSnapshotRuntime> m_ClientRuntimes;
         private List<SnapshotDataToApply> m_SnapshotDataToApply;
 
+        private float m_AvgSnapshotSize;
+        private int m_ReceivedSnapshotOnFrame;
+
         protected override void OnCreateManager()
         {
             m_ClientRuntimes = new Dictionary<Entity, StSnapshotRuntime>(16);
@@ -54,6 +59,8 @@ namespace Patapon4TLB.Core.Tests
             m_EntitiesToGenerate = GetComponentGroup(typeof(GenerateEntitySnapshot));
             
             m_CurrentRuntime = new StSnapshotRuntime(default, Allocator.Persistent);
+            
+            World.GetExistingManager<AppEventSystem>().SubscribeToAll(this);
         }
 
         protected override void OnUpdate()
@@ -99,10 +106,15 @@ namespace Patapon4TLB.Core.Tests
                 }
             });
 
+            m_ReceivedSnapshotOnFrame = 0;
+
             foreach (var value in m_SnapshotDataToApply)
             {
                 var data = value.Data;
                 m_CurrentRuntime = snapshotMgr.ApplySnapshotFromData(value.Sender, ref data, ref m_CurrentRuntime, value.Exchange);
+
+                m_AvgSnapshotSize = Mathf.Lerp(m_AvgSnapshotSize, data.Length, 0.5f);
+                m_ReceivedSnapshotOnFrame++;
             }
 
             using (var entityArray = m_ClientWithoutState.ToEntityArray(Allocator.TempJob))
@@ -147,10 +159,24 @@ namespace Patapon4TLB.Core.Tests
 
                     networkInstanceData.Commands.Send(data, default, Delivery.Reliable);
                     
+                    m_AvgSnapshotSize = Mathf.Lerp(m_AvgSnapshotSize, data.Length, 0.5f);
+                    
                     data.Dispose();
 
                     m_ClientRuntimes[clientEntity] = clientRuntime;
                 });
+            }
+        }
+
+        public void NativeOnGUI()
+        {
+            using (new GUILayout.VerticalScope())
+            {
+                GUI.color = Color.black;
+                GUILayout.Label("Snapshot System:");
+                GUILayout.Space(1);
+                GUILayout.Label($"Avg Snapshot Size={m_AvgSnapshotSize}B");
+                GUILayout.Label($"Frame Snapshot Count={m_ReceivedSnapshotOnFrame}");
             }
         }
     }

@@ -219,7 +219,7 @@ namespace Patapon4TLB.Core.Networking
             // Write system data
             foreach (var obj in systemsMfc)
             {
-                Debug.Log("Writing " + obj.GetSystemPattern().InternalIdent.Name);
+                //Debug.Log("Writing " + obj.GetSystemPattern().InternalIdent.Name);
                 
                 JobHandle uselessHandle = default;
 
@@ -323,7 +323,7 @@ namespace Patapon4TLB.Core.Networking
 
                 var system        = GetSystem(exchange.GetOriginId(foreignSystemPattern));
 
-                Debug.Log($"Reading {system.GetSystemPattern().InternalIdent.Name}");
+                //Debug.Log($"Reading {system.GetSystemPattern().InternalIdent.Name}");
 
                 system.ReadData(sender, runtime, new DataBufferReader(data, data.CurrReadIndex, data.CurrReadIndex + length), ref uselessHandle);
 

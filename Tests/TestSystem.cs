@@ -25,6 +25,8 @@ namespace Patapon4TLB.Core.Tests
 
         protected override void OnCreateManager()
         {
+            Application.targetFrameRate = 96;
+            
             World.GetExistingManager<AppEventSystem>()
                  .SubscribeToAll(this);
             
@@ -108,14 +110,11 @@ namespace Patapon4TLB.Core.Tests
             GUILayout.Space(5);
             if (GUILayout.Button("Connect"))
             {
-                if (EntityManager.Exists(HostEntity))
-                    networkMgr.Stop(HostEntity, true);
-                    
                 var targetEp = new IPEndPoint(IPAddress.Parse(HostAddr), HostPort);
                 var localEp  = new IPEndPoint(LocalIPAddress(), 0);
-                    
+
                 Debug.Log($"Connecting to : Host: {HostAddr}:{HostPort}, LocalIp: {LocalIPAddress().ToString()}");
-                    
+
                 var r = networkMgr.StartClient(targetEp, null, NetDriverConfiguration.@default());
 
                 HostEntity = r.ClientInstanceEntity;
@@ -123,9 +122,6 @@ namespace Patapon4TLB.Core.Tests
 
             if (GUILayout.Button("Create"))
             {
-                if (EntityManager.Exists(HostEntity))
-                    networkMgr.Stop(HostEntity, true);
-                    
                 var localEp = new IPEndPoint(IPAddress.Any, HostPort);
                 var r       = networkMgr.StartServer(localEp, NetDriverConfiguration.@default());
 
@@ -138,8 +134,24 @@ namespace Patapon4TLB.Core.Tests
             var isValid = EntityManager.HasComponent(HostEntity, typeof(ValidInstanceTag));
             if (GUILayout.Button(isValid ? "Stop" : "Cancel"))
             {
-                networkMgr.StopAll();
                 HostEntity = default;
+                networkMgr.StopAll();
+            }
+            
+            if (EntityManager.Exists(HostEntity))
+            {
+                var connectedInstanceBuffer = EntityManager.GetBuffer<ConnectedInstance>(HostEntity);
+
+                GUILayout.Space(5);
+                for (var i = 0; i != connectedInstanceBuffer.Length; i++)
+                {
+                    var connectedInstance = connectedInstanceBuffer[i];
+                    if (!EntityManager.Exists(connectedInstance.Entity) || !EntityManager.HasComponent(connectedInstance.Entity, typeof(NetworkInstanceData)))
+                        continue;
+                    
+                    var data              = EntityManager.GetComponentData<NetworkInstanceData>(connectedInstance.Entity);
+                    GUILayout.Label($"Id={connectedInstance.Connection.Id}, Type={data.InstanceType}, Rtt={data.Commands.RoundTripTime}");
+                }
             }
         }
     }

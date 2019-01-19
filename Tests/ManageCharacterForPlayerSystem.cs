@@ -90,6 +90,7 @@ namespace Patapon4TLB.Core.Tests
                     var entity = entityArray[i];
                     var clientToNetwork = clientToNetworkArray[i];
                     var instanceData = EntityManager.GetComponentData<NetworkInstanceData>(clientToNetwork.Target);
+                    
                     if (instanceData.InstanceType != InstanceType.LocalServer
                         && instanceData.InstanceType != InstanceType.Client)
                         continue;
