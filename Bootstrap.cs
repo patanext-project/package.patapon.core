@@ -1,6 +1,7 @@
 ﻿using System;
 //using P4.Core.RythmEngine;
 using package.stormiumteam.shared.modding;
+using Patapon4TLB.Core;
 using Unity.Entities;
 
 namespace P4.Core

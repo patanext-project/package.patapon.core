@@ -1,4 +1,6 @@
 using package.stormiumteam.networking;
+using package.stormiumteam.networking.runtime.highlevel;
+using package.stormiumteam.shared;
 using Patapon4TLB.Core.Networking;
 using Unity.Burst;
 using Unity.Collections;
@@ -6,44 +8,14 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Transforms;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 namespace Patapon4TLB.Core.Tests
 {
     [ExecuteAlways]
     [UpdateAfter(typeof(CreateClientForNetworkInstanceSystem))]
-    public class ManageCharacterForPlayerSystem : JobComponentSystem, IModelCreateEntityCallback
+    public class SpawnCharacterForPlayerSystem : ComponentSystem, IModelSpawnEntityCallback, IModelDestroyEntityCallback
     {
-        [RequireSubtractiveComponent(typeof(PlayerToCharacterLink))]
-        struct CreateCharacterForClientJob : IJobProcessComponentDataWithEntity<Patapon4Client>
-        {
-            public EntityArchetype                Archetype;
-            public EntityCommandBuffer.Concurrent Ecb;
-
-            public void Execute(Entity entity, int index, ref Patapon4Client clientData)
-            {
-                Ecb.AddComponent(index, entity, new PlayerToCharacterLink(Entity.Null));
-
-                var newEntity = Ecb.CreateEntity(index, Archetype);
-                Ecb.SetComponent(index, newEntity, new PlayerCharacter(entity));
-            }
-        }
-
-        [BurstCompile]
-        private struct LinkPlayerToCharacterJob : IJobProcessComponentDataWithEntity<PlayerCharacter>
-        {
-            [NativeDisableParallelForRestriction]
-            public ComponentDataFromEntity<PlayerToCharacterLink> LinkArray;
-
-            public void Execute(Entity entity, int index, ref PlayerCharacter playerCharacter)
-            {
-                // If the entity is null or destroyed, don't run the iteration
-                if (!LinkArray.Exists(playerCharacter.Owner))
-                    return;
-                    
-                LinkArray[playerCharacter.Owner] = new PlayerToCharacterLink(entity);
-            }
-        }
-
         [BurstCompile]
         private struct RemoveUselessCharacterJob : IJobProcessComponentDataWithEntity<PlayerCharacter>
         {
@@ -59,58 +31,90 @@ namespace Patapon4TLB.Core.Tests
             }
         }
 
-        private EntityArchetype m_CharacterArchetype;
-        private int             m_LocalCharacterArchetypeId;
+        private ModelIdent m_CharacterModelIdent;
+        private GameObject m_CharacterGameObject;
+
+        private ComponentGroup m_CreateCharacterForClientGroup;
+        private ComponentGroup m_RemoveUselessCharacter;
 
         protected override void OnCreateManager()
         {
-            m_CharacterArchetype = EntityManager.CreateArchetype
-            (
-                typeof(Position),
-                typeof(PlayerCharacter),
-                typeof(GenerateEntitySnapshot),
-                typeof(SimulateEntity)
-            );
+            Addressables.InitializationOperation.Completed += op => { OnLoadAssets(); };
+
+            m_CreateCharacterForClientGroup = GetComponentGroup(typeof(Patapon4Client), typeof(ClientToNetworkInstance), ComponentType.Subtractive<PlayerToCharacterLink>());
+            m_RemoveUselessCharacter = GetComponentGroup(typeof(PlayerCharacter), typeof(SimulateEntity));
+        }
+        
+        public Entity SpawnEntity(Entity origin, StSnapshotRuntime snapshotRuntime)
+        {
+            var worldEntity = Object.Instantiate(m_CharacterGameObject)
+                                    .GetComponent<GameObjectEntity>()
+                                    .Entity;
+            
+            worldEntity.SetOrAddComponentData(new ModelIdent());
+            worldEntity.SetOrAddComponentData(new Position());
+            worldEntity.SetOrAddComponentData(new Rotation());
+            worldEntity.SetOrAddComponentData(new TransformState());
+            worldEntity.SetOrAddComponentData(new PlayerCharacter());
+            worldEntity.SetOrAddComponentData(new GenerateEntitySnapshot());
+
+            return worldEntity;
+        }
+
+        public void DestroyEntity(Entity worldEntity)
+        {
+            var gameObject = EntityManager.GetComponentObject<Transform>(worldEntity).gameObject;
+            
+            Object.Destroy(gameObject);
+        }
+
+        protected void OnLoadAssets()
+        {
+            Addressables.LoadAsset<GameObject>("CharacterTest")
+                        .Completed += op => m_CharacterGameObject = op.Result;
         }
 
         protected override void OnStartRunning()
         {
-            var localBank = World.GetExistingManager<NetPatternSystem>().GetLocalBank();
-            m_LocalCharacterArchetypeId = localBank.Register(new PatternIdent(nameof(m_CharacterArchetype))).Id;
-
             var modelMgr = World.GetExistingManager<EntityModelManager>();
-            modelMgr.Register(nameof(m_LocalCharacterArchetypeId), this);
+            m_CharacterModelIdent = modelMgr.Register("CharacterTest", this, this);
         }
 
-        protected override JobHandle OnUpdate(JobHandle inputDeps)
+        protected override void OnUpdate()
         {
-            inputDeps = new CreateCharacterForClientJob
+            using (var entityArray = m_CreateCharacterForClientGroup.ToEntityArray(Allocator.TempJob))
+            using (var clientToNetworkArray = m_CreateCharacterForClientGroup.ToComponentDataArray<ClientToNetworkInstance>(Allocator.TempJob))
             {
-                Archetype = m_CharacterArchetype,
-                Ecb = World.GetExistingManager<EndFrameBarrier>()
-                           .CreateCommandBuffer()
-                           .ToConcurrent()
-            }.Schedule(this, inputDeps);
+                for (var i = 0; i != entityArray.Length; i++)
+                {
+                    var entity = entityArray[i];
+                    var clientToNetwork = clientToNetworkArray[i];
+                    var instanceData = EntityManager.GetComponentData<NetworkInstanceData>(clientToNetwork.Target);
+                    if (instanceData.InstanceType != InstanceType.LocalServer
+                        && instanceData.InstanceType != InstanceType.Client)
+                        continue;
 
-            inputDeps = new LinkPlayerToCharacterJob
+                    var characterEntity = SpawnEntity(default, default);
+                    
+                    EntityManager.AddComponentData(entity, new PlayerToCharacterLink(characterEntity));
+                    EntityManager.SetComponentData(characterEntity, m_CharacterModelIdent);
+                    EntityManager.SetComponentData(characterEntity, new PlayerCharacter(entity));
+                    EntityManager.AddComponentData(characterEntity, new SimulateEntity());
+                }
+            }
+
+            using (var entityArray = m_RemoveUselessCharacter.ToEntityArray(Allocator.TempJob))
+            using (var playerCharacterArray = m_RemoveUselessCharacter.ToComponentDataArray<PlayerCharacter>(Allocator.TempJob))
             {
-                LinkArray = GetComponentDataFromEntity<PlayerToCharacterLink>()
-            }.Schedule(this, inputDeps);
+                for (var i = 0; i != entityArray.Length; i++)
+                {
+                    var entity          = entityArray[i];
+                    var playerCharacter = playerCharacterArray[i];
 
-            inputDeps = new RemoveUselessCharacterJob
-            {
-                ClientArray = GetComponentDataFromEntity<Patapon4Client>(),
-                Ecb = World.GetExistingManager<EndFrameBarrier>()
-                           .CreateCommandBuffer()
-                           .ToConcurrent()
-            }.Schedule(this, inputDeps);
-
-            return inputDeps;
-        }
-
-        public Entity SnapshotCreateEntity(Entity origin, StSnapshotRuntime snapshotRuntime)
-        {
-            return EntityManager.CreateEntity(m_CharacterArchetype);
+                    if (!EntityManager.Exists(playerCharacter.Owner))
+                        DestroyEntity(entity);
+                }
+            }
         }
     }
 }

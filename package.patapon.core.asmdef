@@ -3,6 +3,8 @@
     "references": [
         "package.guerro.shared",
         "package.stormiumteam.networking",
+        "Unity.Addressables",
+        "Unity.ResourceManager",
         "Unity.Entities",
         "Unity.Entities.Hybrid",
         "Unity.Transforms",

@@ -34,6 +34,11 @@ namespace Patapon4TLB.Core
 
         private Entity m_SingletonEntity;
 
+        protected override void OnCreateManager()
+        {
+            m_SingletonEntity = World.Active.GetExistingManager<EntityManager>().CreateEntity(typeof(GameTimeComponent), typeof(SimulateEntity));
+        }
+
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
             return new Job

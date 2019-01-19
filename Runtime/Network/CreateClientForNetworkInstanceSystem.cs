@@ -22,12 +22,23 @@ namespace Patapon4TLB.Core.Networking
 
         protected override void OnUpdate()
         {
-            ForEach((Entity instanceEntity, ref NetworkInstanceData instanceData) =>
+            using (var entityArray = m_Group.ToEntityArray(Allocator.TempJob))
+            using (var dataArray = m_Group.ToComponentDataArray<NetworkInstanceData>(Allocator.TempJob))
             {
-                var clientEntity = PostUpdateCommands.CreateEntity(m_ClientArchetype);
-                PostUpdateCommands.SetComponent(clientEntity, new ClientToNetworkInstance(instanceEntity));
-                PostUpdateCommands.AddComponent(instanceEntity, new NetworkInstanceToClient(clientEntity));
-            }, m_Group);
+                for (var i = 0; i != entityArray.Length; i++)
+                {
+                    var instanceEntity = entityArray[i];
+                    var instanceData = dataArray[i];
+                    var clientEntity   = EntityManager.CreateEntity(m_ClientArchetype);
+                    EntityManager.SetComponentData(clientEntity, new ClientToNetworkInstance(instanceEntity));
+                    EntityManager.AddComponentData(instanceEntity, new NetworkInstanceToClient(clientEntity));
+
+                    if (instanceData.IsLocal())
+                    {
+                        EntityManager.AddComponent(clientEntity, typeof(Patapon4LocalTag));
+                    }
+                }
+            }
 
             ForEach((Entity clientEntity, ref ClientToNetworkInstance clientToNetworkInstance) =>
             {

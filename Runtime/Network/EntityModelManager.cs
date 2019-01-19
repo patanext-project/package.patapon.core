@@ -5,16 +5,22 @@ using UnityEngine;
 
 namespace Patapon4TLB.Core.Networking
 {
-    public interface IModelCreateEntityCallback
+    public interface IModelSpawnEntityCallback
     {
-        Entity SnapshotCreateEntity(Entity origin, StSnapshotRuntime snapshotRuntime);
+        Entity SpawnEntity(Entity origin, StSnapshotRuntime snapshotRuntime);
+    }
+
+    public interface IModelDestroyEntityCallback
+    {
+        void DestroyEntity(Entity worldEntity);
     }
     
     [ExecuteAlways]
     public class EntityModelManager : ComponentSystem
     {
         private PatternBank m_PatternBank;
-        private Dictionary<int, IModelCreateEntityCallback> m_Callbacks = new Dictionary<int, IModelCreateEntityCallback>();
+        private readonly Dictionary<int, IModelSpawnEntityCallback> m_SpawnCallbacks = new Dictionary<int, IModelSpawnEntityCallback>();
+        private readonly Dictionary<int, IModelDestroyEntityCallback> m_DestroyCallbacks = new Dictionary<int, IModelDestroyEntityCallback>();
 
         protected override void OnStartRunning()
         {
@@ -29,8 +35,9 @@ namespace Patapon4TLB.Core.Networking
             
         }
 
-        public void Register<TCaller>(string name, TCaller caller)
-            where TCaller : class, IModelCreateEntityCallback
+        public ModelIdent Register<TSpawnCall, TDestroyCall>(string name, TSpawnCall spawnCall, TDestroyCall destroyCall)
+            where TSpawnCall : class, IModelSpawnEntityCallback
+            where TDestroyCall : class, IModelDestroyEntityCallback
         {
             // If someone register and we haven't even started running, we need to do it manually
             if (m_PatternBank == null)
@@ -40,14 +47,31 @@ namespace Patapon4TLB.Core.Networking
                 
             var pattern = m_PatternBank.Register(new PatternIdent(name));
 
-            m_Callbacks[pattern.Id] = caller;
+            m_SpawnCallbacks[pattern.Id] = spawnCall;
+            m_DestroyCallbacks[pattern.Id] = destroyCall;
+
+            return new ModelIdent(pattern.Id);
         }
 
-        public void SendCall(PatternIdent patternIdent, Entity origin, StSnapshotRuntime snapshotRuntime)
+        public Entity SpawnEntity(int modelId, Entity origin, StSnapshotRuntime snapshotRuntime)
         {
-            var id = m_PatternBank.GetPatternResult(patternIdent).Id;
+            var entity = m_SpawnCallbacks[modelId].SpawnEntity(origin, snapshotRuntime);
+
+            EntityManager.SetComponentData(entity, new ModelIdent(modelId));
             
-            m_Callbacks[id].SnapshotCreateEntity(origin, snapshotRuntime);
+            return entity;
+        }
+
+        public void DestroyEntity(Entity worldEntity, int modelId)
+        {
+            var callbackObj = m_DestroyCallbacks[modelId];
+            if (callbackObj == null)
+            {
+                EntityManager.DestroyEntity(worldEntity);
+                return;
+            }
+
+            callbackObj.DestroyEntity(worldEntity);
         }
     }
 }

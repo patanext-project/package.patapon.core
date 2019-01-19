@@ -9,7 +9,8 @@ using static Unity.Mathematics.math;
 
 namespace Patapon4TLB.Core.Tests
 {
-    [UpdateAfter(typeof(ManageCharacterForPlayerSystem))]
+    [UpdateAfter(typeof(SpawnCharacterForPlayerSystem))]
+    [UpdateAfter(typeof(UpdateLoop.ReadStates))]
     public class ManagePlayerPosition : JobComponentSystem
     {
         [BurstCompile]
@@ -29,7 +30,7 @@ namespace Patapon4TLB.Core.Tests
                     
                 var inputs = PlayerInputArray[playerCharacter.Owner];
 
-                position.Value += float3(inputs.Value * DeltaTime, 0);
+                position.Value += float3(inputs.Value * DeltaTime * 2.5f, 0);
             }
         }
 

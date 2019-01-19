@@ -33,205 +33,162 @@ namespace Patapon4TLB.Core.Networking
                 Data.Dispose();
             }
         }
-        
-        private ComponentDataFromEntity<NetworkInstanceData> m_NetworkInstanceFromEntity;
-        private ComponentGroup m_LocalClientGroup;
-        private ComponentGroup m_NetworkClientGroup;
-        private ComponentGroup m_GenerateSnapshotEntityGroup;
 
-        protected override void OnCreateManager()
-        {
-            m_LocalClientGroup = GetComponentGroup(typeof(Patapon4Client), typeof(Patapon4LocalTag));
-            m_NetworkInstanceFromEntity = GetComponentDataFromEntity<NetworkInstanceData>();
-            m_NetworkClientGroup = GetComponentGroup(typeof(Patapon4Client), typeof(ClientToNetworkInstance));
-            m_GenerateSnapshotEntityGroup = GetComponentGroup(typeof(GenerateEntitySnapshot));
-        }
-        
         protected override void OnUpdate()
         {
-            return;
-            
-            /*var entityLength = m_GenerateSnapshotEntityGroup.CalculateLength();
-            if (entityLength < 0)
-                return;
-
-            var entities = TransformEntityArray(m_GenerateSnapshotEntityGroup.GetEntityArray(), Allocator.TempJob);
-            if (!DoLocalGeneration(entities, default, Allocator.TempJob, out _))
-            {
-                entities.Dispose();
-                return;
-            }
-
-            var clientLength = m_NetworkClientGroup.CalculateLength();
-            if (clientLength < 0)
-            {
-                entities.Dispose();
-                return;
-            }
-
-            var entityArray          = m_NetworkClientGroup.GetEntityArray();
-            var clientToNetworkArray = m_NetworkClientGroup.GetComponentDataArray<ClientToNetworkInstance>();
-            for (int i = 0; i != clientLength; i++)
-            {
-                // A threaded job for each client snapshot could be possible?
-
-                var entity          = entityArray[i];
-                var networkInstance = m_NetworkInstanceFromEntity[clientToNetworkArray[i].Target];
-                var netCmd          = networkInstance.Commands;
-                var receiver        = new SnapshotReceiver(entity, true);
-
-                DataBufferWriter dataBuffer;
-                using (dataBuffer = new DataBufferWriter(Allocator.Temp, 2048))
-                {
-                    var generation = StartGenerating(receiver, default, Allocator.TempJob, entities);
-                    CompleteGeneration(generation);
-
-                    dataBuffer.WriteStatic(generation.Data);
-                }
-            }
-
-            entities.Dispose();*/
-        }
-
-        public NativeArray<Entity> GetSnapshotWorldEntities(Allocator allocator)
-        {
-            return TransformEntityArray(m_GenerateSnapshotEntityGroup.GetEntityArray(), allocator);
         }
 
         [BurstCompile]
         struct TransformEntityArrayJob : IJobParallelFor
         {
-            public EntityArray EntityArray;
-            public NativeArray<Entity> Entities;
+            public NativeArray<Entity> EntityArray;
+            public NativeArray<SnapshotEntityInformation> Entities;
+
+            [ReadOnly]
+            public ComponentDataFromEntity<ModelIdent> Component;
             
             public void Execute(int index)
             {
-                Entities[index] = EntityArray[index];
+                Entities[index] = new SnapshotEntityInformation(EntityArray[index], Component[EntityArray[index]].Id);
             }
         }
 
-        public NativeArray<Entity> TransformEntityArray(EntityArray entityArray, Allocator allocator)
+        public NativeArray<SnapshotEntityInformation> TransformEntityArray(NativeArray<Entity> entityArray, Allocator allocator)
         {
             var entityLength = entityArray.Length;
-            var entities     = new NativeArray<Entity>(entityLength, allocator);
+            var entities     = new NativeArray<SnapshotEntityInformation>(entityLength, allocator);
             
             new TransformEntityArrayJob
             {
                 EntityArray = entityArray,
-                Entities    = entities
+                Entities    = entities,
+                
+                Component = GetComponentDataFromEntity<ModelIdent>()
             }.Run(entityLength);
 
             return entities;
         }
 
-        public GenerateResult GenerateLocalSnapshot(Allocator allocator, SnapshotReceiverFlags flags, GenerateResult previousResult = default)
+        /*public GenerateResult GenerateLocalSnapshot(NativeArray<Entity> nfEntities, Allocator allocator, SnapshotReceiverFlags flags, ref GenerateResult previousResult)
         {
-            var entities      = GetSnapshotWorldEntities(allocator);
+            var entities      = TransformEntityArray(nfEntities, allocator);
             var localReceiver = new SnapshotReceiver(m_LocalClientGroup.GetEntityArray()[0], flags);
             var data          = new DataBufferWriter(allocator, true, 128 + entities.Length * 8);
             var gameTime      = World.GetExistingManager<StGameTimeManager>().GetTimeFromSingleton();
-            var result        = GenerateSnapshot(localReceiver, gameTime, entities, allocator, data, previousResult);
+            var result        = GenerateSnapshot(localReceiver, gameTime, entities, allocator, ref data, ref previousResult.Runtime);
 
             result.Runtime.Entities = entities;
 
             return result;
+        }*/
+
+        public GenerateResult GenerateForConnection(Entity         client,
+                                                    NativeArray<Entity> nfEntities,
+                                                    bool           fullSnapshot,
+                                                    GameTime       gameTime,
+                                                    Allocator      allocator,
+                                                    ref DataBufferWriter data,
+                                                    ref StSnapshotRuntime previousRuntime)
+        {
+            var entities = TransformEntityArray(nfEntities, allocator);
+            var receiver = new SnapshotReceiver(client, fullSnapshot ? SnapshotReceiverFlags.FullData : SnapshotReceiverFlags.None);
+
+            return GenerateSnapshot(receiver, gameTime, entities, allocator, ref data, ref previousRuntime);
+        }
+        
+        private unsafe void WriteFullEntities(ref DataBufferWriter data, ref NativeArray<SnapshotEntityInformation> entities)
+        {
+            data.Write((byte) 0);
+            data.WriteDynInteger((ulong) entities.Length);
+            if (entities.Length > 0) data.WriteDataSafe((byte*) entities.GetUnsafePtr(), entities.Length * sizeof(SnapshotEntityInformation), default);
+        }
+
+        private unsafe void WriteIncrementalEntities(ref DataBufferWriter data, ref NativeArray<SnapshotEntityInformation> entities, ref StSnapshotRuntime previousRuntime)
+        {
+            WriteFullEntities(ref data, ref entities);
+            return;
+
+            // If 'previousResult' is null or there is no entities on both side, we fallback to writing all entities
+            /*if (!previousRuntime.Entities.IsCreated || entities.Length == 0 || previousRuntime.Entities.Length == 0)
+            {
+                WriteFullEntities(ref data, ref entities);
+                return;
+            }
+
+            ref var previousEntities = ref previousRuntime.Entities;
+
+            data.Write((byte) 1);
+
+            // -----------------------------------------------------------------
+            // -> Removed entities to the buffer
+            var removedLengthMarker = data.Write(0);
+            var removedLength       = 0;
+
+            // Detect entities that don't exist anymore
+            for (var i = 0; i != previousEntities.Length; i++)
+            {
+                var prev  = previousEntities[i];
+                var exist = false;
+
+                for (var j = 0; j != entities.Length; j++)
+                {
+                    var curr = entities[j];
+                    if (prev != curr) continue;
+
+                    exist = true;
+                    break;
+                }
+
+                if (exist) continue;
+
+                data.Write(ref prev);
+                removedLength++;
+            }
+
+            data.Write(ref removedLength, removedLengthMarker);
+
+            // -----------------------------------------------------------------
+            // -> Added entities to the buffer
+            var addedLengthMarker = data.Write(0);
+            var addedLength       = 0;
+
+            for (var i = 0; i != entities.Length; i++)
+            {
+                var curr  = entities[i];
+                var exist = false;
+
+                for (var j = 0; j != previousEntities.Length; j++)
+                {
+                    var prev = previousEntities[j];
+                    if (curr != prev) continue;
+
+                    exist = true;
+                    break;
+                }
+
+                if (exist) continue;
+
+                data.Write(ref curr);
+                addedLength++;
+            }*/
         }
 
         public unsafe GenerateResult GenerateSnapshot(SnapshotReceiver    receiver,
                                                       GameTime            gt,
-                                                      NativeArray<Entity> entities,
+                                                      NativeArray<SnapshotEntityInformation> entities,
                                                       Allocator           allocator,
-                                                      DataBufferWriter    data,
-                                                      GenerateResult      previousResult)
+                                                      ref DataBufferWriter    data,
+                                                      ref StSnapshotRuntime      runtime)
         {
-            void WriteFullEntities()
-            {
-                data.Write((byte) 0);
-                data.WriteDynInteger((ulong) entities.Length);
-                if (entities.Length > 0)
-                    data.WriteDataSafe((byte*) entities.GetUnsafePtr(), entities.Length * sizeof(Entity), default);
-            }
-
-            void WriteIncrementalEntities()
-            {
-                WriteFullEntities();
-                return;
-                
-                // If 'previousResult' is null or there is no entities on both side, we fallback to writing all entities
-                if (!previousResult.IsCreated || entities.Length == 0 || previousResult.Runtime.Entities.Length == 0)
-                {
-                    WriteFullEntities();
-                    return;
-                }
-
-                ref var previousEntities = ref previousResult.Runtime.Entities;
-
-                data.Write((byte) 1);
-                
-                // -----------------------------------------------------------------
-                // -> Removed entities to the buffer
-                var removedLengthMarker = data.Write(0);
-                var removedLength = 0;
-                
-                // Detect entities that don't exist anymore
-                for (var i = 0; i != previousEntities.Length; i++)
-                {
-                    var prev = previousEntities[i];
-                    var exist = false;
-                    
-                    for (var j = 0; j != entities.Length; j++)
-                    {
-                        var curr = entities[j];
-                        if (prev != curr) 
-                            continue;
-                        
-                        exist = true;
-                        break;
-                    }
-
-                    if (exist) 
-                        continue;
-
-                    data.Write(ref prev);
-                    removedLength++;
-                }
-
-                data.Write(ref removedLength, removedLengthMarker);
-                
-                // -----------------------------------------------------------------
-                // -> Added entities to the buffer
-                var addedLengthMarker = data.Write(0);
-                var addedLength = 0;
-
-                for (var i = 0; i != entities.Length; i++)
-                {
-                    var curr = entities[i];
-                    var exist = false;
-
-                    for (var j = 0; j != previousEntities.Length; j++)
-                    {
-                        var prev = previousEntities[j];
-                        if (curr != prev)
-                            continue;
-
-                        exist = true;
-                        break;
-                    }
-
-                    if (exist)
-                        continue;
-
-                    data.Write(ref curr);
-                    addedLength++;
-                }
-            }
-
+            IntPtr previousEntityArrayPtr = default;
             var header = new StSnapshotHeader(gt);
-            var runtime = new StSnapshotRuntime(header, allocator)
-            {
-                Entities = entities
-            };
 
+            runtime.Header = header;
+            if (!runtime.Entities.IsCreated)
+                runtime.Entities = entities;
+            else
+                previousEntityArrayPtr = new IntPtr(runtime.Entities.GetUnsafePtr());
+            
             runtime.UpdateHashMapFromLocalData();
 
             // Write Game time
@@ -240,11 +197,17 @@ namespace Patapon4TLB.Core.Networking
             // Write entity data
             if ((receiver.Flags & SnapshotReceiverFlags.FullData) != 0)
             {
-                WriteFullEntities();
+                WriteFullEntities(ref data, ref entities);
             }
             else
             {
-                WriteIncrementalEntities();
+                WriteIncrementalEntities(ref data, ref entities, ref runtime);
+            }
+
+            if (runtime.Entities.IsCreated && new IntPtr(runtime.Entities.GetUnsafePtr()) == previousEntityArrayPtr)
+            {
+                runtime.Entities.Dispose();
+                runtime.Entities = entities;
             }
 
             foreach (var obj in AppEvent<ISnapshotSubscribe>.GetObjEvents())
@@ -279,7 +242,7 @@ namespace Patapon4TLB.Core.Networking
             return new GenerateResult {Data = data, Runtime = runtime};
         }
 
-        public unsafe StSnapshotRuntime ApplySnapshotFromData(SnapshotSender sender, DataBufferReader data, StSnapshotRuntime previousRuntime, PatternBank patternBank)
+        public unsafe StSnapshotRuntime ApplySnapshotFromData(SnapshotSender sender, ref DataBufferReader data, ref StSnapshotRuntime previousRuntime, PatternBankExchange exchange)
         {
             // Terminate the function if the runtime is bad.
             if (previousRuntime.Allocator == Allocator.None || previousRuntime.Allocator == Allocator.Invalid)
@@ -304,18 +267,7 @@ namespace Patapon4TLB.Core.Networking
             // --------------------------------------------------------------------------- //
             ISnapshotManageForClient GetSystem(int id)
             {
-                return AppEvent<ISnapshotManageForClient>.GetObjEvents().FirstOrDefault(system => system.GetSystemPattern().Id == id);
-            }
-
-            void ReadFullEntities(out NativeArray<Entity> entities)
-            {
-                var entityLength = (int) data.ReadDynInteger();
-                if (entityLength <= 0) Debug.LogWarning("No entities.");
-
-                entities = new NativeArray<Entity>(entityLength, allocator);
-                UnsafeUtility.MemCpy(entities.GetUnsafePtr(), data.DataPtr + data.CurrReadIndex, entityLength * sizeof(Entity));
-
-                data.CurrReadIndex += entityLength * sizeof(Entity);
+                return AppEvent<ISnapshotManageForClient>.GetObjEvents().FirstOrDefault(system => system.GetSystemPattern() == id);
             }
 
             // --------------------------------------------------------------------------- //
@@ -327,13 +279,21 @@ namespace Patapon4TLB.Core.Networking
             var runtime = new StSnapshotRuntime(header, previousRuntime, allocator);
 
             // Read Entity Data
+            SnapshotManageEntities.UpdateResult entitiesUpdateResult = default;
+            
             var entityDataType = data.ReadValue<byte>();
             switch (entityDataType)
             {
                 // Full data
                 case 0:
                 {
-                    ReadFullEntities(out runtime.Entities);
+                    ReadFullEntities(out var tempEntities, ref data, ref allocator, exchange);
+                    entitiesUpdateResult = SnapshotManageEntities.UpdateFrom(previousRuntime.Entities, tempEntities, allocator);
+                    
+                    if (runtime.Entities.IsCreated)
+                        runtime.Entities.Dispose();
+                    runtime.Entities = tempEntities;
+                    
                     break;
                 }
                 case 1:
@@ -345,6 +305,9 @@ namespace Patapon4TLB.Core.Networking
                     throw new Exception("Exception when reading.");
                 }
             }
+
+            SnapshotManageEntities.CreateEntities(entitiesUpdateResult, World, ref runtime);
+            SnapshotManageEntities.DestroyEntities(entitiesUpdateResult, World, ref runtime, true);
 
             foreach (var obj in AppEvent<ISnapshotSubscribe>.GetObjEvents())
                 obj.SubscribeSystem();
@@ -358,10 +321,9 @@ namespace Patapon4TLB.Core.Networking
                 var foreignSystemPattern = (int) data.ReadDynInteger();
                 var length               = (int) data.ReadDynInteger();
 
-                var systemPattern = patternBank.GetPatternResult(foreignSystemPattern);
-                var system        = GetSystem(systemPattern.Id);
+                var system        = GetSystem(exchange.GetOriginId(foreignSystemPattern));
 
-                Debug.Log("Reading " + systemPattern.InternalIdent.Name);
+                Debug.Log($"Reading {system.GetSystemPattern().InternalIdent.Name}");
 
                 system.ReadData(sender, runtime, new DataBufferReader(data, data.CurrReadIndex, data.CurrReadIndex + length), ref uselessHandle);
 
@@ -369,6 +331,24 @@ namespace Patapon4TLB.Core.Networking
             }
 
             return runtime;
+        }
+
+        private unsafe void ReadFullEntities(out NativeArray<SnapshotEntityInformation> entities, ref DataBufferReader data, ref Allocator allocator, PatternBankExchange exchange)
+        {
+            var entityLength = (int) data.ReadDynInteger();
+            if (entityLength <= 0) Debug.LogWarning("No entities.");
+
+            entities = new NativeArray<SnapshotEntityInformation>(entityLength, allocator);
+            UnsafeUtility.MemCpy(entities.GetUnsafePtr(), data.DataPtr + data.CurrReadIndex, entityLength * sizeof(SnapshotEntityInformation));
+
+            for (var i = 0; i != entityLength; i++)
+            {
+                var s = entities[i];
+                s.ModelId   = exchange.GetOriginId(s.ModelId);
+                entities[i] = s;
+            }
+
+            data.CurrReadIndex += entityLength * sizeof(SnapshotEntityInformation);
         }
     }
 }

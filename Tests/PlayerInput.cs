@@ -75,7 +75,7 @@ namespace Patapon4TLB.Core.Tests
                     Input.GetAxisRaw("Vertical")     
                 );
 
-                if (EntityManager.HasComponent<ClientToNetworkInstance>(entity))
+                if (!EntityManager.HasComponent<ClientToNetworkInstance>(entity))
                     return;
 
                 var instanceEntity = EntityManager.GetComponentData<ClientToNetworkInstance>(entity).Target;
@@ -106,7 +106,7 @@ namespace Patapon4TLB.Core.Tests
 
             ForEach((DynamicBuffer<EventBuffer> eventBuffer, ref NetworkInstanceData instanceData) =>
             {
-                var bank = netPatternSystem.GetBank(instanceData.Id);
+                var exchange = netPatternSystem.GetLocalExchange(instanceData.Id);
 
                 // Process events
                 for (var evIndex = 0; evIndex != eventBuffer.Length; evIndex++)
@@ -123,9 +123,7 @@ namespace Patapon4TLB.Core.Tests
                         continue;
 
                     var foreignPatternId = reader.ReadValue<int>();
-                    var localPattern     = bank.GetPatternResult(foreignPatternId);
-
-                    if (localPattern != m_SyncPattern)
+                    if (m_SyncPattern != exchange.GetOriginId(foreignPatternId))
                         continue;
 
                     var input        = reader.ReadValue<PlayerInput>();

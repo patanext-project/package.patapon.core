@@ -38,7 +38,7 @@ namespace Patapon4TLB.Core.Networking
         public StSnapshotHeader Header;
 
         [ReadOnly]
-        public NativeArray<Entity> Entities;
+        public NativeArray<SnapshotEntityInformation> Entities;
         [ReadOnly]
         public NativeHashMap<Entity, Entity> SnapshotToWorld;
         [ReadOnly]
@@ -88,7 +88,7 @@ namespace Patapon4TLB.Core.Networking
 
         public Entity GetWorldEntityFromGlobal(int index)
         {
-            return EntityToWorld(Entities[index]);
+            return EntityToWorld(Entities[index].Source);
         }
 
         public NativeList<(Entity worldRemoved, Entity snapshotRemoved)> UpdateHashMap()
@@ -99,13 +99,13 @@ namespace Patapon4TLB.Core.Networking
             for (var i = 0; i != Entities.Length; i++)
             {
                 var entity = Entities[i];
-                if (SnapshotToWorld.TryGetValue(entity, out var worldEntity))
+                if (SnapshotToWorld.TryGetValue(entity.Source, out var worldEntity))
                     continue;
                 
                 WorldToSnapshot.Remove(worldEntity);
-                SnapshotToWorld.Remove(entity);
+                SnapshotToWorld.Remove(entity.Source);
                     
-                list.Add((worldEntity, entity));
+                list.Add((worldEntity, entity.Source));
             }
 
             return list;
@@ -119,8 +119,8 @@ namespace Patapon4TLB.Core.Networking
             for (var i = 0; i != Entities.Length; i++)
             {
                 var e = Entities[i];
-                SnapshotToWorld.TryAdd(e, e);
-                WorldToSnapshot.TryAdd(e, e);
+                SnapshotToWorld.TryAdd(e.Source, e.Source);
+                WorldToSnapshot.TryAdd(e.Source, e.Source);
             }
         }
 
