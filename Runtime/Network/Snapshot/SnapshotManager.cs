@@ -16,7 +16,7 @@ using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Profiling;
 
-namespace Patapon4TLB.Core.Networking
+namespace StormiumShared.Core.Networking
 {
     public class SnapshotManager : ComponentSystem
     {

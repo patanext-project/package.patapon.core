@@ -4,7 +4,7 @@ using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Experimental.PlayerLoop;
 
-namespace Patapon4TLB.Core.Networking
+namespace StormiumShared.Core.Networking
 {
     [ExecuteAlways]
     [UpdateInGroup(typeof(PostLateUpdate))]

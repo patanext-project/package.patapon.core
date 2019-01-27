@@ -1,7 +1,7 @@
 using package.stormiumteam.networking;
 using package.stormiumteam.networking.runtime.highlevel;
 using package.stormiumteam.networking.runtime.lowlevel;
-using Patapon4TLB.Core.Networking;
+using StormiumShared.Core.Networking;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;

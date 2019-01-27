@@ -4,7 +4,7 @@ using package.stormiumteam.networking;
 using package.stormiumteam.networking.runtime.highlevel;
 using package.stormiumteam.networking.runtime.lowlevel;
 using package.stormiumteam.shared;
-using Patapon4TLB.Core.Networking;
+using StormiumShared.Core.Networking;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;

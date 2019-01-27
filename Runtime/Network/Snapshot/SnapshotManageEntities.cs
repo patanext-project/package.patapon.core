@@ -3,7 +3,7 @@ using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
-namespace Patapon4TLB.Core.Networking
+namespace StormiumShared.Core.Networking
 {
     public static class SnapshotManageEntities
     {

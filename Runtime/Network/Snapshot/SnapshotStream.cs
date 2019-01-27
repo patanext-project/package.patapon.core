@@ -7,7 +7,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using UnityEngine;
 
-namespace Patapon4TLB.Core.Networking
+namespace StormiumShared.Core.Networking
 {
     public enum SkipReason : byte
     {

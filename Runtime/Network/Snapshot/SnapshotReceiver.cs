@@ -1,7 +1,7 @@
 using System;
 using Unity.Entities;
 
-namespace Patapon4TLB.Core.Networking
+namespace StormiumShared.Core.Networking
 {
     [Flags]
     public enum SnapshotReceiverFlags

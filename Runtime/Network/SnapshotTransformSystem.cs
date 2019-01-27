@@ -7,7 +7,7 @@ using Unity.Transforms;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace Patapon4TLB.Core.Networking
+namespace StormiumShared.Core.Networking
 {
     public class TransformStateDataStreamer : SnapshotEntityDataStreamer<TransformState>
     {

@@ -1,6 +1,6 @@
 using Unity.Entities;
 
-namespace Patapon4TLB.Core.Networking
+namespace StormiumShared.Core.Networking
 {
     public struct ModelIdent : IComponentData
     {

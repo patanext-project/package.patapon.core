@@ -1,4 +1,4 @@
-using Patapon4TLB.Core.Networking;
+using StormiumShared.Core.Networking;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;

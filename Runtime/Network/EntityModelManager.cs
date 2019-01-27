@@ -3,7 +3,7 @@ using package.stormiumteam.networking;
 using Unity.Entities;
 using UnityEngine;
 
-namespace Patapon4TLB.Core.Networking
+namespace StormiumShared.Core.Networking
 {
     public interface IModelSpawnEntityCallback
     {

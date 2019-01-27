@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using package.stormiumteam.networking.runtime.highlevel;
 using package.stormiumteam.networking.runtime.lowlevel;
 using package.stormiumteam.shared;
-using Patapon4TLB.Core.Networking;
+using StormiumShared.Core.Networking;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;

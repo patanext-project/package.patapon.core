@@ -6,7 +6,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using UnityEngine.Experimental.PlayerLoop;
 
-namespace Patapon4TLB.Core.Networking
+namespace StormiumShared.Core.Networking
 {
     public struct DataChanged<T> : IComponentData
         where T : struct, IComponentData

@@ -1,4 +1,4 @@
-using Patapon4TLB.Core.Networking;
+using StormiumShared.Core.Networking;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
