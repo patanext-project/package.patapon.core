@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using ENet;
 using package.stormiumteam.networking.runtime.highlevel;
 using package.stormiumteam.networking.runtime.lowlevel;
 using package.stormiumteam.shared;
@@ -20,16 +19,16 @@ namespace Patapon4TLB.Core.Tests
     {
         public Entity HostEntity;
         public string HostAddr = "127.0.0.1";
-        public int HostPort = 8590;
+        public int    HostPort = 8590;
 
 
         protected override void OnCreateManager()
         {
             Application.targetFrameRate = 96;
-            
+
             World.GetExistingManager<AppEventSystem>()
                  .SubscribeToAll(this);
-            
+
             var gameLogPath = Application.dataPath + "/game_log.txt";
             if (!File.Exists(gameLogPath))
                 File.Create(gameLogPath);
@@ -41,22 +40,22 @@ namespace Patapon4TLB.Core.Tests
 
             Application.logMessageReceived += (condition, trace, type) => { File.AppendAllText(gameLogPath, $"<{condition}> [{type}] {trace}"); };
         }
-        
+
         protected override void OnUpdate()
         {
 
             if (HostEntity == Entity.Null)
                 return;
-            
+
             var networkInstanceData = EntityManager.GetComponentData<NetworkInstanceData>(HostEntity);
             // If this is not a server, continue...
             if ((networkInstanceData.InstanceType & InstanceType.Server) == 0)
                 return;
 
             var snapshotMgr = World.GetExistingManager<SnapshotManager>();
-            var gameTime = World.GetExistingManager<StGameTimeManager>().GetTimeFromSingleton();
+            var gameTime    = World.GetExistingManager<StGameTimeManager>().GetTimeFromSingleton();
         }
-        
+
         private IPAddress LocalIPAddress()
         {
             if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
@@ -74,11 +73,11 @@ namespace Patapon4TLB.Core.Tests
         public void NativeOnGUI()
         {
             var networkMgr = World.GetExistingManager<NetworkManager>();
-            
+
             using (new GUILayout.VerticalScope())
             {
                 GUI.contentColor = Color.black;
-                
+
                 GUILayout.Label("TestSystem Actions:");
                 GUILayout.Space(1);
 
@@ -111,11 +110,10 @@ namespace Patapon4TLB.Core.Tests
             if (GUILayout.Button("Connect"))
             {
                 var targetEp = new IPEndPoint(IPAddress.Parse(HostAddr), HostPort);
-                var localEp  = new IPEndPoint(LocalIPAddress(), 0);
 
                 Debug.Log($"Connecting to : Host: {HostAddr}:{HostPort}, LocalIp: {LocalIPAddress().ToString()}");
 
-                var r = networkMgr.StartClient(targetEp, null, NetDriverConfiguration.@default());
+                var r = networkMgr.StartClient(targetEp);
 
                 HostEntity = r.ClientInstanceEntity;
             }
@@ -123,7 +121,7 @@ namespace Patapon4TLB.Core.Tests
             if (GUILayout.Button("Create"))
             {
                 var localEp = new IPEndPoint(IPAddress.Any, HostPort);
-                var r       = networkMgr.StartServer(localEp, NetDriverConfiguration.@default());
+                var r       = networkMgr.StartServer(localEp);
 
                 HostEntity = r.Entity;
             }
@@ -137,7 +135,7 @@ namespace Patapon4TLB.Core.Tests
                 HostEntity = default;
                 networkMgr.StopAll();
             }
-            
+
             if (EntityManager.Exists(HostEntity))
             {
                 var connectedInstanceBuffer = EntityManager.GetBuffer<ConnectedInstance>(HostEntity);
@@ -148,9 +146,10 @@ namespace Patapon4TLB.Core.Tests
                     var connectedInstance = connectedInstanceBuffer[i];
                     if (!EntityManager.Exists(connectedInstance.Entity) || !EntityManager.HasComponent(connectedInstance.Entity, typeof(NetworkInstanceData)))
                         continue;
-                    
-                    var data              = EntityManager.GetComponentData<NetworkInstanceData>(connectedInstance.Entity);
-                    GUILayout.Label($"Id={connectedInstance.Connection.Id}, Type={data.InstanceType}, Rtt={data.Commands.RoundTripTime}");
+
+                    var data = EntityManager.GetComponentData<NetworkInstanceData>(connectedInstance.Entity);
+                    var cs   = data.Commands.ConnectionStatus;
+                    GUILayout.Label($"Id={connectedInstance.Connection.Id}, Type={data.InstanceType}, Ping={cs.ping}, InKB/s={cs.inBytesPerSecond * 0.001f}, OutKB/s={cs.outBytesPerSecond * 0.001f}");
                 }
             }
         }

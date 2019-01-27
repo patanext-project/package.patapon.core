@@ -157,7 +157,7 @@ namespace Patapon4TLB.Core.Tests
                     
                     data.WriteStatic(generation.Data);
 
-                    networkInstanceData.Commands.Send(data, default, Delivery.Reliable);
+                    networkInstanceData.Commands.Send(data, default, Delivery.Unreliable);
                     
                     m_AvgSnapshotSize = Mathf.Lerp(m_AvgSnapshotSize, data.Length, 0.5f);
                     

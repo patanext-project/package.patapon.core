@@ -14,8 +14,7 @@ namespace Patapon4TLB.Core.Networking
     {
         void DestroyEntity(Entity worldEntity);
     }
-    
-    [ExecuteAlways]
+
     public class EntityModelManager : ComponentSystem
     {
         private PatternBank m_PatternBank;

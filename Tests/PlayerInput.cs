@@ -94,7 +94,8 @@ namespace Patapon4TLB.Core.Tests
                 buffer.CpyWrite(m_SyncPattern.Id);
                 buffer.Write(ref playerInput);
 
-                data.Commands.Send(buffer, default, Delivery.Unreliable);
+                var serverConCmd = EntityManager.GetComponentData<NetworkInstanceData>(data.Parent).Commands;
+                serverConCmd.Send(buffer, default, Delivery.Unreliable);
 
             }, m_Group);
         }
