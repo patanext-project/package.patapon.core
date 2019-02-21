@@ -1,4 +1,5 @@
 using System;
+using StormiumShared.Core;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Jobs;
@@ -9,9 +10,9 @@ using static Unity.Mathematics.math;
 namespace Patapon4TLB.Core
 {
     [UpdateAfter(typeof(Initialization.PlayerUpdateTime))]
-    public class StGameTimeManager : JobComponentSystem
+    public class P4GameTimeManager : JobComponentSystem
     {
-        [RequireComponentTag(typeof(SimulateEntity)), BurstCompile]
+        [RequireComponentTag(typeof(EntityAuthority)), BurstCompile]
         private struct Job : IJobProcessComponentData<GameTimeComponent>
         {
             public int ActualTick;
@@ -36,7 +37,7 @@ namespace Patapon4TLB.Core
 
         protected override void OnCreateManager()
         {
-            m_SingletonEntity = World.Active.GetExistingManager<EntityManager>().CreateEntity(typeof(GameTimeComponent), typeof(SimulateEntity));
+            m_SingletonEntity = World.Active.GetExistingManager<EntityManager>().CreateEntity(typeof(GameTimeComponent), typeof(EntityAuthority));
         }
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -50,7 +51,7 @@ namespace Patapon4TLB.Core
 
         public void SetSingleton(Entity entity)
         {
-            if (EntityManager.HasComponent<GameTimeComponent>(entity) && EntityManager.HasComponent<SimulateEntity>(entity))
+            if (EntityManager.HasComponent<GameTimeComponent>(entity) && EntityManager.HasComponent<EntityAuthority>(entity))
             {
                 m_SingletonEntity = entity;
             }

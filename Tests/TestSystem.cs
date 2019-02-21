@@ -53,7 +53,7 @@ namespace Patapon4TLB.Core.Tests
                 return;
 
             var snapshotMgr = World.GetExistingManager<SnapshotManager>();
-            var gameTime    = World.GetExistingManager<StGameTimeManager>().GetTimeFromSingleton();
+            var gameTime    = World.GetExistingManager<P4GameTimeManager>().GetTimeFromSingleton();
         }
 
         private IPAddress LocalIPAddress()

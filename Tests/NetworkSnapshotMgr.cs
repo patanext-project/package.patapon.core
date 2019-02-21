@@ -69,7 +69,7 @@ namespace Patapon4TLB.Core.Tests
             EntityManager.CompleteAllJobs();
             m_SnapshotDataToApply.Clear();
             
-            var gameTime = World.GetExistingManager<StGameTimeManager>().GetTimeFromSingleton();
+            var gameTime = World.GetExistingManager<P4GameTimeManager>().GetTimeFromSingleton();
             var snapshotMgr = World.GetExistingManager<SnapshotManager>();
             var networkMgr = World.GetExistingManager<NetworkManager>();
             var netPatternSystem = World.GetExistingManager<NetPatternSystem>();
