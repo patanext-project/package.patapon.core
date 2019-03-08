@@ -45,6 +45,9 @@ namespace package.patapon.core
             public float DeltaTime;
 
             [ReadOnly]
+            public int FrameCount;
+
+            [ReadOnly]
             public EntityArchetype EventArchetype;
 
             public EntityCommandBuffer.Concurrent EntityCommandBuffer;
@@ -61,10 +64,8 @@ namespace package.patapon.core
                     process.Beat += 1;
 
                     var eventEntity = EntityCommandBuffer.CreateEntity(index, EventArchetype);
-                    EntityCommandBuffer.SetComponent(index, eventEntity, new FlowRythmEngineTypeDefinition());
-                    EntityCommandBuffer.SetComponent(index, eventEntity, new RhythmShardEvent(Time.frameCount));
+                    EntityCommandBuffer.SetComponent(index, eventEntity, new RhythmShardEvent(FrameCount));
                     EntityCommandBuffer.SetComponent(index, eventEntity, new RhythmShardTarget(entity));
-                    EntityCommandBuffer.SetComponent(index, eventEntity, new RhythmBeatData());
                     EntityCommandBuffer.SetComponent(index, eventEntity, new FlowRhythmBeatData(process.Beat));
                 }
 
@@ -93,6 +94,7 @@ namespace package.patapon.core
             // Update engine data
             var jobHandle = new ProcessEngineJob
             {
+                FrameCount          = Time.frameCount,
                 DeltaTime           = deltaTime,
                 EventArchetype      = m_EventArchetype,
                 EntityCommandBuffer = PostUpdateCommands.ToConcurrent()

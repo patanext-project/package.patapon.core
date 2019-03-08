@@ -11,7 +11,7 @@ using UnityEngine.Experimental.PlayerLoop;
 namespace StormiumShared.Core.Networking
 {
     [AlwaysUpdateSystem]
-    [UpdateInGroup(typeof(PostLateUpdate))]
+    [UpdateInGroup(typeof(LateSimulationSystemGroup))]
     public class CreateClientForNetworkInstanceSystem : ComponentSystem
     {
         private EntityArchetype m_ClientArchetype;

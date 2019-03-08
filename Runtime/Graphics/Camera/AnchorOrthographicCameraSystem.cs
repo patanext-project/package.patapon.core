@@ -20,17 +20,22 @@ namespace package.patapon.core
         {
             [DeallocateOnJobCompletion]
             public UnsafeAllocation<int> HighestPriorityAllocation;
-            
+
             // For foreign entities
+            [ReadOnly]
             public ComponentDataFromEntity<AnchorOrthographicCameraData> CameraDataFromEntity;
+
+            [WriteOnly, NativeDisableParallelForRestriction]
             public ComponentDataFromEntity<Translation> TranslationFromEntity;
+
             // Debug
+            [NativeDisableParallelForRestriction]
             public ComponentDataFromEntity<AnchorOrthographicCameraOutput> OutputFromEntity;
-            
+
             public void Execute(ref CameraTargetData data, ref CameraTargetAnchor anchor, ref CameraTargetPosition position)
             {
                 ref var highestPriority = ref HighestPriorityAllocation.AsRef();
-                
+
                 // Don't update the camera if it got a lower priority
                 if (data.Priority < highestPriority)
                     return;
@@ -43,17 +48,17 @@ namespace package.patapon.core
                     return;
 
                 var cameraData = CameraDataFromEntity[data.CameraId];
-                var camSize   = new float2(cameraData.Width, cameraData.Height);
-                var anchorPos = new float2(anchor.Value.x, anchor.Value.y);
+                var camSize    = new float2(cameraData.Width, cameraData.Height);
+                var anchorPos  = new float2(anchor.Value.x, anchor.Value.y);
                 if (anchor.Type == AnchorType.World)
                 {
                     // todo: bla bla... world to screen point...
                     throw new NotImplementedException();
                 }
-                
+
                 var left = math.float2(1, 0) * (anchorPos.x * camSize.x);
                 var up   = math.float2(0, 1) * (anchorPos.y * camSize.y);
-                
+
                 TranslationFromEntity[data.CameraId] = new Translation
                 {
                     Value = math.float3(position.Value.xy + left + up, -100)
