@@ -41,7 +41,7 @@ namespace Patapon4TLB.Core.Tests
         {
             Addressables.InitializationOperation.Completed += op => { OnLoadAssets(); };
 
-            m_CreateCharacterForClientGroup = GetComponentGroup(typeof(Patapon4Client), typeof(ClientToNetworkInstance), ComponentType.Subtractive<PlayerToCharacterLink>());
+            m_CreateCharacterForClientGroup = GetComponentGroup(typeof(Patapon4Client), typeof(ClientToNetworkInstance), ComponentType.Exclude<PlayerToCharacterLink>());
             m_RemoveUselessCharacter = GetComponentGroup(typeof(PlayerCharacter), typeof(SimulateEntity));
         }
         
@@ -52,7 +52,7 @@ namespace Patapon4TLB.Core.Tests
                                     .Entity;
             
             worldEntity.SetOrAddComponentData(new ModelIdent());
-            worldEntity.SetOrAddComponentData(new Position());
+            worldEntity.SetOrAddComponentData(new Translation());
             worldEntity.SetOrAddComponentData(new Rotation());
             worldEntity.SetOrAddComponentData(new TransformState());
             worldEntity.SetOrAddComponentData(new PlayerCharacter());

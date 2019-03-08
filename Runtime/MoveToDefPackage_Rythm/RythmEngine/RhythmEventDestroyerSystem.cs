@@ -4,27 +4,19 @@ using Unity.Entities;
 
 namespace package.patapon.core
 {
-    [UpdateAfter(typeof(EndFrameBarrier))]
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
     public class RhythmEventDestroyerSystem : ComponentSystem
     {
-        struct Group
-        {
-            public ComponentDataArray<RhythmShardEvent> EventArray;
-            public SubtractiveComponent<VoidSystem<RhythmEventDestroyerSystem>> Void1;
-
-            public EntityArray Entities;
-
-            public readonly int Length;
-        }
+        private static EntityCommandBuffer s_StaticPostUpdateCommands;
         
-        [Inject] private Group m_Group;
-
         protected override void OnUpdate()
         {
-            for (int i = 0; i != m_Group.Length; i++)
+            s_StaticPostUpdateCommands = PostUpdateCommands;
+            
+            ForEach((Entity entity, ref RhythmShardEvent ev) =>
             {
-                PostUpdateCommands.DestroyEntity(m_Group.Entities[i]);
-            }
+                s_StaticPostUpdateCommands.DestroyEntity(entity);
+            });
         }
     }
 }

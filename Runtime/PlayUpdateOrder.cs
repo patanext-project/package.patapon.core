@@ -4,7 +4,8 @@ namespace package.patapon.core
 {
     public class PlayUpdateOrder
     {
-        public class RhythmEngineOrder : BarrierSystem
+        [UpdateInGroup(typeof(PresentationSystemGroup))]
+        public class RhythmEngineOrder : EntityCommandBufferSystem
         {
             
         }

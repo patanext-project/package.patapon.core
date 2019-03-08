@@ -11,7 +11,7 @@ namespace Patapon4TLB.Core.Tests
     {
         protected override void OnUpdate()
         {
-            ForEach((ref TransformState state, ref Position position, ref Rotation rotation) =>
+            ForEach((ref TransformState state, ref Translation position, ref Rotation rotation) =>
             {                
                 position.Value = state.Position;
                 rotation.Value = quaternion.Euler(state.Rotation);
@@ -24,7 +24,7 @@ namespace Patapon4TLB.Core.Tests
     {
         protected override void OnUpdate()
         {
-            ForEach((ref TransformState state, ref Position position, ref Rotation rotation) =>
+            ForEach((ref TransformState state, ref Translation position, ref Rotation rotation) =>
             {
                 state.Position = position.Value;
                 state.Rotation = math.mul(rotation.Value, math.float3(1, 0, 0));

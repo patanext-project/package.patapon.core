@@ -141,7 +141,7 @@ namespace package.patapon.core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CalculateCatmullromSpline(Position[] nodes, int nodesStart, int nodesEnd, Vector3[] m_fillerArray,
+        public static void CalculateCatmullromSpline(Translation[] nodes, int nodesStart, int nodesEnd, Vector3[] m_fillerArray,
                                                      int             fillerStart,
                                                      int             fillerEnd, int slices, float tension,
                                                      bool            loop = false)

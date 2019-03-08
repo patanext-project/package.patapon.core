@@ -15,7 +15,7 @@ namespace Patapon4TLB.Core.Tests
     {
         [BurstCompile]
         [RequireComponentTag(typeof(SimulateEntity))]
-        private struct Job : IJobProcessComponentDataWithEntity<Position, PlayerCharacter>
+        private struct Job : IJobProcessComponentDataWithEntity<Translation, PlayerCharacter>
         {
             [ReadOnly]
             public float                                DeltaTime;
@@ -23,7 +23,7 @@ namespace Patapon4TLB.Core.Tests
             [ReadOnly]
             public ComponentDataFromEntity<PlayerInput> PlayerInputArray;
 
-            public void Execute(Entity entity, int index, ref Position position, ref PlayerCharacter playerCharacter)
+            public void Execute(Entity entity, int index, ref Translation position, ref PlayerCharacter playerCharacter)
             {
                 if (!PlayerInputArray.Exists(playerCharacter.Owner))
                     return;

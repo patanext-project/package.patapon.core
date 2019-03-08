@@ -21,7 +21,7 @@ namespace StormiumShared.Core.Networking
         protected override void OnCreateManager()
         {
             m_ClientArchetype    = EntityManager.CreateArchetype(typeof(ClientTag), typeof(NetworkClient), typeof(ClientToNetworkInstance));
-            m_Group              = GetComponentGroup(typeof(NetworkInstanceData), ComponentType.Subtractive<NetworkInstanceToClient>());
+            m_Group              = GetComponentGroup(typeof(NetworkInstanceData), ComponentType.Exclude<NetworkInstanceToClient>());
             m_DestroyClientGroup = GetComponentGroup(typeof(ClientTag), typeof(ClientToNetworkInstance));
 
             m_GamePlayerModel = World.GetOrCreateManager<StGamePlayerProvider>().GetModelIdent();

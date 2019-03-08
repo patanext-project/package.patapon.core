@@ -35,7 +35,7 @@ namespace Patapon4TLB.Core.Tests
             m_GroupWithoutInputs = GetComponentGroup
             (
                 typeof(Patapon4Client),
-                ComponentType.Subtractive<PlayerInput>()
+                ComponentType.Exclude<PlayerInput>()
             );
             m_EventInstances = GetComponentGroup
             (

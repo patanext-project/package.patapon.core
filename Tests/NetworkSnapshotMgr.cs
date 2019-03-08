@@ -54,8 +54,8 @@ namespace Patapon4TLB.Core.Tests
                                      .GetLocalBank()
                                      .Register(new PatternIdent("SyncSnapshot"));
 
-            m_ClientWithoutState = GetComponentGroup(typeof(Patapon4Client), ComponentType.Subtractive<ClientSnapshotState>());
-            m_DestroyedClientWithState = GetComponentGroup(typeof(ClientSnapshotState), ComponentType.Subtractive<Patapon4Client>());
+            m_ClientWithoutState = GetComponentGroup(typeof(Patapon4Client), ComponentType.Exclude<ClientSnapshotState>());
+            m_DestroyedClientWithState = GetComponentGroup(typeof(ClientSnapshotState), ComponentType.Exclude<Patapon4Client>());
             m_EntitiesToGenerate = GetComponentGroup(typeof(GenerateEntitySnapshot));
             
             m_CurrentRuntime = new StSnapshotRuntime(default, Allocator.Persistent);

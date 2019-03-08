@@ -1,6 +1,8 @@
 ﻿using System;
 using package.stormiumteam.shared;
+using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
@@ -8,128 +10,106 @@ using UnityEngine.Experimental.PlayerLoop;
 
 namespace package.patapon.core
 {
-    [UpdateBefore(typeof(CopyTransformToGameObjectSystem))] // We need to force "CopyTransformToGameObject" to be performed in PreLateUpdate
-    [UpdateAfter(typeof(PreLateUpdate.DirectorUpdateAnimationEnd))]
+    [UpdateAfter(typeof(TransformSystemGroup))]
     // Update after animators
     public class AnchorOrthographicCameraSystem : ComponentSystem
     {
-        /// <summary>
-        /// The target group that the camera will use
-        /// </summary>
-        public struct TargetGroup
+        private ComponentGroup m_CameraComponentGroup;
+
+        struct TargetJob : IJobProcessComponentData<CameraTargetData, CameraTargetAnchor, CameraTargetPosition>
         {
-            public ComponentDataArray<CameraTargetData>     Data;
-            public ComponentDataArray<CameraTargetAnchor>   AnchorData;
-            public ComponentDataArray<CameraTargetPosition> PositionData;
+            [DeallocateOnJobCompletion]
+            public UnsafeAllocation<int> HighestPriorityAllocation;
+            
+            // For foreign entities
+            public ComponentDataFromEntity<AnchorOrthographicCameraData> CameraDataFromEntity;
+            public ComponentDataFromEntity<Translation> TranslationFromEntity;
+            // Debug
+            public ComponentDataFromEntity<AnchorOrthographicCameraOutput> OutputFromEntity;
+            
+            public void Execute(ref CameraTargetData data, ref CameraTargetAnchor anchor, ref CameraTargetPosition position)
+            {
+                ref var highestPriority = ref HighestPriorityAllocation.AsRef();
+                
+                // Don't update the camera if it got a lower priority
+                if (data.Priority < highestPriority)
+                    return;
 
-            public SubtractiveComponent<VoidSystem<AnchorOrthographicCameraSystem>> Void1;
+                // Update the priority
+                highestPriority = data.Priority;
 
-            public readonly int Length;
+                // Update target
+                if (data.CameraId == default || !CameraDataFromEntity.Exists(data.CameraId))
+                    return;
+
+                var cameraData = CameraDataFromEntity[data.CameraId];
+                var camSize   = new float2(cameraData.Width, cameraData.Height);
+                var anchorPos = new float2(anchor.Value.x, anchor.Value.y);
+                if (anchor.Type == AnchorType.World)
+                {
+                    // todo: bla bla... world to screen point...
+                    throw new NotImplementedException();
+                }
+                
+                var left = math.float2(1, 0) * (anchorPos.x * camSize.x);
+                var up   = math.float2(0, 1) * (anchorPos.y * camSize.y);
+                
+                TranslationFromEntity[data.CameraId] = new Translation
+                {
+                    Value = math.float3(position.Value.xy + left + up, -100)
+                };
+
+                // Debug usage, render an output
+                if (!OutputFromEntity.Exists(data.CameraId))
+                    return;
+
+                OutputFromEntity[data.CameraId] = new AnchorOrthographicCameraOutput
+                {
+                    Target     = position.Value.xy,
+                    AnchorType = anchor.Type,
+                    Anchor     = anchorPos
+                };
+            }
         }
 
-        [Inject] private TargetGroup m_TargetGroup;
-
-        /// <summary>
-        /// The camera group
-        /// </summary>
-        public struct CameraGroup
+        protected override void OnCreateManager()
         {
-            public ComponentArray<Camera>                           Cameras;
-            public ComponentDataArray<AnchorOrthographicCameraData> Data;
-            public ComponentDataArray<Position>                     Positions;
-            public EntityArray                                      Entities;
+            base.OnCreateManager();
 
-            public SubtractiveComponent<VoidSystem<AnchorOrthographicCameraSystem>> Void1;
-
-            public readonly int Length;
+            m_CameraComponentGroup = GetComponentGroup(new EntityArchetypeQuery
+            {
+                All = new[]
+                {
+                    ComponentType.ReadWrite<Camera>(),
+                    ComponentType.ReadWrite<AnchorOrthographicCameraData>(),
+                    ComponentType.ReadWrite<Translation>(),
+                }
+            });
         }
-
-        [Inject] private CameraGroup m_CameraGroup;
 
         protected override void OnUpdate()
         {
             // ------------------------------------------------------ //
             // Update camera data
             // ------------------------------------------------------ //
-            for (int i = 0; i != m_CameraGroup.Length; i++)
+            ForEach((Camera camera, ref AnchorOrthographicCameraData data) =>
             {
-                // Get components
-                var camera = m_CameraGroup.Cameras[i];
-
-                var height = camera.orthographicSize;
-                var width  = camera.aspect * height;
-
-                // Update data with the correct height and width
-                m_CameraGroup.Data[i] = new AnchorOrthographicCameraData(height, width);
-            }
-
-            // Update injected groups
-            UpdateInjectedComponentGroups();
-
+                data.Height = camera.orthographicSize;
+                data.Width  = camera.aspect * data.Height;
+            }, m_CameraComponentGroup);
+            
             // ------------------------------------------------------ //
             // Update camera positions from targets
             // ------------------------------------------------------ //
-            for (int i = 0, highestPriority = int.MinValue; i != m_TargetGroup.Length; i++)
+            var jobHandle = new TargetJob
             {
-                // Get components
-                var data     = m_TargetGroup.Data[i];
-                var anchor   = m_TargetGroup.AnchorData[i];
-                var position = m_TargetGroup.PositionData[i];
-
-                // Don't update the camera if it got a lower priority
-                if (data.Priority < highestPriority)
-                    continue;
-
-                // Update the priority
-                data.Priority = highestPriority;
-
-                // Update target
-                UpdateTarget(data, anchor, position.Value);
-            }
-        }
-
-        private void UpdateTarget(CameraTargetData data, CameraTargetAnchor anchor, float3 targetPosition)
-        {
-            var entity     = default(Entity);
-            var cameraData = default(AnchorOrthographicCameraData);
-
-            // Verify the camera target is correct
-            for (int i = 0; i != m_CameraGroup.Length; i++)
-            {
-                if (m_CameraGroup.Entities[i] != data.CameraId) continue;
-
-                entity     = m_CameraGroup.Entities[i];
-                cameraData = m_CameraGroup.Data[i];
-            }
-
-            if (entity == Entity.Null) return;
-
-            var camSize   = new float2(cameraData.Width, cameraData.Height);
-            var anchorPos = new float2(anchor.Value.x, anchor.Value.y);
-            if (anchor.Type == AnchorType.World)
-            {
-                // todo: bla bla... world to screen point...
-                throw new NotImplementedException();
-            }
-
-            var left = math.float2(1, 0) * (anchorPos.x * camSize.x);
-            var up   = math.float2(0, 1) * (anchorPos.y * camSize.y);
-
-            entity.SetComponentData(new Position {Value = math.float3(targetPosition.xy + left + up, -100)});
-
-            // Debug usage, render an output
-            if (entity.HasComponent<AnchorOrthographicCameraOutput>())
-            {
-                entity.SetComponentData
-                (
-                    new AnchorOrthographicCameraOutput
-                    {
-                        Target     = targetPosition.xy,
-                        AnchorType = anchor.Type,
-                        Anchor     = anchorPos
-                    }
-                );
-            }
+                HighestPriorityAllocation = new UnsafeAllocation<int>(Allocator.TempJob, int.MinValue),
+                CameraDataFromEntity      = GetComponentDataFromEntity<AnchorOrthographicCameraData>(),
+                TranslationFromEntity     = GetComponentDataFromEntity<Translation>(),
+                OutputFromEntity          = GetComponentDataFromEntity<AnchorOrthographicCameraOutput>()
+            }.Schedule(this);
+            
+            jobHandle.Complete();
         }
     }
 }

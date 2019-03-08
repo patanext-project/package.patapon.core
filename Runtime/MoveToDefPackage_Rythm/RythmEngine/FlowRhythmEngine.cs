@@ -3,7 +3,9 @@ using package.patapon.def;
 using package.patapon.def.Data;
 using package.stormiumteam.shared;
 using Scripts;
+using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace package.patapon.core
@@ -34,47 +36,69 @@ namespace package.patapon.core
 
         #endregion
 
-        #region Injections
+        private ComponentGroup m_EngineGroup;
+        private EntityArchetype m_EventArchetype;
 
-        [Inject] private EndFrameBarrier m_EndFrameBarrier;
-        [Inject] private EngineGroups m_EngineGroups;
+        struct ProcessEngineJob : IJobProcessComponentDataWithEntity<ShardRhythmEngine, FlowRhythmEngineProcessData, FlowRhythmEngineSettingsData>
+        {
+            [ReadOnly]
+            public float DeltaTime;
 
-        #endregion
+            [ReadOnly]
+            public EntityArchetype EventArchetype;
+
+            public EntityCommandBuffer.Concurrent EntityCommandBuffer;
+
+            public void Execute(Entity entity, int index, [ReadOnly] ref ShardRhythmEngine engine, ref FlowRhythmEngineProcessData process, [ReadOnly] ref FlowRhythmEngineSettingsData settings)
+            {
+                process.Time      += DeltaTime;
+                process.TimeDelta += DeltaTime;
+
+                while (process.TimeDelta > settings.BeatInterval)
+                {
+                    process.TimeDelta -= settings.BeatInterval;
+
+                    process.Beat += 1;
+
+                    var eventEntity = EntityCommandBuffer.CreateEntity(index, EventArchetype);
+                    EntityCommandBuffer.SetComponent(index, eventEntity, new FlowRythmEngineTypeDefinition());
+                    EntityCommandBuffer.SetComponent(index, eventEntity, new RhythmShardEvent(Time.frameCount));
+                    EntityCommandBuffer.SetComponent(index, eventEntity, new RhythmShardTarget(entity));
+                    EntityCommandBuffer.SetComponent(index, eventEntity, new RhythmBeatData());
+                    EntityCommandBuffer.SetComponent(index, eventEntity, new FlowRhythmBeatData(process.Beat));
+                }
+
+                process.TimeDelta = math.max(process.TimeDelta, 0f);
+            }
+        }
+
+        protected override void OnCreateManager()
+        {
+            base.OnCreateManager();
+
+            m_EventArchetype = EntityManager.CreateArchetype
+            (
+                ComponentType.ReadWrite<FlowRythmEngineTypeDefinition>(),
+                ComponentType.ReadWrite<RhythmShardEvent>(),
+                ComponentType.ReadWrite<RhythmShardTarget>(),
+                ComponentType.ReadWrite<RhythmBeatData>(),
+                ComponentType.ReadWrite<FlowRhythmBeatData>()
+            );
+        }
 
         protected override void OnUpdate()
         {
             var deltaTime = Time.deltaTime;
 
             // Update engine data
-            for (var i = 0; i != m_EngineGroups.Length; i++)
+            var jobHandle = new ProcessEngineJob
             {
-                var entity       = m_EngineGroups.Entities[i];
-                var processData  = m_EngineGroups.ProcessArray[i];
-                var settingsData = m_EngineGroups.SettingsArray[i];
+                DeltaTime           = deltaTime,
+                EventArchetype      = m_EventArchetype,
+                EntityCommandBuffer = PostUpdateCommands.ToConcurrent()
+            }.Schedule(this);
 
-                processData.Time      += deltaTime;
-                processData.TimeDelta += deltaTime;
-
-                while (processData.TimeDelta > settingsData.BeatInterval)
-                {
-                    processData.TimeDelta -= settingsData.BeatInterval;
-
-                    processData.Beat += 1;
-
-                    PostUpdateCommands.CreateEntity();
-                    PostUpdateCommands.AddComponent(new FlowRythmEngineTypeDefinition());
-                    PostUpdateCommands.AddComponent(new RhythmShardEvent(Time.frameCount));
-                    PostUpdateCommands.AddComponent(new RhythmShardTarget(entity));
-                    PostUpdateCommands.AddComponent(new RhythmBeatData());
-                    PostUpdateCommands.AddComponent(new FlowRhythmBeatData(processData.Beat));
-
-                    // TODO: Find a way to make a direct event, it should be done after the iteration
-                }
-
-                processData.TimeDelta = Mathf.Max(processData.TimeDelta, 0f);
-
-                m_EngineGroups.ProcessArray[i] = processData;
-            }
+            jobHandle.Complete();
         }
 
         public void AddPressure(Entity shardEngine, int keyType, EntityCommandBuffer ecf)
