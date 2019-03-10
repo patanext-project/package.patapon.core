@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using package.stormiumteam.shared;
+using package.StormiumTeam.GameBase;
 using Unity.Entities;
 using UnityEngine;
 

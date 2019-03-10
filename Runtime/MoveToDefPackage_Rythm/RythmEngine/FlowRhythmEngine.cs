@@ -12,7 +12,6 @@ namespace package.patapon.core
 {
     // Currently a WIP, so there are a lot of tests and unit tests in this class
     // TODO: Make it inheriting a special class for managing rhythm engine
-    [UpdateInGroup(typeof(PlayUpdateOrder.RhythmEngineOrder))]
     public class FlowRhythmEngine : ComponentSystem
     {
         struct EngineGroups

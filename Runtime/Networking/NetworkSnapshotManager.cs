@@ -6,10 +6,10 @@ using package.stormiumteam.networking.lz4;
 using package.stormiumteam.networking.runtime.highlevel;
 using package.stormiumteam.networking.runtime.lowlevel;
 using package.stormiumteam.shared;
-using Runtime;
-using Stormium.Core;
+using StormiumTeam.GameBase;
 using StormiumShared.Core;
 using StormiumShared.Core.Networking;
+using StormiumTeam.GameBase.Networking;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
@@ -30,7 +30,7 @@ namespace Patapon4TLB.Core
         private struct ClientSnapshotInformation
         {
             public float GenerationTimeAvg;
-            public StSnapshotRuntime Runtime;
+            public SnapshotRuntime Runtime;
         }
 
         private struct SnapshotDataToApply
@@ -63,7 +63,7 @@ namespace Patapon4TLB.Core
         private ComponentGroup m_DestroyedClientWithState;
         private ComponentGroup m_EntitiesToGenerate;
 
-        private StSnapshotRuntime m_CurrentRuntime;
+        private SnapshotRuntime m_CurrentRuntime;
 
         private Dictionary<Entity, ClientSnapshotInformation> m_ClientSnapshots;
         private List<SnapshotDataToApply>             m_SnapshotDataToApply;
@@ -76,7 +76,7 @@ namespace Patapon4TLB.Core
 
         private int m_SnapshotCount;
         private int m_SnapshotInQueue;
-        public StSnapshotRuntime CurrentSnapshot => m_CurrentRuntime;
+        public SnapshotRuntime CurrentSnapshot => m_CurrentRuntime;
 
         protected override void OnCreateManager()
         {
@@ -90,7 +90,7 @@ namespace Patapon4TLB.Core
             m_DestroyedClientWithState = GetComponentGroup(typeof(ClientSnapshotState), ComponentType.Exclude<NetworkClient>());
             m_EntitiesToGenerate       = GetComponentGroup(typeof(GenerateEntitySnapshot));
 
-            m_CurrentRuntime = new StSnapshotRuntime(default, Allocator.Persistent);
+            m_CurrentRuntime = new SnapshotRuntime(default, Allocator.Persistent);
 
             World.GetExistingManager<AppEventSystem>().SubscribeToAll(this);
             
@@ -133,7 +133,7 @@ namespace Patapon4TLB.Core
                 {
                     m_ClientSnapshots[e] = new ClientSnapshotInformation
                     {
-                        Runtime = new StSnapshotRuntime(default, Allocator.Persistent)
+                        Runtime = new SnapshotRuntime(default, Allocator.Persistent)
                     };
 
                     EntityManager.AddComponent(e, ComponentType.Create<ClientSnapshotState>());
@@ -206,7 +206,7 @@ namespace Patapon4TLB.Core
         
         public void ReadServerSnapshots()
         {
-            var gameTime         = World.GetExistingManager<P4GameTimeManager>().GetTimeFromSingleton();
+            var gameTime         = World.GetExistingManager<GameTimeManager>().GetTimeFromSingleton();
             var snapshotMgr      = World.GetExistingManager<SnapshotManager>();
             var sw = new Stopwatch();
 
@@ -292,8 +292,8 @@ namespace Patapon4TLB.Core
 
         public void SendClientSnapshots()
         {
-            var gameMgr = World.GetExistingManager<P4GameManager>();
-            var gameTime         = World.GetExistingManager<P4GameTimeManager>().GetTimeFromSingleton();
+            var gameMgr = World.GetExistingManager<GameManager>();
+            var gameTime         = World.GetExistingManager<GameTimeManager>().GetTimeFromSingleton();
             var snapshotMgr      = World.GetExistingManager<SnapshotManager>();
             var localClient = gameMgr.Client;
             var sw = new Stopwatch();
