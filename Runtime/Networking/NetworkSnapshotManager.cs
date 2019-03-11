@@ -206,7 +206,7 @@ namespace Patapon4TLB.Core
         
         public void ReadServerSnapshots()
         {
-            var gameTime         = World.GetExistingManager<GameTimeManager>().GetTimeFromSingleton();
+            var gameTime         = GetSingleton<GameTimeComponent>().Value;
             var snapshotMgr      = World.GetExistingManager<SnapshotManager>();
             var sw = new Stopwatch();
 
@@ -293,7 +293,7 @@ namespace Patapon4TLB.Core
         public void SendClientSnapshots()
         {
             var gameMgr = World.GetExistingManager<GameManager>();
-            var gameTime         = World.GetExistingManager<GameTimeManager>().GetTimeFromSingleton();
+            var gameTime = GetSingleton<GameTimeComponent>().Value;
             var snapshotMgr      = World.GetExistingManager<SnapshotManager>();
             var localClient = gameMgr.Client;
             var sw = new Stopwatch();
