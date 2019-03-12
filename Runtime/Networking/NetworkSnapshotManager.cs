@@ -206,7 +206,7 @@ namespace Patapon4TLB.Core
         
         public void ReadServerSnapshots()
         {
-            var gameTime         = GetSingleton<GameTimeComponent>().Value;
+            var gameTime         = GetSingleton<SingletonGameTime>();
             var snapshotMgr      = World.GetExistingManager<SnapshotManager>();
             var sw = new Stopwatch();
 
@@ -293,7 +293,7 @@ namespace Patapon4TLB.Core
         public void SendClientSnapshots()
         {
             var gameMgr = World.GetExistingManager<GameManager>();
-            var gameTime = GetSingleton<GameTimeComponent>().Value;
+            var gameTime = GetSingleton<SingletonGameTime>();
             var snapshotMgr      = World.GetExistingManager<SnapshotManager>();
             var localClient = gameMgr.Client;
             var sw = new Stopwatch();
@@ -320,7 +320,7 @@ namespace Patapon4TLB.Core
 
                     var genData = new DataBufferWriter(0, Allocator.Persistent);
                     Profiler.BeginSample("Generation for " + clientEntity);
-                    var generation = snapshotMgr.GenerateForConnection(localClient, clientEntity, entities, isFullSnapshot, m_SnapshotCount++, gameTime, Allocator.Persistent, ref genData, ref clientRuntime);
+                    var generation = snapshotMgr.GenerateForConnection(localClient, clientEntity, entities, isFullSnapshot, m_SnapshotCount++, gameTime.ToGameTime(), Allocator.Persistent, ref genData, ref clientRuntime);
                     Profiler.EndSample();
                     
                     // Write the length of uncompressed data.
