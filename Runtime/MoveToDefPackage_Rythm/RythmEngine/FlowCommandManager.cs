@@ -76,13 +76,13 @@ namespace package.patapon.core
 
     public struct FlowCurrentCommand : IComponentData
     {
-        public int CommandId;
+        public Entity CommandTarget;
         public int ActiveAtBeat;
         public byte IsActive;
 
-        public FlowCurrentCommand(int commandId, int activeAtBeat, bool isActive)
+        public FlowCurrentCommand(Entity commandTarget, int activeAtBeat, bool isActive)
         {
-            CommandId = commandId;
+            CommandTarget = commandTarget;
             ActiveAtBeat = activeAtBeat;
             IsActive = (byte)(isActive ? 1 : 0);
         }
@@ -106,6 +106,11 @@ namespace package.patapon.core
         }
 
         public int BeatEnd => BeatRange.end;
+    }
+
+    public struct FlowCommandSequenceContainer : IBufferElementData
+    {
+        public FlowCommandSequence Value;
     }
 
     public struct FlowCommandManagerSettingsData : IComponentData
