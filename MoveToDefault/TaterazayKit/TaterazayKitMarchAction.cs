@@ -5,6 +5,7 @@ using package.StormiumTeam.GameBase;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace Patapon4TLB.Default
 {
@@ -28,17 +29,26 @@ namespace Patapon4TLB.Default
 			}
 		}
 	}
-	
+
 	[UpdateInGroup(typeof(ActionSystemGroup))]
 	public class TaterazayKitMarchActionSystem : GameBaseSystem
 	{
 		struct JobProcess : IJobProcessComponentDataWithEntity<TaterazayKitMarchAction.Settings, OwnerState<LivableDescription>>
 		{
 			public Entity MarchCommand;
-			
+
 			[ReadOnly]
 			public ComponentDataFromEntity<RhythmActionController> RhythmActionControllerFromEntity;
-			
+
+			[ReadOnly]
+			public ComponentDataFromEntity<UnitBaseSettings> UnitSettingsFromEntity;
+
+			[ReadOnly]
+			public ComponentDataFromEntity<UnitDirection> UnitDirectionFromEntity;
+
+			[NativeDisableParallelForRestriction]
+			public ComponentDataFromEntity<Velocity> VelocityFromEntity;
+
 			public void Execute(Entity entity, int index, ref TaterazayKitMarchAction.Settings settings, ref OwnerState<LivableDescription> owner)
 			{
 				var livable = owner.Target;
@@ -49,10 +59,14 @@ namespace Patapon4TLB.Default
 				var actionController = RhythmActionControllerFromEntity[livable];
 				if (actionController.CurrentCommand != MarchCommand)
 					return;
+
+				var unitSettings  = UnitSettingsFromEntity[livable];
+				var unitDirection = UnitDirectionFromEntity[livable];
+
+				// that a test for now
+				VelocityFromEntity[livable] = new Velocity(new float3(unitSettings.BaseSpeed * unitDirection.Value, 0, 0));
 			}
 		}
-
-		private ComponentQueryBuilder m_QueryMarchBehavior;
 
 		private Entity m_MarchCommand;
 
@@ -62,7 +76,6 @@ namespace Patapon4TLB.Default
 
 			var cmdBuilder = World.GetOrCreateManager<FlowCommandBuilder>();
 
-			m_QueryMarchBehavior = Entities.WithAll<ActionTag, TaterazayKitMarchAction, OwnerState<LivableDescription>>();
 			m_MarchCommand = cmdBuilder.GetOrCreate(new NativeArray<FlowCommandSequence>(4, Allocator.Temp)
 			{
 				[0] = new FlowCommandSequence(0, FlowRhythmEngine.KeyPata),
@@ -76,8 +89,11 @@ namespace Patapon4TLB.Default
 		{
 			new JobProcess
 			{
-				MarchCommand = m_MarchCommand,
-				RhythmActionControllerFromEntity = GetComponentDataFromEntity<RhythmActionController>()
+				MarchCommand                     = m_MarchCommand,
+				RhythmActionControllerFromEntity = GetComponentDataFromEntity<RhythmActionController>(),
+				UnitSettingsFromEntity           = GetComponentDataFromEntity<UnitBaseSettings>(),
+				UnitDirectionFromEntity          = GetComponentDataFromEntity<UnitDirection>(),
+				VelocityFromEntity               = GetComponentDataFromEntity<Velocity>()
 			}.Schedule(this).Complete();
 		}
 	}
