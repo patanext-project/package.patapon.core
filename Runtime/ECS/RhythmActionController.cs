@@ -4,6 +4,6 @@ namespace Patapon4TLB.Default
 {
 	public struct RhythmActionController : IComponentData
 	{
-		public int CurrentCommandId;
+		public Entity CurrentCommand;
 	}
 }

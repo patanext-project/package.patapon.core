@@ -24,7 +24,7 @@ namespace package.patapon.core
 				if (sequenceBuffer.Length != sequence.Length)
 					return;
 
-				if (UnsafeUtility.MemCmp(sequenceBuffer.GetUnsafePtr(), sequence.GetUnsafePtr(), sizeof(FlowCommandSequence) * sequenceBuffer.Length) != 0)
+				if (UnsafeUtility.MemCmp(sequenceBuffer.GetUnsafePtr(), sequence.GetUnsafePtr(), sizeof(FlowCommandSequence) * sequenceBuffer.Length) == 0)
 				{
 					finalEntity = entity;
 					return;
