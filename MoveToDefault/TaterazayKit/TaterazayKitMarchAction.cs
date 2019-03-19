@@ -6,11 +6,23 @@ using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Physics;
 
 namespace Patapon4TLB.Default
 {
 	public struct TaterazayKitMarchAction : IComponentData
 	{
+		public struct PredictedState : IComponentData, IPredictable<PredictedState>
+		{
+			// We only make the movement on the movable target.
+			public Entity Target;
+			
+			public bool VerifyPrediction(in PredictedState real)
+			{
+				return false;
+			}
+		}
+		
 		public struct Settings : IComponentData
 		{
 			public byte Flags;
@@ -33,7 +45,7 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(ActionSystemGroup))]
 	public class TaterazayKitMarchActionSystem : GameBaseSystem
 	{
-		struct JobProcess : IJobProcessComponentDataWithEntity<TaterazayKitMarchAction.Settings, OwnerState<LivableDescription>>
+		struct JobProcess : IJobProcessComponentDataWithEntity<TaterazayKitMarchAction.Settings, OwnerState<LivableDescription>, OwnerState<MovableDescription>>
 		{
 			public Entity MarchCommand;
 
@@ -47,24 +59,25 @@ namespace Patapon4TLB.Default
 			public ComponentDataFromEntity<UnitDirection> UnitDirectionFromEntity;
 
 			[NativeDisableParallelForRestriction]
-			public ComponentDataFromEntity<Velocity> VelocityFromEntity;
+			public ComponentDataFromEntity<PhysicsVelocity> VelocityFromEntity;
 
-			public void Execute(Entity entity, int index, ref TaterazayKitMarchAction.Settings settings, ref OwnerState<LivableDescription> owner)
+			public void Execute(Entity entity, int _, ref TaterazayKitMarchAction.Settings settings, ref OwnerState<LivableDescription> livableOwner, ref OwnerState<MovableDescription> movableOwner)
 			{
-				var livable = owner.Target;
+				var livable = livableOwner.Target;
+				var movable = movableOwner.Target;
 
 				if (!RhythmActionControllerFromEntity.Exists(livable))
 					throw new InvalidOperationException($"Livable {livable} has no '{nameof(RhythmActionController)}'");
 
 				var actionController = RhythmActionControllerFromEntity[livable];
-				if (actionController.CurrentCommand != MarchCommand)
-					return;
+				/*if (actionController.CurrentCommand != MarchCommand)
+					return;*/
 
 				var unitSettings  = UnitSettingsFromEntity[livable];
 				var unitDirection = UnitDirectionFromEntity[livable];
 
 				// that a test for now
-				VelocityFromEntity[livable] = new Velocity(new float3(unitSettings.BaseSpeed * unitDirection.Value, 0, 0));
+				VelocityFromEntity[movable] = new PhysicsVelocity {Linear = new float3(unitSettings.BaseSpeed * unitDirection.Value, 0, 0)};
 			}
 		}
 
@@ -93,7 +106,7 @@ namespace Patapon4TLB.Default
 				RhythmActionControllerFromEntity = GetComponentDataFromEntity<RhythmActionController>(),
 				UnitSettingsFromEntity           = GetComponentDataFromEntity<UnitBaseSettings>(),
 				UnitDirectionFromEntity          = GetComponentDataFromEntity<UnitDirection>(),
-				VelocityFromEntity               = GetComponentDataFromEntity<Velocity>()
+				VelocityFromEntity               = GetComponentDataFromEntity<PhysicsVelocity>()
 			}.Schedule(this).Complete();
 		}
 	}
