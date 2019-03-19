@@ -77,7 +77,10 @@ namespace Patapon4TLB.Default
 				var unitDirection = UnitDirectionFromEntity[livable];
 
 				// that a test for now
-				VelocityFromEntity[movable] = new PhysicsVelocity {Linear = new float3(unitSettings.BaseSpeed * unitDirection.Value, 0, 0)};
+				var prevVelocity = VelocityFromEntity[movable];
+				prevVelocity.Linear.x = unitSettings.BaseSpeed * unitDirection.Value;
+				
+				VelocityFromEntity[movable] = prevVelocity;
 			}
 		}
 

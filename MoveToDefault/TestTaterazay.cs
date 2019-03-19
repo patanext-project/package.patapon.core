@@ -1,5 +1,6 @@
 using package.StormiumTeam.GameBase;
 using StormiumTeam.GameBase;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
@@ -11,6 +12,9 @@ namespace Patapon4TLB.Default
 	{
 		protected override void OnStartRunning()
 		{
+			var existingColliders = new NativeList<Entity>(Allocator.Temp);
+			ForEach((Entity entity, ref PhysicsCollider coll) => { existingColliders.Add(entity); });
+			
 			Entity characterEntity, colliderEntity, movableEntity;
 
 			var collisionFilter = CollisionFilter.Default;
@@ -75,7 +79,10 @@ namespace Patapon4TLB.Default
 				typeof(PhysicsCollider),
 				typeof(PhysicsMass),
 				typeof(PhysicsVelocity),
-				typeof(PhysicsGravityFactor)
+				typeof(PhysicsGravityFactor),
+				
+				typeof(CustomCharacterController),
+				typeof(CollideWith)
 			);
 			{
 				var cpCollider = CapsuleCollider.Create(float3.zero, new float3(0, 2, 0), 0.5f, collisionFilter);
@@ -96,6 +103,10 @@ namespace Patapon4TLB.Default
 				{
 					Value = 0f // kinematic body are not affected by normal gravity...
 				});
+
+				var cwBuffer = EntityManager.GetBuffer<CollideWith>(movableEntity);
+				for (var i = 0; i != existingColliders.Length; i++)
+					cwBuffer.Add(new CollideWith {Target = existingColliders[i]});
 			}
 
 			var childBuffer = EntityManager.GetBuffer<OwnerChild>(characterEntity);
