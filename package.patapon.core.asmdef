@@ -6,6 +6,7 @@
         "package.stormiumteam.networking",
         "Unity.Addressables",
         "Unity.ResourceManager",
+        "Unity.Physics",
         "Unity.Entities",
         "Unity.Entities.Hybrid",
         "Unity.Transforms",
