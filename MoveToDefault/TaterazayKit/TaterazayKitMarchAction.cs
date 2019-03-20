@@ -59,7 +59,7 @@ namespace Patapon4TLB.Default
 			public ComponentDataFromEntity<UnitDirection> UnitDirectionFromEntity;
 
 			[NativeDisableParallelForRestriction]
-			public ComponentDataFromEntity<PhysicsVelocity> VelocityFromEntity;
+			public ComponentDataFromEntity<Velocity> VelocityFromEntity;
 
 			public void Execute(Entity entity, int _, ref TaterazayKitMarchAction.Settings settings, ref OwnerState<LivableDescription> livableOwner, ref OwnerState<MovableDescription> movableOwner)
 			{
@@ -78,7 +78,7 @@ namespace Patapon4TLB.Default
 
 				// that a test for now
 				var prevVelocity = VelocityFromEntity[movable];
-				prevVelocity.Linear.x = unitSettings.BaseSpeed * unitDirection.Value;
+				prevVelocity.Value.x = unitSettings.BaseSpeed * unitDirection.Value;
 				
 				VelocityFromEntity[movable] = prevVelocity;
 			}
@@ -109,7 +109,7 @@ namespace Patapon4TLB.Default
 				RhythmActionControllerFromEntity = GetComponentDataFromEntity<RhythmActionController>(),
 				UnitSettingsFromEntity           = GetComponentDataFromEntity<UnitBaseSettings>(),
 				UnitDirectionFromEntity          = GetComponentDataFromEntity<UnitDirection>(),
-				VelocityFromEntity               = GetComponentDataFromEntity<PhysicsVelocity>()
+				VelocityFromEntity               = GetComponentDataFromEntity<Velocity>()
 			}.Schedule(this).Complete();
 		}
 	}

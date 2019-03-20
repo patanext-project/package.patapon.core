@@ -78,7 +78,7 @@ namespace Patapon4TLB.Default
 				// default components for physics movables...
 				typeof(PhysicsCollider),
 				typeof(PhysicsMass),
-				typeof(PhysicsVelocity),
+				typeof(Velocity),
 				typeof(PhysicsGravityFactor),
 				
 				typeof(CustomCharacterController),
@@ -87,7 +87,7 @@ namespace Patapon4TLB.Default
 			{
 				var cpCollider = CapsuleCollider.Create(float3.zero, new float3(0, 2, 0), 0.5f, collisionFilter);
 
-				EntityManager.SetComponentData(movableEntity, new Translation {Value = new float3(0, 4, 0)});
+				EntityManager.SetComponentData(movableEntity, new Translation {Value = new float3(-2, 4, 0)});
 				EntityManager.SetComponentData(movableEntity, new Rotation {Value    = quaternion.identity});
 
 				EntityManager.SetComponentData(movableEntity, new PhysicsCollider
@@ -95,10 +95,6 @@ namespace Patapon4TLB.Default
 					Value = cpCollider
 				});
 				EntityManager.SetComponentData(movableEntity, PhysicsMass.CreateKinematic(cpCollider.Value.MassProperties));
-				EntityManager.SetComponentData(movableEntity, new PhysicsVelocity
-				{
-					Linear = new float3(0, 0, 0), Angular = float3.zero
-				});
 				EntityManager.SetComponentData(movableEntity, new PhysicsGravityFactor
 				{
 					Value = 0f // kinematic body are not affected by normal gravity...
