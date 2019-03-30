@@ -368,6 +368,8 @@ namespace Patapon4TLB.Core
         
         public void NativeOnGUI()
         {
+            return;
+            
             using (new GUILayout.VerticalScope())
             {
                 GUI.color = Color.black;

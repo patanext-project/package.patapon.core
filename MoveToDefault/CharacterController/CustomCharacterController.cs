@@ -1,4 +1,5 @@
 using System;
+using MoveToDefault.CharacterController;
 using package.stormiumteam.shared;
 using StormiumTeam.GameBase;
 using Unity.Burst;
@@ -19,6 +20,9 @@ using CapsuleCollider = Unity.Physics.CapsuleCollider;
 using float3 = Unity.Mathematics.float3;
 using quaternion = Unity.Mathematics.quaternion;
 using RaycastHit = Unity.Physics.RaycastHit;
+
+using static MoveToDefault.CharacterController.OCCConstants;
+using static MoveToDefault.CharacterController.OCCMath;
 
 namespace Patapon4TLB.Default
 {
@@ -44,176 +48,6 @@ namespace Patapon4TLB.Default
 
 	public unsafe class CustomCharacterControllerSystem : JobComponentSystem
 	{
-
-		// Max slope limit.
-		const float k_MaxSlopeLimit = 90.0f;
-
-		// Max slope angle on which character can slide down automatically.
-		const float k_MaxSlopeSlideAngle = 90.0f;
-
-		// Distance to test for ground when sliding down slopes.
-		const float k_SlideDownSlopeTestDistance = 1.0f;
-
-		// Slight delay before we stop sliding down slopes. To handle cases where sliding test fails for a few frames.
-		const float k_StopSlideDownSlopeDelay = 0.5f;
-
-		// Distance to push away from slopes when sliding down them.
-		const float k_PushAwayFromSlopeDistance = 0.001f;
-
-		// Minimum distance to use when checking ahead for steep slopes, when checking if it's safe to do the step offset.
-		const float k_MinCheckSteepSlopeAheadDistance = 0.2f;
-
-		// Min skin width.
-		const float k_MinSkinWidth = 0.0001f;
-
-		// The maximum move iterations. Mainly used as a fail safe to prevent an infinite loop.
-		const int k_MaxMoveIterations = 20;
-
-		// Stick to the ground if it is less than this distance from the character.
-		const float k_MaxStickToGroundDownDistance = 1.0f;
-
-		// Min distance to test for the ground when sticking to the ground.
-		const float k_MinStickToGroundDownDistance = 0.01f;
-
-		// Max colliders to use in the overlap methods.
-		const int k_MaxOverlapColliders = 10;
-
-		// Offset to use when moving to a collision point, to try to prevent overlapping the colliders
-		const float k_CollisionOffset = 0.001f;
-
-		// Distance to test beneath the character when doing the grounded test
-		const float k_GroundedTestDistance = 0.001f;
-
-		// Minimum distance to move. This minimizes small penetrations and inaccurate casts (e.g. into the floor)
-		const float k_MinMoveDistance = 0.0001f;
-
-		// Minimum sqr distance to move. This minimizes small penetrations and inaccurate casts (e.g. into the floor)
-		const float k_MinMoveSqrDistance = k_MinMoveDistance * k_MinMoveDistance;
-
-		// Minimum step offset height to move (if character has a step offset).
-		const float k_MinStepOffsetHeight = k_MinMoveDistance;
-
-		// Small value to test if the movement vector is small.
-		const float k_SmallMoveVector = 1e-6f;
-
-		// If angle between raycast and capsule/sphere cast normal is less than this then use the raycast normal, which is more accurate.
-		const float k_MaxAngleToUseRaycastNormal = 5.0f;
-
-		// Scale the capsule/sphere hit distance when doing the additional raycast to get a more accurate normal
-		const float k_RaycastScaleDistance = 2.0f;
-
-		// Slope check ahead is clamped by the distance moved multiplied by this scale.
-		const float k_SlopeCheckDistanceMultiplier = 5.0f;
-
-		private struct Job : IJobProcessComponentDataWithEntity<CustomCharacterController, Translation, Rotation, Velocity, PhysicsCollider>
-		{
-			public float dt;
-
-			[NativeDisableParallelForRestriction]
-			public BufferFromEntity<CollideWith> CollideWithBufferArray;
-
-			[ReadOnly]
-			public PhysicsWorld PhysicsWorld;
-
-			public void Execute(Entity e, int _, ref CustomCharacterController cc, ref Translation t, ref Rotation r, ref Velocity v, ref PhysicsCollider coll)
-			{
-				var cwBuffer     = CollideWithBufferArray[e];
-				var prevPosition = t.Value;
-
-				// Create a copy of capsule collider
-				var colliderPtr = coll.ColliderPtr;
-
-				var copiedColliderMemory      = stackalloc byte[colliderPtr->MemorySize];
-				var capsuleColliderForQueries = (Unity.Physics.Collider*) copiedColliderMemory;
-				UnsafeUtility.MemCpy(capsuleColliderForQueries, colliderPtr, colliderPtr->MemorySize);
-				capsuleColliderForQueries->Filter = CollisionFilter.Default;
-
-				// Tau and damping for character solver
-				const float tau     = 0.4f;
-				const float damping = 0.9f;
-
-				// Check support
-				var transform = new RigidTransform
-				{
-					pos = t.Value,
-					rot = r.Value
-				};
-
-				var constraints  = new NativeArray<SurfaceConstraintInfo>(128 * 2, Allocator.Temp);
-				var distanceHits = new NativeArray<DistanceHit>(128, Allocator.Temp);
-				var castHits     = new NativeArray<ColliderCastHit>(128, Allocator.Temp);
-				var prevVelocity = v.Value;
-
-				CharacterControllerUtilities.CheckSupport(cwBuffer, PhysicsWorld, dt, transform, -math.up(), 1.5f,
-					0.1f, capsuleColliderForQueries, ref constraints, ref distanceHits, out var supportState);
-
-				CharacterControllerUtilities.CollideAndIntegrate(cwBuffer, PhysicsWorld, dt, 32, math.up(), new float3(0, -10, 0),
-					1.0f, tau, damping, capsuleColliderForQueries,
-					ref distanceHits, ref castHits, ref constraints,
-					ref transform, ref v.Value);
-
-				// if we are grounded, try to make a stair check
-				var groundCastBefore = new ColliderCastInput
-				{
-					Collider    = capsuleColliderForQueries,
-					Direction   = new float3(0, k_GroundedTestDistance, 0),
-					Orientation = transform.rot,
-					Position    = prevPosition
-				};
-
-				var groundCastAfter = new ColliderCastInput
-				{
-					Collider    = capsuleColliderForQueries,
-					Direction   = new float3(0, k_GroundedTestDistance, 0),
-					Orientation = transform.rot,
-					Position    = transform.pos
-				};
-
-
-				if (cwBuffer.CastCollider(groundCastBefore, out var _) && !cwBuffer.CastCollider(groundCastAfter, out var _))
-				{
-					// make a projection first
-					var sphereProbe = SphereCollider.Create(float3.zero, 0.5f, CollisionFilter.Default);
-					var projCast = new ColliderDistanceInput
-					{
-						Collider    = (Collider*) sphereProbe.GetUnsafePtr(),
-						MaxDistance = 0.1f,
-						Transform   = new RigidTransform(transform.rot, transform.pos + new float3(prevVelocity.x, 0, prevVelocity.z) * dt * 4)
-					};
-
-					var projHits  = new NativeArray<DistanceHit>(128, Allocator.Temp);
-					var collector = new CharacterControllerUtilities.MaxHitsCollector<DistanceHit>(0.0f, ref projHits);
-					if (cwBuffer.CalculateDistance(projCast, ref collector))
-					{
-						for (var i = 0; i != collector.NumHits; i++)
-						{
-							var hit = projHits[i];
-							if (hit.Position.y > transform.pos.y && (hit.Position.y - transform.pos.y) < 1f)
-							{
-								transform.pos.y = hit.Position.y;
-								v.Value.y       = prevVelocity.y;
-							}
-						}
-					}
-
-					projHits.Dispose();
-
-					sphereProbe.Release();
-				}
-
-				if (supportState != CharacterControllerUtilities.CharacterSupportState.Supported)
-				{
-					v.Value.y -= 20 * dt;
-				}
-
-				constraints.Dispose();
-				distanceHits.Dispose();
-				castHits.Dispose();
-
-				t.Value = transform.pos;
-			}
-		}
-
 		// because we are creating blob assets, we can't burst jobs with it, so we are obligated to create a new non-burst job.
 		private struct UpdateCharacterQuery : IJobProcessComponentData<CustomCharacterController, PhysicsCollider>
 		{
@@ -254,7 +88,7 @@ namespace Patapon4TLB.Default
 			public BufferFromEntity<CollideWith> CollideWithBufferArray;
 
 			[NativeDisableParallelForRestriction]
-			public NativeList<MoveJob.OCCMoveVector> MoveVectors;
+			public NativeList<OCCMoveVector> MoveVectors;
 			[NativeDisableParallelForRestriction]
 			public NativeList<CustomCharacterController.CollisionInfo> Collisions;
 			[NativeDisableParallelForRestriction]
@@ -306,32 +140,6 @@ namespace Patapon4TLB.Default
 
 		public struct MoveJob : IJob
 		{
-			#region Utility
-
-			private static float SqrMagnitudeFrom(float3 vectorA, float3 vectorB)
-			{
-				var diff = vectorA - vectorB;
-				return lengthsq(diff);
-			}
-
-			// Is the movement vector almost zero (i.e. very small)?
-			private static bool IsMoveVectorAlmostZero(float3 moveVector)
-			{
-				var aMv = abs(moveVector);
-
-				return !(aMv.x > k_SmallMoveVector
-				         || aMv.y > k_SmallMoveVector
-				         || aMv.z > k_SmallMoveVector);
-			}
-
-			// Taken from Mathf, rewritten for burst support.
-			private static bool Approximately(double a, double b)
-			{
-				return abs(b - a) < max(1E-06 * max(abs(a), abs(b)), DBL_MIN_NORMAL * 8f);
-			}
-
-			#endregion
-
 			public struct Result
 			{
 				public float3 DownCollisionNormal;
@@ -342,138 +150,6 @@ namespace Patapon4TLB.Default
 				public NativeList<CustomCharacterController.CollisionInfo> Collisions;
 
 				public CollisionFlags CollisionFlags;
-			}
-
-			// A vector used by the OpenCharacterController.
-			public struct OCCMoveVector
-			{
-				/// <summary>
-				/// The move vector.
-				/// Note: This gets used up during the move loop, so will be zero by the end of the loop.
-				/// </summary>
-				public float3 moveVector { get; set; }
-
-				/// <summary>
-				/// Can the movement slide along obstacles?
-				/// </summary>
-				public bool canSlide { get; set; }
-
-				/// <summary>
-				/// Constructor.
-				/// </summary>
-				/// <param name="newMoveVector">The move vector.</param>
-				/// <param name="newCanSlide">Can the movement slide along obstacles?</param>
-				public OCCMoveVector(float3 newMoveVector, bool newCanSlide = true)
-					: this()
-				{
-					moveVector = newMoveVector;
-					canSlide   = newCanSlide;
-				}
-			}
-
-			public struct OCCStuckInfo
-			{
-				// For keeping track of the character's position, to determine when the character gets stuck.
-				float3? m_StuckPosition;
-
-				// Count how long the character is in the same position.
-				int m_StuckPositionCount;
-
-				// If character's position does not change by more than this amount then we assume the character is stuck.
-				const float k_StuckDistance = 0.001f;
-
-				// If character's position does not change by more than this amount then we assume the character is stuck.
-				const float k_StuckSqrDistance = k_StuckDistance * k_StuckDistance;
-
-				// If character collided this number of times during the movement loop then test if character is stuck by examining the position
-				const int k_HitCountForStuck = 6;
-
-				// Assume character is stuck if the position is the same for longer than this number of loop iterations
-				const int k_MaxStuckPositionCount = 1;
-
-				/// <summary>
-				/// Is the character stuck in the current move loop iteration?
-				/// </summary>
-				public bool isStuck { get; set; }
-
-				/// <summary>
-				/// Count the number of collisions during movement, to determine when the character gets stuck.
-				/// </summary>
-				public int hitCount { get; set; }
-
-
-				/// <summary>
-				/// Called when the move loop starts.
-				/// </summary>
-				public void OnMoveLoop()
-				{
-					hitCount             = 0;
-					m_StuckPositionCount = 0;
-					m_StuckPosition      = null;
-					isStuck              = false;
-				}
-
-				/// <summary>
-				/// Is the character stuck during the movement loop (e.g. bouncing between 2 or more colliders)?
-				/// </summary>
-				/// <param name="characterPosition">The character's position.</param>
-				/// <param name="currentMoveVector">Current move vector.</param>
-				/// <param name="originalMoveVector">Original move vector.</param>
-				/// <returns></returns>
-				public bool UpdateStuck(Vector3 characterPosition, Vector3 currentMoveVector,
-				                        Vector3 originalMoveVector)
-				{
-					// First test
-					if (!isStuck)
-					{
-						// From Quake2: "if velocity is against the original velocity, stop dead to avoid tiny occilations in sloping corners"
-						if (abs(lengthsq(currentMoveVector.sqrMagnitude)) > FLT_MIN_NORMAL &&
-						    Vector3.Dot(currentMoveVector, originalMoveVector) <= 0.0f)
-						{
-							isStuck = true;
-						}
-					}
-
-					// Second test
-					if (!isStuck)
-					{
-						// Test if collided and while position remains the same
-						if (hitCount < k_HitCountForStuck)
-						{
-							return false;
-						}
-
-						if (m_StuckPosition == null)
-						{
-							m_StuckPosition = characterPosition;
-						}
-						else if (SqrMagnitudeFrom(m_StuckPosition.Value, characterPosition) <= k_StuckSqrDistance)
-						{
-							m_StuckPositionCount++;
-							if (m_StuckPositionCount > k_MaxStuckPositionCount)
-							{
-								isStuck = true;
-							}
-						}
-						else
-						{
-							m_StuckPositionCount = 0;
-							m_StuckPosition      = null;
-						}
-					}
-
-					if (isStuck)
-					{
-						isStuck              = false;
-						hitCount             = 0;
-						m_StuckPositionCount = 0;
-						m_StuckPosition      = null;
-
-						return true;
-					}
-
-					return false;
-				}
 			}
 
 			public DynamicBuffer<CollideWith> CwBuffer;
@@ -911,7 +587,7 @@ namespace Patapon4TLB.Default
 
 				var offset        = offsetPosition != null ? offsetPosition.Value : float3.zero;
 
-				var maxCollector = new CharacterControllerUtilities.MaxHitsCollector<DistanceHit>(0f, ref PenetrationHits);
+				var maxCollector = new MaxHitsCollector<DistanceHit>(0f, ref PenetrationHits);
 				var distanceInput = new ColliderDistanceInput
 				{
 					Collider    = (Collider*) (includeSkinWidth ? Data.QueryBigCapsule : Data.QuerySmallCapsule).GetUnsafePtr(),
@@ -1356,38 +1032,14 @@ namespace Patapon4TLB.Default
 			}
 		}
 
-		protected override void OnCreateManager()
-		{
-			base.OnCreateManager();
-
-			/*var spCollider1 = (Collider*) SphereCollider.Create(float3.zero, 0.75f).GetUnsafePtr();
-			var spCollider2 = (Collider*) SphereCollider.Create(new float3(0, 0.25f, 0), 0.75f).GetUnsafePtr();
-
-			var di = new ColliderDistanceInput
-			{
-				Collider    = spCollider2,
-				MaxDistance = 0.1f,
-				Transform   = new RigidTransform(quaternion.identity, float3.zero)
-			};
-			
-			spCollider1->CalculateDistance(di, out var closestHit);
-			Debug.Log(closestHit.Position + ", " + closestHit.Fraction + ", " + closestHit.Distance)*/
-		}
-
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			//return inputDeps;
-
-			inputDeps.Complete();
-
 			var transformCollideWithBufferSystem = World.GetExistingManager<TransformCollideWithBufferSystem>();
 			transformCollideWithBufferSystem.Update();
 
-			//return new Job{CollideWithBufferArray = GetBufferFromEntity<CollideWith>(), dt = Time.deltaTime}.Schedule(this, inputDeps);
-			//new MoveJob {CollideWithBufferArray = GetBufferFromEntity<CollideWith>(), dt = Time.deltaTime, PhysicsWorld = World.GetExistingManager<BuildPhysicsWorld>().PhysicsWorld}.Run(this);
 			var updateQueryJob = new UpdateCharacterQuery();
 
-			inputDeps = updateQueryJob.Schedule(this);
+			inputDeps = updateQueryJob.Schedule(this, inputDeps);
 			
 			var moveJob = new MoveJobWithVelocityAll
 			{
@@ -1395,7 +1047,7 @@ namespace Patapon4TLB.Default
 				DeltaTime              = Time.deltaTime,
 
 				Collisions      = new NativeList<CustomCharacterController.CollisionInfo>(Allocator.TempJob),
-				MoveVectors     = new NativeList<MoveJob.OCCMoveVector>(Allocator.TempJob),
+				MoveVectors     = new NativeList<OCCMoveVector>(Allocator.TempJob),
 				PenetrationHits = new NativeArray<DistanceHit>(k_MaxOverlapColliders, Allocator.TempJob)
 			};
 
