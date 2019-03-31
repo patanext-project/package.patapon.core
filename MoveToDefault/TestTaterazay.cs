@@ -113,7 +113,8 @@ namespace Patapon4TLB.Default
 			(
 				typeof(OwnerState<LivableDescription>),
 				typeof(ActionDescription),
-				typeof(TaterazayKitMarchAction.Settings)
+				typeof(MarchDefenseAbility.Settings),
+				typeof(MarchDefenseAbility.PredictedState)
 			);
 
 			EntityManager.ReplaceOwnerData(movableEntity, characterEntity);
