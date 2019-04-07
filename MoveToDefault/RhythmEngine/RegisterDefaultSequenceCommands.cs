@@ -5,6 +5,7 @@ using Unity.Entities;
 
 namespace Patapon4TLB.Default
 {
+	[DisableAutoCreation]
 	public class RegisterDefaultSequenceCommands : GameBaseSystem
 	{
 		protected override void OnCreateManager()

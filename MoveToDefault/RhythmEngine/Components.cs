@@ -1,7 +1,40 @@
+using package.patapon.core;
+using StormiumTeam.GameBase;
 using Unity.Entities;
 
 namespace Patapon4TLB.Default
 {
+	public struct DefaultRhythmEngineData
+	{
+		public struct Settings : IComponentData
+		{
+			public int MaxBeats;
+		}
+		
+		public struct Predicted : IComponentData, IPredictable<Predicted>
+		{
+			public int Beat;
+			public bool CheckNewCommand;
+			
+			public bool VerifyPrediction(in Predicted real)
+			{
+				return false;
+			}
+		}
+	}
+
+	public struct PressureEvent : IComponentData
+	{
+		public Entity Engine;
+		public int Key;
+	}
+
+	[InternalBufferCapacity(8)]
+	public struct DefaultRhythmEngineCurrentCommand : IBufferElementData
+	{
+		public FlowRhythmPressureData Data;
+	}
+	
 	public struct DefaultRhythmCommand : IComponentData
 	{
 

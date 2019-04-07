@@ -78,7 +78,7 @@ namespace package.patapon.core
 
             m_EventArchetype = EntityManager.CreateArchetype
             (
-                ComponentType.ReadWrite<FlowRythmEngineTypeDefinition>(),
+                ComponentType.ReadWrite<FlowRhythmEngineTypeDefinition>(),
                 ComponentType.ReadWrite<RhythmShardEvent>(),
                 ComponentType.ReadWrite<RhythmShardTarget>(),
                 ComponentType.ReadWrite<RhythmBeatData>(),
@@ -102,9 +102,9 @@ namespace package.patapon.core
             jobHandle.Complete();
         }
 
-        public void AddPressure(Entity shardEngine, int keyType, EntityCommandBuffer ecf)
+        public Entity AddPressure(Entity shardEngine, int keyType, EntityCommandBuffer ecb)
         {
-            var processData = EntityManager.GetComponentData<FlowRhythmEngineProcessData>(shardEngine);
+            var processData  = EntityManager.GetComponentData<FlowRhythmEngineProcessData>(shardEngine);
             var settingsData = EntityManager.GetComponentData<FlowRhythmEngineSettingsData>(shardEngine);
 
             var actualBeat   = processData.Beat;
@@ -112,17 +112,32 @@ namespace package.patapon.core
             var beatInterval = settingsData.BeatInterval;
 
             int correctedBeat;
-            
+
             var score = GetScore(actualTime, actualBeat, beatInterval, out correctedBeat);
 
             //Debug.Log($"Beat|Corrected: {actualBeat}|{correctedBeat}, time: {actualTime}, score: {Mathf.Abs(score)}");
-            
-            ecf.CreateEntity();
-            ecf.AddComponent(new FlowRythmEngineTypeDefinition());
-            ecf.AddComponent(new RhythmShardEvent(Time.frameCount));
-            ecf.AddComponent(new RhythmShardTarget(shardEngine));
-            ecf.AddComponent(new RhythmPressure());
-            ecf.AddComponent(new FlowRhythmPressureData(keyType, actualBeat, correctedBeat, score));
+
+            Entity newEntity;
+            if (ecb.IsCreated)
+            {
+                newEntity = ecb.CreateEntity();
+                ecb.AddComponent(newEntity, new FlowRhythmEngineTypeDefinition());
+                ecb.AddComponent(newEntity, new RhythmShardEvent(Time.frameCount));
+                ecb.AddComponent(newEntity, new RhythmShardTarget(shardEngine));
+                ecb.AddComponent(newEntity, new RhythmPressure());
+                ecb.AddComponent(newEntity, new FlowRhythmPressureData(keyType, actualBeat, correctedBeat, score));
+
+                return newEntity;
+            }
+
+            newEntity = EntityManager.CreateEntity();
+            EntityManager.AddComponent(newEntity, typeof(FlowRhythmEngineTypeDefinition));
+            EntityManager.AddComponentData(newEntity, new RhythmShardEvent(Time.frameCount));
+            EntityManager.AddComponentData(newEntity, new RhythmShardTarget(shardEngine));
+            EntityManager.AddComponent(newEntity, typeof(RhythmPressure));
+            EntityManager.AddComponentData(newEntity, new FlowRhythmPressureData(keyType, actualBeat, correctedBeat, score));
+
+            return newEntity;
         }
 
         // TODO: Make it as an abstract method
@@ -135,12 +150,12 @@ namespace package.patapon.core
             var entity = EntityManager.CreateEntity
             (
                 typeof(ShardRhythmEngine),
-                typeof(FlowRythmEngineTypeDefinition),
+                typeof(FlowRhythmEngineTypeDefinition),
                 typeof(FlowRhythmEngineProcessData),
                 typeof(FlowRhythmEngineSettingsData)
             );
 
-            EntityManager.SetComponentData(entity, new ShardRhythmEngine {EngineType = ComponentType.Create<FlowRythmEngineTypeDefinition>()});
+            EntityManager.SetComponentData(entity, new ShardRhythmEngine {EngineType = ComponentType.Create<FlowRhythmEngineTypeDefinition>()});
             EntityManager.SetComponentData(entity, new FlowRhythmEngineSettingsData(DefaultBeatInterval));
 
             return entity;
@@ -154,7 +169,7 @@ namespace package.patapon.core
         /// <param name="beatInterval">The interval between each beat</param>
         /// <param name="correctedBeat">The new corrected beat (as it can be shifted to the next one)</param>
         /// <returns></returns>
-        public float GetScore(double time, int beat, float beatInterval, out int correctedBeat)
+        public static float GetScore(double time, int beat, float beatInterval, out int correctedBeat)
         {
             var beatTimeDelta  = time % beatInterval;
             var halvedInterval = beatInterval * 0.5f;
@@ -167,7 +182,7 @@ namespace package.patapon.core
     }
 
     // this is a header
-    public struct FlowRythmEngineTypeDefinition : IComponentData
+    public struct FlowRhythmEngineTypeDefinition : IComponentData
     {
         
     }
@@ -231,6 +246,14 @@ namespace package.patapon.core
             OriginalBeat  = originBeat;
             CorrectedBeat = correctedBeat;
             Score         = score;
+        }
+
+        public FlowRhythmPressureData(int keyId, FlowRhythmEngineSettingsData settingsData, FlowRhythmEngineProcessData processData)
+        {
+            Score = FlowRhythmEngine.GetScore(processData.Time, processData.Beat, settingsData.BeatInterval, out CorrectedBeat);
+
+            KeyId        = keyId;
+            OriginalBeat = processData.Beat;
         }
 
         public float GetAbsoluteScore()
