@@ -57,6 +57,7 @@ namespace Patapon4TLB.Default
 			[ReadOnly]
 			public ComponentDataFromEntity<RhythmActionController> RhythmActionControllerFromLivable;
 
+			[ReadOnly]
 			public ComponentDataFromEntity<GroundState> GroundStateFromMovable;
 
 			[ReadOnly]

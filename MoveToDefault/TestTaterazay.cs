@@ -1,5 +1,8 @@
 using package.StormiumTeam.GameBase;
+using StormiumShared.Core.Networking;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
+using StormiumTeam.GameBase.Data;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -34,8 +37,11 @@ namespace Patapon4TLB.Default
 				typeof(UnitBaseSettings),
 				typeof(RhythmActionController),
 				typeof(ActionContainer),
+				typeof(HealthContainer),
 
-				typeof(OwnerChild)
+				typeof(OwnerChild),
+				
+				typeof(GenerateEntitySnapshot)
 			);
 			{
 				EntityManager.SetComponentData(characterEntity, new UnitDirection
@@ -57,7 +63,9 @@ namespace Patapon4TLB.Default
 				typeof(LocalToWorld),
 
 				// Add static collider
-				typeof(PhysicsCollider)
+				typeof(PhysicsCollider),
+				
+				typeof(GenerateEntitySnapshot)
 			);
 			{
 				var bxCollider = BoxCollider.Create(new float3(0, 1, 0), quaternion.identity, new float3(1, 2, 1), 0.01f, collisionFilter);
@@ -81,8 +89,9 @@ namespace Patapon4TLB.Default
 				typeof(Velocity),
 				typeof(PhysicsGravityFactor),
 				
-				typeof(CustomCharacterController),
-				typeof(CollideWith)
+				typeof(CollideWith),
+				
+				typeof(GenerateEntitySnapshot)
 			);
 			{
 				var cpCollider = CapsuleCollider.Create(float3.zero, new float3(0, 2, 0), 0.5f, collisionFilter);
@@ -114,12 +123,26 @@ namespace Patapon4TLB.Default
 				typeof(OwnerState<LivableDescription>),
 				typeof(ActionDescription),
 				typeof(MarchDefenseAbility.Settings),
-				typeof(MarchDefenseAbility.PredictedState)
+				typeof(MarchDefenseAbility.PredictedState),
+				typeof(GenerateEntitySnapshot)
 			);
 
 			EntityManager.ReplaceOwnerData(movableEntity, characterEntity);
 			EntityManager.ReplaceOwnerData(colliderEntity, characterEntity);
 			EntityManager.ReplaceOwnerData(marchAction, characterEntity);
+			
+			EntityManager.AddComponentData(movableEntity, new DestroyChainReaction(characterEntity));
+			EntityManager.AddComponentData(colliderEntity, new DestroyChainReaction(characterEntity));
+			EntityManager.AddComponentData(marchAction, new DestroyChainReaction(characterEntity));
+			
+			// create some health data...
+			//var defaultHealthAsset = EntityManager.CreateEntity(typeof(AssetDescription), typeof(HealthAssetDescription), typeof());
+
+			var defaultHealthInstanceProvider = World.GetExistingManager<DefaultHealthData.InstanceProvider>();
+			var healthEntity = defaultHealthInstanceProvider.SpawnLocalEntityWithArguments(new DefaultHealthData.CreateInstance {value = 100, max = 100});
+			
+			EntityManager.ReplaceOwnerData(characterEntity, healthEntity);
+			EntityManager.AddComponentData(healthEntity, new DestroyChainReaction(characterEntity));
 		}
 
 		protected override void OnUpdate()
