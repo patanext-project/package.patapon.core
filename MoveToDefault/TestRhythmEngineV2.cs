@@ -20,9 +20,6 @@ namespace Patapon4TLB.Default
 
 			EntityManager.AddComponentData(engine, new DestroyChainReaction(player));
 			EntityManager.ReplaceOwnerData(engine, player);
-			
-			var nativeString = new NativeString64("Testing 1 2 3.");
-			Debug.Log(nativeString.ToString());
 		}
 
 		protected override void OnUpdate()
