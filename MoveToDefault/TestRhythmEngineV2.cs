@@ -11,7 +11,7 @@ namespace Patapon4TLB.Default
 	{
 		protected override void OnCreateManager()
 		{
-			var reProvider = World.GetOrCreateManager<RhythmEngineProvider>();
+			var reProvider = World.GetOrCreateSystem<RhythmEngineProvider>();
 
 			// Create our player.
 			var player = EntityManager.CreateEntity(typeof(PlayerDescription));
@@ -32,7 +32,7 @@ namespace Patapon4TLB.Default
 	public class TestRhythmEngineV2_CreatePressureSystem : ComponentSystem
 	{
 		protected override void OnUpdate()
-		{
+		{	
 			Entities.ForEach((Entity e, ref DefaultRhythmEngineData.Predicted predicted) =>
 			{
 				if (Input.GetKeyDown(KeyCode.Keypad4)) CreatePressure(RhythmKeys.Left, e);

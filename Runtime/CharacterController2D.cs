@@ -115,7 +115,7 @@ namespace package.patapon.core
                 BufferFrameEvents.Add(default(BufferFrameEvent));
             }
             
-            World.Active.GetExistingManager<AppEventSystem>()
+            World.Active.GetExistingSystem<AppEventSystem>()
                 .SubscribeToAll(this);
             
             Debug.Assert(BufferFrameEvents != null, "BufferFrameEvents != null");

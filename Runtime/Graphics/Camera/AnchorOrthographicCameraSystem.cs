@@ -14,7 +14,7 @@ namespace package.patapon.core
     // Update after animators
     public class AnchorOrthographicCameraSystem : ComponentSystem
     {
-        private ComponentGroup m_CameraComponentGroup;
+        private EntityQuery m_CameraComponentGroup;
 
         struct TargetJob : IJobProcessComponentData<CameraTargetData, CameraTargetAnchor, CameraTargetPosition>
         {
@@ -81,7 +81,7 @@ namespace package.patapon.core
         {
             base.OnCreateManager();
 
-            m_CameraComponentGroup = GetComponentGroup(new EntityArchetypeQuery
+            m_CameraComponentGroup = GetEntityQuery(new EntityQueryDesc
             {
                 All = new[]
                 {

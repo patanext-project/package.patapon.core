@@ -44,13 +44,13 @@ namespace Patapon4TLB.Default
 			}
 		}
 
-		private ComponentGroup m_ComponentGroup;
+		private EntityQuery m_ComponentGroup;
 
 		protected override void OnCreateManager()
 		{
 			base.OnCreateManager();
 
-			m_ComponentGroup = GetComponentGroup(typeof(DefaultRhythmEngineData.Settings), typeof(DefaultRhythmEngineData.Predicted), typeof(DefaultRhythmEngineCurrentCommand));
+			m_ComponentGroup = GetEntityQuery(typeof(DefaultRhythmEngineData.Settings), typeof(DefaultRhythmEngineData.Predicted), typeof(DefaultRhythmEngineCurrentCommand));
 		}
 
 		protected override void OnUpdate()

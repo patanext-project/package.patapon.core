@@ -106,7 +106,7 @@ namespace Patapon4TLB.Default
 		{
 			base.OnCreateManager();
 
-			var cmdBuilder = World.GetOrCreateManager<FlowCommandBuilder>();
+			var cmdBuilder = World.GetOrCreateSystem<FlowCommandBuilder>();
 
 			m_MarchCommand = cmdBuilder.GetOrCreate(new NativeArray<FlowCommandSequence>(4, Allocator.Temp)
 			{

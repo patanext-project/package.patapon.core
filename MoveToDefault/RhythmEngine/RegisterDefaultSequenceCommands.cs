@@ -12,7 +12,7 @@ namespace Patapon4TLB.Default
 		{
 			base.OnCreateManager();
 
-			var builder = World.GetOrCreateManager<FlowCommandBuilder>();
+			var builder = World.GetOrCreateSystem<FlowCommandBuilder>();
 
 			var march = Build(builder, new[]
 			{

@@ -35,7 +35,7 @@ namespace package.patapon.core
 
         #endregion
 
-        private ComponentGroup m_EngineGroup;
+        private EntityQuery m_EngineGroup;
         private EntityArchetype m_EventArchetype;
 
         struct ProcessEngineJob : IJobProcessComponentDataWithEntity<ShardRhythmEngine, FlowRhythmEngineProcessData, FlowRhythmEngineSettingsData>

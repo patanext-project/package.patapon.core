@@ -10,9 +10,9 @@ namespace Patapon4TLB.Default
 		{
 			base.OnCreateManager();
 
-			var registerDefaultSequenceCommands = World.GetOrCreateManager<RegisterDefaultSequenceCommands>();
-			var processEvents = World.GetOrCreateManager<RhythmEngineProcessEvents>();
-			var checkCurrentCommandValidity     = World.GetOrCreateManager<RhythmEngineCheckCurrentCommandValidity>();
+			var registerDefaultSequenceCommands = World.GetOrCreateSystem<RegisterDefaultSequenceCommands>();
+			var processEvents = World.GetOrCreateSystem<RhythmEngineProcessEvents>();
+			var checkCurrentCommandValidity     = World.GetOrCreateSystem<RhythmEngineCheckCurrentCommandValidity>();
 
 			registerDefaultSequenceCommands.SystemGroup_CanHaveDependency(true);
 			processEvents.SystemGroup_CanHaveDependency(true);

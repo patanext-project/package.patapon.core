@@ -59,9 +59,9 @@ namespace Patapon4TLB.Core
 
         private PatternResult m_SnapshotPattern;
 
-        private ComponentGroup m_ClientWithoutState;
-        private ComponentGroup m_DestroyedClientWithState;
-        private ComponentGroup m_EntitiesToGenerate;
+        private EntityQuery m_ClientWithoutState;
+        private EntityQuery m_DestroyedClientWithState;
+        private EntityQuery m_EntitiesToGenerate;
 
         private SnapshotRuntime m_CurrentRuntime;
 
@@ -82,17 +82,17 @@ namespace Patapon4TLB.Core
         {
             base.OnCreateManager();
             
-            m_SnapshotPattern = World.GetExistingManager<NetPatternSystem>()
+            m_SnapshotPattern = World.GetExistingSystem<NetPatternSystem>()
                                      .GetLocalBank()
                                      .Register(new PatternIdent("SyncSnapshot"));
 
-            m_ClientWithoutState       = GetComponentGroup(typeof(NetworkClient), ComponentType.Exclude<ClientSnapshotState>());
-            m_DestroyedClientWithState = GetComponentGroup(typeof(ClientSnapshotState), ComponentType.Exclude<NetworkClient>());
-            m_EntitiesToGenerate       = GetComponentGroup(typeof(GenerateEntitySnapshot));
+            m_ClientWithoutState       = GetEntityQuery(typeof(NetworkClient), ComponentType.Exclude<ClientSnapshotState>());
+            m_DestroyedClientWithState = GetEntityQuery(typeof(ClientSnapshotState), ComponentType.Exclude<NetworkClient>());
+            m_EntitiesToGenerate       = GetEntityQuery(typeof(GenerateEntitySnapshot));
 
             m_CurrentRuntime = new SnapshotRuntime(default, Allocator.Persistent);
 
-            World.GetExistingManager<AppEventSystem>().SubscribeToAll(this);
+            World.GetExistingSystem<AppEventSystem>().SubscribeToAll(this);
             
             m_ClientSnapshots      = new Dictionary<Entity, ClientSnapshotInformation>(16);
             m_SnapshotDataToApply = new List<SnapshotDataToApply>();
@@ -155,8 +155,8 @@ namespace Patapon4TLB.Core
 
         public void ReceiveServerSnapshots()
         {
-            var networkMgr       = World.GetExistingManager<NetworkManager>();
-            var netPatternSystem = World.GetExistingManager<NetPatternSystem>();
+            var networkMgr       = World.GetExistingSystem<NetworkManager>();
+            var netPatternSystem = World.GetExistingSystem<NetPatternSystem>();
 
             ForEach((DynamicBuffer<EventBuffer> eventBuffer, ref NetworkInstanceData data) =>
             {
@@ -207,7 +207,7 @@ namespace Patapon4TLB.Core
         public void ReadServerSnapshots()
         {
             var gameTime         = GetSingleton<SingletonGameTime>();
-            var snapshotMgr      = World.GetExistingManager<SnapshotManager>();
+            var snapshotMgr      = World.GetExistingSystem<SnapshotManager>();
             var sw = new Stopwatch();
 
             //Debug.Log("Message before crash...");
@@ -292,9 +292,9 @@ namespace Patapon4TLB.Core
 
         public void SendClientSnapshots()
         {
-            var gameMgr = World.GetExistingManager<GameManager>();
+            var gameMgr = World.GetExistingSystem<GameManager>();
             var gameTime = GetSingleton<SingletonGameTime>();
-            var snapshotMgr      = World.GetExistingManager<SnapshotManager>();
+            var snapshotMgr      = World.GetExistingSystem<SnapshotManager>();
             var localClient = gameMgr.Client;
             var sw = new Stopwatch();
             

@@ -88,7 +88,7 @@ namespace package.patapon.core
                 Debug.LogError("No GameObjectEntity found on " + gameObject.name);
             }
             
-            World.Active.GetExistingManager<SplineSystem>().SendUpdateEvent(goEntity.Value.Entity);
+            World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(goEntity.Value.Entity);
         }
 
         private void OnValidate()
@@ -104,7 +104,7 @@ namespace package.patapon.core
 
             goEntity.EntityManager.SetComponentData(goEntity.Entity, GetData());
 
-            World.Active.GetExistingManager<SplineSystem>().SendUpdateEvent(goEntity.Entity);
+            World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(goEntity.Entity);
         }
 
         private void Update()
@@ -132,7 +132,7 @@ namespace package.patapon.core
 
             if (needToUpdate)
             {
-                World.Active.GetExistingManager<SplineSystem>().SendUpdateEvent(e); 
+                World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(e); 
             }
         }
         
@@ -230,7 +230,7 @@ namespace package.patapon.core
             if (World.Active == null)
                 return;
             
-            World.Active.GetExistingManager<SplineSystem>().SendUpdateEvent(goEntity.Value.Entity);
+            World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(goEntity.Value.Entity);
         }
 
         // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.

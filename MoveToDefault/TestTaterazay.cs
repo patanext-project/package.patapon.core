@@ -138,7 +138,7 @@ namespace Patapon4TLB.Default
 			// create some health data...
 			//var defaultHealthAsset = EntityManager.CreateEntity(typeof(AssetDescription), typeof(HealthAssetDescription), typeof());
 
-			var defaultHealthInstanceProvider = World.GetExistingManager<DefaultHealthData.InstanceProvider>();
+			var defaultHealthInstanceProvider = World.GetExistingSystem<DefaultHealthData.InstanceProvider>();
 			var healthEntity = defaultHealthInstanceProvider.SpawnLocalEntityWithArguments(new DefaultHealthData.CreateInstance {value = 100, max = 100});
 			
 			EntityManager.ReplaceOwnerData(characterEntity, healthEntity);
