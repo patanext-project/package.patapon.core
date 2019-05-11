@@ -14,16 +14,6 @@ namespace package.patapon.core
     // TODO: Make it inheriting a special class for managing rhythm engine
     public class FlowRhythmEngine : ComponentSystem
     {
-        struct EngineGroups
-        {
-            public ComponentDataArray<ShardRhythmEngine>                ShardArray;
-            public ComponentDataArray<FlowRhythmEngineProcessData>  ProcessArray;
-            public ComponentDataArray<FlowRhythmEngineSettingsData> SettingsArray;
-            public EntityArray                                          Entities;
-
-            public readonly int Length;
-        }
-
         #region Constants
 
         public const int KeyInvalid = 0;

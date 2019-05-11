@@ -13,7 +13,8 @@ using UnityEngine.Profiling;
 
 namespace package.patapon.core
 {
-    [UpdateAfter(typeof(PreLateUpdate.DirectorUpdateAnimationEnd))]
+    // TODO: UPGRADE
+    /*[UpdateAfter(typeof(PreLateUpdate.DirectorUpdateAnimationEnd))]
     //< Update after the 'LateUpdate', so all animations can be finished 
     public class SplineSystem : JobComponentSystem
     {
@@ -43,8 +44,6 @@ namespace package.patapon.core
         // TODO: Use Reactive Systems instead (but the curren method seems more performant, need to be decided)
         public void SendUpdateEvent(Entity entity)
         {
-            /*var eventEntity = EntityManager.CreateEntity(m_EventArchetype);
-            EntityManager.SetComponentData(eventEntity, new InitEvent {Id = entity});*/ // It's a lot bugged for now
             m_Events++;
         }
 
@@ -409,5 +408,5 @@ namespace package.patapon.core
                 Results[index] = (byte) (boolean ? 1 : 0);
             }
         }
-    }
+    }*/
 }

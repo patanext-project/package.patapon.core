@@ -17,7 +17,7 @@ namespace Patapon4TLB.Default
 		{
 			var existingColliders = new NativeList<Entity>(Allocator.Temp);
 			ForEach((Entity entity, ref PhysicsCollider coll) => { existingColliders.Add(entity); });
-			
+
 			Entity characterEntity, colliderEntity, movableEntity;
 
 			var collisionFilter = CollisionFilter.Default;
@@ -40,7 +40,7 @@ namespace Patapon4TLB.Default
 				typeof(HealthContainer),
 
 				typeof(OwnerChild),
-				
+
 				typeof(GenerateEntitySnapshot)
 			);
 			{
@@ -64,7 +64,7 @@ namespace Patapon4TLB.Default
 
 				// Add static collider
 				typeof(PhysicsCollider),
-				
+
 				typeof(GenerateEntitySnapshot)
 			);
 			{
@@ -88,9 +88,9 @@ namespace Patapon4TLB.Default
 				typeof(PhysicsMass),
 				typeof(Velocity),
 				typeof(PhysicsGravityFactor),
-				
-				typeof(CollideWith),
-				
+
+				typeof(CustomCollide),
+
 				typeof(GenerateEntitySnapshot)
 			);
 			{
@@ -109,9 +109,9 @@ namespace Patapon4TLB.Default
 					Value = 0f // kinematic body are not affected by normal gravity...
 				});
 
-				var cwBuffer = EntityManager.GetBuffer<CollideWith>(movableEntity);
+				var cwBuffer = EntityManager.GetBuffer<CustomCollide>(movableEntity);
 				for (var i = 0; i != existingColliders.Length; i++)
-					cwBuffer.Add(new CollideWith {Target = existingColliders[i]});
+					cwBuffer.Add(new CustomCollide {Target = existingColliders[i]});
 			}
 
 			var childBuffer = EntityManager.GetBuffer<OwnerChild>(characterEntity);
@@ -130,19 +130,19 @@ namespace Patapon4TLB.Default
 			EntityManager.ReplaceOwnerData(movableEntity, characterEntity);
 			EntityManager.ReplaceOwnerData(colliderEntity, characterEntity);
 			EntityManager.ReplaceOwnerData(marchAction, characterEntity);
-			
+
 			EntityManager.AddComponentData(movableEntity, new DestroyChainReaction(characterEntity));
 			EntityManager.AddComponentData(colliderEntity, new DestroyChainReaction(characterEntity));
 			EntityManager.AddComponentData(marchAction, new DestroyChainReaction(characterEntity));
-			
+
 			// create some health data...
 			//var defaultHealthAsset = EntityManager.CreateEntity(typeof(AssetDescription), typeof(HealthAssetDescription), typeof());
 
 			var defaultHealthInstanceProvider = World.GetExistingSystem<DefaultHealthData.InstanceProvider>();
-			var healthEntity = defaultHealthInstanceProvider.SpawnLocalEntityWithArguments(new DefaultHealthData.CreateInstance {value = 100, max = 100});
-			
-			EntityManager.ReplaceOwnerData(characterEntity, healthEntity);
-			EntityManager.AddComponentData(healthEntity, new DestroyChainReaction(characterEntity));
+			using (var outputEntities = new NativeList<Entity>(Allocator.TempJob))
+			{
+				defaultHealthInstanceProvider.SpawnLocalEntityWithArguments(new DefaultHealthData.CreateInstance {value = 100, max = 100, owner = characterEntity}, outputEntities);
+			}
 		}
 
 		protected override void OnUpdate()

@@ -6,7 +6,8 @@ using UnityEngine.Jobs;
 
 namespace package.patapon.core
 {
-    [UpdateAfter(typeof(PreLateUpdate.DirectorUpdateAnimationEnd))]
+    // TODO: UPGRADE
+    /*[UpdateAfter(typeof(PreLateUpdate.DirectorUpdateAnimationEnd))]
     public class CGraphicalUpdateMaskLookAnimatorProcessSystem : ComponentSystem
     {
         public const string AnimatorAimlookXParameter = "AimlookX";
@@ -54,5 +55,5 @@ namespace package.patapon.core
                 animator.Update(Time.deltaTime);
             }
         }
-    }
+    }*/
 }

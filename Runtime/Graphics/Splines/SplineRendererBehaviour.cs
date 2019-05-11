@@ -10,7 +10,8 @@ using UnityEditor;
 
 namespace package.patapon.core
 {
-    [Serializable]
+    // TODO: UPGRADE
+    /*[Serializable]
     public struct DSplineData : IComponentData
     {
         public float Tension;
@@ -255,5 +256,5 @@ namespace package.patapon.core
         {
             Points[i].position = value;
         }
-    }
+    }*/
 }
