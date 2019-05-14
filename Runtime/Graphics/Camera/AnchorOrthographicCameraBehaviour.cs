@@ -31,6 +31,8 @@ namespace package.patapon.core
         private Camera m_Camera;
         private GameObjectEntity m_GameObjectEntity;
 
+        [SerializeField] private float2 m_DebugTarget;
+
         private void OnEnable()
         {
             m_Camera           = GetComponent<Camera>();
@@ -44,10 +46,10 @@ namespace package.patapon.core
             m_Camera           = GetComponent<Camera>();
             m_GameObjectEntity = GetComponent<GameObjectEntity>();
             
-            RefreshData();
+            RefreshData(true);
         }
 
-        private void RefreshData()
+        private void RefreshData(bool setDebugData = false)
         {
             var height = m_Camera.orthographicSize;
             var width  = m_Camera.aspect * height;
@@ -62,6 +64,11 @@ namespace package.patapon.core
             e.SetOrAddComponentData(new LocalToWorld());
             e.SetOrAddComponentData(new CopyTransformToGameObject());
             e.SetOrAddComponentData(new AnchorOrthographicCameraOutput());
+
+            if (setDebugData)
+            {
+                e.SetComponentData(new Translation {Value = new float3(m_DebugTarget.x, m_DebugTarget.y, -100)});
+            }
         }
 
 #if UNITY_EDITOR
