@@ -1,5 +1,4 @@
 ﻿using package.patapon.def.Data;
-using Scripts;
 using Unity.Entities;
 
 namespace package.patapon.core

@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using package.stormiumteam.shared;
-using Unity.Entities;
-using Unity.Mathematics;
-using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
+﻿#if UNITY_EDITOR
+
 #endif
 
 namespace package.patapon.core

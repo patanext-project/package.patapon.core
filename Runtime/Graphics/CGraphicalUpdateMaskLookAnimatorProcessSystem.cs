@@ -1,10 +1,4 @@
-﻿using Unity.Entities;
-using Unity.Mathematics;
-using UnityEngine;
-using UnityEngine.Experimental.PlayerLoop;
-using UnityEngine.Jobs;
-
-namespace package.patapon.core
+﻿namespace package.patapon.core
 {
     // TODO: UPGRADE
     /*[UpdateAfter(typeof(PreLateUpdate.DirectorUpdateAnimationEnd))]

@@ -1,12 +1,11 @@
 using package.patapon.core;
 using package.patapon.def.Data;
-using StormiumShared.Core.Networking;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 
 namespace Patapon4TLB.Default
 {
-	public class RhythmEngineProvider : SystemProvider
+	public class RhythmEngineProvider : BaseProvider
 	{
 		public override void GetComponents(out ComponentType[] entityComponents, out ComponentType[] excludedStreamerComponents)
 		{

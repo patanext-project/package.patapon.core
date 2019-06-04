@@ -1,4 +1,3 @@
-using package.patapon.core;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Data;
 using Unity.Entities;

@@ -1,13 +1,10 @@
 using System;
 using package.patapon.core;
 using package.stormiumteam.shared;
-using package.StormiumTeam.GameBase;
-using StormiumShared.Core;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.Physics;
 
 namespace Patapon4TLB.Default
 {

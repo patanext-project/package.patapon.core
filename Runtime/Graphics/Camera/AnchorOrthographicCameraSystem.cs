@@ -2,11 +2,9 @@
 using package.stormiumteam.shared;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
-using UnityEngine.Experimental.PlayerLoop;
 
 namespace package.patapon.core
 {
@@ -14,7 +12,7 @@ namespace package.patapon.core
     // Update after animators
     public class AnchorOrthographicCameraSystem : ComponentSystem
     {
-        private EntityQuery m_CameraComponentGroup;
+        private EntityQuery m_CameraEntityQuery;
 
         struct TargetJob : IJobProcessComponentData<CameraTargetData, CameraTargetAnchor, CameraTargetPosition>
         {
@@ -81,7 +79,7 @@ namespace package.patapon.core
         {
             base.OnCreateManager();
 
-            m_CameraComponentGroup = GetEntityQuery(new EntityQueryDesc
+            m_CameraEntityQuery = GetEntityQuery(new EntityQueryDesc
             {
                 All = new[]
                 {
@@ -101,7 +99,7 @@ namespace package.patapon.core
             {
                 data.Height = camera.orthographicSize;
                 data.Width  = camera.aspect * data.Height;
-            }, m_CameraComponentGroup);
+            }, m_CameraEntityQuery);
             
             // ------------------------------------------------------ //
             // Update camera positions from targets

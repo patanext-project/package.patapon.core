@@ -1,8 +1,5 @@
 ﻿using System;
-using package.patapon.def;
 using package.patapon.def.Data;
-using package.stormiumteam.shared;
-using Scripts;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;

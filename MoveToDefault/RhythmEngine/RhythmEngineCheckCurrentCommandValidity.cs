@@ -1,8 +1,6 @@
 using JetBrains.Annotations;
 using StormiumTeam.GameBase;
-using Unity.Burst;
 using Unity.Entities;
-using UnityEngine;
 
 namespace Patapon4TLB.Default
 {
@@ -44,13 +42,13 @@ namespace Patapon4TLB.Default
 			}
 		}
 
-		private EntityQuery m_ComponentGroup;
+		private EntityQuery m_EntityQuery;
 
 		protected override void OnCreateManager()
 		{
 			base.OnCreateManager();
 
-			m_ComponentGroup = GetEntityQuery(typeof(DefaultRhythmEngineData.Settings), typeof(DefaultRhythmEngineData.Predicted), typeof(DefaultRhythmEngineCurrentCommand));
+			m_EntityQuery = GetEntityQuery(typeof(DefaultRhythmEngineData.Settings), typeof(DefaultRhythmEngineData.Predicted), typeof(DefaultRhythmEngineCurrentCommand));
 		}
 
 		protected override void OnUpdate()
@@ -60,7 +58,7 @@ namespace Patapon4TLB.Default
 				PredictedDataType = GetArchetypeChunkComponentType<DefaultRhythmEngineData.Predicted>(),
 				SettingsDataType  = GetArchetypeChunkComponentType<DefaultRhythmEngineData.Settings>(),
 				CurrCommandType   = GetArchetypeChunkBufferType<DefaultRhythmEngineCurrentCommand>()
-			}.Schedule(m_ComponentGroup, GetDependency()));
+			}.Schedule(m_EntityQuery, GetDependency()));
 		}
 	}
 }

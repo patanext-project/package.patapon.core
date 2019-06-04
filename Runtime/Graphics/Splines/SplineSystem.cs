@@ -1,17 +1,4 @@
-﻿using System;
-using package.stormiumteam.shared;
-using Unity.Burst;
-using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.Entities;
-using Unity.Jobs;
-using Unity.Mathematics;
-using UnityEngine;
-using UnityEngine.Experimental.PlayerLoop;
-using UnityEngine.Jobs;
-using UnityEngine.Profiling;
-
-namespace package.patapon.core
+﻿namespace package.patapon.core
 {
     // TODO: UPGRADE
     /*[UpdateAfter(typeof(PreLateUpdate.DirectorUpdateAnimationEnd))]
@@ -104,7 +91,7 @@ namespace package.patapon.core
 
             var array = new Vector3[0];
             
-            UpdateInjectedComponentGroups();
+            UpdateInjectedEntityQuerys();
 
             Profiler.BeginSample("Loop");
             var currentFillerArrayLength = 0;
