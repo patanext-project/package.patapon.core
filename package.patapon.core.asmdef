@@ -5,6 +5,7 @@
         "package.stormiumteam.gamebase",
         "package.stormiumteam.networking",
         "Unity.Networking.Transport",
+        "Unity.NetCode",
         "Unity.Addressables",
         "Unity.ResourceManager",
         "Unity.Physics",

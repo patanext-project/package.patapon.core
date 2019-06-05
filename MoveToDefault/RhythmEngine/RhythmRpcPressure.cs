@@ -1,14 +1,11 @@
-using System.Security.Cryptography.X509Certificates;
-using package.stormiumteam.networking.runtime.Rpc;
 using Unity.Entities;
+using Unity.NetCode;
 using Unity.Networking.Transport;
 
 namespace Patapon4TLB.Default
 {
-	public struct RhythmRpcPressure : IRpcBase<RhythmRpcPressure>
+	public struct RhythmRpcPressure : IRpcCommand
 	{
-		public RpcBase.Header Header { get; set; }
-
 		public int Key;
 		public int Beat;
 
