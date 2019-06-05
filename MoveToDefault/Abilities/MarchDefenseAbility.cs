@@ -4,13 +4,14 @@ using package.stormiumteam.shared;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.Mathematics;
 
 namespace Patapon4TLB.Default
 {
 	public struct MarchDefenseAbility : IComponentData
 	{
-		public struct PredictedState : IComponentData, IPredictable<PredictedState>
+		public struct PredictedState : IComponentData
 		{
 			// We only make the movement on the movable target.
 			public Entity Target;
@@ -25,28 +26,20 @@ namespace Patapon4TLB.Default
 		{
 			public byte Flags;
 
+			public Entity Character;
+			public Entity Movable;
+
 			/// <summary>
 			/// If enabled and the entity is marching, this will add a small defense buff (duration based on the sequence and if it's active)
 			/// </summary>
-			public bool AutoDefense
-			{
-				get => MainBit.GetBitAt(Flags, 0) != 0;
-				set => MainBit.SetBitAt(ref Flags, 0, value);
-			}
-
-			public Settings(bool autoDefense)
-			{
-				Flags = 0;
-
-				MainBit.SetBitAt(ref Flags, 0, autoDefense);
-			}
+			public bool AutoDefense;
 		}
 	}
 
 	[UpdateInGroup(typeof(ActionSystemGroup))]
-	public class MarchDefenseAbilitySystem : GameBaseSystem
+	public class MarchDefenseAbilitySystem : JobGameBaseSystem
 	{
-		struct JobProcess : IJobProcessComponentDataWithEntity<MarchDefenseAbility.Settings, OwnerState<LivableDescription>, OwnerState<MovableDescription>>
+		struct JobProcess : IJobForEachWithEntity<MarchDefenseAbility.Settings>
 		{
 			public Entity MarchCommand;
 			public float  DeltaTime;
@@ -66,42 +59,36 @@ namespace Patapon4TLB.Default
 			[NativeDisableParallelForRestriction]
 			public ComponentDataFromEntity<Velocity> VelocityFromMovable;
 
-			public void Execute(Entity entity, int _, ref MarchDefenseAbility.Settings settings, ref OwnerState<LivableDescription> livableOwner, ref OwnerState<MovableDescription> movableOwner)
+			public void Execute(Entity entity, int _, ref MarchDefenseAbility.Settings settings)
 			{
-				var livable = livableOwner.Target;
-				var movable = movableOwner.Target;
-
-				if (!RhythmActionControllerFromLivable.Exists(livable))
-					throw new InvalidOperationException($"Livable {livable} has no '{nameof(RhythmActionController)}'");
-
-				var actionController = RhythmActionControllerFromLivable[livable];
+				var actionController = RhythmActionControllerFromLivable[settings.Movable];
 				if (actionController.CurrentCommand != MarchCommand)
 					return;
 
-				var unitSettings  = UnitSettingsFromLivable[livable];
-				var unitDirection = UnitDirectionFromLivable[livable];
-				
-				var groundState = GroundStateFromMovable[movable];
+				var unitSettings = UnitSettingsFromLivable[settings.Character];
+
+				var unitDirection = UnitDirectionFromLivable[settings.Movable];
+				var groundState   = GroundStateFromMovable[settings.Movable];
 
 				if (groundState.Value)
 				{
-					var velocity = VelocityFromMovable[movable];
+					var velocity = VelocityFromMovable[settings.Movable];
 					// to not make tanks op, we need to get the weight from entity and use it as an acceleration factor
 					var accel = math.clamp(15 - unitSettings.Weight, 2.5f, 15) * 10;
 					accel = math.min(accel * DeltaTime, 1);
 
 					velocity.Value.x = math.lerp(velocity.Value.x, unitSettings.BaseSpeed * unitDirection.Value, accel);
 
-					VelocityFromMovable[movable] = velocity;
+					VelocityFromMovable[settings.Movable] = velocity;
 				}
 			}
 		}
 
 		private Entity m_MarchCommand;
 
-		protected override void OnCreateManager()
+		protected override void OnCreate()
 		{
-			base.OnCreateManager();
+			base.OnCreate();
 
 			var cmdBuilder = World.GetOrCreateSystem<FlowCommandBuilder>();
 
@@ -114,18 +101,18 @@ namespace Patapon4TLB.Default
 			});
 		}
 
-		protected override void OnUpdate()
+		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			new JobProcess
+			return new JobProcess
 			{
 				MarchCommand                      = m_MarchCommand,
-				DeltaTime                         = GetSingleton<SingletonGameTime>().DeltaTime,
+				DeltaTime                         = GetSingleton<GameTimeComponent>().DeltaTime,
 				RhythmActionControllerFromLivable = GetComponentDataFromEntity<RhythmActionController>(true),
 				UnitSettingsFromLivable           = GetComponentDataFromEntity<UnitBaseSettings>(true),
 				UnitDirectionFromLivable          = GetComponentDataFromEntity<UnitDirection>(true),
 				GroundStateFromMovable            = GetComponentDataFromEntity<GroundState>(),
 				VelocityFromMovable               = GetComponentDataFromEntity<Velocity>()
-			}.Schedule(this).Complete();
+			}.Schedule(this, inputDeps);
 		}
 	}
 }

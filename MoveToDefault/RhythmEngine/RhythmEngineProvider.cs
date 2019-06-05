@@ -5,14 +5,27 @@ using Unity.Entities;
 
 namespace Patapon4TLB.Default
 {
-	public class RhythmEngineProvider : BaseProvider
+	public class RhythmEngineProvider : BaseProviderBatch<RhythmEngineProvider.Create>
 	{
-		public override void GetComponents(out ComponentType[] entityComponents, out ComponentType[] excludedStreamerComponents)
+		public struct Create
+		{
+			/// <summary>
+			/// Default '0.5f'
+			/// </summary>
+			public float? BeatInterval;
+
+			/// <summary>
+			/// Default '4'
+			/// </summary>
+			public int? MaxBeats;
+		}
+
+		public override void GetComponents(out ComponentType[] entityComponents)
 		{
 			entityComponents = new[]
 			{
-				ComponentType.ReadWrite<DefaultRhythmEngineData.Settings>(),
-				ComponentType.ReadWrite<DefaultRhythmEngineData.Predicted>(),
+				ComponentType.ReadWrite<DefaultRhythmEngineSettings>(),
+				ComponentType.ReadWrite<DefaultRhythmEngineState>(),
 				ComponentType.ReadWrite<DefaultRhythmEngineCurrentCommand>(),
 				ComponentType.ReadWrite<FlowRhythmEngineSettingsData>(),
 				ComponentType.ReadWrite<FlowRhythmEngineProcessData>(),
@@ -20,21 +33,16 @@ namespace Patapon4TLB.Default
 				ComponentType.ReadWrite<FlowCommandManagerTypeDefinition>(),
 				ComponentType.ReadWrite<FlowCommandManagerSettingsData>(),
 				ComponentType.ReadWrite<FlowCurrentCommand>(),
-				
+
 			};
-			excludedStreamerComponents = null;
 		}
 
-		protected override Entity SpawnEntity(Entity origin, SnapshotRuntime snapshotRuntime)
+		public override void SetEntityData(Entity entity, Create data)
 		{
-			var entity = base.SpawnEntity(origin, snapshotRuntime);
-
 			EntityManager.SetComponentData(entity, new ShardRhythmEngine {EngineType = ComponentType.ReadWrite<FlowRhythmEngineTypeDefinition>()});
-			EntityManager.SetComponentData(entity, new FlowRhythmEngineSettingsData(0.5f));
-			
-			EntityManager.SetComponentData(entity, new FlowCommandManagerSettingsData(4));
-			
-			return entity;
+
+			EntityManager.SetComponentData(entity, new FlowRhythmEngineSettingsData(data.BeatInterval ?? 0.5f));
+			EntityManager.SetComponentData(entity, new FlowCommandManagerSettingsData(data.MaxBeats ?? 4));
 		}
 	}
 }

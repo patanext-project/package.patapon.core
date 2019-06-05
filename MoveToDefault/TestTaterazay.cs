@@ -10,7 +10,8 @@ using Unity.Transforms;
 
 namespace Patapon4TLB.Default
 {
-	public class TestTaterazay : ComponentSystem
+	// todo
+	/*public class TestTaterazay : ComponentSystem
 	{
 		protected override void OnStartRunning()
 		{
@@ -38,9 +39,7 @@ namespace Patapon4TLB.Default
 				typeof(ActionContainer),
 				typeof(HealthContainer),
 
-				typeof(OwnerChild),
-
-				typeof(GenerateEntitySnapshot)
+				typeof(OwnerChild)
 			);
 			{
 				EntityManager.SetComponentData(characterEntity, new UnitDirection
@@ -155,5 +154,5 @@ namespace Patapon4TLB.Default
 				r.Value = rotation.Value;
 			});
 		}
-	}
+	}*/
 }

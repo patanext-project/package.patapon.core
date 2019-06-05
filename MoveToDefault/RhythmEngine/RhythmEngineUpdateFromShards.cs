@@ -4,29 +4,30 @@ using StormiumTeam.GameBase;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 
 namespace Patapon4TLB.Default
 {
+	[UpdateInGroup(typeof(RhythmEngineGroup))]
 	[UsedImplicitly]
-	[DisableAutoCreation]
-	public class RhythmEngineUpdateFromShards : GameBaseSystem
+	public class RhythmEngineUpdateFromShards : JobGameBaseSystem
 	{
 		[BurstCompile]
-		private struct Job : IJobProcessComponentDataWithEntity<DefaultRhythmEngineData.Predicted, FlowRhythmEngineProcessData,
-			DefaultRhythmEngineData.Settings, FlowRhythmEngineSettingsData, FlowCommandManagerSettingsData>
+		private struct Job : IJobProcessComponentDataWithEntity<DefaultRhythmEngineState, FlowRhythmEngineProcessData,
+			DefaultRhythmEngineSettings, FlowRhythmEngineSettingsData, FlowCommandManagerSettingsData>
 		{
-			public void Execute(Entity                                entity,    int                                         index,
-			                    ref DefaultRhythmEngineData.Predicted predicted, [ReadOnly] ref FlowRhythmEngineProcessData  flowProcess,
-			                    ref DefaultRhythmEngineData.Settings  settings,  [ReadOnly] ref FlowRhythmEngineSettingsData flowSettings, ref FlowCommandManagerSettingsData cmdSettings)
+			public void Execute(Entity                          entity,   int                                         index,
+			                    ref DefaultRhythmEngineState    state,    [ReadOnly] ref FlowRhythmEngineProcessData  flowProcess,
+			                    ref DefaultRhythmEngineSettings settings, [ReadOnly] ref FlowRhythmEngineSettingsData flowSettings, ref FlowCommandManagerSettingsData cmdSettings)
 			{
-				predicted.Beat    = flowProcess.Beat;
+				state.Beat        = flowProcess.Beat;
 				settings.MaxBeats = cmdSettings.MaxBeats;
 			}
 		}
 
-		protected override void OnUpdate()
+		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			SetDependency(new Job().Schedule(this, GetDependency()));
+			return new Job().Schedule(this, inputDeps);
 		}
 	}
 }

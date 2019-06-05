@@ -34,7 +34,7 @@
             m_Events++;
         }
 
-        protected override void OnCreateManager()
+        protected override void OnCreate()
         {
             // TODO: Use NativeEvent from the shared package, much more future proof
             Camera.onPreCull   += OnCameraPreCull;
@@ -53,7 +53,7 @@
             SendUpdateEvent(Entity.Null);
         }
 
-        protected override void OnDestroyManager()
+        protected override void OnDestroy()
         {
             LastJobHandle.Complete();
 

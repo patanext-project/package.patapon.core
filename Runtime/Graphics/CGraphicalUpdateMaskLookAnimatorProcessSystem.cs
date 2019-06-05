@@ -21,7 +21,7 @@
         private int m_HashedAimlookXParameter;
         private int m_HashedAimlookYParameter;
 
-        protected override void OnCreateManager()
+        protected override void OnCreate()
         {
             m_HashedAimlookXParameter = Animator.StringToHash(AnimatorAimlookXParameter);
             m_HashedAimlookYParameter = Animator.StringToHash(AnimatorAimlookYParameter);

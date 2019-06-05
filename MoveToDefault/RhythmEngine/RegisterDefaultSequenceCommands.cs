@@ -8,9 +8,9 @@ namespace Patapon4TLB.Default
 	[DisableAutoCreation]
 	public class RegisterDefaultSequenceCommands : GameBaseSystem
 	{
-		protected override void OnCreateManager()
+		protected override void OnCreate()
 		{
-			base.OnCreateManager();
+			base.OnCreate();
 
 			var builder = World.GetOrCreateSystem<FlowCommandBuilder>();
 

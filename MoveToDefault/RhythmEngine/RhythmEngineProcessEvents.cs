@@ -5,8 +5,8 @@ using Unity.Entities;
 
 namespace Patapon4TLB.Default
 {
+	[UpdateInGroup(typeof(RhythmEngineGroup))]
 	[UsedImplicitly]
-	[DisableAutoCreation]
 	public class RhythmEngineProcessEvents : GameBaseSystem
 	{
 		protected override void OnUpdate()

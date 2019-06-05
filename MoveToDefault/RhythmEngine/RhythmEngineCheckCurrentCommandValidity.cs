@@ -1,24 +1,26 @@
 using JetBrains.Annotations;
 using StormiumTeam.GameBase;
 using Unity.Entities;
+using Unity.Jobs;
+using Unity.NetCode;
 
 namespace Patapon4TLB.Default
 {
-	[DisableAutoCreation]
+	[UpdateInGroup(typeof(RhythmEngineGroup))]
 	[UsedImplicitly]
-	public class RhythmEngineCheckCurrentCommandValidity : GameBaseSystem
+	public class RhythmEngineCheckCurrentCommandValidity : JobGameBaseSystem
 	{
 		//[BurstCompile]
 		private struct DeleteOldCommandJob : IJobChunk
 		{
-			public ArchetypeChunkComponentType<DefaultRhythmEngineData.Predicted> PredictedDataType;
-			public ArchetypeChunkComponentType<DefaultRhythmEngineData.Settings>  SettingsDataType;
-			public ArchetypeChunkBufferType<DefaultRhythmEngineCurrentCommand>    CurrCommandType;
+			public ArchetypeChunkComponentType<DefaultRhythmEngineState>       StateType;
+			public ArchetypeChunkComponentType<DefaultRhythmEngineSettings>    SettingsType;
+			public ArchetypeChunkBufferType<DefaultRhythmEngineCurrentCommand> CurrCommandType;
 
 			public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
 			{
-				var predictedDataArray  = chunk.GetNativeArray(PredictedDataType);
-				var settingsDataArray   = chunk.GetNativeArray(SettingsDataType);
+				var predictedDataArray  = chunk.GetNativeArray(StateType);
+				var settingsDataArray   = chunk.GetNativeArray(SettingsType);
 				var currCommandAccessor = chunk.GetBufferAccessor(CurrCommandType);
 
 				var count = chunk.Count;
@@ -44,21 +46,23 @@ namespace Patapon4TLB.Default
 
 		private EntityQuery m_EntityQuery;
 
-		protected override void OnCreateManager()
+		protected override void OnCreate()
 		{
-			base.OnCreateManager();
+			base.OnCreate();
 
-			m_EntityQuery = GetEntityQuery(typeof(DefaultRhythmEngineData.Settings), typeof(DefaultRhythmEngineData.Predicted), typeof(DefaultRhythmEngineCurrentCommand));
+			m_EntityQuery = GetEntityQuery(typeof(DefaultRhythmEngineSettings), typeof(DefaultRhythmEngineState), typeof(DefaultRhythmEngineCurrentCommand));
 		}
 
-		protected override void OnUpdate()
+		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			SetDependency(new DeleteOldCommandJob
+			inputDeps = new DeleteOldCommandJob
 			{
-				PredictedDataType = GetArchetypeChunkComponentType<DefaultRhythmEngineData.Predicted>(),
-				SettingsDataType  = GetArchetypeChunkComponentType<DefaultRhythmEngineData.Settings>(),
+				StateType = GetArchetypeChunkComponentType<DefaultRhythmEngineState>(),
+				SettingsType  = GetArchetypeChunkComponentType<DefaultRhythmEngineSettings>(),
 				CurrCommandType   = GetArchetypeChunkBufferType<DefaultRhythmEngineCurrentCommand>()
-			}.Schedule(m_EntityQuery, GetDependency()));
+			}.Schedule(m_EntityQuery, inputDeps);
+
+			return inputDeps;
 		}
 	}
 }

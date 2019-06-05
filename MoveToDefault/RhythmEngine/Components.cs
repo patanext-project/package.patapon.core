@@ -1,24 +1,76 @@
+using DefaultNamespace;
 using package.patapon.core;
 using Unity.Entities;
+using Unity.Networking.Transport;
 
 namespace Patapon4TLB.Default
 {
-	public struct DefaultRhythmEngineData
+	public struct DefaultRhythmEngineSnapshotData : ISnapshotFromComponent<DefaultRhythmEngineSnapshotData, DefaultRhythmEngineSettings, DefaultRhythmEngineState>
 	{
-		public struct Settings : IComponentData
+		public uint Tick { get; private set; }
+		
+		public int MaxBeats;
+		public int Beat;
+		
+		public void PredictDelta(uint tick, ref DefaultRhythmEngineSnapshotData baseline1, ref DefaultRhythmEngineSnapshotData baseline2)
 		{
-			public int MaxBeats;
+		}
+
+		public void Serialize(ref DefaultRhythmEngineSnapshotData baseline, DataStreamWriter writer, NetworkCompressionModel compressionModel)
+		{
+			writer.WritePackedUInt((uint) MaxBeats, compressionModel);
+			writer.WritePackedUInt((uint) Beat, compressionModel);
+		}
+
+		public void Deserialize(uint tick, ref DefaultRhythmEngineSnapshotData baseline, DataStreamReader reader, ref DataStreamReader.Context ctx, NetworkCompressionModel compressionModel)
+		{
+			Tick = tick;
+
+			MaxBeats = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
+			Beat = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
+		}
+
+		public void Interpolate(ref DefaultRhythmEngineSnapshotData target, float factor)
+		{
+			MaxBeats = target.MaxBeats;
+			Beat = target.Beat;
+		}
+
+		public void Set(DefaultRhythmEngineSettings settings, DefaultRhythmEngineState state)
+		{
+			MaxBeats = settings.MaxBeats;
+			Beat = state.Beat;
 		}
 		
-		public struct Predicted : IComponentData, IPredictable<Predicted>
+		public class RegisterSerializer : AddComponentSerializer<DefaultRhythmEngineSettings, DefaultRhythmEngineState, DefaultRhythmEngineSnapshotData>
+		{}
+	}
+
+	public struct DefaultRhythmEngineSettings : IComponentFromSnapshot<DefaultRhythmEngineSnapshotData>
+	{
+		public int MaxBeats;
+
+		public void Set(DefaultRhythmEngineSnapshotData snapshot)
 		{
-			public int Beat;
-			public bool CheckNewCommand;
-			
-			public bool VerifyPrediction(in Predicted real)
-			{
-				return false;
-			}
+			MaxBeats = snapshot.MaxBeats;
+		}
+
+		public class UpdateFromSnapshot : BaseUpdateFromSnapshotSystem<DefaultRhythmEngineSnapshotData, DefaultRhythmEngineSettings>
+		{
+		}
+	}
+
+	public struct DefaultRhythmEngineState : IComponentFromSnapshot<DefaultRhythmEngineSnapshotData>
+	{
+		public int Beat;
+
+		public void Set(DefaultRhythmEngineSnapshotData snapshot)
+		{
+			Beat = snapshot.Beat;
+		}
+
+		public class UpdateFromSnapshot : BaseUpdateFromSnapshotSystem<DefaultRhythmEngineSnapshotData, DefaultRhythmEngineState>
+		{
 		}
 	}
 

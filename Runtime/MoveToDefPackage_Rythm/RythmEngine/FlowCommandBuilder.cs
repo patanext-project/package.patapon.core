@@ -19,7 +19,7 @@ namespace package.patapon.core
 		{
 			Entity finalEntity = default;
 			
-			Entities.WithAll<FlowCommandEntityTag, FlowCommandSequenceContainer>().ForEach((Entity entity, DynamicBuffer<FlowCommandSequenceContainer> sequenceBuffer) =>
+			Entities.WithAll<FlowCommandEntityTag>().ForEach((Entity entity, DynamicBuffer<FlowCommandSequenceContainer> sequenceBuffer) =>
 			{
 				if (sequenceBuffer.Length != sequence.Length)
 					return;

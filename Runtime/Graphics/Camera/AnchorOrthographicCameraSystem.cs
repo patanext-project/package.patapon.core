@@ -75,9 +75,9 @@ namespace package.patapon.core
             }
         }
 
-        protected override void OnCreateManager()
+        protected override void OnCreate()
         {
-            base.OnCreateManager();
+            base.OnCreate();
 
             m_CameraEntityQuery = GetEntityQuery(new EntityQueryDesc
             {

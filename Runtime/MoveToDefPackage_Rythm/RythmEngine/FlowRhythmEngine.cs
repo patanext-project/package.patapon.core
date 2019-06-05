@@ -38,10 +38,21 @@ namespace package.patapon.core
 
             public EntityCommandBuffer.Concurrent EntityCommandBuffer;
 
+            private void NonBurst_ThrowWarning(Entity entity)
+            {
+                Debug.LogWarning($"Engine '{entity}' had a FlowRhythmEngineSettingsData.BeatInterval of 0 (or less), this is not accepted.");
+            }
+            
             public void Execute(Entity entity, int index, [ReadOnly] ref ShardRhythmEngine engine, ref FlowRhythmEngineProcessData process, [ReadOnly] ref FlowRhythmEngineSettingsData settings)
             {
                 process.Time      += DeltaTime;
                 process.TimeDelta += DeltaTime;
+
+                if (settings.BeatInterval <= 0.0001f)
+                {
+                    NonBurst_ThrowWarning(entity);
+                    return;
+                }
 
                 while (process.TimeDelta > settings.BeatInterval)
                 {
@@ -59,9 +70,9 @@ namespace package.patapon.core
             }
         }
 
-        protected override void OnCreateManager()
+        protected override void OnCreate()
         {
-            base.OnCreateManager();
+            base.OnCreate();
 
             m_EventArchetype = EntityManager.CreateArchetype
             (
