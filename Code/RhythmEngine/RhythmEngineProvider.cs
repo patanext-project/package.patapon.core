@@ -2,6 +2,7 @@ using package.patapon.core;
 using package.patapon.def.Data;
 using StormiumTeam.GameBase;
 using Unity.Entities;
+using Unity.NetCode;
 
 namespace Patapon4TLB.Default
 {
@@ -33,7 +34,7 @@ namespace Patapon4TLB.Default
 				ComponentType.ReadWrite<FlowCommandManagerTypeDefinition>(),
 				ComponentType.ReadWrite<FlowCommandManagerSettingsData>(),
 				ComponentType.ReadWrite<FlowCurrentCommand>(),
-
+				ComponentType.ReadWrite<GhostComponent>(),
 			};
 		}
 

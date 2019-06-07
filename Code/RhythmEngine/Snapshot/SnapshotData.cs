@@ -34,6 +34,7 @@ namespace Patapon4TLB.Default.Snapshot
 
 		public void Interpolate(ref DefaultRhythmEngineSnapshotData target, float factor)
 		{
+			IsPaused = target.IsPaused;
 			MaxBeats = target.MaxBeats;
 			Beat     = target.Beat;
 		}
