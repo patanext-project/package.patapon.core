@@ -54,6 +54,7 @@ namespace Patapon4TLB.Core
 		[RequireComponentTag(typeof(ReplicatedEntityComponent))]
 		public struct FindJob : IJobForEachWithEntity<GamePlayer>
 		{
+			[ReadOnly]
 			public ComponentDataFromEntity<GamePlayerReadyTag> PlayerReadyTag;
 			public EntityCommandBuffer.Concurrent              CommandBuffer;
 
@@ -65,6 +66,7 @@ namespace Patapon4TLB.Core
 				var count = DelayedEntities.Length;
 				for (var ent = 0; ent != count; ent++)
 				{
+					Debug.Log($"{DelayedData[ent].ServerId}, {gamePlayer.ServerId}");
 					if (DelayedData[ent].ServerId == gamePlayer.ServerId)
 					{
 						if (!PlayerReadyTag.Exists(entity))
@@ -97,6 +99,7 @@ namespace Patapon4TLB.Core
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
+			m_DelayedQuery.AddDependency(inputDeps);
 			inputDeps = new FindJob
 			{
 				PlayerReadyTag = GetComponentDataFromEntity<GamePlayerReadyTag>(),
@@ -104,9 +107,7 @@ namespace Patapon4TLB.Core
 
 				DelayedEntities = m_DelayedQuery.ToEntityArray(Allocator.TempJob, out var dep1),
 				DelayedData     = m_DelayedQuery.ToComponentDataArray<DelayedPlayerConnection>(Allocator.TempJob, out var dep2)
-			}.Schedule(this, inputDeps);
-
-			inputDeps = JobHandle.CombineDependencies(inputDeps, dep1, dep2);
+			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, dep1, dep2));
 
 			m_Barrier.AddJobHandleForProducer(inputDeps);
 

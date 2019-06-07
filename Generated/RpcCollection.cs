@@ -12,6 +12,7 @@ public struct RpcCollection : IRpcCollection
         typeof(RhythmRpcNewClientCommand),
         typeof(RhythmRpcPressure),
         typeof(ClientLoadedRpc),
+        typeof(PlayerConnectedRpc),
 
     };
     public void ExecuteRpc(int type, DataStreamReader reader, ref DataStreamReader.Context ctx, Entity connection, EntityCommandBuffer.Concurrent commandBuffer, int jobIndex)
@@ -35,6 +36,13 @@ public struct RpcCollection : IRpcCollection
             case 2:
             {
                 var tmp = new ClientLoadedRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 3:
+            {
+                var tmp = new PlayerConnectedRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
