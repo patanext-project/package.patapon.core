@@ -185,6 +185,11 @@ namespace package.patapon.core
         
     }
 
+    public struct FlowRhythmEngineSimulateTag : IComponentData
+    {
+        
+    }
+
     public struct FlowRhythmEngineProcessData : IComponentData
     {
         public int    Beat;

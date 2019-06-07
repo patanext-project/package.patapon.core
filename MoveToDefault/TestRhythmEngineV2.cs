@@ -32,26 +32,4 @@ namespace Patapon4TLB.Default
 			
 		}
 	}
-	
-	[UpdateBefore(typeof(RhythmEngineGroup))]
-	public class TestRhythmEngineV2_CreatePressureSystem : ComponentSystem
-	{
-		protected override void OnUpdate()
-		{	
-			Entities.ForEach((Entity e, ref DefaultRhythmEngineState predicted) =>
-			{
-				if (Input.GetKeyDown(KeyCode.Keypad4)) CreatePressure(RhythmKeys.Left, e);
-				if (Input.GetKeyDown(KeyCode.Keypad6)) CreatePressure(RhythmKeys.Right, e);
-				if (Input.GetKeyDown(KeyCode.Keypad8)) CreatePressure(RhythmKeys.Up, e);
-				if (Input.GetKeyDown(KeyCode.Keypad2)) CreatePressure(RhythmKeys.Down, e);
-			});
-		}
-
-		private void CreatePressure(int key, Entity engine)
-		{
-			var entity = PostUpdateCommands.CreateEntity();
-
-			PostUpdateCommands.AddComponent(entity, new PressureEvent {Key = key, Engine = engine});
-		}
-	}
 }

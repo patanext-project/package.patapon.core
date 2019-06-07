@@ -1,5 +1,6 @@
 using System;
 using Patapon4TLB.Default.Snapshot;
+using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Networking.Transport;
@@ -13,12 +14,13 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
         var arr = new string[]
         {
             "DefaultRhythmEngineGhostSerializer",
+            "GamePlayerGhostSerializer",
 
         };
         return arr;
     }
 
-    public int Length => 1;
+    public int Length => 2;
 #endif
     public void Initialize(World world)
     {
@@ -26,12 +28,17 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
         m_DefaultRhythmEngineSnapshotDataNewGhostIds = curDefaultRhythmEngineGhostSpawnSystem.NewGhostIds;
         m_DefaultRhythmEngineSnapshotDataNewGhosts = curDefaultRhythmEngineGhostSpawnSystem.NewGhosts;
         curDefaultRhythmEngineGhostSpawnSystem.GhostType = 0;
+        var curGamePlayerGhostSpawnSystem = world.GetOrCreateSystem<GamePlayerGhostSpawnSystem>();
+        m_GamePlayerSnapshotNewGhostIds = curGamePlayerGhostSpawnSystem.NewGhostIds;
+        m_GamePlayerSnapshotNewGhosts = curGamePlayerGhostSpawnSystem.NewGhosts;
+        curGamePlayerGhostSpawnSystem.GhostType = 1;
 
     }
 
     public void BeginDeserialize(JobComponentSystem system)
     {
         m_DefaultRhythmEngineSnapshotDataFromEntity = system.GetBufferFromEntity<DefaultRhythmEngineSnapshotData>();
+        m_GamePlayerSnapshotFromEntity = system.GetBufferFromEntity<GamePlayerSnapshot>();
 
     }
     public void Deserialize(int serializer, Entity entity, uint snapshot, uint baseline, uint baseline2, uint baseline3,
@@ -42,6 +49,10 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
         {
         case 0:
             GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_DefaultRhythmEngineSnapshotDataFromEntity, entity, snapshot, baseline, baseline2,
+                baseline3, reader, ref ctx, compressionModel);
+            break;
+        case 1:
+            GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_GamePlayerSnapshotFromEntity, entity, snapshot, baseline, baseline2,
                 baseline3, reader, ref ctx, compressionModel);
             break;
 
@@ -58,6 +69,10 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
                 m_DefaultRhythmEngineSnapshotDataNewGhostIds.Add(ghostId);
                 m_DefaultRhythmEngineSnapshotDataNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<DefaultRhythmEngineSnapshotData>(snapshot, reader, ref ctx, compressionModel));
                 break;
+            case 1:
+                m_GamePlayerSnapshotNewGhostIds.Add(ghostId);
+                m_GamePlayerSnapshotNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<GamePlayerSnapshot>(snapshot, reader, ref ctx, compressionModel));
+                break;
 
             default:
                 throw new ArgumentException("Invalid serializer type");
@@ -67,8 +82,11 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
     private BufferFromEntity<DefaultRhythmEngineSnapshotData> m_DefaultRhythmEngineSnapshotDataFromEntity;
     private NativeList<int> m_DefaultRhythmEngineSnapshotDataNewGhostIds;
     private NativeList<DefaultRhythmEngineSnapshotData> m_DefaultRhythmEngineSnapshotDataNewGhosts;
+    private BufferFromEntity<GamePlayerSnapshot> m_GamePlayerSnapshotFromEntity;
+    private NativeList<int> m_GamePlayerSnapshotNewGhostIds;
+    private NativeList<GamePlayerSnapshot> m_GamePlayerSnapshotNewGhosts;
 
 }
-public class PataponMPExperiment_RythmAndMovementGhostReceiveSystem : GhostReceiveSystem<GhostDeserializerCollection>
+public class P4ExperimentGhostReceiveSystem : GhostReceiveSystem<GhostDeserializerCollection>
 {
 }

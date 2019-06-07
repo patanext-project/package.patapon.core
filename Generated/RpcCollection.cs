@@ -1,4 +1,5 @@
 using System;
+using Patapon4TLB.Core;
 using Patapon4TLB.Default;
 using Unity.Entities;
 using Unity.Networking.Transport;
@@ -10,6 +11,7 @@ public struct RpcCollection : IRpcCollection
     {
         typeof(RhythmRpcNewClientCommand),
         typeof(RhythmRpcPressure),
+        typeof(ClientLoadedRpc),
 
     };
     public void ExecuteRpc(int type, DataStreamReader reader, ref DataStreamReader.Context ctx, Entity connection, EntityCommandBuffer.Concurrent commandBuffer, int jobIndex)
@@ -26,6 +28,13 @@ public struct RpcCollection : IRpcCollection
             case 1:
             {
                 var tmp = new RhythmRpcPressure();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 2:
+            {
+                var tmp = new ClientLoadedRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;

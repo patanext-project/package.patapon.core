@@ -1,5 +1,6 @@
 using System;
 using Patapon4TLB.Default.Snapshot;
+using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Networking.Transport;
@@ -11,6 +12,8 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
     {
         if (m_DefaultRhythmEngineGhostSerializer.CanSerialize(arch))
             return 0;
+        if (m_GamePlayerGhostSerializer.CanSerialize(arch))
+            return 1;
 
         throw new ArgumentException("Invalid serializer type");
     }
@@ -18,6 +21,7 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
     public void BeginSerialize(ComponentSystemBase system)
     {
         m_DefaultRhythmEngineGhostSerializer.BeginSerialize(system);
+        m_GamePlayerGhostSerializer.BeginSerialize(system);
 
     }
 
@@ -27,6 +31,8 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
         {
             case 0:
                 return m_DefaultRhythmEngineGhostSerializer.CalculateImportance(chunk);
+            case 1:
+                return m_GamePlayerGhostSerializer.CalculateImportance(chunk);
 
         }
 
@@ -39,6 +45,8 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
         {
             case 0:
                 return m_DefaultRhythmEngineGhostSerializer.WantsPredictionDelta;
+            case 1:
+                return m_GamePlayerGhostSerializer.WantsPredictionDelta;
 
         }
 
@@ -51,6 +59,8 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
         {
             case 0:
                 return m_DefaultRhythmEngineGhostSerializer.SnapshotSize;
+            case 1:
+                return m_GamePlayerGhostSerializer.SnapshotSize;
 
         }
 
@@ -72,15 +82,23 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
                     ghosts, ghostEntities, baselinePerEntity, availableBaselines,
                     dataStream, compressionModel);
             }
+            case 1:
+            {
+                return GhostSendSystem<GhostSerializerCollection>.InvokeSerialize(m_GamePlayerGhostSerializer, serializer,
+                    chunk, startIndex, currentTick, currentSnapshotEntity, (GamePlayerSnapshot*)currentSnapshotData,
+                    ghosts, ghostEntities, baselinePerEntity, availableBaselines,
+                    dataStream, compressionModel);
+            }
 
             default:
                 throw new ArgumentException("Invalid serializer type");
         }
     }
     private DefaultRhythmEngineGhostSerializer m_DefaultRhythmEngineGhostSerializer;
+    private GamePlayerGhostSerializer m_GamePlayerGhostSerializer;
 
 }
 
-public class PataponMPExperiment_RythmAndMovementGhostSendSystem : GhostSendSystem<GhostSerializerCollection>
+public class P4ExperimentGhostSendSystem : GhostSendSystem<GhostSerializerCollection>
 {
 }

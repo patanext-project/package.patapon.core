@@ -7,28 +7,6 @@
             "actions": [
                 {
                     "name": "Pressure1",
-                    "id": "e20f4337-aaa9-4d2e-afa0-6119bc003806",
-                    "expectedControlLayout": "Button",
-                    "continuous": false,
-                    "passThrough": false,
-                    "initialStateCheck": true,
-                    "processors": "",
-                    "interactions": "PressAndRelease",
-                    "bindings": []
-                },
-                {
-                    "name": "Pressure2",
-                    "id": "5cdf9bcd-e025-466e-a196-e1424d60de8b",
-                    "expectedControlLayout": "Button",
-                    "continuous": false,
-                    "passThrough": false,
-                    "initialStateCheck": false,
-                    "processors": "",
-                    "interactions": "Press(behavior=2)",
-                    "bindings": []
-                },
-                {
-                    "name": "Pressure3",
                     "id": "55cb0c85-06a8-453b-bbe5-4822ee248e4b",
                     "expectedControlLayout": "Button",
                     "continuous": false,
@@ -39,8 +17,8 @@
                     "bindings": []
                 },
                 {
-                    "name": "Pressure4",
-                    "id": "3e5b5dfa-cee9-4280-b8a4-aebae4f70dc1",
+                    "name": "Pressure2",
+                    "id": "e20f4337-aaa9-4d2e-afa0-6119bc003806",
                     "expectedControlLayout": "Button",
                     "continuous": false,
                     "passThrough": false,
@@ -48,57 +26,31 @@
                     "processors": "",
                     "interactions": "Press",
                     "bindings": []
+                },
+                {
+                    "name": "Pressure3",
+                    "id": "3e5b5dfa-cee9-4280-b8a4-aebae4f70dc1",
+                    "expectedControlLayout": "Button",
+                    "continuous": false,
+                    "passThrough": false,
+                    "initialStateCheck": false,
+                    "processors": "",
+                    "interactions": "Press(behavior=2)",
+                    "bindings": []
+                },
+                {
+                    "name": "Pressure4",
+                    "id": "5cdf9bcd-e025-466e-a196-e1424d60de8b",
+                    "expectedControlLayout": "Button",
+                    "continuous": false,
+                    "passThrough": false,
+                    "initialStateCheck": true,
+                    "processors": "",
+                    "interactions": "PressAndRelease",
+                    "bindings": []
                 }
             ],
             "bindings": [
-                {
-                    "name": "",
-                    "id": "c42401a8-077f-4f4b-9a92-f74eb2867c75",
-                    "path": "<Keyboard>/numpad8",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Pressure1",
-                    "isComposite": false,
-                    "isPartOfComposite": false,
-                    "modifiers": ""
-                },
-                {
-                    "name": "",
-                    "id": "77d97197-6475-479f-81ce-6db858ac8272",
-                    "path": "<Gamepad>/buttonNorth",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Pressure1",
-                    "isComposite": false,
-                    "isPartOfComposite": false,
-                    "modifiers": ""
-                },
-                {
-                    "name": "",
-                    "id": "9c6a4b7c-dd14-48a8-8271-ba5fb1572b09",
-                    "path": "<Keyboard>/numpad2",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Pressure2",
-                    "isComposite": false,
-                    "isPartOfComposite": false,
-                    "modifiers": ""
-                },
-                {
-                    "name": "",
-                    "id": "c124bd21-28f2-4e6a-a5a6-3323406bff59",
-                    "path": "<Gamepad>/buttonSouth",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Pressure2",
-                    "isComposite": false,
-                    "isPartOfComposite": false,
-                    "modifiers": ""
-                },
                 {
                     "name": "",
                     "id": "bf5db483-35ef-4ee5-8401-9532ff4a6a1e",
@@ -106,7 +58,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Pressure3",
+                    "action": "Pressure1",
                     "isComposite": false,
                     "isPartOfComposite": false,
                     "modifiers": ""
@@ -118,7 +70,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Pressure3",
+                    "action": "Pressure1",
                     "isComposite": false,
                     "isPartOfComposite": false,
                     "modifiers": ""
@@ -130,7 +82,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Pressure4",
+                    "action": "Pressure2",
                     "isComposite": false,
                     "isPartOfComposite": false,
                     "modifiers": ""
@@ -139,6 +91,54 @@
                     "name": "",
                     "id": "e3078748-f421-4e20-9d78-d9ca30f6110d",
                     "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pressure2",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
+                    "id": "9c6a4b7c-dd14-48a8-8271-ba5fb1572b09",
+                    "path": "<Keyboard>/numpad2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pressure3",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
+                    "id": "c124bd21-28f2-4e6a-a5a6-3323406bff59",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pressure3",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
+                    "id": "c42401a8-077f-4f4b-9a92-f74eb2867c75",
+                    "path": "<Keyboard>/numpad8",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pressure4",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
+                    "id": "77d97197-6475-479f-81ce-6db858ac8272",
+                    "path": "<Gamepad>/buttonNorth",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
