@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using package.patapon.core;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Jobs;
@@ -52,6 +53,11 @@ namespace Patapon4TLB.Default
 	
 	[DisableAutoCreation]
 	public class RhythmEngineEndBarrier : EntityCommandBufferSystem
+	{
+	}
+
+	[UpdateInGroup(typeof(RhythmEngineGroup))]
+	public class RhythmEngineFlowSystem : FlowRhythmEngine
 	{
 	}
 }

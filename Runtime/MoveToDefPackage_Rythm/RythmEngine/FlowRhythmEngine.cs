@@ -1,7 +1,9 @@
 ﻿using System;
 using package.patapon.def.Data;
+using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -9,7 +11,7 @@ namespace package.patapon.core
 {
     // Currently a WIP, so there are a lot of tests and unit tests in this class
     // TODO: Make it inheriting a special class for managing rhythm engine
-    public class FlowRhythmEngine : ComponentSystem
+    public abstract class FlowRhythmEngine : JobComponentSystem
     {
         #region Constants
 
@@ -23,7 +25,6 @@ namespace package.patapon.core
         #endregion
 
         private EntityQuery m_EngineGroup;
-        private EntityArchetype m_EventArchetype;
 
         struct ProcessEngineJob : IJobProcessComponentDataWithEntity<ShardRhythmEngine, FlowRhythmEngineProcessData, FlowRhythmEngineSettingsData>
         {
@@ -33,8 +34,8 @@ namespace package.patapon.core
             [ReadOnly]
             public int FrameCount;
 
-            [ReadOnly]
-            public EntityArchetype EventArchetype;
+            [NativeDisableParallelForRestriction]
+            public NativeList<FlowRhythmBeatEventProvider.Create> CreateBeatEventList;
 
             public EntityCommandBuffer.Concurrent EntityCommandBuffer;
 
@@ -54,109 +55,42 @@ namespace package.patapon.core
                     return;
                 }
 
-                while (process.TimeDelta > settings.BeatInterval)
+                while (process.TimeDelta >= settings.BeatInterval)
                 {
                     process.TimeDelta -= settings.BeatInterval;
 
                     process.Beat += 1;
 
-                    var eventEntity = EntityCommandBuffer.CreateEntity(index, EventArchetype);
-                    EntityCommandBuffer.SetComponent(index, eventEntity, new RhythmShardEvent(FrameCount));
-                    EntityCommandBuffer.SetComponent(index, eventEntity, new RhythmShardTarget(entity));
-                    EntityCommandBuffer.SetComponent(index, eventEntity, new FlowRhythmBeatData(process.Beat));
+                    CreateBeatEventList.Add(new FlowRhythmBeatEventProvider.Create
+                    {
+                        Target = entity,
+                        FrameCount = FrameCount,
+                        Beat = process.Beat
+                    });
                 }
 
                 process.TimeDelta = math.max(process.TimeDelta, 0f);
             }
         }
 
+        private NativeList<FlowRhythmBeatEventProvider.Create> m_DelayedBeatEventList;
         protected override void OnCreate()
         {
             base.OnCreate();
 
-            m_EventArchetype = EntityManager.CreateArchetype
-            (
-                ComponentType.ReadWrite<FlowRhythmEngineTypeDefinition>(),
-                ComponentType.ReadWrite<RhythmShardEvent>(),
-                ComponentType.ReadWrite<RhythmShardTarget>(),
-                ComponentType.ReadWrite<RhythmBeatData>(),
-                ComponentType.ReadWrite<FlowRhythmBeatData>()
-            );
+            m_DelayedBeatEventList = World.GetOrCreateSystem<FlowRhythmBeatEventProvider>().GetEntityDelayedList();
         }
 
-        protected override void OnUpdate()
+        protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            var deltaTime = Time.deltaTime;
-
             // Update engine data
-            var jobHandle = new ProcessEngineJob
+            inputDeps = new ProcessEngineJob
             {
-                FrameCount          = Time.frameCount,
-                DeltaTime           = deltaTime,
-                EventArchetype      = m_EventArchetype,
-                EntityCommandBuffer = PostUpdateCommands.ToConcurrent()
-            }.Schedule(this);
+                DeltaTime           = GetSingleton<GameTimeComponent>().DeltaTime,
+                CreateBeatEventList = m_DelayedBeatEventList
+            }.Schedule(this, inputDeps);
 
-            jobHandle.Complete();
-        }
-
-        public Entity AddPressure(Entity shardEngine, int keyType, EntityCommandBuffer ecb)
-        {
-            var processData  = EntityManager.GetComponentData<FlowRhythmEngineProcessData>(shardEngine);
-            var settingsData = EntityManager.GetComponentData<FlowRhythmEngineSettingsData>(shardEngine);
-
-            var actualBeat   = processData.Beat;
-            var actualTime   = processData.Time;
-            var beatInterval = settingsData.BeatInterval;
-
-            int correctedBeat;
-
-            var score = GetScore(actualTime, actualBeat, beatInterval, out correctedBeat);
-
-            //Debug.Log($"Beat|Corrected: {actualBeat}|{correctedBeat}, time: {actualTime}, score: {Mathf.Abs(score)}");
-
-            Entity newEntity;
-            if (ecb.IsCreated)
-            {
-                newEntity = ecb.CreateEntity();
-                ecb.AddComponent(newEntity, new FlowRhythmEngineTypeDefinition());
-                ecb.AddComponent(newEntity, new RhythmShardEvent(Time.frameCount));
-                ecb.AddComponent(newEntity, new RhythmShardTarget(shardEngine));
-                ecb.AddComponent(newEntity, new RhythmPressure());
-                ecb.AddComponent(newEntity, new FlowRhythmPressureData(keyType, actualBeat, correctedBeat, score));
-
-                return newEntity;
-            }
-
-            newEntity = EntityManager.CreateEntity();
-            EntityManager.AddComponent(newEntity, typeof(FlowRhythmEngineTypeDefinition));
-            EntityManager.AddComponentData(newEntity, new RhythmShardEvent(Time.frameCount));
-            EntityManager.AddComponentData(newEntity, new RhythmShardTarget(shardEngine));
-            EntityManager.AddComponent(newEntity, typeof(RhythmPressure));
-            EntityManager.AddComponentData(newEntity, new FlowRhythmPressureData(keyType, actualBeat, correctedBeat, score));
-
-            return newEntity;
-        }
-
-        // TODO: Make it as an abstract method
-        /// <summary>
-        /// Create a new rhythm engine.
-        /// </summary>
-        /// <returns>The new entity which contain engine data</returns>
-        public Entity AddEngine()
-        {
-            var entity = EntityManager.CreateEntity
-            (
-                typeof(ShardRhythmEngine),
-                typeof(FlowRhythmEngineTypeDefinition),
-                typeof(FlowRhythmEngineProcessData),
-                typeof(FlowRhythmEngineSettingsData)
-            );
-
-            EntityManager.SetComponentData(entity, new ShardRhythmEngine {EngineType = ComponentType.Create<FlowRhythmEngineTypeDefinition>()});
-            EntityManager.SetComponentData(entity, new FlowRhythmEngineSettingsData(DefaultBeatInterval));
-
-            return entity;
+            return inputDeps;
         }
 
         /// <summary>
@@ -242,14 +176,6 @@ namespace package.patapon.core
         /// If we made one at 13.8f, the score should be the same (but negative)!
         /// </example>
         public float Score;
-
-        public FlowRhythmPressureData(int keyId, int originBeat, int correctedBeat, float score)
-        {
-            KeyId         = keyId;
-            OriginalBeat  = originBeat;
-            CorrectedBeat = correctedBeat;
-            Score         = score;
-        }
 
         public FlowRhythmPressureData(int keyId, FlowRhythmEngineSettingsData settingsData, FlowRhythmEngineProcessData processData)
         {

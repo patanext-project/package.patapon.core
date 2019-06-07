@@ -37,7 +37,6 @@ namespace Patapon4TLB.Core
 	}
 
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-	[UpdateAfter(typeof(NetworkStreamReceiveSystem))]
 	public class CreateGamePlayerSystem : JobComponentSystem
 	{
 		private struct CreateJob : IJobForEachWithEntity<CreateGamePlayer>
@@ -65,6 +64,10 @@ namespace Patapon4TLB.Core
 				{
 					ServerId = networkId.Value
 				});
+
+				// Create event
+				var evEnt = CommandBuffer.CreateEntity(jobIndex);
+				CommandBuffer.AddComponent(jobIndex, evEnt, new PlayerConnectedEvent {Player = entity, ServerId = networkId.Value});
 			}
 		}
 
@@ -89,16 +92,26 @@ namespace Patapon4TLB.Core
 		}
 
 		private BeginSimulationEntityCommandBufferSystem m_Barrier;
+		private EntityQuery                              m_PreviousEventQuery;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			m_Barrier = World.GetOrCreateSystem<BeginSimulationEntityCommandBufferSystem>();
+			m_Barrier            = World.GetOrCreateSystem<BeginSimulationEntityCommandBufferSystem>();
+			m_PreviousEventQuery = GetEntityQuery(typeof(PlayerConnectedEvent));
+
+			GetEntityQuery(typeof(CreateGamePlayer));
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
+			var peLength = m_PreviousEventQuery.CalculateLength();
+			if (peLength > 0)
+			{
+				EntityManager.DestroyEntity(m_PreviousEventQuery);
+			}
+
 			var preMadeEvents = new NativeList<PlayerConnectedRpc>(Allocator.TempJob);
 			inputDeps = new CreateJob
 			{
