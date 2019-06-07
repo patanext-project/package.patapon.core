@@ -2,13 +2,12 @@ using JetBrains.Annotations;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Jobs;
-using Unity.NetCode;
 
 namespace Patapon4TLB.Default
 {
 	[UpdateInGroup(typeof(RhythmEngineGroup))]
 	[UsedImplicitly]
-	public class RhythmEngineCheckCurrentCommandValidity : JobGameBaseSystem
+	public class RhythmEngineRemoveOldCommandPressureSystem : JobGameBaseSystem
 	{
 		//[BurstCompile]
 		private struct DeleteOldCommandJob : IJobChunk
