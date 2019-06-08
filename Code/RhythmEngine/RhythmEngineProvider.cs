@@ -25,6 +25,7 @@ namespace Patapon4TLB.Default
 		{
 			entityComponents = new[]
 			{
+				ComponentType.ReadWrite<Owner>(),
 				ComponentType.ReadWrite<DefaultRhythmEngineSettings>(),
 				ComponentType.ReadWrite<DefaultRhythmEngineState>(),
 				ComponentType.ReadWrite<DefaultRhythmEngineCurrentCommand>(),

@@ -1,6 +1,7 @@
 using DefaultNamespace;
 using Unity.NetCode;
 using Unity.Networking.Transport;
+using UnityEngine;
 
 namespace Patapon4TLB.Default.Snapshot
 {
@@ -11,6 +12,7 @@ namespace Patapon4TLB.Default.Snapshot
 		public bool IsPaused;
 		public int  MaxBeats;
 		public int  Beat;
+		public int  OwnerGhostId;
 
 		public void PredictDelta(uint tick, ref DefaultRhythmEngineSnapshotData baseline1, ref DefaultRhythmEngineSnapshotData baseline2)
 		{
@@ -21,22 +23,25 @@ namespace Patapon4TLB.Default.Snapshot
 			writer.WritePackedUInt((uint) (IsPaused ? 1 : 0), compressionModel);
 			writer.WritePackedUInt((uint) MaxBeats, compressionModel);
 			writer.WritePackedUInt((uint) Beat, compressionModel);
+			writer.WritePackedUInt((uint) OwnerGhostId, compressionModel);
 		}
 
 		public void Deserialize(uint tick, ref DefaultRhythmEngineSnapshotData baseline, DataStreamReader reader, ref DataStreamReader.Context ctx, NetworkCompressionModel compressionModel)
 		{
 			Tick = tick;
 
-			IsPaused = reader.ReadPackedUInt(ref ctx, compressionModel) == 1;
-			MaxBeats = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
-			Beat     = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
+			IsPaused     = reader.ReadPackedUInt(ref ctx, compressionModel) == 1;
+			MaxBeats     = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
+			Beat         = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
+			OwnerGhostId = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
 		}
 
 		public void Interpolate(ref DefaultRhythmEngineSnapshotData target, float factor)
 		{
-			IsPaused = target.IsPaused;
-			MaxBeats = target.MaxBeats;
-			Beat     = target.Beat;
+			IsPaused     = target.IsPaused;
+			MaxBeats     = target.MaxBeats;
+			Beat         = target.Beat;
+			OwnerGhostId = target.OwnerGhostId;
 		}
 	}
 }

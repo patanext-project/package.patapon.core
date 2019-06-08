@@ -50,6 +50,7 @@ namespace Patapon4TLB.Core
 	}
 
 	[UpdateInGroup(typeof(GhostSpawnSystemGroup))]
+	[UpdateAfter(typeof(GamePlayerGhostSpawnSystem))]
 	public class PlayerConnectedEventCreationSystem : JobComponentSystem
 	{
 		[RequireComponentTag(typeof(ReplicatedEntityComponent))]

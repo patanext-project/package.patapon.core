@@ -1,5 +1,6 @@
 using package.patapon.core;
 using Patapon4TLB.Core;
+using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
@@ -21,6 +22,7 @@ namespace Patapon4TLB.Default.Test
 
 				CommandBuffer.SetComponent(jobIndex, reEnt, new FlowRhythmEngineSettingsData(0.5f));
 				CommandBuffer.SetComponent(jobIndex, reEnt, new FlowCommandManagerSettingsData(4));
+				CommandBuffer.SetComponent(jobIndex, reEnt, new Owner {Target = ev.Player});
 			}
 		}
 
