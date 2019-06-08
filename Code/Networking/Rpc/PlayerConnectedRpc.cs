@@ -1,7 +1,9 @@
 using StormiumTeam.GameBase;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Jobs.LowLevel.Unsafe;
 using Unity.NetCode;
 using Unity.Networking.Transport;
 using UnityEngine;
@@ -49,15 +51,46 @@ namespace Patapon4TLB.Core
 	{
 	}
 
+	public struct GamePlayerLocalTag : IComponentData
+	{
+	}
+
 	[UpdateInGroup(typeof(GhostSpawnSystemGroup))]
 	[UpdateAfter(typeof(GamePlayerGhostSpawnSystem))]
 	public class PlayerConnectedEventCreationSystem : JobComponentSystem
 	{
+		[BurstCompile]
+		public struct FindFirstNetworkIdJob : IJobForEach<NetworkIdComponent>
+		{
+			public NativeArray<NetworkIdComponent> PlayerIds;
+
+			[BurstDiscard]
+			private void NonBurst_ThrowWarning()
+			{
+				Debug.LogWarning("PlayerIds[0] already assigned to " + PlayerIds[0].Value);
+			}
+
+			public void Execute(ref NetworkIdComponent networkId)
+			{
+				if (PlayerIds[0].Value == default)
+				{
+					PlayerIds[0] = networkId;
+				}
+				else
+				{
+					NonBurst_ThrowWarning();
+				}
+			}
+		}
+
 		[RequireComponentTag(typeof(ReplicatedEntityComponent))]
-		public struct FindJob : IJobForEachWithEntity<GamePlayer>
+		public struct FindPlayerJob : IJobForEachWithEntity<GamePlayer>
 		{
 			[ReadOnly]
 			public ComponentDataFromEntity<GamePlayerReadyTag> PlayerReadyTag;
+
+			[ReadOnly, DeallocateOnJobCompletion]
+			public NativeArray<NetworkIdComponent> PlayerIds;
 
 			public EntityCommandBuffer.Concurrent CommandBuffer;
 
@@ -84,6 +117,12 @@ namespace Patapon4TLB.Core
 							Debug.LogWarning($"{entity} already had a 'GamePlayerReadyTag'");
 						}
 
+						// this is our player
+						if (PlayerIds.Length > 0 && PlayerIds[0].Value == gamePlayer.ServerId)
+						{
+							CommandBuffer.AddComponent(jobIndex, entity, default(GamePlayerLocalTag));
+						}
+
 						CommandBuffer.DestroyEntity(jobIndex, DelayedEntities[ent]);
 					}
 				}
@@ -103,7 +142,7 @@ namespace Patapon4TLB.Core
 			m_PreviousEventQuery = GetEntityQuery(typeof(PlayerConnectedEvent));
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override unsafe JobHandle OnUpdate(JobHandle inputDeps)
 		{
 			var peLength = m_PreviousEventQuery.CalculateLength();
 			if (peLength > 0)
@@ -111,17 +150,29 @@ namespace Patapon4TLB.Core
 				EntityManager.DestroyEntity(m_PreviousEventQuery);
 			}
 
+			var playerIds = new NativeArray<NetworkIdComponent>(1, Allocator.TempJob);
+			inputDeps = new FindFirstNetworkIdJob
+			{
+				PlayerIds = playerIds
+			}.Schedule(this, inputDeps);
+			
 			m_DelayedQuery.AddDependency(inputDeps);
-			inputDeps = new FindJob
+			var findPlayerJob = new FindPlayerJob
 			{
 				PlayerReadyTag = GetComponentDataFromEntity<GamePlayerReadyTag>(),
 				CommandBuffer  = m_Barrier.CreateCommandBuffer().ToConcurrent(),
 
 				DelayedEntities = m_DelayedQuery.ToEntityArray(Allocator.TempJob, out var dep1),
-				DelayedData     = m_DelayedQuery.ToComponentDataArray<DelayedPlayerConnection>(Allocator.TempJob, out var dep2)
-			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, dep1, dep2));
+				DelayedData     = m_DelayedQuery.ToComponentDataArray<DelayedPlayerConnection>(Allocator.TempJob, out var dep2),
+				PlayerIds       = playerIds
+			};
+			
+			inputDeps = findPlayerJob.Schedule(this, JobHandle.CombineDependencies(inputDeps, dep1, dep2));
 
 			m_Barrier.AddJobHandleForProducer(inputDeps);
+			m_DelayedQuery.CompleteDependency();
+			
+			//inputDeps.Complete();
 
 			return inputDeps;
 		}

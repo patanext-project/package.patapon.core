@@ -14,14 +14,16 @@ using UnityEngine.InputSystem;
 
 namespace Patapon4TLB.Default
 {
-	[UpdateInGroup(typeof(PresentationSystemGroup))]
+	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	public class RhythmEngineClientInputSystem : JobSyncInputSystem
 	{
 		[BurstCompile]
 		[RequireComponentTag(typeof(FlowRhythmEngineSimulateTag))]
 		private struct SendLocalEventToEngine : IJobForEachWithEntity<FlowRhythmEngineSettingsData, FlowRhythmEngineProcessData, DefaultRhythmEngineState>
 		{
-			public NativeArray<RhythmRpcPressure>                      PressureEventSingleArray;
+			public NativeArray<RhythmRpcPressure> PressureEventSingleArray;
+
+			[NativeDisableParallelForRestriction]
 			public BufferFromEntity<DefaultRhythmEngineCurrentCommand> CommandSequenceFromEntity;
 
 			public unsafe void Execute(Entity entity, int _, ref FlowRhythmEngineSettingsData flowSettings, ref FlowRhythmEngineProcessData flowProcess, ref DefaultRhythmEngineState state)
@@ -84,7 +86,7 @@ namespace Patapon4TLB.Default
 			// this will happen if the client didn't pressed any keys (or if it's not a client at all)
 			if (InputEvents.Count < 0)
 				return inputDeps;
-
+			
 			// not enabled
 			if (!World.GetExistingSystem<ClientPresentationSystemGroup>().Enabled)
 				return inputDeps;
@@ -94,7 +96,7 @@ namespace Patapon4TLB.Default
 			{
 				pressureEvent = new RhythmRpcPressure
 				{
-					Beat = -1,                                     // right now, we can't get the beat easily
+					Beat = -1,                                     // the beat will be assigned SendLocalEventToEngine job
 					Key  = Array.IndexOf(m_Actions, ev.action) + 1 // match RhythmKeys
 				};
 			}

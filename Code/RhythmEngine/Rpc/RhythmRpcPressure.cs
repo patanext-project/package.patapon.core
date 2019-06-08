@@ -7,6 +7,7 @@ using Unity.NetCode;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Networking.Transport;
+using UnityEngine;
 
 namespace Patapon4TLB.Default
 {
@@ -29,6 +30,8 @@ namespace Patapon4TLB.Default
 
 		public void Execute(Entity connection, EntityCommandBuffer.Concurrent commandBuffer, int jobIndex)
 		{
+			Debug.Log($"RhythmRpcPressure -> c:{connection} k:{Key} b:{Beat}");
+			
 			var ent = commandBuffer.CreateEntity(jobIndex);
 
 			commandBuffer.AddComponent(jobIndex, ent, new RhythmExecutePressure {Connection = connection, Key = Key, Beat = Beat});

@@ -109,6 +109,13 @@ namespace package.patapon.core
 
             correctedBeat = correctedTime >= 0 ? beat + 1 : beat;
 
+            // this may happen if 'beatInterval' is 0
+            if (double.IsNaN(correctedTime))
+            {
+                correctedTime = 0.0f;
+                if (beatInterval == default) Debug.LogWarning($"{nameof(beatInterval)} is set to 0, which is not allowed in FlowRhythmEngine.GetScore()");
+            }
+            
             return (float) (correctedTime + -Math.Sign(correctedTime) * halvedInterval) / halvedInterval;
         }
     }

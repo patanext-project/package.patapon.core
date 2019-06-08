@@ -1,9 +1,11 @@
+using Runtime.EcsComponents;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
 using Unity.Networking.Transport;
+using UnityEngine;
 
 namespace Patapon4TLB.Core
 {
@@ -57,6 +59,7 @@ namespace Patapon4TLB.Core
 
 				var geEnt = CommandBuffer.CreateEntity(jobIndex);
 				CommandBuffer.AddComponent(jobIndex, geEnt, new GamePlayer(0, false) {ServerId = networkId.Value});
+				CommandBuffer.AddComponent(jobIndex, geEnt, new NetworkOwner {Value            = create.Connection});
 				CommandBuffer.AddComponent(jobIndex, geEnt, new GamePlayerReadyTag());
 				CommandBuffer.AddComponent(jobIndex, geEnt, new GhostComponent());
 
