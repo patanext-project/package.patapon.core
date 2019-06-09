@@ -70,7 +70,7 @@ namespace Patapon4TLB.Core
 
 				// Create event
 				var evEnt = CommandBuffer.CreateEntity(jobIndex);
-				CommandBuffer.AddComponent(jobIndex, evEnt, new PlayerConnectedEvent {Player = geEnt, ServerId = networkId.Value});
+				CommandBuffer.AddComponent(jobIndex, evEnt, new PlayerConnectedEvent {Player = geEnt, Connection = create.Connection, ServerId = networkId.Value});
 			}
 		}
 

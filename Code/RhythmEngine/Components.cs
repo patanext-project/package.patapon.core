@@ -7,33 +7,23 @@ using Unity.Networking.Transport;
 
 namespace Patapon4TLB.Default
 {
-	public struct DefaultRhythmEngineState : IComponentFromSnapshot<DefaultRhythmEngineSnapshotData>
+	public struct RhythmEngineState : IComponentData
 	{
 		public bool IsPaused;
-		public int Beat;
-
-		public void Set(DefaultRhythmEngineSnapshotData snapshot)
-		{
-			Beat = snapshot.Beat;
-		}
-
-		public class UpdateFromSnapshot : BaseUpdateFromSnapshotSystem<DefaultRhythmEngineSnapshotData, DefaultRhythmEngineState>
-		{
-		}
+		public bool ApplyCommandNextBeat;
 	}
 	
-	public struct DefaultRhythmEngineSettings : IComponentFromSnapshot<DefaultRhythmEngineSnapshotData>
+	public struct RhythmEngineSettings : IComponentData
 	{
 		public int MaxBeats;
-
-		public void Set(DefaultRhythmEngineSnapshotData snapshot)
-		{
-			MaxBeats = snapshot.MaxBeats;
-		}
-
-		public class UpdateFromSnapshot : BaseUpdateFromSnapshotSystem<DefaultRhythmEngineSnapshotData, DefaultRhythmEngineSettings>
-		{
-		}
+		public int BeatInterval; // in ms
+		
+		/// <summary>
+		/// Let the players simulate the rhythm engine or not.
+		/// If enabled, 'RhythmEngineClientPredictedCommand' and 'RhythmEngineClientRequestedCommand' will be
+		/// used instead of 'RhythmEngineCurrentCommand'.
+		/// </summary>
+		public bool UseClientSimulation;
 	}
 
 	public struct PressureEvent : IComponentData
@@ -42,8 +32,29 @@ namespace Patapon4TLB.Default
 		public int Key;
 	}
 
+	/// <summary>
+	/// This component should only be used on simulated rhythm engines (eg: client owned rhythm engines)
+	/// </summary>
 	[InternalBufferCapacity(8)]
-	public struct DefaultRhythmEngineCurrentCommand : IBufferElementData
+	public struct RhythmEngineCurrentCommand : IBufferElementData
+	{
+		public FlowRhythmPressureData Data;
+	}
+
+	/// <summary>
+	/// This component should only be used on server
+	/// </summary>
+	[InternalBufferCapacity(8)]
+	public struct RhythmEngineClientPredictedCommand : IBufferElementData
+	{
+		public FlowRhythmPressureData Data;
+	}
+
+	/// <summary>
+	/// This component should only be used on server
+	/// </summary>
+	[InternalBufferCapacity(8)]
+	public struct RhythmEngineClientRequestedCommand : IBufferElementData
 	{
 		public FlowRhythmPressureData Data;
 	}

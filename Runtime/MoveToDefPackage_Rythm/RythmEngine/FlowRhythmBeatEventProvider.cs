@@ -17,7 +17,6 @@ namespace package.patapon.core
 		{
 			entityComponents = new []
 			{
-				ComponentType.ReadWrite<FlowRhythmEngineTypeDefinition>(),
 				ComponentType.ReadWrite<RhythmShardEvent>(),
 				ComponentType.ReadWrite<RhythmShardTarget>(),
 				ComponentType.ReadWrite<RhythmBeatData>(),

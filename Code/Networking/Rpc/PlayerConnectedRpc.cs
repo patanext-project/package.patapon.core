@@ -17,7 +17,7 @@ namespace Patapon4TLB.Core
 		public void Execute(Entity connection, EntityCommandBuffer.Concurrent commandBuffer, int jobIndex)
 		{
 			var delayed = commandBuffer.CreateEntity(jobIndex);
-			commandBuffer.AddComponent(jobIndex, delayed, new DelayedPlayerConnection {ServerId = ServerId});
+			commandBuffer.AddComponent(jobIndex, delayed, new DelayedPlayerConnection {Connection = connection, ServerId = ServerId});
 		}
 
 		public void Serialize(DataStreamWriter writer)
@@ -38,12 +38,14 @@ namespace Patapon4TLB.Core
 	 */
 	public struct DelayedPlayerConnection : IComponentData
 	{
-		public int ServerId;
+		public Entity Connection;
+		public int    ServerId;
 	}
 
 	public struct PlayerConnectedEvent : IComponentData
 	{
 		public Entity Player;
+		public Entity Connection;
 		public int    ServerId;
 	}
 
@@ -110,7 +112,7 @@ namespace Patapon4TLB.Core
 
 							// Create connect event
 							var evEnt = CommandBuffer.CreateEntity(jobIndex);
-							CommandBuffer.AddComponent(jobIndex, evEnt, new PlayerConnectedEvent {Player = entity, ServerId = gamePlayer.ServerId});
+							CommandBuffer.AddComponent(jobIndex, evEnt, new PlayerConnectedEvent {Player = entity, Connection = DelayedData[ent].Connection, ServerId = gamePlayer.ServerId});
 						}
 						else
 						{

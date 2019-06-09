@@ -19,23 +19,23 @@ namespace Patapon4TLB.Default
 	{
 		[BurstCompile]
 		[RequireComponentTag(typeof(FlowRhythmEngineSimulateTag))]
-		private struct SendLocalEventToEngine : IJobForEachWithEntity<FlowRhythmEngineSettingsData, FlowRhythmEngineProcessData, DefaultRhythmEngineState>
+		private struct SendLocalEventToEngine : IJobForEachWithEntity<RhythmEngineSettings, FlowRhythmEngineProcess, RhythmEngineState>
 		{
 			public NativeArray<RhythmRpcPressure> PressureEventSingleArray;
 
 			[NativeDisableParallelForRestriction]
-			public BufferFromEntity<DefaultRhythmEngineCurrentCommand> CommandSequenceFromEntity;
+			public BufferFromEntity<RhythmEngineCurrentCommand> CommandSequenceFromEntity;
 
-			public unsafe void Execute(Entity entity, int _, ref FlowRhythmEngineSettingsData flowSettings, ref FlowRhythmEngineProcessData flowProcess, ref DefaultRhythmEngineState state)
+			public unsafe void Execute(Entity entity, int _, ref RhythmEngineSettings settings, ref FlowRhythmEngineProcess flowProcess, ref RhythmEngineState state)
 			{
 				var     commandSequence = CommandSequenceFromEntity[entity];
 				ref var pressureEvent   = ref UnsafeUtilityEx.ArrayElementAsRef<RhythmRpcPressure>(PressureEventSingleArray.GetUnsafePtr(), 0);
 
-				pressureEvent.Beat = state.Beat;
+				pressureEvent.Beat = flowProcess.Beat;
 
-				commandSequence.Add(new DefaultRhythmEngineCurrentCommand
+				commandSequence.Add(new RhythmEngineCurrentCommand
 				{
-					Data = new FlowRhythmPressureData(pressureEvent.Key, flowSettings, flowProcess)
+					Data = new FlowRhythmPressureData(pressureEvent.Key, settings.BeatInterval, flowProcess.Time, flowProcess.Beat)
 				});
 			}
 		}
@@ -115,7 +115,7 @@ namespace Patapon4TLB.Default
 			inputDeps = new SendLocalEventToEngine
 			{
 				PressureEventSingleArray  = pressureEventSingleArray,
-				CommandSequenceFromEntity = GetBufferFromEntity<DefaultRhythmEngineCurrentCommand>()
+				CommandSequenceFromEntity = GetBufferFromEntity<RhythmEngineCurrentCommand>()
 			}.Schedule(this, inputDeps);
 			inputDeps = new SendRpcEvent
 			{

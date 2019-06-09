@@ -1,3 +1,4 @@
+using System;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -17,6 +18,9 @@ namespace package.patapon.core
 
 		public Entity GetOrCreate(NativeArray<FlowCommandSequence> sequence, bool dispose = true)
 		{
+			if (sequence[0].BeatRange.start != 0)
+				throw new Exception("The first sequence should start at beat 0.");
+			
 			Entity finalEntity = default;
 			
 			Entities.WithAll<FlowCommandEntityTag>().ForEach((Entity entity, DynamicBuffer<FlowCommandSequenceContainer> sequenceBuffer) =>

@@ -18,50 +18,6 @@ namespace package.patapon.core
         protected override void OnUpdate()
         {
         }
-
-        public RangeFloat GetBeatProgressionAt(Entity shard, NativeArray<FlowCommandSequence> commandSequences, int index)
-        {
-            if (commandSequences.Length <= index)
-                return new RangeFloat(float.NaN, float.NaN);
-            
-            var settings = EntityManager.GetComponentData<FlowCommandManagerSettingsData>(shard);
-
-            
-            
-            var start = (float) (commandSequences[index].BeatRange.start + 1) / settings.MaxBeats;
-            var length = (float) (commandSequences[index].BeatRange.length) / settings.MaxBeats;
-            
-            return new RangeFloat(start, length);
-        }
-
-        public RangeInt GetBeatAt(Entity shard, NativeArray<FlowCommandSequence> commandSequences, int index)
-        {
-            if (commandSequences.Length <= index)
-                return new RangeInt(-1, -1);
-            
-            var settings = EntityManager.GetComponentData<FlowCommandManagerSettingsData>(shard);
-
-            return commandSequences[index].BeatRange;
-        }
-
-        // TODO: Make it as an abstract method
-        /// <summary>
-        /// Create a new rhythm engine.
-        /// </summary>
-        /// <returns>The new entity which contain engine data</returns>
-        public Entity AddEngine()
-        {
-            var entity = EntityManager.CreateEntity
-            (
-                typeof(FlowCommandManagerTypeDefinition),
-                typeof(FlowCommandManagerSettingsData),
-                typeof(FlowCurrentCommand)
-            );
-
-            EntityManager.SetComponentData(entity, new FlowCommandManagerSettingsData(DefaultMaxBeats));
-
-            return entity;
-        }
     }
     
     // this is a header
@@ -107,15 +63,5 @@ namespace package.patapon.core
     public struct FlowCommandSequenceContainer : IBufferElementData
     {
         public FlowCommandSequence Value;
-    }
-
-    public struct FlowCommandManagerSettingsData : IComponentData
-    {
-        public int MaxBeats;
-
-        public FlowCommandManagerSettingsData(int maxBeats)
-        {
-            MaxBeats = maxBeats;
-        }
     }
 }

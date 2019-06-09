@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using package.patapon.core;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Jobs;
@@ -12,13 +13,13 @@ namespace Patapon4TLB.Default
 		//[BurstCompile]
 		private struct DeleteOldCommandJob : IJobChunk
 		{
-			public ArchetypeChunkComponentType<DefaultRhythmEngineState>       StateType;
-			public ArchetypeChunkComponentType<DefaultRhythmEngineSettings>    SettingsType;
-			public ArchetypeChunkBufferType<DefaultRhythmEngineCurrentCommand> CurrCommandType;
+			public ArchetypeChunkComponentType<FlowRhythmEngineProcess> ProcessType;
+			public ArchetypeChunkComponentType<RhythmEngineSettings>    SettingsType;
+			public ArchetypeChunkBufferType<RhythmEngineCurrentCommand> CurrCommandType;
 
 			public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
 			{
-				var predictedDataArray  = chunk.GetNativeArray(StateType);
+				var predictedDataArray  = chunk.GetNativeArray(ProcessType);
 				var settingsDataArray   = chunk.GetNativeArray(SettingsType);
 				var currCommandAccessor = chunk.GetBufferAccessor(CurrCommandType);
 
@@ -49,16 +50,16 @@ namespace Patapon4TLB.Default
 		{
 			base.OnCreate();
 
-			m_EntityQuery = GetEntityQuery(typeof(DefaultRhythmEngineSettings), typeof(DefaultRhythmEngineState), typeof(DefaultRhythmEngineCurrentCommand));
+			m_EntityQuery = GetEntityQuery(typeof(RhythmEngineSettings), typeof(RhythmEngineState), typeof(RhythmEngineCurrentCommand));
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
 			inputDeps = new DeleteOldCommandJob
 			{
-				StateType = GetArchetypeChunkComponentType<DefaultRhythmEngineState>(),
-				SettingsType  = GetArchetypeChunkComponentType<DefaultRhythmEngineSettings>(),
-				CurrCommandType   = GetArchetypeChunkBufferType<DefaultRhythmEngineCurrentCommand>()
+				ProcessType     = GetArchetypeChunkComponentType<FlowRhythmEngineProcess>(),
+				SettingsType    = GetArchetypeChunkComponentType<RhythmEngineSettings>(),
+				CurrCommandType = GetArchetypeChunkBufferType<RhythmEngineCurrentCommand>()
 			}.Schedule(m_EntityQuery, inputDeps);
 
 			return inputDeps;

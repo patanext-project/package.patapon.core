@@ -1,3 +1,4 @@
+using package.patapon.core;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.NetCode;
@@ -5,9 +6,9 @@ using UnityEngine;
 
 namespace Patapon4TLB.Default.Snapshot
 {
-	public struct DefaultRhythmEngineGhostSerializer : IGhostSerializer<DefaultRhythmEngineSnapshotData>
+	public struct DefaultRhythmEngineGhostSerializer : IGhostSerializer<RhythmEngineSnapshotData>
 	{
-		public unsafe int SnapshotSize => sizeof(DefaultRhythmEngineSnapshotData);
+		public unsafe int SnapshotSize => sizeof(RhythmEngineSnapshotData);
 
 		public int CalculateImportance(ArchetypeChunk chunk)
 		{
@@ -17,25 +18,33 @@ namespace Patapon4TLB.Default.Snapshot
 
 		public bool WantsPredictionDelta => false;
 
-		public ComponentType ComponentTypeOwner;
-		public ArchetypeChunkComponentType<Owner> GhostOwnerType;
-		public ComponentType                                            ComponentTypeSettings;
-		public ArchetypeChunkComponentType<DefaultRhythmEngineSettings> GhostSettingsType;
-		public ComponentType                                            ComponentTypeState;
-		public ArchetypeChunkComponentType<DefaultRhythmEngineState>    GhostStateType;
+		public ComponentType                                        ComponentTypeOwner;
+		public ArchetypeChunkComponentType<Owner>                   GhostOwnerType;
+		public ComponentType                                        ComponentTypeSettings;
+		public ArchetypeChunkComponentType<RhythmEngineSettings>    GhostSettingsType;
+		public ComponentType                                        ComponentTypeProcess;
+		public ArchetypeChunkComponentType<FlowRhythmEngineProcess> GhostProcessType;
+		public ComponentType                                        ComponentTypeState;
+		public ArchetypeChunkComponentType<RhythmEngineState>       GhostStateType;
 
 		public ComponentDataFromEntity<GhostSystemStateComponent> GhostStateFromEntity;
+
+		public SynchronizedSimulationTime SynchronizedSimulationTime;
 
 		public void BeginSerialize(ComponentSystemBase system)
 		{
 			ComponentTypeOwner    = ComponentType.ReadWrite<Owner>();
 			GhostOwnerType        = system.GetArchetypeChunkComponentType<Owner>();
-			ComponentTypeSettings = ComponentType.ReadWrite<DefaultRhythmEngineSettings>();
-			GhostSettingsType     = system.GetArchetypeChunkComponentType<DefaultRhythmEngineSettings>();
-			ComponentTypeState    = ComponentType.ReadWrite<DefaultRhythmEngineState>();
-			GhostStateType        = system.GetArchetypeChunkComponentType<DefaultRhythmEngineState>();
+			ComponentTypeSettings = ComponentType.ReadWrite<RhythmEngineSettings>();
+			GhostSettingsType     = system.GetArchetypeChunkComponentType<RhythmEngineSettings>();
+			ComponentTypeProcess  = ComponentType.ReadWrite<FlowRhythmEngineProcess>();
+			GhostProcessType      = system.GetArchetypeChunkComponentType<FlowRhythmEngineProcess>();
+			ComponentTypeState    = ComponentType.ReadWrite<RhythmEngineState>();
+			GhostStateType        = system.GetArchetypeChunkComponentType<RhythmEngineState>();
 
 			GhostStateFromEntity = system.GetComponentDataFromEntity<GhostSystemStateComponent>();
+
+			SynchronizedSimulationTime = system.GetSingleton<SynchronizedSimulationTime>();
 		}
 
 		public bool CanSerialize(EntityArchetype arch)
@@ -46,13 +55,14 @@ namespace Patapon4TLB.Default.Snapshot
 			{
 				if (types[i] == ComponentTypeOwner) matches++;
 				if (types[i] == ComponentTypeSettings) matches++;
+				if (types[i] == ComponentTypeProcess) matches++;
 				if (types[i] == ComponentTypeState) matches++;
 			}
 
-			return matches == 3;
+			return matches == 4;
 		}
 
-		public void CopyToSnapshot(ArchetypeChunk chunk, int ent, uint tick, ref DefaultRhythmEngineSnapshotData snapshot)
+		public void CopyToSnapshot(ArchetypeChunk chunk, int ent, uint tick, ref RhythmEngineSnapshotData snapshot)
 		{
 			snapshot.Tick = tick;
 
@@ -62,8 +72,11 @@ namespace Patapon4TLB.Default.Snapshot
 			var settings = chunk.GetNativeArray(GhostSettingsType)[ent];
 			snapshot.MaxBeats = settings.MaxBeats;
 
+			var process = chunk.GetNativeArray(GhostProcessType)[ent];
+			snapshot.Beat      = process.Beat;
+			snapshot.StartTime = process.Time > 0 ? (int) ((process.Time - SynchronizedSimulationTime.PredictedReal) * 1000) : 0;
+
 			var state = chunk.GetNativeArray(GhostStateType)[ent];
-			snapshot.Beat     = state.Beat;
 			snapshot.IsPaused = state.IsPaused;
 		}
 	}

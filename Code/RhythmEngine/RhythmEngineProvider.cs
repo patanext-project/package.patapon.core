@@ -1,5 +1,6 @@
 using package.patapon.core;
 using package.patapon.def.Data;
+using Runtime.EcsComponents;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.NetCode;
@@ -11,9 +12,9 @@ namespace Patapon4TLB.Default
 		public struct Create
 		{
 			/// <summary>
-			/// Default '0.5f'
+			/// Default '500ms'
 			/// </summary>
-			public float? BeatInterval;
+			public int? BeatInterval;
 
 			/// <summary>
 			/// Default '4'
@@ -26,14 +27,14 @@ namespace Patapon4TLB.Default
 			entityComponents = new[]
 			{
 				ComponentType.ReadWrite<Owner>(),
-				ComponentType.ReadWrite<DefaultRhythmEngineSettings>(),
-				ComponentType.ReadWrite<DefaultRhythmEngineState>(),
-				ComponentType.ReadWrite<DefaultRhythmEngineCurrentCommand>(),
-				ComponentType.ReadWrite<FlowRhythmEngineSettingsData>(),
-				ComponentType.ReadWrite<FlowRhythmEngineProcessData>(),
+				ComponentType.ReadWrite<NetworkOwner>(),
+				ComponentType.ReadWrite<RhythmEngineSettings>(),
+				ComponentType.ReadWrite<RhythmEngineState>(),
+				ComponentType.ReadWrite<RhythmEngineCurrentCommand>(),
+				ComponentType.ReadWrite<RhythmEngineClientPredictedCommand>(),
+				ComponentType.ReadWrite<RhythmEngineClientRequestedCommand>(),
+				ComponentType.ReadWrite<FlowRhythmEngineProcess>(),
 				ComponentType.ReadWrite<ShardRhythmEngine>(),
-				ComponentType.ReadWrite<FlowCommandManagerTypeDefinition>(),
-				ComponentType.ReadWrite<FlowCommandManagerSettingsData>(),
 				ComponentType.ReadWrite<FlowCurrentCommand>(),
 				ComponentType.ReadWrite<GhostComponent>(),
 			};
@@ -41,10 +42,7 @@ namespace Patapon4TLB.Default
 
 		public override void SetEntityData(Entity entity, Create data)
 		{
-			EntityManager.SetComponentData(entity, new ShardRhythmEngine {EngineType = ComponentType.ReadWrite<FlowRhythmEngineTypeDefinition>()});
-
-			EntityManager.SetComponentData(entity, new FlowRhythmEngineSettingsData(data.BeatInterval ?? 0.5f));
-			EntityManager.SetComponentData(entity, new FlowCommandManagerSettingsData(data.MaxBeats ?? 4));
+			EntityManager.SetComponentData(entity, new RhythmEngineSettings {MaxBeats = data.MaxBeats ?? 4, BeatInterval = data.BeatInterval ?? 500});
 		}
 	}
 }

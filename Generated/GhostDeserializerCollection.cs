@@ -14,30 +14,36 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
         var arr = new string[]
         {
             "DefaultRhythmEngineGhostSerializer",
+            "SynchronizedSimulationTimeGhostSerializer",
             "GamePlayerGhostSerializer",
 
         };
         return arr;
     }
 
-    public int Length => 2;
+    public int Length => 3;
 #endif
     public void Initialize(World world)
     {
         var curDefaultRhythmEngineGhostSpawnSystem = world.GetOrCreateSystem<DefaultRhythmEngineGhostSpawnSystem>();
-        m_DefaultRhythmEngineSnapshotDataNewGhostIds = curDefaultRhythmEngineGhostSpawnSystem.NewGhostIds;
-        m_DefaultRhythmEngineSnapshotDataNewGhosts = curDefaultRhythmEngineGhostSpawnSystem.NewGhosts;
+        m_RhythmEngineSnapshotDataNewGhostIds = curDefaultRhythmEngineGhostSpawnSystem.NewGhostIds;
+        m_RhythmEngineSnapshotDataNewGhosts = curDefaultRhythmEngineGhostSpawnSystem.NewGhosts;
         curDefaultRhythmEngineGhostSpawnSystem.GhostType = 0;
+        var curSynchronizedSimulationTimeGhostSpawnSystem = world.GetOrCreateSystem<SynchronizedSimulationTimeGhostSpawnSystem>();
+        m_SynchronizedSimulationTimeSnapshotNewGhostIds = curSynchronizedSimulationTimeGhostSpawnSystem.NewGhostIds;
+        m_SynchronizedSimulationTimeSnapshotNewGhosts = curSynchronizedSimulationTimeGhostSpawnSystem.NewGhosts;
+        curSynchronizedSimulationTimeGhostSpawnSystem.GhostType = 1;
         var curGamePlayerGhostSpawnSystem = world.GetOrCreateSystem<GamePlayerGhostSpawnSystem>();
         m_GamePlayerSnapshotNewGhostIds = curGamePlayerGhostSpawnSystem.NewGhostIds;
         m_GamePlayerSnapshotNewGhosts = curGamePlayerGhostSpawnSystem.NewGhosts;
-        curGamePlayerGhostSpawnSystem.GhostType = 1;
+        curGamePlayerGhostSpawnSystem.GhostType = 2;
 
     }
 
     public void BeginDeserialize(JobComponentSystem system)
     {
-        m_DefaultRhythmEngineSnapshotDataFromEntity = system.GetBufferFromEntity<DefaultRhythmEngineSnapshotData>();
+        m_RhythmEngineSnapshotDataFromEntity = system.GetBufferFromEntity<RhythmEngineSnapshotData>();
+        m_SynchronizedSimulationTimeSnapshotFromEntity = system.GetBufferFromEntity<SynchronizedSimulationTimeSnapshot>();
         m_GamePlayerSnapshotFromEntity = system.GetBufferFromEntity<GamePlayerSnapshot>();
 
     }
@@ -48,10 +54,14 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
         switch (serializer)
         {
         case 0:
-            GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_DefaultRhythmEngineSnapshotDataFromEntity, entity, snapshot, baseline, baseline2,
+            GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_RhythmEngineSnapshotDataFromEntity, entity, snapshot, baseline, baseline2,
                 baseline3, reader, ref ctx, compressionModel);
             break;
         case 1:
+            GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_SynchronizedSimulationTimeSnapshotFromEntity, entity, snapshot, baseline, baseline2,
+                baseline3, reader, ref ctx, compressionModel);
+            break;
+        case 2:
             GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_GamePlayerSnapshotFromEntity, entity, snapshot, baseline, baseline2,
                 baseline3, reader, ref ctx, compressionModel);
             break;
@@ -66,10 +76,14 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
         switch (serializer)
         {
             case 0:
-                m_DefaultRhythmEngineSnapshotDataNewGhostIds.Add(ghostId);
-                m_DefaultRhythmEngineSnapshotDataNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<DefaultRhythmEngineSnapshotData>(snapshot, reader, ref ctx, compressionModel));
+                m_RhythmEngineSnapshotDataNewGhostIds.Add(ghostId);
+                m_RhythmEngineSnapshotDataNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<RhythmEngineSnapshotData>(snapshot, reader, ref ctx, compressionModel));
                 break;
             case 1:
+                m_SynchronizedSimulationTimeSnapshotNewGhostIds.Add(ghostId);
+                m_SynchronizedSimulationTimeSnapshotNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<SynchronizedSimulationTimeSnapshot>(snapshot, reader, ref ctx, compressionModel));
+                break;
+            case 2:
                 m_GamePlayerSnapshotNewGhostIds.Add(ghostId);
                 m_GamePlayerSnapshotNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<GamePlayerSnapshot>(snapshot, reader, ref ctx, compressionModel));
                 break;
@@ -79,9 +93,12 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
         }
     }
 
-    private BufferFromEntity<DefaultRhythmEngineSnapshotData> m_DefaultRhythmEngineSnapshotDataFromEntity;
-    private NativeList<int> m_DefaultRhythmEngineSnapshotDataNewGhostIds;
-    private NativeList<DefaultRhythmEngineSnapshotData> m_DefaultRhythmEngineSnapshotDataNewGhosts;
+    private BufferFromEntity<RhythmEngineSnapshotData> m_RhythmEngineSnapshotDataFromEntity;
+    private NativeList<int> m_RhythmEngineSnapshotDataNewGhostIds;
+    private NativeList<RhythmEngineSnapshotData> m_RhythmEngineSnapshotDataNewGhosts;
+    private BufferFromEntity<SynchronizedSimulationTimeSnapshot> m_SynchronizedSimulationTimeSnapshotFromEntity;
+    private NativeList<int> m_SynchronizedSimulationTimeSnapshotNewGhostIds;
+    private NativeList<SynchronizedSimulationTimeSnapshot> m_SynchronizedSimulationTimeSnapshotNewGhosts;
     private BufferFromEntity<GamePlayerSnapshot> m_GamePlayerSnapshotFromEntity;
     private NativeList<int> m_GamePlayerSnapshotNewGhostIds;
     private NativeList<GamePlayerSnapshot> m_GamePlayerSnapshotNewGhosts;

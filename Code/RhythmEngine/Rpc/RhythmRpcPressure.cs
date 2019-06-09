@@ -98,7 +98,7 @@ namespace Patapon4TLB.Default
 			base.OnCreate();
 
 			m_Barrier     = World.GetOrCreateSystem<RhythmEngineBeginBarrier>();
-			m_EngineQuery = GetEntityQuery(typeof(ShardRhythmEngine), typeof(DefaultRhythmEngineSettings), typeof(Owner));
+			m_EngineQuery = GetEntityQuery(typeof(ShardRhythmEngine), typeof(RhythmEngineSettings), typeof(Owner));
 
 			RequireForUpdate(GetEntityQuery(typeof(RhythmExecutePressure)));
 		}

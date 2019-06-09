@@ -5,6 +5,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Networking.Transport;
 using Unity.NetCode;
+using UnityEngine;
 
 public struct GhostSerializerCollection : IGhostSerializerCollection
 {
@@ -12,8 +13,16 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
     {
         if (m_DefaultRhythmEngineGhostSerializer.CanSerialize(arch))
             return 0;
-        if (m_GamePlayerGhostSerializer.CanSerialize(arch))
+        if (m_SynchronizedSimulationTimeGhostSerializer.CanSerialize(arch))
             return 1;
+        if (m_GamePlayerGhostSerializer.CanSerialize(arch))
+            return 2;
+
+        var types = arch.GetComponentTypes();
+        for (var i = 0; i != types.Length; i++)
+        {
+            Debug.Log(types[i].GetManagedType().Name);
+        }
 
         throw new ArgumentException("Invalid serializer type");
     }
@@ -21,6 +30,7 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
     public void BeginSerialize(ComponentSystemBase system)
     {
         m_DefaultRhythmEngineGhostSerializer.BeginSerialize(system);
+        m_SynchronizedSimulationTimeGhostSerializer.BeginSerialize(system);
         m_GamePlayerGhostSerializer.BeginSerialize(system);
 
     }
@@ -32,6 +42,8 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
             case 0:
                 return m_DefaultRhythmEngineGhostSerializer.CalculateImportance(chunk);
             case 1:
+                return m_SynchronizedSimulationTimeGhostSerializer.CalculateImportance(chunk);
+            case 2:
                 return m_GamePlayerGhostSerializer.CalculateImportance(chunk);
 
         }
@@ -46,6 +58,8 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
             case 0:
                 return m_DefaultRhythmEngineGhostSerializer.WantsPredictionDelta;
             case 1:
+                return m_SynchronizedSimulationTimeGhostSerializer.WantsPredictionDelta;
+            case 2:
                 return m_GamePlayerGhostSerializer.WantsPredictionDelta;
 
         }
@@ -60,6 +74,8 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
             case 0:
                 return m_DefaultRhythmEngineGhostSerializer.SnapshotSize;
             case 1:
+                return m_SynchronizedSimulationTimeGhostSerializer.SnapshotSize;
+            case 2:
                 return m_GamePlayerGhostSerializer.SnapshotSize;
 
         }
@@ -78,11 +94,18 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
             case 0:
             {
                 return GhostSendSystem<GhostSerializerCollection>.InvokeSerialize(m_DefaultRhythmEngineGhostSerializer, serializer,
-                    chunk, startIndex, currentTick, currentSnapshotEntity, (DefaultRhythmEngineSnapshotData*)currentSnapshotData,
+                    chunk, startIndex, currentTick, currentSnapshotEntity, (RhythmEngineSnapshotData*)currentSnapshotData,
                     ghosts, ghostEntities, baselinePerEntity, availableBaselines,
                     dataStream, compressionModel);
             }
             case 1:
+            {
+                return GhostSendSystem<GhostSerializerCollection>.InvokeSerialize(m_SynchronizedSimulationTimeGhostSerializer, serializer,
+                    chunk, startIndex, currentTick, currentSnapshotEntity, (SynchronizedSimulationTimeSnapshot*)currentSnapshotData,
+                    ghosts, ghostEntities, baselinePerEntity, availableBaselines,
+                    dataStream, compressionModel);
+            }
+            case 2:
             {
                 return GhostSendSystem<GhostSerializerCollection>.InvokeSerialize(m_GamePlayerGhostSerializer, serializer,
                     chunk, startIndex, currentTick, currentSnapshotEntity, (GamePlayerSnapshot*)currentSnapshotData,
@@ -95,6 +118,7 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
         }
     }
     private DefaultRhythmEngineGhostSerializer m_DefaultRhythmEngineGhostSerializer;
+    private SynchronizedSimulationTimeGhostSerializer m_SynchronizedSimulationTimeGhostSerializer;
     private GamePlayerGhostSerializer m_GamePlayerGhostSerializer;
 
 }

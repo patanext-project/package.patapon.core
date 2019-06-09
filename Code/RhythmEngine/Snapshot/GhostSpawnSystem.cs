@@ -12,23 +12,22 @@ using UnityEngine;
 
 namespace Patapon4TLB.Default.Snapshot
 {
-	public class DefaultRhythmEngineGhostSpawnSystem : DefaultGhostSpawnSystem<DefaultRhythmEngineSnapshotData>
+	public class DefaultRhythmEngineGhostSpawnSystem : DefaultGhostSpawnSystem<RhythmEngineSnapshotData>
 	{
 		protected override EntityArchetype GetGhostArchetype()
 		{
 			return EntityManager.CreateArchetype
 			(
-				ComponentType.ReadWrite<DefaultRhythmEngineSettings>(),
+				ComponentType.ReadWrite<RhythmEngineSettings>(),
 				ComponentType.ReadWrite<GhostOwner>(),
 				ComponentType.ReadWrite<Owner>(),
-				ComponentType.ReadWrite<DefaultRhythmEngineSnapshotData>(),
-				ComponentType.ReadWrite<DefaultRhythmEngineState>(),
-				ComponentType.ReadWrite<DefaultRhythmEngineCurrentCommand>(),
-				ComponentType.ReadWrite<FlowRhythmEngineSettingsData>(),
-				ComponentType.ReadWrite<FlowRhythmEngineProcessData>(),
+				ComponentType.ReadWrite<RhythmEngineSnapshotData>(),
+				ComponentType.ReadWrite<RhythmEngineState>(),
+				ComponentType.ReadWrite<RhythmEngineCurrentCommand>(),
+				ComponentType.ReadWrite<FlowRhythmEngineProcess>(),
+				ComponentType.ReadWrite<FlowRhythmEnginePredictedProcess>(),
 				ComponentType.ReadWrite<ShardRhythmEngine>(),
 				ComponentType.ReadWrite<FlowCommandManagerTypeDefinition>(),
-				ComponentType.ReadWrite<FlowCommandManagerSettingsData>(),
 				ComponentType.ReadWrite<FlowCurrentCommand>(),
 				ComponentType.ReadWrite<ReplicatedEntityComponent>()
 			);
@@ -40,33 +39,53 @@ namespace Patapon4TLB.Default.Snapshot
 		}
 	}
 
+	public struct FlowRhythmEnginePredictedProcess : IComponentData
+	{
+		public int Beat;
+		public int Time; // time is in MS here!
+	}
+
 	[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
 	[UpdateAfter(typeof(DefaultRhythmEngineGhostSpawnSystem))]
 	[UpdateBefore(typeof(ConvertGhostToOwnerSystem))]
 	public class RhythmEngineGhostSyncSnapshot : JobComponentSystem
 	{
-		private struct SyncJob : IJobForEachWithEntity<GhostOwner, DefaultRhythmEngineState, DefaultRhythmEngineSettings>
+		private struct SyncJob : IJobForEachWithEntity<GhostOwner, RhythmEngineState, RhythmEngineSettings, FlowRhythmEngineProcess>
 		{
-			[ReadOnly] public BufferFromEntity<DefaultRhythmEngineSnapshotData> SnapshotFromEntity;
-			public            uint                                              TargetTick;
+			[ReadOnly] public BufferFromEntity<RhythmEngineSnapshotData> SnapshotFromEntity;
+			public            uint                                       TargetTick;
 
-			public void Execute(Entity entity, int _, ref GhostOwner owner, ref DefaultRhythmEngineState state, ref DefaultRhythmEngineSettings settings)
+			public uint ServerTime;
+
+			[ReadOnly] public ComponentDataFromEntity<FlowRhythmEngineSimulateTag> SimulateTagFromEntity;
+
+			public void Execute(Entity entity, int _, ref GhostOwner owner, ref RhythmEngineState state, ref RhythmEngineSettings settings, ref FlowRhythmEngineProcess process)
 			{
 				SnapshotFromEntity[entity].GetDataAtTick(TargetTick, out var snapshotData);
 
-				owner.GhostId = snapshotData.OwnerGhostId;
-				settings.Set(snapshotData);
-				state.Set(snapshotData);
+				owner.GhostId                = snapshotData.OwnerGhostId;
+				settings.MaxBeats            = snapshotData.MaxBeats;
+				settings.BeatInterval        = snapshotData.BeatInterval;
+				settings.UseClientSimulation = snapshotData.UseClientSimulation;
+
+				state.IsPaused = snapshotData.IsPaused;
+
+				if (!SimulateTagFromEntity.Exists(entity))
+				{
+					process.Beat = snapshotData.Beat;
+					process.Time = snapshotData.StartTime;
+				}
 			}
 		}
 
-		private struct AddSimulationTagJob : IJobForEachWithEntity<DefaultRhythmEngineState, Owner>
+		private struct AddSimulationTagJob : IJobForEachWithEntity<RhythmEngineState, Owner>
 		{
 			[DeallocateOnJobCompletion, ReadOnly]
-			public NativeArray<Entity>                         LocalPlayerEntity;
+			public NativeArray<Entity> LocalPlayerEntity;
+
 			public EntityCommandBuffer.Concurrent CommandBuffer;
 
-			public void Execute(Entity entity, int jobIndex, ref DefaultRhythmEngineState state, ref Owner owner)
+			public void Execute(Entity entity, int jobIndex, ref RhythmEngineState state, ref Owner owner)
 			{
 				if (owner.Target == LocalPlayerEntity[0])
 				{
@@ -90,7 +109,9 @@ namespace Patapon4TLB.Default.Snapshot
 		{
 			inputDeps = new SyncJob()
 			{
-				SnapshotFromEntity = GetBufferFromEntity<DefaultRhythmEngineSnapshotData>(),
+				SnapshotFromEntity = GetBufferFromEntity<RhythmEngineSnapshotData>(),
+				ServerTime = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Value.Predicted,
+				SimulateTagFromEntity = GetComponentDataFromEntity<FlowRhythmEngineSimulateTag>(),
 				TargetTick         = NetworkTimeSystem.predictTargetTick
 			}.Schedule(this, inputDeps);
 
@@ -108,8 +129,9 @@ namespace Patapon4TLB.Default.Snapshot
 			{
 				Debug.LogError("There is more than 1 local player!");
 			}
+
 			m_Barrier.AddJobHandleForProducer(inputDeps);
-			
+
 			return inputDeps;
 		}
 	}

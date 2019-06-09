@@ -15,18 +15,18 @@ namespace package.patapon.core
     {
         #region Constants
 
-        public const int KeyInvalid = 0;
-        public const int KeyPata    = 1;
-        public const int KeyPon     = 2;
-        public const int KeyDon     = 3;
-        public const int KeyChaka   = 4;
+        public const int   KeyInvalid          = 0;
+        public const int   KeyPata             = 1;
+        public const int   KeyPon              = 2;
+        public const int   KeyDon              = 3;
+        public const int   KeyChaka            = 4;
         public const float DefaultBeatInterval = 0.5f;
 
         #endregion
 
         private EntityQuery m_EngineGroup;
 
-        struct ProcessEngineJob : IJobProcessComponentDataWithEntity<ShardRhythmEngine, FlowRhythmEngineProcessData, FlowRhythmEngineSettingsData>
+        /*struct ProcessEngineJob : IJobProcessComponentDataWithEntity<ShardRhythmEngine, FlowRhythmEngineProcessData, FlowRhythmEngineSettingsData>
         {
             [ReadOnly]
             public float DeltaTime;
@@ -43,7 +43,7 @@ namespace package.patapon.core
             {
                 Debug.LogWarning($"Engine '{entity}' had a FlowRhythmEngineSettingsData.BeatInterval of 0 (or less), this is not accepted.");
             }
-            
+
             public void Execute(Entity entity, int index, [ReadOnly] ref ShardRhythmEngine engine, ref FlowRhythmEngineProcessData process, [ReadOnly] ref FlowRhythmEngineSettingsData settings)
             {
                 process.Time      += DeltaTime;
@@ -63,17 +63,18 @@ namespace package.patapon.core
 
                     CreateBeatEventList.Add(new FlowRhythmBeatEventProvider.Create
                     {
-                        Target = entity,
+                        Target     = entity,
                         FrameCount = FrameCount,
-                        Beat = process.Beat
+                        Beat       = process.Beat
                     });
                 }
 
                 process.TimeDelta = math.max(process.TimeDelta, 0f);
             }
-        }
+        }*/
 
         private NativeList<FlowRhythmBeatEventProvider.Create> m_DelayedBeatEventList;
+
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -84,11 +85,11 @@ namespace package.patapon.core
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
             // Update engine data
-            inputDeps = new ProcessEngineJob
+            /*inputDeps = new ProcessEngineJob
             {
                 DeltaTime           = GetSingleton<GameTimeComponent>().DeltaTime,
                 CreateBeatEventList = m_DelayedBeatEventList
-            }.Schedule(this, inputDeps);
+            }.Schedule(this, inputDeps);*/
 
             return inputDeps;
         }
@@ -101,10 +102,10 @@ namespace package.patapon.core
         /// <param name="beatInterval">The interval between each beat</param>
         /// <param name="correctedBeat">The new corrected beat (as it can be shifted to the next one)</param>
         /// <returns></returns>
-        public static float GetScore(double time, int beat, float beatInterval, out int correctedBeat)
+        public static float GetScore(double time, int beat, double beatInterval, out int correctedBeat)
         {
             var beatTimeDelta  = time % beatInterval;
-            var halvedInterval = beatInterval * 0.5f;
+            var halvedInterval = beatInterval * 0.5;
             var correctedTime  = (beatTimeDelta - halvedInterval);
 
             correctedBeat = correctedTime >= 0 ? beat + 1 : beat;
@@ -112,47 +113,24 @@ namespace package.patapon.core
             // this may happen if 'beatInterval' is 0
             if (double.IsNaN(correctedTime))
             {
-                correctedTime = 0.0f;
+                correctedTime = 0.0;
                 if (beatInterval == default) Debug.LogWarning($"{nameof(beatInterval)} is set to 0, which is not allowed in FlowRhythmEngine.GetScore()");
             }
-            
-            return (float) (correctedTime + -Math.Sign(correctedTime) * halvedInterval) / halvedInterval;
-        }
-    }
 
-    // this is a header
-    public struct FlowRhythmEngineTypeDefinition : IComponentData
-    {
-        
+            return (float) ((correctedTime + -Math.Sign(correctedTime) * halvedInterval) / halvedInterval);
+        }
     }
 
     public struct FlowRhythmEngineSimulateTag : IComponentData
     {
-        
+
     }
 
-    public struct FlowRhythmEngineProcessData : IComponentData
+    public struct FlowRhythmEngineProcess : IComponentData
     {
         public int    Beat;
-        public float  TimeDelta;
         public double Time;
-
-        public FlowRhythmEngineProcessData(int beat, float timeDelta, float time)
-        {
-            Beat      = beat;
-            TimeDelta = timeDelta;
-            Time      = time;
-        }
-    }
-
-    public struct FlowRhythmEngineSettingsData : IComponentData
-    {
-        public float BeatInterval;
-
-        public FlowRhythmEngineSettingsData(float beatInterval)
-        {
-            BeatInterval = beatInterval;
-        }
+        public float  Stock;
     }
 
     public struct FlowRhythmPressureData : IComponentData
@@ -166,6 +144,7 @@ namespace package.patapon.core
         /// The original beat of the pressure
         /// </summary>
         public int OriginalBeat;
+
         /// <summary>
         /// The modified beat of the pressure (as it's shifted)
         /// </summary>
@@ -184,12 +163,12 @@ namespace package.patapon.core
         /// </example>
         public float Score;
 
-        public FlowRhythmPressureData(int keyId, FlowRhythmEngineSettingsData settingsData, FlowRhythmEngineProcessData processData)
+        public FlowRhythmPressureData(int keyId, int beatInterval, double time, int beat)
         {
-            Score = FlowRhythmEngine.GetScore(processData.Time, processData.Beat, settingsData.BeatInterval, out CorrectedBeat);
+            Score = FlowRhythmEngine.GetScore(time, beat, beatInterval * 0.001f, out CorrectedBeat);
 
             KeyId        = keyId;
-            OriginalBeat = processData.Beat;
+            OriginalBeat = beat;
         }
 
         public float GetAbsoluteScore()
