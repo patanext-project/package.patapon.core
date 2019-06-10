@@ -34,6 +34,7 @@ namespace Patapon4TLB.Default
 				ComponentType.ReadWrite<RhythmEngineClientPredictedCommand>(),
 				ComponentType.ReadWrite<RhythmEngineClientRequestedCommand>(),
 				ComponentType.ReadWrite<FlowRhythmEngineProcess>(),
+				ComponentType.ReadWrite<FlowRhythmEngineSimulateTag>(),
 				ComponentType.ReadWrite<ShardRhythmEngine>(),
 				ComponentType.ReadWrite<FlowCurrentCommand>(),
 				ComponentType.ReadWrite<GhostComponent>(),

@@ -51,9 +51,8 @@ namespace Patapon4TLB.Default
 				writer.Write(ResultBuffer[com].Data.KeyId);
 				writer.Write(ResultBuffer[com].Data.OriginalBeat);
 				writer.Write(ResultBuffer[com].Data.CorrectedBeat);
+				Debug.Log(ResultBuffer[com].Data.Score);
 			}
-			
-			ResultBuffer.Dispose();
 		}
 
 		public void Deserialize(DataStreamReader reader, ref DataStreamReader.Context ctx)
@@ -62,8 +61,9 @@ namespace Patapon4TLB.Default
 			if (!IsValid)
 				return;
 
-			ResultBuffer = new NativeArray<RhythmEngineClientRequestedCommand>(reader.ReadInt(ref ctx), Allocator.TempJob);
-			for (var com = 0; com != ResultBuffer.Length; com++)
+			var count = reader.ReadInt(ref ctx);
+			ResultBuffer = new NativeArray<RhythmEngineClientRequestedCommand>(count, Allocator.Temp);
+			for (var com = 0; com != count; com++)
 			{
 				var temp = default(FlowRhythmPressureData);
 				temp.Score         = reader.ReadFloat(ref ctx);

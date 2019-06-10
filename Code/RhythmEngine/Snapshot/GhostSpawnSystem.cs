@@ -70,10 +70,11 @@ namespace Patapon4TLB.Default.Snapshot
 
 				state.IsPaused = snapshotData.IsPaused;
 
+				process.StartTime = snapshotData.StartTime;
 				if (!SimulateTagFromEntity.Exists(entity))
 				{
 					process.Beat = snapshotData.Beat;
-					process.Time = snapshotData.StartTime;
+					process.Time = snapshotData.StartTime > 0 ? (ServerTime - snapshotData.StartTime * 0.001f) : 0;
 				}
 			}
 		}

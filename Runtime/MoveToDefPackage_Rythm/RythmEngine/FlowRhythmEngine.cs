@@ -130,7 +130,7 @@ namespace package.patapon.core
     {
         public int    Beat;
         public double Time;
-        public float  Stock;
+        public int    StartTime;
     }
 
     public struct FlowRhythmPressureData : IComponentData
@@ -165,6 +165,8 @@ namespace package.patapon.core
 
         public FlowRhythmPressureData(int keyId, int beatInterval, double time, int beat)
         {
+            Debug.Log($"{time} {beat} {beatInterval * 0.001f}");
+            
             Score = FlowRhythmEngine.GetScore(time, beat, beatInterval * 0.001f, out CorrectedBeat);
 
             KeyId        = keyId;

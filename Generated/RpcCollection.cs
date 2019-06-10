@@ -1,6 +1,7 @@
 using System;
 using Patapon4TLB.Core;
 using Patapon4TLB.Default;
+using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Networking.Transport;
 using Unity.NetCode;
@@ -65,4 +66,14 @@ public struct RpcCollection : IRpcCollection
 
 public class P4ExperimentRpcSystem : RpcSystem<RpcCollection>
 {
+    protected override void OnCreateManager()
+    {
+        base.OnCreateManager();
+
+        World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcNewClientCommand>>().SetTypeIndex(0);
+        World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcPressure>>().SetTypeIndex(1);
+        World.GetOrCreateSystem<RpcQueueSystem<ClientLoadedRpc>>().SetTypeIndex(2);
+        World.GetOrCreateSystem<RpcQueueSystem<PlayerConnectedRpc>>().SetTypeIndex(3);
+
+    }
 }

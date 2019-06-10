@@ -5,21 +5,6 @@ using UnityEngine;
 
 namespace package.patapon.core
 {
-    // Currently a WIP, so there are a lot of tests and unit tests in this class
-    [UpdateInGroup(typeof(PresentationSystemGroup))]
-    public class FlowCommandManager : ComponentSystem
-    {
-        #region Constants
-
-        public const int DefaultMaxBeats = 4;
-
-        #endregion
-
-        protected override void OnUpdate()
-        {
-        }
-    }
-    
     // this is a header
     public struct FlowCommandManagerTypeDefinition : IComponentData
     {

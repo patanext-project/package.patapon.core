@@ -17,13 +17,16 @@ namespace Patapon4TLB.Default.Test
 			public EntityCommandBuffer.Concurrent CommandBuffer;
 			public EntityArchetype                RhythmEngineArchetype;
 
+			public uint ServerTime;
+
 			public void Execute(Entity _, int jobIndex, ref PlayerConnectedEvent ev)
 			{
 				var reEnt = CommandBuffer.CreateEntity(jobIndex, RhythmEngineArchetype);
 
-				CommandBuffer.SetComponent(jobIndex, reEnt, new RhythmEngineSettings {MaxBeats = 4, BeatInterval = 500, UseClientSimulation = true});
-				CommandBuffer.SetComponent(jobIndex, reEnt, new Owner {Target                  = ev.Player});
-				CommandBuffer.SetComponent(jobIndex, reEnt, new NetworkOwner {Value            = ev.Connection});
+				CommandBuffer.SetComponent(jobIndex, reEnt, new RhythmEngineSettings {MaxBeats     = 4, BeatInterval = 500, UseClientSimulation = true});
+				CommandBuffer.SetComponent(jobIndex, reEnt, new FlowRhythmEngineProcess {StartTime = (int) ServerTime + 3000});
+				CommandBuffer.SetComponent(jobIndex, reEnt, new Owner {Target                      = ev.Player});
+				CommandBuffer.SetComponent(jobIndex, reEnt, new NetworkOwner {Value                = ev.Connection});
 			}
 		}
 
@@ -42,7 +45,9 @@ namespace Patapon4TLB.Default.Test
 			inputDeps = new CreateJob
 			{
 				CommandBuffer         = m_Barrier.CreateCommandBuffer().ToConcurrent(),
-				RhythmEngineArchetype = m_RhythmEngineArchetype
+				RhythmEngineArchetype = m_RhythmEngineArchetype,
+
+				ServerTime = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Value.Predicted
 			}.Schedule(this, inputDeps);
 			m_Barrier.AddJobHandleForProducer(inputDeps);
 

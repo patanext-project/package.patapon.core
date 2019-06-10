@@ -28,9 +28,7 @@ namespace Patapon4TLB.Default.Snapshot
 		public ArchetypeChunkComponentType<RhythmEngineState>       GhostStateType;
 
 		public ComponentDataFromEntity<GhostSystemStateComponent> GhostStateFromEntity;
-
-		public SynchronizedSimulationTime SynchronizedSimulationTime;
-
+		
 		public void BeginSerialize(ComponentSystemBase system)
 		{
 			ComponentTypeOwner    = ComponentType.ReadWrite<Owner>();
@@ -43,8 +41,6 @@ namespace Patapon4TLB.Default.Snapshot
 			GhostStateType        = system.GetArchetypeChunkComponentType<RhythmEngineState>();
 
 			GhostStateFromEntity = system.GetComponentDataFromEntity<GhostSystemStateComponent>();
-
-			SynchronizedSimulationTime = system.GetSingleton<SynchronizedSimulationTime>();
 		}
 
 		public bool CanSerialize(EntityArchetype arch)
@@ -71,10 +67,12 @@ namespace Patapon4TLB.Default.Snapshot
 
 			var settings = chunk.GetNativeArray(GhostSettingsType)[ent];
 			snapshot.MaxBeats = settings.MaxBeats;
+			snapshot.UseClientSimulation = settings.UseClientSimulation;
+			snapshot.BeatInterval = settings.BeatInterval;
 
 			var process = chunk.GetNativeArray(GhostProcessType)[ent];
 			snapshot.Beat      = process.Beat;
-			snapshot.StartTime = process.Time > 0 ? (int) ((process.Time - SynchronizedSimulationTime.PredictedReal) * 1000) : 0;
+			snapshot.StartTime = process.StartTime;
 
 			var state = chunk.GetNativeArray(GhostStateType)[ent];
 			snapshot.IsPaused = state.IsPaused;
