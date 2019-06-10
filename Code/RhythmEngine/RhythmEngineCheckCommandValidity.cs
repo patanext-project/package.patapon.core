@@ -69,7 +69,7 @@ namespace Patapon4TLB.Default
 				for (var com = 0; com != commandSequence.Length; com++)
 				{
 					var range   = commandSequence[com].BeatRange;
-					var comBeat = currentCommand[com].CorrectedBeat;
+					var comBeat = currentCommand[com].CorrectedBeat - offset;
 
 					if (commandSequence[com].Key != currentCommand[com].KeyId)
 						return false;
@@ -114,7 +114,7 @@ namespace Patapon4TLB.Default
 
 				var currCommandArray = CurrentCommandFromEntity[entity];
 				var result           = GetCurrentCommand(currCommandArray.Reinterpret<FlowRhythmPressureData>());
-
+				
 				if (result == default)
 				{
 					flowCurrentCommand.IsActive      = 0;

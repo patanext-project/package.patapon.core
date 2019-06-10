@@ -10,7 +10,7 @@ namespace Patapon4TLB.Default
 	[UsedImplicitly]
 	public class RhythmEngineRemoveOldCommandPressureSystem : JobGameBaseSystem
 	{
-		//[BurstCompile]
+		[RequireComponentTag(typeof(FlowRhythmEngineSimulateTag))]
 		private struct DeleteOldCommandJob : IJobChunk
 		{
 			public ArchetypeChunkComponentType<FlowRhythmEngineProcess> ProcessType;
@@ -34,7 +34,7 @@ namespace Patapon4TLB.Default
 					for (var j = 0; j != currCommandBuffer.Length; j++)
 					{
 						var currCommand = currCommandBuffer[j];
-						if (predictedData.Beat + settingsData.MaxBeats < currCommand.Data.CorrectedBeat)
+						if (predictedData.Beat > currCommand.Data.CorrectedBeat + settingsData.MaxBeats)
 						{
 							currCommandBuffer.RemoveAt(j);
 							j--; // swap back method.

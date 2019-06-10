@@ -11,23 +11,6 @@ namespace Patapon4TLB.Default
 	[UsedImplicitly]
 	public class RhythmEngineProcessEvents : JobGameBaseSystem
 	{
-		/*protected override void OnUpdate()
-		{
-			Entities.ForEach((Entity e, ref PressureEvent pressureEvent) =>
-			{
-				var processData  = EntityManager.GetComponentData<FlowRhythmEngineProcessData>(pressureEvent.Engine);
-				var settingsData = EntityManager.GetComponentData<FlowRhythmEngineSettingsData>(pressureEvent.Engine);
-				var cmdBuffer = EntityManager.GetBuffer<RhythmEngineCurrentCommand>(pressureEvent.Engine);
-
-				cmdBuffer.Add(new RhythmEngineCurrentCommand
-				{
-					Data = new FlowRhythmPressureData(pressureEvent.Key, settingsData, processData)
-				});
-				
-				PostUpdateCommands.DestroyEntity(e);
-			});
-		}*/
-		
 		private struct AddPressureToCommandListJob : IJobForEachWithEntity<PressureEvent>
 		{
 			public bool IsServer;

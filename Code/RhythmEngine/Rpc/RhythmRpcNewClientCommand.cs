@@ -4,6 +4,7 @@ using Runtime.EcsComponents;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.NetCode;
 using Unity.Networking.Transport;
 using UnityEngine;
@@ -51,7 +52,6 @@ namespace Patapon4TLB.Default
 				writer.Write(ResultBuffer[com].Data.KeyId);
 				writer.Write(ResultBuffer[com].Data.OriginalBeat);
 				writer.Write(ResultBuffer[com].Data.CorrectedBeat);
-				Debug.Log(ResultBuffer[com].Data.Score);
 			}
 		}
 
@@ -82,7 +82,7 @@ namespace Patapon4TLB.Default
 	}
 
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-	public class RhythmExecuteCommandSystem : ComponentSystem
+	public class RhythmExecuteCommandSystem : JobComponentSystem
 	{
 		private struct Job : IJobForEachWithEntity<NetworkOwner, RhythmEngineState>
 		{
@@ -95,6 +95,7 @@ namespace Patapon4TLB.Default
 			[DeallocateOnJobCompletion]
 			public NativeArray<RhythmExecuteCommand> ExecuteCommandArray;
 
+			[DeallocateOnJobCompletion]
 			public NativeArray<Entity> ExecuteCommandEntities; // we need to get the buffer from them
 
 			[NativeDisableParallelForRestriction]
@@ -110,7 +111,7 @@ namespace Patapon4TLB.Default
 			{
 				var executeCommand       = default(RhythmExecuteCommand);
 				var executeCommandEntity = default(Entity);
-				for (var com = 0; executeCommand.Connection != default && com != ExecuteCommandArray.Length; com++)
+				for (var com = 0; executeCommand.Connection == default && com != ExecuteCommandArray.Length; com++)
 				{
 					if (ExecuteCommandArray[com].Connection == netOwner.Value)
 					{
@@ -121,6 +122,8 @@ namespace Patapon4TLB.Default
 
 				if (executeCommand.Connection == default)
 					return;
+				
+				Debug.Log("Received command request!");
 
 				var currentCommand   = CurrentCommandFromEntity[entity].Reinterpret<FlowRhythmPressureData>();
 				var predictedCommand = PredictedCommandFromEntity[entity].Reinterpret<FlowRhythmPressureData>();
@@ -142,9 +145,38 @@ namespace Patapon4TLB.Default
 			}
 		}
 
-		protected override void OnUpdate()
+		private EntityQuery m_ExecuteCommandQuery;
+
+		protected override void OnCreate()
 		{
+			base.OnCreate();
+
+			m_ExecuteCommandQuery = GetEntityQuery(typeof(RhythmExecuteCommand));
+		}
+
+		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		{
+			m_ExecuteCommandQuery.AddDependency(inputDeps);
 			
+			inputDeps = new Job
+			{
+				AllowCommandChange = true,
+
+				ExecuteCommandArray    = m_ExecuteCommandQuery.ToComponentDataArray<RhythmExecuteCommand>(Allocator.TempJob, out var queryHandleData),
+				ExecuteCommandEntities = m_ExecuteCommandQuery.ToEntityArray(Allocator.TempJob, out var queryHandleEntities),
+
+				PredictedCommandFromEntity = GetBufferFromEntity<RhythmEngineClientPredictedCommand>(),
+				RequestedCommandFromEntity = GetBufferFromEntity<RhythmEngineClientRequestedCommand>(),
+				CurrentCommandFromEntity   = GetBufferFromEntity<RhythmEngineCurrentCommand>()
+			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, queryHandleData, queryHandleEntities));
+
+			if (m_ExecuteCommandQuery.CalculateLength() > 0)
+			{
+				inputDeps.Complete();
+				EntityManager.DestroyEntity(m_ExecuteCommandQuery);
+			}
+			
+			return inputDeps;
 		}
 	}
 }
