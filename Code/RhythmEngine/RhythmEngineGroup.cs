@@ -8,6 +8,8 @@ using Unity.NetCode;
 namespace Patapon4TLB.Default
 {
 	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
+	[UpdateAfter(typeof(GhostReceiveSystemGroup))]
+	[UpdateAfter(typeof(GhostUpdateSystemGroup))]
 	public class RhythmEngineGroup : ComponentSystemGroup
 	{
 		private RhythmEngineBeginBarrier m_BeginBarrier;

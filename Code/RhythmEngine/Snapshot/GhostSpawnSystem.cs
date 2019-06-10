@@ -42,7 +42,7 @@ namespace Patapon4TLB.Default.Snapshot
 	public struct FlowRhythmEnginePredictedProcess : IComponentData
 	{
 		public int Beat;
-		public int Time; // time is in MS here!
+		public double Time;
 	}
 
 	[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
@@ -50,7 +50,7 @@ namespace Patapon4TLB.Default.Snapshot
 	[UpdateBefore(typeof(ConvertGhostToOwnerSystem))]
 	public class RhythmEngineGhostSyncSnapshot : JobComponentSystem
 	{
-		private struct SyncJob : IJobForEachWithEntity<GhostOwner, RhythmEngineState, RhythmEngineSettings, FlowRhythmEngineProcess>
+		private struct SyncJob : IJobForEachWithEntity<GhostOwner, RhythmEngineState, RhythmEngineSettings, FlowRhythmEngineProcess, FlowRhythmEnginePredictedProcess>
 		{
 			[ReadOnly] public BufferFromEntity<RhythmEngineSnapshotData> SnapshotFromEntity;
 			public            uint                                       TargetTick;
@@ -59,7 +59,7 @@ namespace Patapon4TLB.Default.Snapshot
 
 			[ReadOnly] public ComponentDataFromEntity<FlowRhythmEngineSimulateTag> SimulateTagFromEntity;
 
-			public void Execute(Entity entity, int _, ref GhostOwner owner, ref RhythmEngineState state, ref RhythmEngineSettings settings, ref FlowRhythmEngineProcess process)
+			public void Execute(Entity entity, int _, ref GhostOwner owner, ref RhythmEngineState state, ref RhythmEngineSettings settings, ref FlowRhythmEngineProcess process, ref FlowRhythmEnginePredictedProcess predictedProcess)
 			{
 				SnapshotFromEntity[entity].GetDataAtTick(TargetTick, out var snapshotData);
 
@@ -74,8 +74,11 @@ namespace Patapon4TLB.Default.Snapshot
 				if (!SimulateTagFromEntity.Exists(entity))
 				{
 					process.Beat = snapshotData.Beat;
-					process.Time = snapshotData.StartTime > 0 ? (ServerTime - snapshotData.StartTime * 0.001f) : 0;
+					process.Time = snapshotData.StartTime > 0 ? (ServerTime - snapshotData.StartTime) * 0.001f : 0;
 				}
+
+				predictedProcess.Beat = snapshotData.Beat;
+				predictedProcess.Time = snapshotData.StartTime > 0 ? (ServerTime - snapshotData.StartTime) * 0.001f : 0;
 			}
 		}
 
