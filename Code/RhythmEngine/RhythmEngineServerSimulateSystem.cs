@@ -65,22 +65,6 @@ namespace Patapon4TLB.Default
 					FrameCount = FrameCount,
 					Beat       = process.Beat
 				});
-
-				/*while (process.Stock >= settings.BeatInterval)
-				{
-					process.Stock -= settings.BeatInterval;
-
-					process.Beat += 1;
-
-					CreateBeatEventList.Add(new FlowRhythmBeatEventProvider.Create
-					{
-						Target     = entity,
-						FrameCount = FrameCount,
-						Beat       = process.Beat
-					});
-				}
-
-				process.Stock = math.max(process.Stock, 0f);*/
 			}
 		}
 
