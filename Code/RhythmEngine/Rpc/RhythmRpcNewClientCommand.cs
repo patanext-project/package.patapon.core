@@ -84,7 +84,7 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 	public class RhythmExecuteCommandSystem : JobComponentSystem
 	{
-		private struct Job : IJobForEachWithEntity<NetworkOwner, RhythmEngineState>
+		private struct Job : IJobForEachWithEntity<NetworkOwner, RhythmEngineSettings, FlowRhythmEngineProcess, RhythmEngineState>
 		{
 			/// <summary>
 			/// If true, players will be allowed to directly execute a command that may not be valid to the current one in the server
@@ -107,7 +107,7 @@ namespace Patapon4TLB.Default
 			[NativeDisableParallelForRestriction]
 			public BufferFromEntity<RhythmEngineCurrentCommand> CurrentCommandFromEntity;
 
-			public void Execute(Entity entity, int index, ref NetworkOwner netOwner, ref RhythmEngineState state)
+			public void Execute(Entity entity, int index, ref NetworkOwner netOwner, ref RhythmEngineSettings settings, ref FlowRhythmEngineProcess process, ref RhythmEngineState state)
 			{
 				var executeCommand       = default(RhythmExecuteCommand);
 				var executeCommandEntity = default(Entity);
@@ -132,6 +132,20 @@ namespace Patapon4TLB.Default
 				if (AllowCommandChange)
 				{
 					currentCommand.CopyFrom(requestedCommand);
+					
+					// it may be possible that client is delayed by one beat
+					var firstBeat = currentCommand[0].CorrectedBeat;
+					var offset = process.Beat - (firstBeat + (settings.MaxBeats - 1));
+					if (offset != 0)
+					{
+						for (var com = 0; com != currentCommand.Length; com++)
+						{
+							var tmp = currentCommand[com];
+							tmp.CorrectedBeat += offset; // should we also modify tmp.OriginalBeat ?
+							currentCommand[com] = tmp;
+						}
+					}
+					Debug.Log($"{firstBeat} {process.Beat} {offset}");
 				}
 				else
 				{
