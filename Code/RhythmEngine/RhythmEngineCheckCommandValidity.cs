@@ -130,9 +130,6 @@ namespace Patapon4TLB.Default
 				flowCurrentCommand.CommandTarget = result;
 
 				state.ApplyCommandNextBeat = false;
-				
-				if (IsServer) Debug.Log("S: " + result);
-				else Debug.Log("C: " + result + $" {IsServer} && {settings.UseClientSimulation}");
 
 				if (!IsServer && settings.UseClientSimulation)
 				{

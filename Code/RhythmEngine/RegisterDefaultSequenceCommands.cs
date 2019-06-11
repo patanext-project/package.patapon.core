@@ -95,6 +95,15 @@ namespace Patapon4TLB.Default
 				new FlowCommandSequence(3, RhythmKeys.Left),
 			});
 			EntityManager.AddComponent(backward, typeof(BackwardCommand));
+
+			var skip = Build(builder, new[]
+			{
+				new FlowCommandSequence(0, RhythmKeys.Up),
+				new FlowCommandSequence(1, RhythmKeys.Up),
+				new FlowCommandSequence(1, RhythmKeys.Right),
+				new FlowCommandSequence(3, RhythmKeys.Right),
+			});
+			EntityManager.AddComponent(skip, typeof(SkipCommand));
 		}
 
 		private Entity Build(FlowCommandBuilder builder, FlowCommandSequence[] sequences)

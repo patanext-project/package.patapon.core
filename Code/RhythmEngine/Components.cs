@@ -12,12 +12,12 @@ namespace Patapon4TLB.Default
 		public bool IsPaused;
 		public bool ApplyCommandNextBeat;
 	}
-	
+
 	public struct RhythmEngineSettings : IComponentData
 	{
 		public int MaxBeats;
 		public int BeatInterval; // in ms
-		
+
 		/// <summary>
 		/// Let the players simulate the rhythm engine or not.
 		/// If enabled, 'RhythmEngineClientPredictedCommand' and 'RhythmEngineClientRequestedCommand' will be
@@ -29,7 +29,7 @@ namespace Patapon4TLB.Default
 	public struct PressureEvent : IComponentData
 	{
 		public Entity Engine;
-		public int Key;
+		public int    Key;
 	}
 
 	/// <summary>
@@ -58,7 +58,7 @@ namespace Patapon4TLB.Default
 	{
 		public FlowRhythmPressureData Data;
 	}
-	
+
 	public struct DefaultRhythmCommand : IComponentData
 	{
 
@@ -97,6 +97,10 @@ namespace Patapon4TLB.Default
 	}
 
 	public struct BackwardCommand : IComponentData
+	{
+	}
+
+	public struct SkipCommand : IComponentData
 	{
 	}
 }

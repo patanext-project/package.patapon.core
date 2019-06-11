@@ -21,15 +21,18 @@ namespace Patapon4TLB.Default
 		[RequireComponentTag(typeof(FlowRhythmEngineSimulateTag))]
 		private struct SendLocalEventToEngine : IJobForEachWithEntity<RhythmEngineSettings, FlowRhythmEngineProcess, RhythmEngineState>
 		{
-			public NativeArray<RhythmRpcPressure> PressureEventSingleArray;
+			public NativeArray<RhythmRpcPressureFromClient> PressureEventSingleArray;
 
 			[NativeDisableParallelForRestriction]
 			public BufferFromEntity<RhythmEngineCurrentCommand> CommandSequenceFromEntity;
 
+			[NativeDisableParallelForRestriction]
+			public NativeList<FlowRhythmPressureEventProvider.Create> CreatePressureEventList;
+
 			public unsafe void Execute(Entity entity, int _, ref RhythmEngineSettings settings, ref FlowRhythmEngineProcess flowProcess, ref RhythmEngineState state)
 			{
 				var     commandSequence = CommandSequenceFromEntity[entity];
-				ref var pressureEvent   = ref UnsafeUtilityEx.ArrayElementAsRef<RhythmRpcPressure>(PressureEventSingleArray.GetUnsafePtr(), 0);
+				ref var pressureEvent   = ref UnsafeUtilityEx.ArrayElementAsRef<RhythmRpcPressureFromClient>(PressureEventSingleArray.GetUnsafePtr(), 0);
 
 				pressureEvent.Beat = flowProcess.Beat;
 
@@ -37,14 +40,16 @@ namespace Patapon4TLB.Default
 				{
 					Data = new FlowRhythmPressureData(pressureEvent.Key, settings.BeatInterval, flowProcess.Time, flowProcess.Beat)
 				});
+				
+				CreatePressureEventList.Add(new FlowRhythmPressureEventProvider.Create {Engine = entity, Key = pressureEvent.Key});
 			}
 		}
 
 		[BurstCompile]
 		private struct SendRpcEvent : IJobForEachWithEntity<NetworkIdComponent>
 		{
-			[DeallocateOnJobCompletion] public NativeArray<RhythmRpcPressure> PressureEventSingleArray;
-			public RpcQueue<RhythmRpcPressure> RpcQueue;
+			[DeallocateOnJobCompletion] public NativeArray<RhythmRpcPressureFromClient> PressureEventSingleArray;
+			public RpcQueue<RhythmRpcPressureFromClient> RpcQueue;
 
 			[NativeDisableParallelForRestriction]
 			public BufferFromEntity<OutgoingRpcDataStreamBufferComponent> OutgoingDataBufferFromEntity;
@@ -59,6 +64,8 @@ namespace Patapon4TLB.Default
 		public const int    ActionLength  = 4;
 
 		public InputAction[] m_Actions;
+		
+		private FlowRhythmPressureEventProvider m_PressureEventProvider;
 
 		protected override void OnCreate()
 		{
@@ -66,6 +73,8 @@ namespace Patapon4TLB.Default
 
 			if (RemoveFromServerWorld())
 				return;
+
+			m_PressureEventProvider = World.GetOrCreateSystem<FlowRhythmPressureEventProvider>();
 
 			var path = Application.streamingAssetsPath + "/" + AssetFileName;
 			if (File.Exists(path))
@@ -91,10 +100,10 @@ namespace Patapon4TLB.Default
 			if (!World.GetExistingSystem<ClientPresentationSystemGroup>().Enabled)
 				return inputDeps;
 
-			var pressureEvent = new RhythmRpcPressure {Key = -1};
+			var pressureEvent = new RhythmRpcPressureFromClient {Key = -1};
 			foreach (var ev in InputEvents)
 			{
-				pressureEvent = new RhythmRpcPressure
+				pressureEvent = new RhythmRpcPressureFromClient
 				{
 					Beat = -1,                                     // the beat will be assigned SendLocalEventToEngine job
 					Key  = Array.IndexOf(m_Actions, ev.action) + 1 // match RhythmKeys
@@ -106,8 +115,8 @@ namespace Patapon4TLB.Default
 			if (pressureEvent.Key < 0)
 				return inputDeps;
 
-			var rpcQueue = World.GetExistingSystem<P4ExperimentRpcSystem>().GetRpcQueue<RhythmRpcPressure>();
-			var pressureEventSingleArray = new NativeArray<RhythmRpcPressure>(1, Allocator.TempJob, NativeArrayOptions.UninitializedMemory)
+			var rpcQueue = World.GetExistingSystem<P4ExperimentRpcSystem>().GetRpcQueue<RhythmRpcPressureFromClient>();
+			var pressureEventSingleArray = new NativeArray<RhythmRpcPressureFromClient>(1, Allocator.TempJob, NativeArrayOptions.UninitializedMemory)
 			{
 				[0] = pressureEvent
 			};
@@ -115,8 +124,13 @@ namespace Patapon4TLB.Default
 			inputDeps = new SendLocalEventToEngine
 			{
 				PressureEventSingleArray  = pressureEventSingleArray,
-				CommandSequenceFromEntity = GetBufferFromEntity<RhythmEngineCurrentCommand>()
+				CommandSequenceFromEntity = GetBufferFromEntity<RhythmEngineCurrentCommand>(),
+				
+				CreatePressureEventList = m_PressureEventProvider.GetEntityDelayedList()
 			}.Schedule(this, inputDeps);
+			
+			m_PressureEventProvider.AddJobHandleForProducer(inputDeps);
+			
 			inputDeps = new SendRpcEvent
 			{
 				PressureEventSingleArray     = pressureEventSingleArray,

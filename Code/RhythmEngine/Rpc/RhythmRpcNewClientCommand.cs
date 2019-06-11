@@ -2,6 +2,7 @@ using System;
 using package.patapon.core;
 using Runtime.EcsComponents;
 using StormiumTeam.GameBase;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -36,12 +37,18 @@ namespace Patapon4TLB.Default
 			ResultBuffer.Dispose();
 		}
 
+		[BurstDiscard]
+		private void NonBurst_LogError()
+		{
+			Debug.LogError($"We tried to send an invalid '{nameof(ResultBuffer)}'!");
+		}
+
 		public void Serialize(DataStreamWriter writer)
 		{
 			if (!ResultBuffer.IsCreated)
 			{
 				writer.Write((byte) 0); // validity
-				Debug.LogError($"We tried to send an invalid '{nameof(ResultBuffer)}'!");
+				NonBurst_LogError();
 			}
 
 			writer.Write((byte) 1);            // validity

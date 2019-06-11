@@ -1,4 +1,5 @@
 using package.patapon.def.Data;
+using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using Unity.Burst;
 using Unity.Entities;
@@ -7,20 +8,19 @@ using Unity.NetCode;
 
 namespace package.patapon.core
 {
-	public class FlowRhythmBeatEventProvider : BaseProviderBatch<FlowRhythmBeatEventProvider.Create>
+	public class FlowRhythmPressureEventProvider : BaseProviderBatch<FlowRhythmPressureEventProvider.Create>
 	{
 		public struct Create
 		{
-			public Entity Target;
-			public int    FrameCount;
-			public int    Beat;
+			public Entity Engine;
+			public int    Key;
 		}
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			new RhythmEventDestroySystem<FlowRhythmBeatData>(World);
+			new RhythmEventDestroySystem<PressureEvent>(World);
 		}
 
 		public override void GetComponents(out ComponentType[] entityComponents)
@@ -29,16 +29,15 @@ namespace package.patapon.core
 			{
 				ComponentType.ReadWrite<RhythmShardEvent>(),
 				ComponentType.ReadWrite<RhythmShardTarget>(),
-				ComponentType.ReadWrite<RhythmBeatData>(),
-				ComponentType.ReadWrite<FlowRhythmBeatData>()
+				ComponentType.ReadWrite<PressureEvent>(),
 			};
 		}
 
 		public override void SetEntityData(Entity entity, Create data)
 		{
-			EntityManager.SetComponentData(entity, new RhythmShardEvent(data.FrameCount));
-			EntityManager.SetComponentData(entity, new RhythmShardTarget(data.Target));
-			EntityManager.SetComponentData(entity, new FlowRhythmBeatData(data.Beat));
+			EntityManager.SetComponentData(entity, new RhythmShardEvent(0));
+			EntityManager.SetComponentData(entity, new RhythmShardTarget(data.Engine));
+			EntityManager.SetComponentData(entity, new PressureEvent {Engine = data.Engine, Key = data.Key});
 		}
 	}
 }

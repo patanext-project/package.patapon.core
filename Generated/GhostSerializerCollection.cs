@@ -1,6 +1,7 @@
 using System;
 using Patapon4TLB.Default.Snapshot;
 using StormiumTeam.GameBase;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Networking.Transport;
@@ -9,6 +10,16 @@ using UnityEngine;
 
 public struct GhostSerializerCollection : IGhostSerializerCollection
 {
+    [BurstDiscard]
+    private void NonBurst_LogCouldntFindSerializer(EntityArchetype arch)
+    {
+        var types = arch.GetComponentTypes();
+        for (var i = 0; i != types.Length; i++)
+        {
+            Debug.Log(types[i].GetManagedType().Name);
+        }
+    }
+    
     public int FindSerializer(EntityArchetype arch)
     {
         if (m_DefaultRhythmEngineGhostSerializer.CanSerialize(arch))
@@ -18,11 +29,7 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
         if (m_GamePlayerGhostSerializer.CanSerialize(arch))
             return 2;
 
-        var types = arch.GetComponentTypes();
-        for (var i = 0; i != types.Length; i++)
-        {
-            Debug.Log(types[i].GetManagedType().Name);
-        }
+        NonBurst_LogCouldntFindSerializer(arch);
 
         throw new ArgumentException("Invalid serializer type");
     }

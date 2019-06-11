@@ -13,7 +13,7 @@ namespace Patapon4TLB.Default.Test
 		private int  m_LastBeat;
 		private bool m_Play;
 
-		private void ForEach(ref FlowRhythmEngineProcess process)
+		private void ForEachEngine(ref FlowRhythmEngineProcess process)
 		{
 			if (m_LastBeat == process.Beat)
 				return;
@@ -22,7 +22,16 @@ namespace Patapon4TLB.Default.Test
 			m_Play     = true;
 		}
 
-		private EntityQueryBuilder.F_D<FlowRhythmEngineProcess> m_ProcessDelegate;
+		private void ForEachPressureEvent(ref PressureEvent pressureEvent)
+		{
+			if (!EntityManager.HasComponent(pressureEvent.Engine, typeof(FlowRhythmEngineSimulateTag)))
+				return;
+			
+			m_AudioSourceOnNewPressure.PlayOneShot(m_AudioOnPressure[pressureEvent.Key][0]);
+		}
+
+		private EntityQueryBuilder.F_D<FlowRhythmEngineProcess> m_EngineDelegate;
+		private EntityQueryBuilder.F_D<PressureEvent> m_PressureEventDelegate;
 
 		private AudioSource m_AudioSourceOnNewBeat;
 		private AudioSource m_AudioSourceOnNewPressure;
@@ -36,12 +45,18 @@ namespace Patapon4TLB.Default.Test
 
 			Addressables.InitializationOperation.Completed += op => { OnLoadAssets(); };
 
-			m_ProcessDelegate = ForEach;
+			m_EngineDelegate = ForEachEngine;
+			m_PressureEventDelegate = ForEachPressureEvent;
 
 			m_AudioSourceOnNewBeat               = new GameObject("(Clip) On New Beat", typeof(AudioSource)).GetComponent<AudioSource>();
 			m_AudioSourceOnNewBeat.reverbZoneMix = 0f;
 			m_AudioSourceOnNewBeat.spatialBlend  = 0f;
 			m_AudioSourceOnNewBeat.volume        = 0.25f;
+			
+			m_AudioSourceOnNewPressure = new GameObject("(Clip) On New Pressure", typeof(AudioSource)).GetComponent<AudioSource>();
+			m_AudioSourceOnNewPressure.reverbZoneMix = 0f;
+			m_AudioSourceOnNewPressure.spatialBlend  = 0f;
+			m_AudioSourceOnNewPressure.volume        = 0.33f;
 		}
 
 		protected void OnLoadAssets()
@@ -61,9 +76,12 @@ namespace Patapon4TLB.Default.Test
 				{
 					var rank = r;
 
+					m_AudioOnPressure[key][rank] = null;
+
 					Addressables.LoadAsset<AudioClip>($"int:RhythmEngine/Sounds/drum_{key}_{rank}.ogg").Completed += op =>
 					{
 						Debug.Assert(op.IsValid, "op.IsValid");
+						Debug.Log($"loaded [{key}][{rank}]");
 
 						m_AudioOnPressure[key][rank] = op.Result;
 					};
@@ -75,12 +93,14 @@ namespace Patapon4TLB.Default.Test
 		{
 			m_Play = false;
 
-			Entities.WithAll<FlowRhythmEngineSimulateTag>().ForEach(m_ProcessDelegate);
+			Entities.WithAll<FlowRhythmEngineSimulateTag>().ForEach(m_EngineDelegate);
 
 			if (m_Play)
 			{
 				m_AudioSourceOnNewBeat.PlayOneShot(m_AudioOnNewBeat);
 			}
+
+			Entities.ForEach(m_PressureEventDelegate);
 		}
 	}
 }

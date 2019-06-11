@@ -1,5 +1,4 @@
 using System;
-using Patapon4TLB.Core;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using Unity.Entities;
@@ -11,7 +10,8 @@ public struct RpcCollection : IRpcCollection
     static Type[] s_RpcTypes = new Type[]
     {
         typeof(RhythmRpcNewClientCommand),
-        typeof(RhythmRpcPressure),
+        typeof(RhythmRpcPressureFromClient),
+        typeof(RhythmRpcPressureFromServer),
         typeof(ClientLoadedRpc),
         typeof(PlayerConnectedRpc),
 
@@ -29,19 +29,26 @@ public struct RpcCollection : IRpcCollection
             }
             case 1:
             {
-                var tmp = new RhythmRpcPressure();
+                var tmp = new RhythmRpcPressureFromClient();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 2:
             {
-                var tmp = new ClientLoadedRpc();
+                var tmp = new RhythmRpcPressureFromServer();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 3:
+            {
+                var tmp = new ClientLoadedRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 4:
             {
                 var tmp = new PlayerConnectedRpc();
                 tmp.Deserialize(reader, ref ctx);
@@ -71,9 +78,10 @@ public class P4ExperimentRpcSystem : RpcSystem<RpcCollection>
         base.OnCreateManager();
 
         World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcNewClientCommand>>().SetTypeIndex(0);
-        World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcPressure>>().SetTypeIndex(1);
-        World.GetOrCreateSystem<RpcQueueSystem<ClientLoadedRpc>>().SetTypeIndex(2);
-        World.GetOrCreateSystem<RpcQueueSystem<PlayerConnectedRpc>>().SetTypeIndex(3);
+        World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcPressureFromClient>>().SetTypeIndex(1);
+        World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcPressureFromServer>>().SetTypeIndex(2);
+        World.GetOrCreateSystem<RpcQueueSystem<ClientLoadedRpc>>().SetTypeIndex(3);
+        World.GetOrCreateSystem<RpcQueueSystem<PlayerConnectedRpc>>().SetTypeIndex(4);
 
     }
 }
