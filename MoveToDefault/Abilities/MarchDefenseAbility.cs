@@ -90,14 +90,14 @@ namespace Patapon4TLB.Default
 		{
 			base.OnCreate();
 
-			var cmdBuilder = World.GetOrCreateSystem<FlowCommandBuilder>();
+			var cmdBuilder = World.GetOrCreateSystem<RhythmCommandBuilder>();
 
-			m_MarchCommand = cmdBuilder.GetOrCreate(new NativeArray<FlowCommandSequence>(4, Allocator.Temp)
+			m_MarchCommand = cmdBuilder.GetOrCreate(new NativeArray<RhythmCommandSequence>(4, Allocator.Temp)
 			{
-				[0] = new FlowCommandSequence(0, FlowRhythmEngine.KeyPata),
-				[1] = new FlowCommandSequence(1, FlowRhythmEngine.KeyPata),
-				[2] = new FlowCommandSequence(2, FlowRhythmEngine.KeyPata),
-				[3] = new FlowCommandSequence(3, FlowRhythmEngine.KeyPon)
+				[0] = new RhythmCommandSequence(0, FlowRhythmEngine.KeyPata),
+				[1] = new RhythmCommandSequence(1, FlowRhythmEngine.KeyPata),
+				[2] = new RhythmCommandSequence(2, FlowRhythmEngine.KeyPata),
+				[3] = new RhythmCommandSequence(3, FlowRhythmEngine.KeyPon)
 			});
 		}
 

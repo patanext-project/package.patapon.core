@@ -4,53 +4,81 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
+using UnityEngine;
 
 namespace Patapon4TLB.Default
 {
-	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
+	[UpdateInGroup(typeof(RhythmEngineGroup))]
+	[UpdateAfter(typeof(RhythmEngineServerSimulateSystem))]
+	[UpdateAfter(typeof(RhythmEngineClientSimulateLocalSystem))]
+	[UpdateAfter(typeof(RhythmEngineCheckCommandValidity))]
 	public class RhythmEngineUpdateCommandState : JobGameBaseSystem
 	{
-		private struct Job : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineState, FlowRhythmEngineProcess, FlowCommandState, FlowCurrentCommand>
+		private struct Job : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineState, RhythmEngineProcess, GameCommandState, RhythmCurrentCommand>
 		{
 			public bool IsServer;
 
 			[ReadOnly]
-			public ComponentDataFromEntity<FlowCommandData> CommandDataFromEntity;
+			public ComponentDataFromEntity<RhythmCommandData> CommandDataFromEntity;
+
+			[NativeDisableParallelForRestriction]
+			public ComponentDataFromEntity<GamePredictedCommandState> PredictedFromEntity;
 
 			[ReadOnly]
-			public ComponentDataFromEntity<FlowRhythmEngineSimulateTag> SimulateTagFromEntity;
+			public ComponentDataFromEntity<RhythmEngineSimulateTag> SimulateTagFromEntity;
 
 			public void Execute(Entity entity, int index,
 			                    // components
-			                    ref RhythmEngineSettings settings,     ref RhythmEngineState  state, ref FlowRhythmEngineProcess process,
-			                    ref FlowCommandState     commandState, ref FlowCurrentCommand flow)
+			                    ref RhythmEngineSettings settings,     ref RhythmEngineState    state, ref RhythmEngineProcess process,
+			                    ref GameCommandState     commandState, ref RhythmCurrentCommand rhythm)
 			{
 				if (state.IsPaused
 				    || (!IsServer && settings.UseClientSimulation && !SimulateTagFromEntity.Exists(entity)))
 					return;
 
-				if (flow.CommandTarget == default)
+				if (rhythm.CommandTarget == default)
 				{
-					commandState.IsActive = false;
+					commandState.IsActive  = false;
 					commandState.StartBeat = -1;
-					commandState.EndBeat = -1;
+					commandState.EndBeat   = -1;
 					return;
 				}
 
-				var commandData = CommandDataFromEntity[flow.CommandTarget];
-				var isActive =
-					// check start
-					(flow.ActiveAtBeat < 0 || flow.ActiveAtBeat <= process.Beat)
-					// check end
-					&& (flow.CustomEndBeat == -2
-					    || (flow.ActiveAtBeat >= 0 && flow.ActiveAtBeat + commandData.BeatLength > process.Beat)
-					    || flow.CustomEndBeat > process.Beat)
-					// if both are set to no effect, then the command is not active
-					&& flow.ActiveAtBeat != 1 && flow.CustomEndBeat != 1;
+				var isActive   = false;
+				var beatLength = 0;
+				if (rhythm.CommandTarget != default)
+				{
+					var commandData = CommandDataFromEntity[rhythm.CommandTarget];
+					beatLength = commandData.BeatLength;
+					
+					isActive =
+						// check start
+						(rhythm.ActiveAtBeat < 0 || rhythm.ActiveAtBeat <= process.Beat)
+						// check end
+						&& (rhythm.CustomEndBeat == -2
+						    || (rhythm.ActiveAtBeat >= 0 && rhythm.ActiveAtBeat + commandData.BeatLength > process.Beat)
+						    || rhythm.CustomEndBeat > process.Beat)
+						// if both are set to no effect, then the command is not active
+						&& rhythm.ActiveAtBeat != 1 && rhythm.CustomEndBeat != 1;
+				}
 
-				commandState.IsActive  = isActive;
-				commandState.StartBeat = flow.ActiveAtBeat;
-				commandState.EndBeat   = flow.CustomEndBeat == -1 ? flow.ActiveAtBeat + commandData.BeatLength : flow.CustomEndBeat;
+				// prediction
+				if (!IsServer && settings.UseClientSimulation && SimulateTagFromEntity.Exists(entity))
+				{
+					PredictedFromEntity[entity] = new GamePredictedCommandState
+					{
+						IsActive = isActive,
+						StartBeat = rhythm.ActiveAtBeat,
+						// todo: we shouldn't do that
+						EndBeat = (rhythm.CustomEndBeat == 0 || rhythm.CustomEndBeat == -1) ? rhythm.ActiveAtBeat + beatLength : rhythm.CustomEndBeat
+					};
+				}
+				else
+				{
+					commandState.IsActive  = isActive;
+					commandState.StartBeat = rhythm.ActiveAtBeat;
+					commandState.EndBeat   = rhythm.CustomEndBeat == -1 ? rhythm.ActiveAtBeat + beatLength : rhythm.CustomEndBeat;
+				}
 			}
 		}
 
@@ -59,8 +87,9 @@ namespace Patapon4TLB.Default
 			inputDeps = new Job
 			{
 				IsServer              = IsServer,
-				CommandDataFromEntity = GetComponentDataFromEntity<FlowCommandData>(),
-				SimulateTagFromEntity = GetComponentDataFromEntity<FlowRhythmEngineSimulateTag>(),
+				CommandDataFromEntity = GetComponentDataFromEntity<RhythmCommandData>(true),
+				PredictedFromEntity   = GetComponentDataFromEntity<GamePredictedCommandState>(),
+				SimulateTagFromEntity = GetComponentDataFromEntity<RhythmEngineSimulateTag>(true),
 			}.Schedule(this, inputDeps);
 
 			return inputDeps;

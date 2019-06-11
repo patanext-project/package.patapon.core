@@ -12,6 +12,8 @@ namespace Patapon4TLB.Default
 {
 	[UpdateInGroup(typeof(RhythmEngineGroup))]
 	[UpdateAfter(typeof(RhythmEngineRemoveOldCommandPressureSystem))]
+	[UpdateAfter(typeof(RhythmEngineServerSimulateSystem))]
+	[UpdateAfter(typeof(RhythmEngineClientSimulateLocalSystem))]
 	[UsedImplicitly]
 	public class RhythmEngineCheckCommandValidity : JobGameBaseSystem
 	{
@@ -40,17 +42,17 @@ namespace Patapon4TLB.Default
 		}
 
 		[BurstCompile]
-		[RequireComponentTag(typeof(FlowRhythmEngineSimulateTag))]
-		private struct VerifyJob : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineState, FlowRhythmEngineProcess, FlowCurrentCommand>
+		[RequireComponentTag(typeof(RhythmEngineSimulateTag))]
+		private struct VerifyJob : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineState, RhythmEngineProcess, RhythmCurrentCommand>
 		{
 			[DeallocateOnJobCompletion, NativeDisableParallelForRestriction]
 			public NativeArray<ArchetypeChunk> AvailableCommandChunks;
 
-			[ReadOnly,DeallocateOnJobCompletion] public NativeArray<Entity> RpcTargetConnection;
-			public            bool                IsServer;
+			[ReadOnly, DeallocateOnJobCompletion] public NativeArray<Entity> RpcTargetConnection;
+			public                                       bool                IsServer;
 
-			[ReadOnly] public ArchetypeChunkEntityType                               EntityType;
-			[ReadOnly] public ArchetypeChunkBufferType<FlowCommandSequenceContainer> FlowCommandSequenceType;
+			[ReadOnly] public ArchetypeChunkEntityType                                 EntityType;
+			[ReadOnly] public ArchetypeChunkBufferType<RhythmCommandSequenceContainer> FlowCommandSequenceType;
 
 			[NativeDisableParallelForRestriction]
 			public BufferFromEntity<RhythmEngineCurrentCommand> CurrentCommandFromEntity;
@@ -60,7 +62,7 @@ namespace Patapon4TLB.Default
 
 			public RpcQueue<RhythmRpcNewClientCommand> RpcClientCommandQueue;
 
-			public bool SameAsSequence(DynamicBuffer<FlowCommandSequence> commandSequence, DynamicBuffer<FlowRhythmPressureData> currentCommand)
+			public bool SameAsSequence(DynamicBuffer<RhythmCommandSequence> commandSequence, DynamicBuffer<RhythmPressureData> currentCommand)
 			{
 				if (commandSequence.Length != currentCommand.Length)
 					return false;
@@ -81,7 +83,7 @@ namespace Patapon4TLB.Default
 				return true;
 			}
 
-			public Entity GetCurrentCommand(DynamicBuffer<FlowRhythmPressureData> currentCommand)
+			public Entity GetCurrentCommand(DynamicBuffer<RhythmPressureData> currentCommand)
 			{
 				for (var chunk = 0; chunk != AvailableCommandChunks.Length; chunk++)
 				{
@@ -91,7 +93,7 @@ namespace Patapon4TLB.Default
 					var count = AvailableCommandChunks[chunk].Count;
 					for (var ent = 0; ent != count; ent++)
 					{
-						var container = containerArray[ent].Reinterpret<FlowCommandSequence>();
+						var container = containerArray[ent].Reinterpret<RhythmCommandSequence>();
 						if (SameAsSequence(container, currentCommand))
 						{
 							return entityArray[ent];
@@ -102,32 +104,26 @@ namespace Patapon4TLB.Default
 				return default;
 			}
 
-			public void Execute(Entity                                 entity,   int                    index,
-			                    [ReadOnly] ref RhythmEngineSettings    settings, ref RhythmEngineState  state,
-			                    ref            FlowRhythmEngineProcess process,  ref FlowCurrentCommand flowCurrentCommand)
+			public void Execute(Entity                              entity,   int                      index,
+			                    [ReadOnly] ref RhythmEngineSettings settings, ref RhythmEngineState    state,
+			                    ref            RhythmEngineProcess  process,  ref RhythmCurrentCommand rhythmCurrentCommand)
 			{
-				if (state.IsPaused)
+				if (state.IsPaused || (!IsServer && !state.IsNewBeat))
 					return;
 
 				if (IsServer && settings.UseClientSimulation && !state.ApplyCommandNextBeat)
 					return;
 
 				var currCommandArray = CurrentCommandFromEntity[entity];
-				var result           = GetCurrentCommand(currCommandArray.Reinterpret<FlowRhythmPressureData>());
+				var result           = GetCurrentCommand(currCommandArray.Reinterpret<RhythmPressureData>());
 
 				if (result == default)
 				{
-					flowCurrentCommand.ActiveAtBeat  = -1;
-					flowCurrentCommand.CustomEndBeat = -1;
-					flowCurrentCommand.CommandTarget = default;
-
-					state.ApplyCommandNextBeat = false;
-
 					return;
 				}
 
-				flowCurrentCommand.ActiveAtBeat  = process.Beat + 1;
-				flowCurrentCommand.CommandTarget = result;
+				rhythmCurrentCommand.ActiveAtBeat  = process.Beat;
+				rhythmCurrentCommand.CommandTarget = result;
 
 				state.ApplyCommandNextBeat = false;
 
@@ -140,10 +136,10 @@ namespace Patapon4TLB.Default
 					}
 
 					RpcClientCommandQueue.Schedule(OutgoingDataFromEntity[RpcTargetConnection[0]], new RhythmRpcNewClientCommand {IsValid = true, ResultBuffer = clientRequest});
-					
+
 					clientRequest.Dispose();
 				}
-				
+
 				currCommandArray.Clear();
 			}
 		}
@@ -154,7 +150,7 @@ namespace Patapon4TLB.Default
 		{
 			base.OnCreate();
 
-			m_AvailableCommandQuery = GetEntityQuery(typeof(FlowCommandSequenceContainer));
+			m_AvailableCommandQuery = GetEntityQuery(typeof(RhythmCommandSequenceContainer));
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -178,7 +174,7 @@ namespace Patapon4TLB.Default
 
 				AvailableCommandChunks   = m_AvailableCommandQuery.CreateArchetypeChunkArray(Allocator.TempJob, out var queryHandle),
 				EntityType               = GetArchetypeChunkEntityType(),
-				FlowCommandSequenceType  = GetArchetypeChunkBufferType<FlowCommandSequenceContainer>(true),
+				FlowCommandSequenceType  = GetArchetypeChunkBufferType<RhythmCommandSequenceContainer>(true),
 				CurrentCommandFromEntity = GetBufferFromEntity<RhythmEngineCurrentCommand>(),
 
 				OutgoingDataFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>(),

@@ -72,7 +72,7 @@ namespace Patapon4TLB.Default
 			ResultBuffer = new NativeArray<RhythmEngineClientRequestedCommand>(count, Allocator.Temp);
 			for (var com = 0; com != count; com++)
 			{
-				var temp = default(FlowRhythmPressureData);
+				var temp = default(RhythmPressureData);
 				temp.Score         = reader.ReadFloat(ref ctx);
 				temp.KeyId         = reader.ReadInt(ref ctx);
 				temp.OriginalBeat  = reader.ReadInt(ref ctx);
@@ -91,7 +91,7 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 	public class RhythmExecuteCommandSystem : JobComponentSystem
 	{
-		private struct Job : IJobForEachWithEntity<NetworkOwner, RhythmEngineSettings, FlowRhythmEngineProcess, RhythmEngineState>
+		private struct Job : IJobForEachWithEntity<NetworkOwner, RhythmEngineSettings, RhythmEngineProcess, RhythmEngineState>
 		{
 			/// <summary>
 			/// If true, players will be allowed to directly execute a command that may not be valid to the current one in the server
@@ -114,7 +114,7 @@ namespace Patapon4TLB.Default
 			[NativeDisableParallelForRestriction]
 			public BufferFromEntity<RhythmEngineCurrentCommand> CurrentCommandFromEntity;
 
-			public void Execute(Entity entity, int index, ref NetworkOwner netOwner, ref RhythmEngineSettings settings, ref FlowRhythmEngineProcess process, ref RhythmEngineState state)
+			public void Execute(Entity entity, int index, ref NetworkOwner netOwner, ref RhythmEngineSettings settings, ref RhythmEngineProcess process, ref RhythmEngineState state)
 			{
 				var executeCommand       = default(RhythmExecuteCommand);
 				var executeCommandEntity = default(Entity);
@@ -130,9 +130,9 @@ namespace Patapon4TLB.Default
 				if (executeCommand.Connection == default)
 					return;
 				
-				var currentCommand   = CurrentCommandFromEntity[entity].Reinterpret<FlowRhythmPressureData>();
-				var predictedCommand = PredictedCommandFromEntity[entity].Reinterpret<FlowRhythmPressureData>();
-				var requestedCommand = RequestedCommandFromEntity[executeCommandEntity].Reinterpret<FlowRhythmPressureData>();
+				var currentCommand   = CurrentCommandFromEntity[entity].Reinterpret<RhythmPressureData>();
+				var predictedCommand = PredictedCommandFromEntity[entity].Reinterpret<RhythmPressureData>();
+				var requestedCommand = RequestedCommandFromEntity[executeCommandEntity].Reinterpret<RhythmPressureData>();
 
 				if (AllowCommandChange)
 				{

@@ -21,13 +21,13 @@ namespace Patapon4TLB.Default.Snapshot
 
 		public GhostComponentType<Owner>                   GhostOwnerType;
 		public GhostComponentType<RhythmEngineSettings>    GhostEngineSettingsType;
-		public GhostComponentType<FlowRhythmEngineProcess> GhostEngineProcessType;
+		public GhostComponentType<RhythmEngineProcess> GhostEngineProcessType;
 		public GhostComponentType<RhythmEngineState>       GhostEngineStateType;
-		public GhostComponentType<FlowCurrentCommand>      GhostCurrentCommandType;
-		public GhostComponentType<FlowCommandState>        GhostCommandStateType;
+		public GhostComponentType<RhythmCurrentCommand>      GhostCurrentCommandType;
+		public GhostComponentType<GameCommandState>        GhostCommandStateType;
 
 		public ComponentDataFromEntity<GhostSystemStateComponent> GhostStateFromEntity;
-		public ComponentDataFromEntity<FlowCommandId>           CommandDataFromEntity;
+		public ComponentDataFromEntity<RhythmCommandId>             CommandDataFromEntity;
 
 		public void BeginSerialize(ComponentSystemBase system)
 		{
@@ -39,7 +39,7 @@ namespace Patapon4TLB.Default.Snapshot
 			system.GetGhostComponentType(out GhostCommandStateType);
 
 			GhostStateFromEntity  = system.GetComponentDataFromEntity<GhostSystemStateComponent>();
-			CommandDataFromEntity = system.GetComponentDataFromEntity<FlowCommandId>();
+			CommandDataFromEntity = system.GetComponentDataFromEntity<RhythmCommandId>();
 		}
 
 		public bool CanSerialize(EntityArchetype arch)
@@ -80,7 +80,7 @@ namespace Patapon4TLB.Default.Snapshot
 
 			var currentCommand = chunk.GetNativeArray(GhostCurrentCommandType.Archetype)[ent];
 			var commandState   = chunk.GetNativeArray(GhostCommandStateType.Archetype)[ent];
-			snapshot.CommandTypeId    = currentCommand.CommandTarget == default ? 0 : CommandDataFromEntity[currentCommand.CommandTarget].Value;
+			snapshot.CommandTypeId    = currentCommand.CommandTarget == default || !commandState.IsActive ? 0 : CommandDataFromEntity[currentCommand.CommandTarget].Value;
 			snapshot.CommandStartBeat = commandState.StartBeat;
 			snapshot.CommandEndBeat   = commandState.EndBeat;
 		}

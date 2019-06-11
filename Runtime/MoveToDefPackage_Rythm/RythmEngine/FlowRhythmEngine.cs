@@ -124,19 +124,19 @@ namespace package.patapon.core
         }
     }
 
-    public struct FlowRhythmEngineSimulateTag : IComponentData
+    public struct RhythmEngineSimulateTag : IComponentData
     {
 
     }
 
-    public struct FlowRhythmEngineProcess : IComponentData
+    public struct RhythmEngineProcess : IComponentData
     {
         public int    Beat;
         public double Time;
         public int    StartTime;
     }
 
-    public struct FlowRhythmPressureData : IComponentData
+    public struct RhythmPressureData : IComponentData
     {
         /// <summary>
         /// Our custom Rhythm Key (Pata 1, Pon 2, Don 3, Chaka 4) 
@@ -166,7 +166,7 @@ namespace package.patapon.core
         /// </example>
         public float Score;
 
-        public FlowRhythmPressureData(int keyId, int beatInterval, double time, int beat)
+        public RhythmPressureData(int keyId, int beatInterval, double time, int beat)
         {
             Score = FlowRhythmEngine.GetScore(time, beat, beatInterval * 0.001f, out CorrectedBeat);
 
@@ -180,11 +180,11 @@ namespace package.patapon.core
         }
     }
 
-    public struct FlowRhythmBeatData : IComponentData
+    public struct RhythmBeatData : IComponentData
     {
         public int Beat;
 
-        public FlowRhythmBeatData(int beat)
+        public RhythmBeatData(int beat)
         {
             Beat = beat;
         }

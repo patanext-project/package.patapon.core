@@ -14,7 +14,7 @@ namespace Patapon4TLB.Default.Test
 		private int  m_LastBeat;
 		private bool m_Play;
 
-		private void ForEachEngine(ref FlowRhythmEngineProcess process)
+		private void ForEachEngine(ref RhythmEngineProcess process)
 		{
 			if (m_LastBeat == process.Beat)
 				return;
@@ -25,13 +25,13 @@ namespace Patapon4TLB.Default.Test
 
 		private void ForEachPressureEvent(Entity entity, ref PressureEvent pressureEvent)
 		{
-			if (!EntityManager.HasComponent(pressureEvent.Engine, typeof(FlowRhythmEngineSimulateTag)))
+			if (!EntityManager.HasComponent(pressureEvent.Engine, typeof(RhythmEngineSimulateTag)))
 				return;
 			
 			m_AudioSourceOnNewPressure.PlayOneShot(m_AudioOnPressure[pressureEvent.Key][0]);
 		}
 
-		private EntityQueryBuilder.F_D<FlowRhythmEngineProcess> m_EngineDelegate;
+		private EntityQueryBuilder.F_D<RhythmEngineProcess> m_EngineDelegate;
 		private EntityQueryBuilder.F_ED<PressureEvent> m_PressureEventDelegate;
 
 		private AudioSource m_AudioSourceOnNewBeat;
@@ -99,7 +99,7 @@ namespace Patapon4TLB.Default.Test
 			
 			m_Play = false;
 
-			Entities.WithAll<FlowRhythmEngineSimulateTag>().ForEach(m_EngineDelegate);
+			Entities.WithAll<RhythmEngineSimulateTag>().ForEach(m_EngineDelegate);
 
 			if (m_Play)
 			{

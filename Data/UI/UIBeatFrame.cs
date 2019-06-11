@@ -11,8 +11,18 @@ namespace Patapon4TLB.UI
 {
 	public class UIBeatFrame : MonoBehaviour, IConvertGameObjectToEntity
 	{
+		public enum Phase
+		{
+			NoCommand,
+			Fever,
+			Command,
+		}
+		
 		public GameObject[] Lines = new GameObject[3];
 		public Material Material;
+
+		public Phase CurrPhase;
+		public Color Color;
 
 		public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
 		{
@@ -25,12 +35,13 @@ namespace Patapon4TLB.UI
 		{
 			public int   Beat;
 			public bool  IsFever;
-			public bool  IsCommand;
+			public bool  IsCommandServer;
+			public bool  IsCommandClient;
 			public float LastBeatTime;
 
-			private EntityQueryBuilder.F_DD<FlowRhythmEngineProcess, FlowCommandState> m_Delegate;
+			private EntityQueryBuilder.F_EDDDD<RhythmEngineProcess, GameCommandState, RhythmCurrentCommand, GamePredictedCommandState> m_Delegate;
 
-			private void ForEach(ref FlowRhythmEngineProcess process, ref FlowCommandState flowCommandState)
+			private void ForEach(Entity entity, ref RhythmEngineProcess process, ref GameCommandState gameCommandState, ref RhythmCurrentCommand currentCommand, ref GamePredictedCommandState predictedCommand)
 			{
 				IsFever = false; // not yet amigo
 
@@ -40,7 +51,13 @@ namespace Patapon4TLB.UI
 					LastBeatTime = Time.time;
 				}
 
-				IsCommand = flowCommandState.IsActive;
+				IsCommandServer = gameCommandState.StartBeat >= Beat && gameCommandState.EndBeat > Beat;
+				if (EntityManager.HasComponent<RhythmEngineSimulateTag>(entity))
+				{
+					IsCommandClient = currentCommand.ActiveAtBeat >= Beat && predictedCommand.EndBeat > Beat;
+				}
+
+				//Debug.Log($"{currentCommand.ActiveAtBeat} {Beat} && {gameCommandState.EndBeat} > {Beat} == {IsCommandServer} {IsCommandClient}");
 			}
 
 			protected override void OnCreate()
@@ -52,7 +69,8 @@ namespace Patapon4TLB.UI
 
 			protected override void OnUpdate()
 			{
-				Entities.ForEach(m_Delegate);
+				// for now, we only do the simulated engine (in future, when we want spectator mode, we need to find a different approach)
+				Entities.WithAll<RhythmEngineSimulateTag>().ForEach(m_Delegate);
 			}
 		}
 
@@ -60,44 +78,85 @@ namespace Patapon4TLB.UI
 		[UpdateAfter(typeof(TickClientPresentationSystem))]
 		public class System : GameBaseSystem
 		{
+			private float m_BeatTime;
+			private float m_BeatTimeExp;
+			private int m_PreviousBeat;
+
+			private static void SetGrayScale(ref Color c, float v)
+			{
+				c.r = v;
+				c.g = v;
+				c.b = v;
+			}
+			
 			private void UpdateAll(UIBeatFrame uiBeatFrame)
 			{
-				void setGrayscale(ref Color c, float v)
-				{
-					c.r = v;
-					c.g = v;
-					c.b = v;
-				}
-
 				if (m_ClientSystem == null)
 				{
 					uiBeatFrame.gameObject.SetActive(false);
 					return;
 				}
 
-				var color = new Color(1, 1, 1, 1);
-				if (!m_ClientSystem.IsFever)
+				var newBeat = false;
+				if (m_PreviousBeat != m_ClientSystem.Beat)
 				{
-					setGrayscale(ref color, 0.75f);
+					m_BeatTime = 0;
+					m_BeatTimeExp = 0;
+					m_PreviousBeat = m_ClientSystem.Beat;
 
-					uiBeatFrame.Lines[0].gameObject.SetActive(false);
-					uiBeatFrame.Lines[1].gameObject.SetActive(true);
-					uiBeatFrame.Lines[2].gameObject.SetActive(false);
+					newBeat = true;
+				}
+				else
+				{
+					m_BeatTime += Time.deltaTime * 2f + m_BeatTimeExp;
+					m_BeatTimeExp += Time.deltaTime;
 				}
 
-				if (m_ClientSystem.IsCommand)
+				uiBeatFrame.Color.a = 1;
+				if (!m_ClientSystem.IsFever && newBeat)
 				{
-					setGrayscale(ref color, 0.5f);
+					uiBeatFrame.CurrPhase = Phase.NoCommand;
+				}
+
+				if ((m_ClientSystem.IsCommandServer || m_ClientSystem.IsCommandClient) && newBeat)
+				{
+					uiBeatFrame.CurrPhase = Phase.Command;
+				}
+
+				switch (uiBeatFrame.CurrPhase)
+				{
+					case Phase.NoCommand:
+					{
+						SetGrayScale(ref uiBeatFrame.Color, 0.75f);
+
+						uiBeatFrame.Lines[0].gameObject.SetActive(false);
+						uiBeatFrame.Lines[1].gameObject.SetActive(true);
+						uiBeatFrame.Lines[2].gameObject.SetActive(false);
+						
+						break;
+					}
+					case Phase.Command:
+					{
+						SetGrayScale(ref uiBeatFrame.Color, 0.5f);
 					
-					uiBeatFrame.Lines[0].gameObject.SetActive(true);
-					uiBeatFrame.Lines[1].gameObject.SetActive(false);
-					uiBeatFrame.Lines[2].gameObject.SetActive(true);
+						uiBeatFrame.Lines[0].gameObject.SetActive(true);
+						uiBeatFrame.Lines[1].gameObject.SetActive(false);
+						uiBeatFrame.Lines[2].gameObject.SetActive(true);
+						
+						break;
+					}
+					case Phase.Fever:
+					{
+						break;
+					}
 				}
 
-				var noAlphaColor = color;
+				var noAlphaColor = uiBeatFrame.Color;
 				noAlphaColor.a = 0.0f;
 
-				uiBeatFrame.Material.SetColor(m_ColorId, Color.Lerp(color, noAlphaColor, (Time.time - m_ClientSystem.LastBeatTime) * 2.5f));
+				var lerpResult = Color.Lerp(uiBeatFrame.Color, noAlphaColor, m_BeatTime);
+
+				uiBeatFrame.Material.SetColor(m_ColorId, lerpResult);
 			}
 
 			private EntityQueryBuilder.F_C<UIBeatFrame> m_QueryUpdateAll;

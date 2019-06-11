@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using package.patapon.core;
+using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
@@ -14,6 +15,8 @@ namespace Patapon4TLB.Default
 	{
 		public int ChainId;
 		public int TypeId;
+
+		public RhythmCommandData CommandData;
 	}
 
 	public struct CommandChainGroup : IComponentData
@@ -28,7 +31,8 @@ namespace Patapon4TLB.Default
 	public struct RhythmRpcServerSendCommandChain : IRpcCommand
 	{
 		public bool                             IsValid;
-		public NativeArray<FlowCommandSequence> ResultBuffer;
+		public NativeArray<RhythmCommandSequence> ResultBuffer;
+		public RhythmCommandData CommandData;
 
 		public int ChainId;
 		public int TypeId;
@@ -44,12 +48,14 @@ namespace Patapon4TLB.Default
 			commandBuffer.AddComponent(jobIndex, ent, new RequestCreateCommand
 			{
 				ChainId = ChainId,
-				TypeId  = TypeId
+				TypeId  = TypeId,
+				
+				CommandData = CommandData
 			});
 
-			var buffer = commandBuffer.AddBuffer<FlowCommandSequenceContainer>(jobIndex, ent);
+			var buffer = commandBuffer.AddBuffer<RhythmCommandSequenceContainer>(jobIndex, ent);
 
-			buffer.Reinterpret<FlowCommandSequence>().CopyFrom(ResultBuffer);
+			buffer.Reinterpret<RhythmCommandSequence>().CopyFrom(ResultBuffer);
 		}
 
 		public void Serialize(DataStreamWriter writer)
@@ -63,6 +69,8 @@ namespace Patapon4TLB.Default
 				writer.Write(ResultBuffer[i].BeatRange.start);
 				writer.Write(ResultBuffer[i].BeatRange.length);
 			}
+
+			writer.Write(CommandData.BeatLength);
 		}
 
 		public void Deserialize(DataStreamReader reader, ref DataStreamReader.Context ctx)
@@ -71,15 +79,17 @@ namespace Patapon4TLB.Default
 			ChainId = reader.ReadInt(ref ctx);
 			TypeId  = reader.ReadInt(ref ctx);
 
-			ResultBuffer = new NativeArray<FlowCommandSequence>(reader.ReadInt(ref ctx), Allocator.Temp);
+			ResultBuffer = new NativeArray<RhythmCommandSequence>(reader.ReadInt(ref ctx), Allocator.Temp);
 			for (var i = 0; i != ResultBuffer.Length; i++)
 			{
-				ResultBuffer[i] = new FlowCommandSequence
+				ResultBuffer[i] = new RhythmCommandSequence
 				{
 					Key       = reader.ReadInt(ref ctx),
 					BeatRange = new RangeInt(reader.ReadInt(ref ctx), reader.ReadInt(ref ctx))
 				};
 			}
+
+			CommandData = new RhythmCommandData {BeatLength = reader.ReadInt(ref ctx)};
 		}
 	}
 
@@ -99,7 +109,7 @@ namespace Patapon4TLB.Default
 		{
 			base.OnCreate();
 
-			m_Commands       = GetEntityQuery(typeof(FlowCommandId), typeof(FlowCommandData), typeof(FlowCommandSequenceContainer));
+			m_Commands       = GetEntityQuery(typeof(RhythmCommandId), typeof(RhythmCommandData), typeof(RhythmCommandSequenceContainer));
 			m_Connections    = GetEntityQuery(typeof(NetworkStreamInGame), ComponentType.Exclude<NetworkStreamDisconnected>());
 			m_NewConnections = GetEntityQuery(typeof(CreateGamePlayer));
 			m_LastChainId    = 1;
@@ -155,8 +165,9 @@ namespace Patapon4TLB.Default
 					{
 						ChainId      = m_LastChainId,
 						IsValid      = true,
-						TypeId       = EntityManager.GetComponentData<FlowCommandId>(commands[com]).Value,
-						ResultBuffer = EntityManager.GetBuffer<FlowCommandSequenceContainer>(commands[com]).Reinterpret<FlowCommandSequence>().ToNativeArray(Allocator.Persistent)
+						TypeId       = EntityManager.GetComponentData<RhythmCommandId>(commands[com]).Value,
+						ResultBuffer = EntityManager.GetBuffer<RhythmCommandSequenceContainer>(commands[com]).Reinterpret<RhythmCommandSequence>().ToNativeArray(Allocator.Persistent),
+						CommandData  = EntityManager.GetComponentData<RhythmCommandData>(commands[com])
 					};
 
 					m_RpcGroup.Add(rpc);
@@ -192,7 +203,7 @@ namespace Patapon4TLB.Default
 			base.OnCreate();
 
 			m_CommandRequest  = GetEntityQuery(typeof(RequestCreateCommand));
-			m_CurrentCommands = GetEntityQuery(typeof(FlowCommandId), typeof(FlowCommandData), typeof(FlowCommandSequenceContainer), typeof(CommandChainGroup));
+			m_CurrentCommands = GetEntityQuery(typeof(RhythmCommandId), typeof(RhythmCommandData), typeof(RhythmCommandSequenceContainer), typeof(CommandChainGroup));
 			m_LastChainId     = -1;
 		}
 
@@ -201,8 +212,6 @@ namespace Patapon4TLB.Default
 			if (m_CommandRequest.CalculateLength() <= 0)
 				return;
 			
-			Debug.Log("Request count: " + m_CommandRequest.CalculateLength());
-
 			EntityManager.CompleteAllJobs();
 
 			var validEntities = new NativeList<Entity>(Allocator.TempJob);
@@ -233,24 +242,33 @@ namespace Patapon4TLB.Default
 				}
 			}
 
+			var builder = World.GetOrCreateSystem<RhythmCommandBuilder>();
 			for (var ent = 0; ent != validEntities.Length; ent++)
 			{
-				var cmdEntity = EntityManager.CreateEntity(
+				/*var cmdEntity = EntityManager.CreateEntity(
 					typeof(FlowCommandId),
 					typeof(FlowCommandData),
 					typeof(FlowCommandSequenceContainer),
 					typeof(FlowClientCheckCommandTag),
 					typeof(CommandChainGroup)
-				);
+				);*/
 
 				var requestData   = EntityManager.GetComponentData<RequestCreateCommand>(validEntities[ent]);
-				var requestBuffer = EntityManager.GetBuffer<FlowCommandSequenceContainer>(validEntities[ent]);
+				var requestBuffer = EntityManager.GetBuffer<RhythmCommandSequenceContainer>(validEntities[ent])
+				                                 .Reinterpret<RhythmCommandSequence>()
+				                                 .ToNativeArray(Allocator.TempJob);
 
-				EntityManager.SetComponentData(cmdEntity, new FlowCommandId {Value     = requestData.TypeId});
+				var cmdEntity = builder.GetOrCreate(requestBuffer, true);
+				EntityManager.SetOrAddComponentData(cmdEntity, new FlowClientCheckCommandTag());
+				EntityManager.SetOrAddComponentData(cmdEntity, new CommandChainGroup());
+				EntityManager.SetOrAddComponentData(cmdEntity, new RhythmCommandData());
+				
+				EntityManager.SetComponentData(cmdEntity, new RhythmCommandId {Value     = requestData.TypeId});
 				EntityManager.SetComponentData(cmdEntity, new CommandChainGroup {Value = requestData.ChainId});
+				EntityManager.SetComponentData(cmdEntity, new RhythmCommandData {BeatLength = requestData.CommandData.BeatLength});
 
-				var cmdBuffer = EntityManager.GetBuffer<FlowCommandSequenceContainer>(cmdEntity);
-				cmdBuffer.CopyFrom(requestBuffer);
+				var cmdBuffer = EntityManager.GetBuffer<RhythmCommandSequenceContainer>(cmdEntity);
+				cmdBuffer.CopyFrom(EntityManager.GetBuffer<RhythmCommandSequenceContainer>(validEntities[ent]));
 			}
 
 			validEntities.Dispose();

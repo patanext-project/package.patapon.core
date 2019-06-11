@@ -20,7 +20,7 @@ namespace package.patapon.core
 		{
 			base.OnCreate();
 
-			new RhythmEventDestroySystem<FlowRhythmBeatData>(World);
+			new RhythmEventDestroySystem<RhythmBeatData>(World);
 		}
 
 		public override void GetComponents(out ComponentType[] entityComponents)
@@ -29,8 +29,8 @@ namespace package.patapon.core
 			{
 				ComponentType.ReadWrite<RhythmShardEvent>(),
 				ComponentType.ReadWrite<RhythmShardTarget>(),
-				ComponentType.ReadWrite<RhythmBeatData>(),
-				ComponentType.ReadWrite<FlowRhythmBeatData>()
+				ComponentType.ReadWrite<def.Data.RhythmBeatData>(),
+				ComponentType.ReadWrite<RhythmBeatData>()
 			};
 		}
 
@@ -38,7 +38,7 @@ namespace package.patapon.core
 		{
 			EntityManager.SetComponentData(entity, new RhythmShardEvent(data.FrameCount));
 			EntityManager.SetComponentData(entity, new RhythmShardTarget(data.Target));
-			EntityManager.SetComponentData(entity, new FlowRhythmBeatData(data.Beat));
+			EntityManager.SetComponentData(entity, new RhythmBeatData(data.Beat));
 		}
 	}
 }

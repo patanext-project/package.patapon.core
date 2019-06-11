@@ -18,8 +18,8 @@ namespace Patapon4TLB.Default
 	public class RhythmEngineClientInputSystem : JobSyncInputSystem
 	{
 		[BurstCompile]
-		[RequireComponentTag(typeof(FlowRhythmEngineSimulateTag))]
-		private struct SendLocalEventToEngine : IJobForEachWithEntity<RhythmEngineSettings, FlowRhythmEngineProcess, RhythmEngineState>
+		[RequireComponentTag(typeof(RhythmEngineSimulateTag))]
+		private struct SendLocalEventToEngine : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineProcess, RhythmEngineState>
 		{
 			public NativeArray<RhythmRpcPressureFromClient> PressureEventSingleArray;
 
@@ -29,14 +29,14 @@ namespace Patapon4TLB.Default
 			[NativeDisableParallelForRestriction]
 			public NativeList<FlowRhythmPressureEventProvider.Create> CreatePressureEventList;
 
-			public unsafe void Execute(Entity entity, int _, ref RhythmEngineSettings settings, ref FlowRhythmEngineProcess flowProcess, ref RhythmEngineState state)
+			public unsafe void Execute(Entity entity, int _, ref RhythmEngineSettings settings, ref RhythmEngineProcess process, ref RhythmEngineState state)
 			{
 				var     commandSequence = CommandSequenceFromEntity[entity];
 				ref var pressureEvent   = ref UnsafeUtilityEx.ArrayElementAsRef<RhythmRpcPressureFromClient>(PressureEventSingleArray.GetUnsafePtr(), 0);
 
-				pressureEvent.Beat = flowProcess.Beat;
+				pressureEvent.Beat = process.Beat;
 
-				var pressureData = new FlowRhythmPressureData(pressureEvent.Key, settings.BeatInterval, flowProcess.Time, flowProcess.Beat);
+				var pressureData = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.Time, process.Beat);
 				commandSequence.Add(new RhythmEngineCurrentCommand
 				{
 					Data = pressureData

@@ -6,19 +6,19 @@ using Unity.Entities;
 
 namespace package.patapon.core
 {
-	public struct FlowCommandId : IComponentData
+	public struct RhythmCommandId : IComponentData
 	{
 		public int Value;
 	}
 	
-	public unsafe class FlowCommandBuilder : GameBaseSystem
+	public unsafe class RhythmCommandBuilder : GameBaseSystem
 	{
 		public struct StockCommandId : IComponentData
 		{
 			public int LastId;
 		}
 		
-		public struct FlowCommandEntityTag : IComponentData
+		public struct RhythmCommandEntityTag : IComponentData
 		{}
 
 		protected override void OnCreate()
@@ -33,19 +33,19 @@ namespace package.patapon.core
 			
 		}
 
-		public Entity GetOrCreate(NativeArray<FlowCommandSequence> sequence, bool dispose = true)
+		public Entity GetOrCreate(NativeArray<RhythmCommandSequence> sequence, bool dispose = true)
 		{
 			if (sequence[0].BeatRange.start != 0)
 				throw new Exception("The first sequence should start at beat 0.");
 
 			Entity finalEntity = default;
 
-			Entities.WithAll<FlowCommandEntityTag>().ForEach((Entity entity, DynamicBuffer<FlowCommandSequenceContainer> sequenceBuffer) =>
+			Entities.WithAll<RhythmCommandEntityTag>().ForEach((Entity entity, DynamicBuffer<RhythmCommandSequenceContainer> sequenceBuffer) =>
 			{
 				if (sequenceBuffer.Length != sequence.Length)
 					return;
 
-				if (UnsafeUtility.MemCmp(sequenceBuffer.GetUnsafePtr(), sequence.GetUnsafePtr(), sizeof(FlowCommandSequence) * sequenceBuffer.Length) == 0)
+				if (UnsafeUtility.MemCmp(sequenceBuffer.GetUnsafePtr(), sequence.GetUnsafePtr(), sizeof(RhythmCommandSequence) * sequenceBuffer.Length) == 0)
 				{
 					finalEntity = entity;
 					return;
@@ -55,15 +55,18 @@ namespace package.patapon.core
 			if (finalEntity != default)
 				return finalEntity;
 
-			finalEntity = EntityManager.CreateEntity(typeof(FlowCommandEntityTag), typeof(FlowCommandSequenceContainer));
+			finalEntity = EntityManager.CreateEntity(typeof(RhythmCommandEntityTag), typeof(RhythmCommandSequenceContainer));
 
-			var buffer = EntityManager.GetBuffer<FlowCommandSequenceContainer>(finalEntity);
+			var buffer = EntityManager.GetBuffer<RhythmCommandSequenceContainer>(finalEntity);
 
-			buffer.Reinterpret<FlowCommandSequence>().CopyFrom(sequence);
-			if (dispose) sequence.Dispose();
+			buffer.Reinterpret<RhythmCommandSequence>().CopyFrom(sequence);
+			if (dispose)
+			{
+				sequence.Dispose();
+			}
 
 			var id = GetSingleton<StockCommandId>().LastId + 1;
-			EntityManager.AddComponentData(finalEntity, new FlowCommandId
+			EntityManager.AddComponentData(finalEntity, new RhythmCommandId
 			{
 				Value = id
 			});

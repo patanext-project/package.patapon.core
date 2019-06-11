@@ -10,6 +10,7 @@ namespace Patapon4TLB.Default
 	public struct RhythmEngineState : IComponentData
 	{
 		public bool IsPaused;
+		public bool IsNewBeat;
 		public bool ApplyCommandNextBeat;
 	}
 
@@ -41,7 +42,7 @@ namespace Patapon4TLB.Default
 	[InternalBufferCapacity(8)]
 	public struct RhythmEngineCurrentCommand : IBufferElementData
 	{
-		public FlowRhythmPressureData Data;
+		public RhythmPressureData Data;
 	}
 
 	/// <summary>
@@ -50,7 +51,7 @@ namespace Patapon4TLB.Default
 	[InternalBufferCapacity(8)]
 	public struct RhythmEngineClientPredictedCommand : IBufferElementData
 	{
-		public FlowRhythmPressureData Data;
+		public RhythmPressureData Data;
 	}
 
 	/// <summary>
@@ -59,7 +60,7 @@ namespace Patapon4TLB.Default
 	[InternalBufferCapacity(8)]
 	public struct RhythmEngineClientRequestedCommand : IBufferElementData
 	{
-		public FlowRhythmPressureData Data;
+		public RhythmPressureData Data;
 	}
 
 	public struct DefaultRhythmCommand : IComponentData

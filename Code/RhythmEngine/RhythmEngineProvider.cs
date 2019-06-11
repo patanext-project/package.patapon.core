@@ -33,11 +33,11 @@ namespace Patapon4TLB.Default
 				ComponentType.ReadWrite<RhythmEngineCurrentCommand>(),
 				ComponentType.ReadWrite<RhythmEngineClientPredictedCommand>(),
 				ComponentType.ReadWrite<RhythmEngineClientRequestedCommand>(),
-				ComponentType.ReadWrite<FlowRhythmEngineProcess>(),
-				ComponentType.ReadWrite<FlowRhythmEngineSimulateTag>(),
+				ComponentType.ReadWrite<RhythmEngineProcess>(),
+				ComponentType.ReadWrite<RhythmEngineSimulateTag>(),
 				ComponentType.ReadWrite<ShardRhythmEngine>(),
-				ComponentType.ReadWrite<FlowCommandState>(),
-				ComponentType.ReadWrite<FlowCurrentCommand>(),
+				ComponentType.ReadWrite<GameCommandState>(),
+				ComponentType.ReadWrite<RhythmCurrentCommand>(),
 				ComponentType.ReadWrite<GhostComponent>(),
 			};
 		}

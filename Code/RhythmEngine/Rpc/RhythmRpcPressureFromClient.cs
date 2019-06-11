@@ -90,7 +90,7 @@ namespace Patapon4TLB.Default
 		private struct Job : IJobForEachWithEntity<RhythmClientExecutePressure>
 		{
 			[ReadOnly]
-			public ComponentDataFromEntity<FlowRhythmEngineSimulateTag> SimulateTagFromEntity;
+			public ComponentDataFromEntity<RhythmEngineSimulateTag> SimulateTagFromEntity;
 
 			[ReadOnly]
 			public NativeHashMap<int, GhostEntity> GhostEntityMap;
@@ -119,7 +119,7 @@ namespace Patapon4TLB.Default
 						}
 					});
 				}
-				else
+				else if (ghostEntity.entity == default)
 				{
 					Debug.LogWarning("No ghost entity found with id=" + executePressure.RpcData.EngineGhostId);
 				}
@@ -145,7 +145,7 @@ namespace Patapon4TLB.Default
 		{
 			inputDeps = new Job
 			{
-				SimulateTagFromEntity = GetComponentDataFromEntity<FlowRhythmEngineSimulateTag>(),
+				SimulateTagFromEntity = GetComponentDataFromEntity<RhythmEngineSimulateTag>(),
 				GhostEntityMap        = World.GetExistingSystem<GhostReceiveSystemGroup>().GhostEntityMap,
 				CommandBuffer         = m_Barrier.CreateCommandBuffer().ToConcurrent(),
 				CreatePressureList    = m_PressureEventProvider.GetEntityDelayedList()

@@ -11,7 +11,7 @@ namespace package.patapon.core
         
     }
 
-    public struct FlowCurrentCommand : IComponentData
+    public struct RhythmCurrentCommand : IComponentData
     {
         public Entity CommandTarget;
         
@@ -44,26 +44,33 @@ namespace package.patapon.core
         /// </remarks>
         public int Power;
     }
-
-    public struct FlowCommandState : IComponentData
+    
+    public struct GamePredictedCommandState : IComponentData
     {
         public bool IsActive;
         public int  StartBeat;
         public int  EndBeat;
     }
 
-    public struct FlowCommandSequence
+    public struct GameCommandState : IComponentData
+    {
+        public bool IsActive;
+        public int  StartBeat;
+        public int  EndBeat;
+    }
+
+    public struct RhythmCommandSequence
     {
         public RangeInt BeatRange;
         public int Key;
 
-        public FlowCommandSequence(int beatFract, int key)
+        public RhythmCommandSequence(int beatFract, int key)
         {
             BeatRange = new RangeInt(beatFract, 0);
             Key = key;
         }
         
-        public FlowCommandSequence(int beatFract, int beatFractLength, int key)
+        public RhythmCommandSequence(int beatFract, int beatFractLength, int key)
         {
             BeatRange = new RangeInt(beatFract, beatFractLength);
             Key       = key;
@@ -72,14 +79,13 @@ namespace package.patapon.core
         public int BeatEnd => BeatRange.end;
     }
 
-    public struct FlowCommandSequenceContainer : IBufferElementData
+    public struct RhythmCommandSequenceContainer : IBufferElementData
     {
-        public FlowCommandSequence Value;
+        public RhythmCommandSequence Value;
     }
 
-    public struct FlowCommandData : IComponentData
+    public struct RhythmCommandData : IComponentData
     {
         public int BeatLength;
-        public int Id;
     }
 }

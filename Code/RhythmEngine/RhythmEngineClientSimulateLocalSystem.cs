@@ -11,7 +11,7 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(RhythmEngineGroup))]
 	public class RhythmEngineClientSimulateLocalSystem : JobGameBaseSystem
 	{
-		private struct SimulateJob : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineState, FlowRhythmEngineProcess, FlowRhythmEnginePredictedProcess>
+		private struct SimulateJob : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineState, RhythmEngineProcess, RhythmPredictedProcess>
 		{
 			public uint CurrentTime;
 
@@ -21,7 +21,7 @@ namespace Patapon4TLB.Default
 				Debug.LogWarning($"Engine '{entity}' had a FlowRhythmEngineSettingsData.BeatInterval of 0 (or less), this is not accepted.");
 			}
 			
-			public void Execute(Entity entity, int index, ref RhythmEngineSettings settings, ref RhythmEngineState state, ref FlowRhythmEngineProcess process, ref FlowRhythmEnginePredictedProcess predictedProcess)
+			public void Execute(Entity entity, int index, ref RhythmEngineSettings settings, ref RhythmEngineState state, ref RhythmEngineProcess process, ref RhythmPredictedProcess predictedProcess)
 			{
 				if (state.IsPaused)
 					return;
@@ -42,6 +42,15 @@ namespace Patapon4TLB.Default
 				else
 				{
 					process.Beat = 0;
+				}
+
+				if ((predictedProcess.Beat - process.Beat) != 0)
+				{
+					state.IsNewBeat = true;
+				}
+				else
+				{
+					state.IsNewBeat = false;
 				}
 
 				if ((predictedProcess.Beat - process.Beat) > 2)

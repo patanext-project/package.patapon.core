@@ -16,7 +16,7 @@ namespace Patapon4TLB.Default
 			public bool IsServer;
 			
 			[ReadOnly] public ComponentDataFromEntity<RhythmEngineSettings> SettingsFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<FlowRhythmEngineProcess> ProcessFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<RhythmEngineProcess> ProcessFromEntity;
 
 			public BufferFromEntity<RhythmEngineClientPredictedCommand> PredictedCommandFromEntity;
 			public BufferFromEntity<RhythmEngineCurrentCommand> CurrentCommandFromEntity;
@@ -30,7 +30,7 @@ namespace Patapon4TLB.Default
 				{
 					PredictedCommandFromEntity[pressureEvent.Engine].Add(new RhythmEngineClientPredictedCommand
 					{
-						Data = new FlowRhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.Time, process.Beat)
+						Data = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.Time, process.Beat)
 					});
 					return;
 				}

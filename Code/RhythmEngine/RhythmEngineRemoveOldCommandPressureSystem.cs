@@ -10,10 +10,10 @@ namespace Patapon4TLB.Default
 	[UsedImplicitly]
 	public class RhythmEngineRemoveOldCommandPressureSystem : JobGameBaseSystem
 	{
-		[RequireComponentTag(typeof(FlowRhythmEngineSimulateTag))]
+		[RequireComponentTag(typeof(RhythmEngineSimulateTag))]
 		private struct DeleteOldCommandJob : IJobChunk
 		{
-			public ArchetypeChunkComponentType<FlowRhythmEngineProcess> ProcessType;
+			public ArchetypeChunkComponentType<RhythmEngineProcess> ProcessType;
 			public ArchetypeChunkComponentType<RhythmEngineSettings>    SettingsType;
 			public ArchetypeChunkBufferType<RhythmEngineCurrentCommand> CurrCommandType;
 
@@ -57,7 +57,7 @@ namespace Patapon4TLB.Default
 		{
 			inputDeps = new DeleteOldCommandJob
 			{
-				ProcessType     = GetArchetypeChunkComponentType<FlowRhythmEngineProcess>(),
+				ProcessType     = GetArchetypeChunkComponentType<RhythmEngineProcess>(),
 				SettingsType    = GetArchetypeChunkComponentType<RhythmEngineSettings>(),
 				CurrCommandType = GetArchetypeChunkBufferType<RhythmEngineCurrentCommand>()
 			}.Schedule(m_EntityQuery, inputDeps);

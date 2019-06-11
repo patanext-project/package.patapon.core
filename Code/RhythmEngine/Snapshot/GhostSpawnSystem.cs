@@ -24,12 +24,13 @@ namespace Patapon4TLB.Default.Snapshot
 				ComponentType.ReadWrite<RhythmEngineSnapshotData>(),
 				ComponentType.ReadWrite<RhythmEngineState>(),
 				ComponentType.ReadWrite<RhythmEngineCurrentCommand>(),
-				ComponentType.ReadWrite<FlowRhythmEngineProcess>(),
-				ComponentType.ReadWrite<FlowRhythmEnginePredictedProcess>(),
+				ComponentType.ReadWrite<RhythmEngineProcess>(),
+				ComponentType.ReadWrite<RhythmPredictedProcess>(),
 				ComponentType.ReadWrite<ShardRhythmEngine>(),
 				ComponentType.ReadWrite<FlowCommandManagerTypeDefinition>(),
-				ComponentType.ReadWrite<FlowCommandState>(),
-				ComponentType.ReadWrite<FlowCurrentCommand>(),
+				ComponentType.ReadWrite<GameCommandState>(),
+				ComponentType.ReadWrite<GamePredictedCommandState>(),
+				ComponentType.ReadWrite<RhythmCurrentCommand>(),
 				ComponentType.ReadWrite<ReplicatedEntityComponent>()
 			);
 		}
@@ -40,7 +41,7 @@ namespace Patapon4TLB.Default.Snapshot
 		}
 	}
 
-	public struct FlowRhythmEnginePredictedProcess : IComponentData
+	public struct RhythmPredictedProcess : IComponentData
 	{
 		public int Beat;
 		public double Time;
@@ -51,20 +52,20 @@ namespace Patapon4TLB.Default.Snapshot
 	[UpdateBefore(typeof(ConvertGhostToOwnerSystem))]
 	public class RhythmEngineGhostSyncSnapshot : JobComponentSystem
 	{
-		private struct SyncJob : IJobForEachWithEntity<GhostOwner, RhythmEngineState, RhythmEngineSettings, FlowRhythmEngineProcess, FlowCommandState, FlowRhythmEnginePredictedProcess>
+		private struct SyncJob : IJobForEachWithEntity<GhostOwner, RhythmEngineState, RhythmEngineSettings, RhythmEngineProcess, GameCommandState, RhythmPredictedProcess>
 		{
 			[ReadOnly] public BufferFromEntity<RhythmEngineSnapshotData> SnapshotFromEntity;
 			public            uint                                       TargetTick;
 
 			public uint ServerTime;
 
-			[ReadOnly] public ComponentDataFromEntity<FlowRhythmEngineSimulateTag> SimulateTagFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<RhythmEngineSimulateTag> SimulateTagFromEntity;
 
 			public void Execute(Entity entity, int _,
 			                    // components
-			                    ref GhostOwner owner, ref RhythmEngineState state, ref RhythmEngineSettings settings, ref FlowRhythmEngineProcess process, ref FlowCommandState commandState,
+			                    ref GhostOwner owner, ref RhythmEngineState state, ref RhythmEngineSettings settings, ref RhythmEngineProcess process, ref GameCommandState commandState,
 			                    // prediction
-			                    ref FlowRhythmEnginePredictedProcess predictedProcess)
+			                    ref RhythmPredictedProcess predictedProcess)
 			{
 				SnapshotFromEntity[entity].GetDataAtTick(TargetTick, out var snapshotData);
 
@@ -102,7 +103,7 @@ namespace Patapon4TLB.Default.Snapshot
 			{
 				if (owner.Target == LocalPlayerEntity[0])
 				{
-					CommandBuffer.AddComponent(jobIndex, entity, new FlowRhythmEngineSimulateTag());
+					CommandBuffer.AddComponent(jobIndex, entity, new RhythmEngineSimulateTag());
 				}
 			}
 		}
@@ -124,7 +125,7 @@ namespace Patapon4TLB.Default.Snapshot
 			{
 				SnapshotFromEntity = GetBufferFromEntity<RhythmEngineSnapshotData>(),
 				ServerTime = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Value.Predicted,
-				SimulateTagFromEntity = GetComponentDataFromEntity<FlowRhythmEngineSimulateTag>(),
+				SimulateTagFromEntity = GetComponentDataFromEntity<RhythmEngineSimulateTag>(),
 				TargetTick         = NetworkTimeSystem.predictTargetTick
 			}.Schedule(this, inputDeps);
 
