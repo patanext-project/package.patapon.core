@@ -114,15 +114,15 @@ namespace Patapon4TLB.Default
 
 				var currCommandArray = CurrentCommandFromEntity[entity];
 				var result           = GetCurrentCommand(currCommandArray.Reinterpret<FlowRhythmPressureData>());
-				
+
 				if (result == default)
 				{
-					flowCurrentCommand.IsActive      = 0;
-					flowCurrentCommand.ActiveAtBeat  = 0;
+					flowCurrentCommand.ActiveAtBeat  = -1;
+					flowCurrentCommand.CustomEndBeat = -1;
 					flowCurrentCommand.CommandTarget = default;
 
 					state.ApplyCommandNextBeat = false;
-					
+
 					return;
 				}
 
