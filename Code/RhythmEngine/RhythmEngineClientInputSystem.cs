@@ -41,6 +41,8 @@ namespace Patapon4TLB.Default
 					Data = new FlowRhythmPressureData(pressureEvent.Key, settings.BeatInterval, flowProcess.Time, flowProcess.Beat)
 				});
 				
+				Debug.Log("LOC Create. " + Unity.Entities.World.Active);
+				
 				CreatePressureEventList.Add(new FlowRhythmPressureEventProvider.Create {Engine = entity, Key = pressureEvent.Key});
 			}
 		}

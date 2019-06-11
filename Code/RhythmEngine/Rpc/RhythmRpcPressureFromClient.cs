@@ -104,6 +104,8 @@ namespace Patapon4TLB.Default
 				    // if we don't allow events on our engine, but it's not an engine simulated by us, accept this condition
 				    && (executePressure.RpcData.DoLocalEventOnSelf || !SimulateTagFromEntity.Exists(ghostEntity.entity)))
 				{
+					Debug.Log("RPC Create. " + Unity.Entities.World.Active);
+					
 					CreatePressureList.Add(new FlowRhythmPressureEventProvider.Create
 					{
 						Engine = ghostEntity.entity,
@@ -119,14 +121,14 @@ namespace Patapon4TLB.Default
 			}
 		}
 
-		private EndSimulationEntityCommandBufferSystem m_Barrier;
+		private EndPresentationEntityCommandBufferSystem m_Barrier;
 		private FlowRhythmPressureEventProvider        m_PressureEventProvider;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			m_Barrier               = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+			m_Barrier               = World.GetOrCreateSystem<EndPresentationEntityCommandBufferSystem>();
 			m_PressureEventProvider = World.GetOrCreateSystem<FlowRhythmPressureEventProvider>();
 
 			GetEntityQuery(typeof(RhythmClientExecutePressure));

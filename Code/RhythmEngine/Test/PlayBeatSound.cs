@@ -22,16 +22,18 @@ namespace Patapon4TLB.Default.Test
 			m_Play     = true;
 		}
 
-		private void ForEachPressureEvent(ref PressureEvent pressureEvent)
+		private void ForEachPressureEvent(Entity entity, ref PressureEvent pressureEvent)
 		{
 			if (!EntityManager.HasComponent(pressureEvent.Engine, typeof(FlowRhythmEngineSimulateTag)))
 				return;
+			
+			Debug.Log(entity);
 			
 			m_AudioSourceOnNewPressure.PlayOneShot(m_AudioOnPressure[pressureEvent.Key][0]);
 		}
 
 		private EntityQueryBuilder.F_D<FlowRhythmEngineProcess> m_EngineDelegate;
-		private EntityQueryBuilder.F_D<PressureEvent> m_PressureEventDelegate;
+		private EntityQueryBuilder.F_ED<PressureEvent> m_PressureEventDelegate;
 
 		private AudioSource m_AudioSourceOnNewBeat;
 		private AudioSource m_AudioSourceOnNewPressure;

@@ -33,7 +33,7 @@ namespace package.patapon.core
                 base.OnCreate();
 
                 var serverGroup = World.GetExistingSystem<ServerSimulationSystemGroup>();
-                var clientGroup = World.GetExistingSystem<ClientSimulationSystemGroup>();
+                var clientGroup = World.GetExistingSystem<ClientPresentationSystemGroup>();
 
                 serverGroup?.AddSystemToUpdateList(this);
                 clientGroup?.AddSystemToUpdateList(this);
