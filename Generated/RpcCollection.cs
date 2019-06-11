@@ -12,6 +12,7 @@ public struct RpcCollection : IRpcCollection
         typeof(RhythmRpcNewClientCommand),
         typeof(RhythmRpcPressureFromClient),
         typeof(RhythmRpcPressureFromServer),
+        typeof(RhythmRpcServerSendCommandChain),
         typeof(ClientLoadedRpc),
         typeof(PlayerConnectedRpc),
 
@@ -43,12 +44,19 @@ public struct RpcCollection : IRpcCollection
             }
             case 3:
             {
-                var tmp = new ClientLoadedRpc();
+                var tmp = new RhythmRpcServerSendCommandChain();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 4:
+            {
+                var tmp = new ClientLoadedRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 5:
             {
                 var tmp = new PlayerConnectedRpc();
                 tmp.Deserialize(reader, ref ctx);
@@ -80,8 +88,9 @@ public class P4ExperimentRpcSystem : RpcSystem<RpcCollection>
         World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcNewClientCommand>>().SetTypeIndex(0);
         World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcPressureFromClient>>().SetTypeIndex(1);
         World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcPressureFromServer>>().SetTypeIndex(2);
-        World.GetOrCreateSystem<RpcQueueSystem<ClientLoadedRpc>>().SetTypeIndex(3);
-        World.GetOrCreateSystem<RpcQueueSystem<PlayerConnectedRpc>>().SetTypeIndex(4);
+        World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcServerSendCommandChain>>().SetTypeIndex(3);
+        World.GetOrCreateSystem<RpcQueueSystem<ClientLoadedRpc>>().SetTypeIndex(4);
+        World.GetOrCreateSystem<RpcQueueSystem<PlayerConnectedRpc>>().SetTypeIndex(5);
 
     }
 }

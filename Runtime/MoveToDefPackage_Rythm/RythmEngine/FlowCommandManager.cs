@@ -80,5 +80,6 @@ namespace package.patapon.core
     public struct FlowCommandData : IComponentData
     {
         public int BeatLength;
+        public int Id;
     }
 }

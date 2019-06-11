@@ -51,7 +51,7 @@ namespace Patapon4TLB.Default.Snapshot
 	[UpdateBefore(typeof(ConvertGhostToOwnerSystem))]
 	public class RhythmEngineGhostSyncSnapshot : JobComponentSystem
 	{
-		private struct SyncJob : IJobForEachWithEntity<GhostOwner, RhythmEngineState, RhythmEngineSettings, FlowRhythmEngineProcess, FlowRhythmEnginePredictedProcess>
+		private struct SyncJob : IJobForEachWithEntity<GhostOwner, RhythmEngineState, RhythmEngineSettings, FlowRhythmEngineProcess, FlowCommandState, FlowRhythmEnginePredictedProcess>
 		{
 			[ReadOnly] public BufferFromEntity<RhythmEngineSnapshotData> SnapshotFromEntity;
 			public            uint                                       TargetTick;
@@ -60,7 +60,11 @@ namespace Patapon4TLB.Default.Snapshot
 
 			[ReadOnly] public ComponentDataFromEntity<FlowRhythmEngineSimulateTag> SimulateTagFromEntity;
 
-			public void Execute(Entity entity, int _, ref GhostOwner owner, ref RhythmEngineState state, ref RhythmEngineSettings settings, ref FlowRhythmEngineProcess process, ref FlowRhythmEnginePredictedProcess predictedProcess)
+			public void Execute(Entity entity, int _,
+			                    // components
+			                    ref GhostOwner owner, ref RhythmEngineState state, ref RhythmEngineSettings settings, ref FlowRhythmEngineProcess process, ref FlowCommandState commandState,
+			                    // prediction
+			                    ref FlowRhythmEnginePredictedProcess predictedProcess)
 			{
 				SnapshotFromEntity[entity].GetDataAtTick(TargetTick, out var snapshotData);
 
@@ -70,6 +74,10 @@ namespace Patapon4TLB.Default.Snapshot
 				settings.UseClientSimulation = snapshotData.UseClientSimulation;
 
 				state.IsPaused = snapshotData.IsPaused;
+
+				commandState.IsActive  = snapshotData.CommandTypeId != 0;
+				commandState.StartBeat = snapshotData.CommandStartBeat;
+				commandState.EndBeat   = snapshotData.CommandEndBeat;
 
 				process.StartTime = snapshotData.StartTime;
 				if (!SimulateTagFromEntity.Exists(entity))

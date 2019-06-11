@@ -32,8 +32,11 @@ namespace Patapon4TLB.Default
 			m_BeatEventProvider = World.GetOrCreateSystem<FlowRhythmBeatEventProvider>();
 			m_PressureEventProvider = World.GetOrCreateSystem<FlowRhythmPressureEventProvider>();
 
-			World.GetOrCreateSystem<RegisterDefaultSequenceCommands>();
-			
+			if (World.GetExistingSystem<ServerSimulationSystemGroup>() != null)
+			{
+				World.GetOrCreateSystem<RegisterDefaultSequenceCommands>();
+			}
+
 			SortSystemUpdateList();
 		}
 

@@ -163,10 +163,13 @@ namespace Patapon4TLB.Default
 
 			var rpcTargetConnection = new NativeArray<Entity>(1, Allocator.TempJob);
 
-			inputDeps = new GetRpcTargetConnectionJob
+			if (!IsServer)
 			{
-				Target = rpcTargetConnection
-			}.ScheduleSingle(this, inputDeps);
+				inputDeps = new GetRpcTargetConnectionJob
+				{
+					Target = rpcTargetConnection
+				}.ScheduleSingle(this, inputDeps);
+			}
 
 			inputDeps = new VerifyJob
 			{
