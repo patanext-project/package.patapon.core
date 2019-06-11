@@ -44,6 +44,9 @@ namespace Patapon4TLB.Default.Test
 		{
 			base.OnCreate();
 
+			if (!Application.isPlaying)
+				return;
+
 			Addressables.InitializationOperation.Completed += op => { OnLoadAssets(); };
 
 			m_EngineDelegate = ForEachEngine;
@@ -91,6 +94,9 @@ namespace Patapon4TLB.Default.Test
 
 		protected override void OnUpdate()
 		{
+			if (!Application.isPlaying)
+				return;
+			
 			m_Play = false;
 
 			Entities.WithAll<FlowRhythmEngineSimulateTag>().ForEach(m_EngineDelegate);
