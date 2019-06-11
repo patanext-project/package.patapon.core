@@ -17,19 +17,23 @@ namespace package.patapon.core
         
         /// <summary>
         /// When will the command be active?
-        /// >=0 = the active beat (will have the same effect as -1 if CommandTarget don't exist or is null)
-        /// -1 = not in effect
-        /// -2 = forever
         /// </summary>
+        /// <remarks>
+        /// >=0 = the active beat (will have the same effect as -1 if CommandTarget don't exist or is null).
+        /// -1 = not in effect.
+        /// -2 = forever.
+        /// </remarks>
         public int    ActiveAtBeat;
 
         /// <summary>
         /// If you want to set a custom beat ending.
-        /// >0 = the ending beat
-        /// 0 = the command will never be executed (but why)
-        /// -1 = not in effect
-        /// -2 = forever (you can make a combo with ActiveAtBeat set at -1 to have a forever non ending command)
         /// </summary>
+        /// <remarks>
+        /// >0 = the ending beat.
+        /// 0 = the command will never be executed (but why).
+        /// -1 = not in effect.
+        /// -2 = forever (you can make a combo with ActiveAtBeat set at -1 to have a forever non ending command).
+        /// </remarks>
         public int CustomEndBeat;
 
         /// <summary>
@@ -64,5 +68,10 @@ namespace package.patapon.core
     public struct FlowCommandSequenceContainer : IBufferElementData
     {
         public FlowCommandSequence Value;
+    }
+
+    public struct FlowCommandData : IComponentData
+    {
+        public int BeatLength;
     }
 }

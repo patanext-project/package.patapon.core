@@ -1,4 +1,5 @@
 using package.patapon.core;
+using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
@@ -14,7 +15,7 @@ namespace Patapon4TLB.Default
 
 			var builder = World.GetOrCreateSystem<FlowCommandBuilder>();
 
-			var march = Build(builder, new[]
+			var march = Build(builder, new FlowCommandData {BeatLength = 4}, new[]
 			{
 				new FlowCommandSequence(0, RhythmKeys.Left),
 				new FlowCommandSequence(1, RhythmKeys.Left),
@@ -23,7 +24,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(march, typeof(MarchCommand));
 
-			var attack = Build(builder, new[]
+			var attack = Build(builder, new FlowCommandData {BeatLength = 4}, new[]
 			{
 				new FlowCommandSequence(0, RhythmKeys.Right),
 				new FlowCommandSequence(1, RhythmKeys.Right),
@@ -32,7 +33,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(attack, typeof(AttackCommand));
 
-			var defend = Build(builder, new[]
+			var defend = Build(builder, new FlowCommandData {BeatLength = 4}, new[]
 			{
 				new FlowCommandSequence(0, RhythmKeys.Up),
 				new FlowCommandSequence(1, RhythmKeys.Up),
@@ -41,7 +42,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(defend, typeof(DefendCommand));
 
-			var charge = Build(builder, new[]
+			var charge = Build(builder, new FlowCommandData {BeatLength = 4}, new[]
 			{
 				new FlowCommandSequence(0, RhythmKeys.Right),
 				new FlowCommandSequence(1, RhythmKeys.Right),
@@ -50,7 +51,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(charge, typeof(ChargeCommand));
 
-			var retreat = Build(builder, new[]
+			var retreat = Build(builder, new FlowCommandData {BeatLength = 4}, new[]
 			{
 				new FlowCommandSequence(0, RhythmKeys.Right),
 				new FlowCommandSequence(1, RhythmKeys.Left),
@@ -59,7 +60,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(retreat, typeof(RetreatCommand));
 
-			var jump = Build(builder, new[]
+			var jump = Build(builder, new FlowCommandData {BeatLength = 4}, new[]
 			{
 				new FlowCommandSequence(0, RhythmKeys.Down),
 				new FlowCommandSequence(1, RhythmKeys.Down),
@@ -68,7 +69,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(jump, typeof(JumpCommand));
 
-			var party = Build(builder, new[]
+			var party = Build(builder, new FlowCommandData {BeatLength = 4}, new[]
 			{
 				new FlowCommandSequence(0, RhythmKeys.Left),
 				new FlowCommandSequence(1, RhythmKeys.Right),
@@ -77,7 +78,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(party, typeof(PartyCommand));
 
-			var summon = Build(builder, new[]
+			var summon = Build(builder, new FlowCommandData {BeatLength = 4}, new[]
 			{
 				new FlowCommandSequence(0, RhythmKeys.Down),
 				new FlowCommandSequence(1, RhythmKeys.Down),
@@ -87,7 +88,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(summon, typeof(SummonCommand));
 
-			var backward = Build(builder, new[]
+			var backward = Build(builder, new FlowCommandData {BeatLength = 4}, new[]
 			{
 				new FlowCommandSequence(0, RhythmKeys.Up),
 				new FlowCommandSequence(1, RhythmKeys.Left),
@@ -96,7 +97,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(backward, typeof(BackwardCommand));
 
-			var skip = Build(builder, new[]
+			var skip = Build(builder, new FlowCommandData {BeatLength = 3}, new[]
 			{
 				new FlowCommandSequence(0, RhythmKeys.Up),
 				new FlowCommandSequence(1, RhythmKeys.Up),
@@ -106,11 +107,12 @@ namespace Patapon4TLB.Default
 			EntityManager.AddComponent(skip, typeof(SkipCommand));
 		}
 
-		private Entity Build(FlowCommandBuilder builder, FlowCommandSequence[] sequences)
+		private Entity Build(FlowCommandBuilder builder, FlowCommandData flowCommandData, FlowCommandSequence[] sequences)
 		{
 			var entity = builder.GetOrCreate(new NativeArray<FlowCommandSequence>(sequences, Allocator.Temp));
 
 			EntityManager.AddComponent(entity, typeof(DefaultRhythmCommand));
+			EntityManager.SetOrAddComponentData(entity, flowCommandData);
 
 			return entity;
 		}
