@@ -38,10 +38,11 @@ namespace Patapon4TLB.Default
 
 	public struct RhythmRpcPressureFromServer : IRpcCommand
 	{
-		public int  Key;
-		public int  Beat;
-		public int  EngineGhostId;
-		public bool DoLocalEventOnSelf;
+		public int   Key;
+		public int   Beat;
+		public float Score;
+		public int   EngineGhostId;
+		public bool  DoLocalEventOnSelf;
 
 		public void Execute(Entity connection, EntityCommandBuffer.Concurrent commandBuffer, int jobIndex)
 		{
@@ -54,6 +55,7 @@ namespace Patapon4TLB.Default
 		{
 			writer.Write(Key);
 			writer.Write(Beat);
+			writer.Write(Score);
 			writer.Write(EngineGhostId);
 			writer.Write(DoLocalEventOnSelf ? (byte) 1 : (byte) 0);
 		}
@@ -62,6 +64,7 @@ namespace Patapon4TLB.Default
 		{
 			Key                = reader.ReadInt(ref ctx);
 			Beat               = reader.ReadInt(ref ctx);
+			Score              = reader.ReadFloat(ref ctx);
 			EngineGhostId      = reader.ReadInt(ref ctx);
 			DoLocalEventOnSelf = reader.ReadByte(ref ctx) == 1;
 		}
@@ -104,12 +107,16 @@ namespace Patapon4TLB.Default
 				    // if we don't allow events on our engine, but it's not an engine simulated by us, accept this condition
 				    && (executePressure.RpcData.DoLocalEventOnSelf || !SimulateTagFromEntity.Exists(ghostEntity.entity)))
 				{
-					Debug.Log("RPC Create. " + Unity.Entities.World.Active);
-					
 					CreatePressureList.Add(new FlowRhythmPressureEventProvider.Create
 					{
-						Engine = ghostEntity.entity,
-						Key    = executePressure.RpcData.Key
+						Ev = new PressureEvent
+						{
+							Engine = ghostEntity.entity,
+							CorrectedBeat = executePressure.RpcData.Beat,
+							OriginalBeat = executePressure.RpcData.Beat,
+							Key = executePressure.RpcData.Key,
+							Score = executePressure.RpcData.Score
+						}
 					});
 				}
 				else

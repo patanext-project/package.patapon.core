@@ -130,8 +130,6 @@ namespace Patapon4TLB.Default
 				if (executeCommand.Connection == default)
 					return;
 				
-				Debug.Log("Received command request!");
-
 				var currentCommand   = CurrentCommandFromEntity[entity].Reinterpret<FlowRhythmPressureData>();
 				var predictedCommand = PredictedCommandFromEntity[entity].Reinterpret<FlowRhythmPressureData>();
 				var requestedCommand = RequestedCommandFromEntity[executeCommandEntity].Reinterpret<FlowRhythmPressureData>();

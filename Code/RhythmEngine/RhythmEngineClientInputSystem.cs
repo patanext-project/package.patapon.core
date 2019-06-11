@@ -36,14 +36,23 @@ namespace Patapon4TLB.Default
 
 				pressureEvent.Beat = flowProcess.Beat;
 
+				var pressureData = new FlowRhythmPressureData(pressureEvent.Key, settings.BeatInterval, flowProcess.Time, flowProcess.Beat);
 				commandSequence.Add(new RhythmEngineCurrentCommand
 				{
-					Data = new FlowRhythmPressureData(pressureEvent.Key, settings.BeatInterval, flowProcess.Time, flowProcess.Beat)
+					Data = pressureData
 				});
-				
-				Debug.Log("LOC Create. " + Unity.Entities.World.Active);
-				
-				CreatePressureEventList.Add(new FlowRhythmPressureEventProvider.Create {Engine = entity, Key = pressureEvent.Key});
+
+				CreatePressureEventList.Add(new FlowRhythmPressureEventProvider.Create
+				{
+					Ev = new PressureEvent
+					{
+						Engine        = entity,
+						Key           = pressureEvent.Key,
+						CorrectedBeat = pressureData.CorrectedBeat,
+						OriginalBeat  = pressureData.OriginalBeat,
+						Score         = pressureData.Score
+					}
+				});
 			}
 		}
 
@@ -139,6 +148,8 @@ namespace Patapon4TLB.Default
 				RpcQueue                     = rpcQueue,
 				OutgoingDataBufferFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>()
 			}.Schedule(this, inputDeps);
+			
+			inputDeps.Complete();
 
 			return inputDeps;
 		}

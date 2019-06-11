@@ -8,6 +8,7 @@ using UnityEngine.AddressableAssets;
 namespace Patapon4TLB.Default.Test
 {
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
+	[UpdateAfter(typeof(RhythmEngineClientInputSystem))]
 	public class PlayBeatSound : ComponentSystem
 	{
 		private int  m_LastBeat;
@@ -26,8 +27,6 @@ namespace Patapon4TLB.Default.Test
 		{
 			if (!EntityManager.HasComponent(pressureEvent.Engine, typeof(FlowRhythmEngineSimulateTag)))
 				return;
-			
-			Debug.Log(entity);
 			
 			m_AudioSourceOnNewPressure.PlayOneShot(m_AudioOnPressure[pressureEvent.Key][0]);
 		}
@@ -83,7 +82,6 @@ namespace Patapon4TLB.Default.Test
 					Addressables.LoadAsset<AudioClip>($"int:RhythmEngine/Sounds/drum_{key}_{rank}.ogg").Completed += op =>
 					{
 						Debug.Assert(op.IsValid, "op.IsValid");
-						Debug.Log($"loaded [{key}][{rank}]");
 
 						m_AudioOnPressure[key][rank] = op.Result;
 					};

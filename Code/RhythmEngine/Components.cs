@@ -30,6 +30,9 @@ namespace Patapon4TLB.Default
 	{
 		public Entity Engine;
 		public int    Key;
+		public int    OriginalBeat;
+		public int    CorrectedBeat;
+		public float  Score;
 	}
 
 	/// <summary>

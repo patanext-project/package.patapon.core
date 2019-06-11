@@ -15,8 +15,7 @@ namespace package.patapon.core
 	{
 		public struct Create
 		{
-			public Entity Engine;
-			public int    Key;
+			public PressureEvent Ev;
 		}
 
 		protected override void OnCreate()
@@ -30,17 +29,13 @@ namespace package.patapon.core
 		{
 			entityComponents = new[]
 			{
-				ComponentType.ReadWrite<RhythmShardEvent>(),
-				ComponentType.ReadWrite<RhythmShardTarget>(),
-				ComponentType.ReadWrite<PressureEvent>(),
+				ComponentType.ReadWrite<PressureEvent>()
 			};
 		}
 
 		public override void SetEntityData(Entity entity, Create data)
 		{
-			EntityManager.SetComponentData(entity, new RhythmShardEvent(0));
-			EntityManager.SetComponentData(entity, new RhythmShardTarget(data.Engine));
-			EntityManager.SetComponentData(entity, new PressureEvent {Engine = data.Engine, Key = data.Key});
+			EntityManager.SetComponentData(entity, data.Ev);
 		}
 	}
 }
