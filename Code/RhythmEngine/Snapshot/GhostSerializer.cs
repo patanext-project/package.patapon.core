@@ -1,5 +1,6 @@
 using package.patapon.core;
 using StormiumTeam.GameBase;
+using StormiumTeam.Networking.Utilities;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
@@ -18,27 +19,19 @@ namespace Patapon4TLB.Default.Snapshot
 
 		public bool WantsPredictionDelta => false;
 
-		public ComponentType                                        ComponentTypeOwner;
-		public ArchetypeChunkComponentType<Owner>                   GhostOwnerType;
-		public ComponentType                                        ComponentTypeSettings;
-		public ArchetypeChunkComponentType<RhythmEngineSettings>    GhostSettingsType;
-		public ComponentType                                        ComponentTypeProcess;
-		public ArchetypeChunkComponentType<FlowRhythmEngineProcess> GhostProcessType;
-		public ComponentType                                        ComponentTypeState;
-		public ArchetypeChunkComponentType<RhythmEngineState>       GhostStateType;
+		public GhostComponentType<Owner>                   GhostOwnerType;
+		public GhostComponentType<RhythmEngineSettings>    GhostSettingsType;
+		public GhostComponentType<FlowRhythmEngineProcess> GhostProcessType;
+		public GhostComponentType<RhythmEngineState>       GhostStateType;
 
 		public ComponentDataFromEntity<GhostSystemStateComponent> GhostStateFromEntity;
-		
+
 		public void BeginSerialize(ComponentSystemBase system)
 		{
-			ComponentTypeOwner    = ComponentType.ReadWrite<Owner>();
-			GhostOwnerType        = system.GetArchetypeChunkComponentType<Owner>();
-			ComponentTypeSettings = ComponentType.ReadWrite<RhythmEngineSettings>();
-			GhostSettingsType     = system.GetArchetypeChunkComponentType<RhythmEngineSettings>();
-			ComponentTypeProcess  = ComponentType.ReadWrite<FlowRhythmEngineProcess>();
-			GhostProcessType      = system.GetArchetypeChunkComponentType<FlowRhythmEngineProcess>();
-			ComponentTypeState    = ComponentType.ReadWrite<RhythmEngineState>();
-			GhostStateType        = system.GetArchetypeChunkComponentType<RhythmEngineState>();
+			system.GetGhostComponentType(out GhostOwnerType);
+			system.GetGhostComponentType(out GhostSettingsType);
+			system.GetGhostComponentType(out GhostProcessType);
+			system.GetGhostComponentType(out GhostStateType);
 
 			GhostStateFromEntity = system.GetComponentDataFromEntity<GhostSystemStateComponent>();
 		}
@@ -49,10 +42,10 @@ namespace Patapon4TLB.Default.Snapshot
 			var types   = arch.GetComponentTypes();
 			for (var i = 0; i != types.Length; i++)
 			{
-				if (types[i] == ComponentTypeOwner) matches++;
-				if (types[i] == ComponentTypeSettings) matches++;
-				if (types[i] == ComponentTypeProcess) matches++;
-				if (types[i] == ComponentTypeState) matches++;
+				if (types[i] == GhostOwnerType) matches++;
+				if (types[i] == GhostSettingsType) matches++;
+				if (types[i] == GhostProcessType) matches++;
+				if (types[i] == GhostStateType) matches++;
 			}
 
 			return matches == 4;
@@ -62,19 +55,19 @@ namespace Patapon4TLB.Default.Snapshot
 		{
 			snapshot.Tick = tick;
 
-			var owner = chunk.GetNativeArray(GhostOwnerType)[ent];
+			var owner = chunk.GetNativeArray(GhostOwnerType.Archetype)[ent];
 			snapshot.OwnerGhostId = GhostStateFromEntity.Exists(owner.Target) ? GhostStateFromEntity[owner.Target].ghostId : 0;
 
-			var settings = chunk.GetNativeArray(GhostSettingsType)[ent];
-			snapshot.MaxBeats = settings.MaxBeats;
+			var settings = chunk.GetNativeArray(GhostSettingsType.Archetype)[ent];
+			snapshot.MaxBeats            = settings.MaxBeats;
 			snapshot.UseClientSimulation = settings.UseClientSimulation;
-			snapshot.BeatInterval = settings.BeatInterval;
+			snapshot.BeatInterval        = settings.BeatInterval;
 
-			var process = chunk.GetNativeArray(GhostProcessType)[ent];
+			var process = chunk.GetNativeArray(GhostProcessType.Archetype)[ent];
 			snapshot.Beat      = process.Beat;
 			snapshot.StartTime = process.StartTime;
 
-			var state = chunk.GetNativeArray(GhostStateType)[ent];
+			var state = chunk.GetNativeArray(GhostStateType.Archetype)[ent];
 			snapshot.IsPaused = state.IsPaused;
 		}
 	}
