@@ -10,7 +10,7 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
 	public class RhythmEngineUpdateCommandState : JobGameBaseSystem
 	{
-		private struct Job : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineState, FlowRhythmEngineProcess, FlowCurrentCommand>
+		private struct Job : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineState, FlowRhythmEngineProcess, FlowCommandState, FlowCurrentCommand>
 		{
 			public bool IsServer;
 
@@ -20,14 +20,22 @@ namespace Patapon4TLB.Default
 			[ReadOnly]
 			public ComponentDataFromEntity<FlowRhythmEngineSimulateTag> SimulateTagFromEntity;
 
-			public void Execute(Entity entity, int index, ref RhythmEngineSettings settings, ref RhythmEngineState state, ref FlowRhythmEngineProcess process, ref FlowCurrentCommand flow)
+			public void Execute(Entity entity, int index,
+			                    // components
+			                    ref RhythmEngineSettings settings,     ref RhythmEngineState  state, ref FlowRhythmEngineProcess process,
+			                    ref FlowCommandState     commandState, ref FlowCurrentCommand flow)
 			{
 				if (state.IsPaused
 				    || (!IsServer && settings.UseClientSimulation && !SimulateTagFromEntity.Exists(entity)))
 					return;
 
 				if (flow.CommandTarget == default)
+				{
+					commandState.IsActive = false;
+					commandState.StartBeat = -1;
+					commandState.EndBeat = -1;
 					return;
+				}
 
 				var commandData = CommandDataFromEntity[flow.CommandTarget];
 				var isActive =
@@ -35,17 +43,14 @@ namespace Patapon4TLB.Default
 					(flow.ActiveAtBeat < 0 || flow.ActiveAtBeat <= process.Beat)
 					// check end
 					&& (flow.CustomEndBeat == -2
-					    || (flow.ActiveAtBeat >= 0 && flow.ActiveAtBeat + commandData.BeatLength >= process.Beat)
-					    || flow.CustomEndBeat >= process.Beat)
+					    || (flow.ActiveAtBeat >= 0 && flow.ActiveAtBeat + commandData.BeatLength > process.Beat)
+					    || flow.CustomEndBeat > process.Beat)
 					// if both are set to no effect, then the command is not active
 					&& flow.ActiveAtBeat != 1 && flow.CustomEndBeat != 1;
 
-				if (!isActive)
-				{
-					flow.CommandTarget = default;
-					flow.ActiveAtBeat  = -1;
-					flow.CustomEndBeat = -1;
-				}
+				commandState.IsActive  = isActive;
+				commandState.StartBeat = flow.ActiveAtBeat;
+				commandState.EndBeat   = flow.CustomEndBeat == -1 ? flow.ActiveAtBeat + commandData.BeatLength : flow.CustomEndBeat;
 			}
 		}
 

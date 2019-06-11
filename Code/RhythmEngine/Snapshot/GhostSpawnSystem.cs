@@ -28,6 +28,7 @@ namespace Patapon4TLB.Default.Snapshot
 				ComponentType.ReadWrite<FlowRhythmEnginePredictedProcess>(),
 				ComponentType.ReadWrite<ShardRhythmEngine>(),
 				ComponentType.ReadWrite<FlowCommandManagerTypeDefinition>(),
+				ComponentType.ReadWrite<FlowCommandState>(),
 				ComponentType.ReadWrite<FlowCurrentCommand>(),
 				ComponentType.ReadWrite<ReplicatedEntityComponent>()
 			);

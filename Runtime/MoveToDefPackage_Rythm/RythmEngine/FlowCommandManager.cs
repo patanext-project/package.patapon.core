@@ -45,6 +45,13 @@ namespace package.patapon.core
         public int Power;
     }
 
+    public struct FlowCommandState : IComponentData
+    {
+        public bool IsActive;
+        public int  StartBeat;
+        public int  EndBeat;
+    }
+
     public struct FlowCommandSequence
     {
         public RangeInt BeatRange;

@@ -23,8 +23,9 @@ namespace Patapon4TLB.Default.Test
 			{
 				var reEnt = CommandBuffer.CreateEntity(jobIndex, RhythmEngineArchetype);
 
-				CommandBuffer.SetComponent(jobIndex, reEnt, new RhythmEngineSettings {MaxBeats     = 4, BeatInterval = 500, UseClientSimulation = true});
-				CommandBuffer.SetComponent(jobIndex, reEnt, new FlowRhythmEngineProcess {StartTime = (int) ServerTime + 3000});
+				CommandBuffer.SetComponent(jobIndex, reEnt, new RhythmEngineSettings {MaxBeats     = 4, BeatInterval  = 500, UseClientSimulation = true});
+				CommandBuffer.SetComponent(jobIndex, reEnt, new FlowCurrentCommand {CustomEndBeat  = -1, ActiveAtBeat = -1, Power                = 0});
+				CommandBuffer.SetComponent(jobIndex, reEnt, new FlowRhythmEngineProcess {StartTime = (int) ServerTime});
 				CommandBuffer.SetComponent(jobIndex, reEnt, new Owner {Target                      = ev.Player});
 				CommandBuffer.SetComponent(jobIndex, reEnt, new NetworkOwner {Value                = ev.Connection});
 			}
