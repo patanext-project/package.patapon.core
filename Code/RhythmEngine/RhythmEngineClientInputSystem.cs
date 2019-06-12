@@ -36,7 +36,7 @@ namespace Patapon4TLB.Default
 
 				pressureEvent.Beat = process.Beat;
 
-				var pressureData = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.Time, process.Beat);
+				var pressureData = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.TimeTick);
 				commandSequence.Add(new RhythmEngineCurrentCommand
 				{
 					Data = pressureData

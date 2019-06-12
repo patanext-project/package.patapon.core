@@ -5,7 +5,6 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 
@@ -123,14 +122,22 @@ namespace Patapon4TLB.Default
 					return;
 				}
 
-				var currBeatWithOffset = process.Beat;
+				var targetBeat = process.Beat;
 				var lastCommand = currCommandArray[currCommandArray.Length - 1].Data;
-				if (lastCommand.OriginalBeat != lastCommand.CorrectedBeat) // if it's the same beat, shift the offset
+				/*if (lastCommand.OriginalBeat != lastCommand.CorrectedBeat) // if it's the same beat, shift the offset
 				{
-					currBeatWithOffset++;
+					targetBeat++;
 				}
 
-				rhythmCurrentCommand.ActiveAtBeat  = currBeatWithOffset;
+				targetBeat = (lastCommand.Time / settings.BeatInterval) + 1;
+
+				var left = lastCommand.Time / (float) settings.BeatInterval;
+				
+				Debug.Log($"target: {targetBeat} (t: {lastCommand.Time}) original: {lastCommand.CorrectedBeat} left: {left}");
+				*/
+				targetBeat = lastCommand.CorrectedBeat;
+				
+				rhythmCurrentCommand.ActiveAtBeat  = targetBeat;
 				rhythmCurrentCommand.CommandTarget = result;
 
 				state.ApplyCommandNextBeat = false;

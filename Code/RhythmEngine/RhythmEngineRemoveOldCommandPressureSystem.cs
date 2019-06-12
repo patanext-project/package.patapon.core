@@ -3,6 +3,7 @@ using package.patapon.core;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Jobs;
+using UnityEngine;
 
 namespace Patapon4TLB.Default
 {
@@ -34,8 +35,9 @@ namespace Patapon4TLB.Default
 					for (var j = 0; j != currCommandBuffer.Length; j++)
 					{
 						var currCommand = currCommandBuffer[j];
-						if (predictedData.Beat > currCommand.Data.CorrectedBeat + settingsData.MaxBeats)
+						if (predictedData.Beat > currCommand.Data.OriginalBeat + 1 + settingsData.MaxBeats)
 						{
+							Debug.Log($"Deleted (c:{predictedData.Beat}), {currCommand.Data.OriginalBeat} {currCommand.Data.CorrectedBeat}");
 							currCommandBuffer.RemoveAt(j);
 							j--; // swap back method.
 						}

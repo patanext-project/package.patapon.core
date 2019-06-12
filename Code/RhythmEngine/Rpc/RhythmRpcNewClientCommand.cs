@@ -14,7 +14,7 @@ namespace Patapon4TLB.Default
 {
 	public struct RhythmRpcNewClientCommand : IRpcCommand
 	{
-		public bool                                           IsValid;
+		public bool                                            IsValid;
 		public NativeArray<RhythmEngineClientRequestedCommand> ResultBuffer;
 
 		public void Execute(Entity connection, EntityCommandBuffer.Concurrent commandBuffer, int jobIndex)
@@ -30,10 +30,10 @@ namespace Patapon4TLB.Default
 			{
 				Connection = connection
 			});
-			
+
 			var b = commandBuffer.AddBuffer<RhythmEngineClientRequestedCommand>(jobIndex, ent);
 			b.CopyFrom(ResultBuffer);
-			
+
 			ResultBuffer.Dispose();
 		}
 
@@ -57,6 +57,7 @@ namespace Patapon4TLB.Default
 			{
 				writer.Write(ResultBuffer[com].Data.Score);
 				writer.Write(ResultBuffer[com].Data.KeyId);
+				writer.Write(ResultBuffer[com].Data.Time);
 				writer.Write(ResultBuffer[com].Data.OriginalBeat);
 				writer.Write(ResultBuffer[com].Data.CorrectedBeat);
 			}
@@ -75,6 +76,7 @@ namespace Patapon4TLB.Default
 				var temp = default(RhythmPressureData);
 				temp.Score         = reader.ReadFloat(ref ctx);
 				temp.KeyId         = reader.ReadInt(ref ctx);
+				temp.Time          = reader.ReadInt(ref ctx);
 				temp.OriginalBeat  = reader.ReadInt(ref ctx);
 				temp.CorrectedBeat = reader.ReadInt(ref ctx);
 
@@ -139,8 +141,8 @@ namespace Patapon4TLB.Default
 					currentCommand.CopyFrom(requestedCommand);
 
 					// it may be possible that client is delayed by one beat
-					var firstBeat = currentCommand[0].CorrectedBeat;
-					var offset    = process.Beat - (firstBeat + (settings.MaxBeats - 1));
+					var lastCmdTime = currentCommand[currentCommand.Length - 1].Time;
+					var offset    = process.Beat - (currentCommand[0].CorrectedBeat + (settings.MaxBeats - 1));
 					if (offset != 0)
 					{
 						for (var com = 0; com != currentCommand.Length; com++)
@@ -151,6 +153,8 @@ namespace Patapon4TLB.Default
 							currentCommand[com] =  tmp;
 						}
 					}
+					
+					Debug.Log($"Difference: {process.TimeTick - lastCmdTime}\t o: {offset}");
 				}
 				else
 				{

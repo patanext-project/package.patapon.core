@@ -83,8 +83,8 @@ namespace Patapon4TLB.Default.Snapshot
 				process.StartTime = snapshotData.StartTime;
 				if (!SimulateTagFromEntity.Exists(entity))
 				{
-					process.Beat = snapshotData.Beat;
-					process.Time = snapshotData.StartTime > 0 ? (ServerTime - snapshotData.StartTime) * 0.001f : 0;
+					process.Beat     = snapshotData.Beat;
+					process.TimeTick = snapshotData.StartTime > 0 ? (int) (ServerTime - snapshotData.StartTime) : 0;
 				}
 
 				predictedProcess.Beat = snapshotData.Beat;

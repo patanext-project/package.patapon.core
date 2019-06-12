@@ -20,13 +20,13 @@ namespace Patapon4TLB.Default
 			{
 				Debug.LogWarning($"Engine '{entity}' had a FlowRhythmEngineSettingsData.BeatInterval of 0 (or less), this is not accepted.");
 			}
-			
+
 			public void Execute(Entity entity, int index, ref RhythmEngineSettings settings, ref RhythmEngineState state, ref RhythmEngineProcess process, ref RhythmPredictedProcess predictedProcess)
 			{
 				if (state.IsPaused)
 					return;
-				
-				process.Time = (CurrentTime - process.StartTime) * 0.001f;
+
+				process.TimeTick = (int) (CurrentTime - process.StartTime);
 				if (settings.BeatInterval <= 0.0001f)
 				{
 					NonBurst_ThrowWarning(entity);
@@ -35,16 +35,17 @@ namespace Patapon4TLB.Default
 
 				var previousBeat = process.Beat;
 
-				if ((int) process.Time != 0)
+				if (process.TimeTick != 0)
 				{
-					process.Beat = (int) (process.Time * 1000) / settings.BeatInterval;
+					process.Beat = process.TimeTick / settings.BeatInterval;
 				}
 				else
 				{
 					process.Beat = 0;
 				}
 
-				if ((predictedProcess.Beat - process.Beat) != 0)
+				var diff = predictedProcess.Beat - process.Beat;
+				if (diff != 0)
 				{
 					state.IsNewBeat = true;
 				}
@@ -53,7 +54,7 @@ namespace Patapon4TLB.Default
 					state.IsNewBeat = false;
 				}
 
-				if ((predictedProcess.Beat - process.Beat) > 2)
+				if (diff > 2)
 				{
 					Debug.LogWarning("The difference of beats between the predicted process is greater!");
 				}

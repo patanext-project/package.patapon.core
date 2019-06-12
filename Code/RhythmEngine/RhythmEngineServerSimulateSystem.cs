@@ -32,7 +32,7 @@ namespace Patapon4TLB.Default
 
 			public void Execute(Entity entity, int index, ref RhythmEngineProcess process, ref RhythmEngineState state, [ReadOnly] ref RhythmEngineSettings settings)
 			{
-				process.Time = (CurrentTime - process.StartTime) * 0.001f;
+				process.TimeTick = (int)(CurrentTime - process.StartTime);
 				if (settings.BeatInterval <= 0.0001f)
 				{
 					NonBurst_ThrowWarning(entity);
@@ -41,9 +41,9 @@ namespace Patapon4TLB.Default
 
 				var previousBeat = process.Beat;
 
-				if ((int) process.Time != 0)
+				if (process.TimeTick != 0)
 				{
-					process.Beat = (int) (process.Time * 1000) / settings.BeatInterval;
+					process.Beat = process.TimeTick / settings.BeatInterval;
 				}
 				else
 				{

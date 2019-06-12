@@ -4,12 +4,33 @@ using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
+using UnityEngine;
 
 namespace Patapon4TLB.Default
 {
+	/*[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
+	public class RhythmEngineGroupServer : ComponentSystemGroup
+	{
+		protected override void OnCreateManager()
+		{
+			base.OnCreateManager();
+			
+			AddSystemToUpdateList(World.GetOrCreateSystem<RhythmEngineGroup>());
+		}
+	}
+	
+	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
+	public class RhythmEngineGroupClient : ComponentSystemGroup
+	{
+		protected override void OnCreateManager()
+		{
+			base.OnCreateManager();
+			
+			AddSystemToUpdateList(World.GetOrCreateSystem<RhythmEngineGroup>());
+		}
+	}*/
+	
 	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
-	[UpdateAfter(typeof(GhostReceiveSystemGroup))]
-	[UpdateAfter(typeof(GhostUpdateSystemGroup))]
 	public class RhythmEngineGroup : ComponentSystemGroup
 	{
 		private RhythmEngineBeginBarrier m_BeginBarrier;
@@ -27,9 +48,9 @@ namespace Patapon4TLB.Default
 			base.OnCreate();
 
 			m_BeginBarrier = World.GetOrCreateSystem<RhythmEngineBeginBarrier>();
-			m_EndBarrier = World.GetOrCreateSystem<RhythmEngineEndBarrier>();
+			m_EndBarrier   = World.GetOrCreateSystem<RhythmEngineEndBarrier>();
 
-			m_BeatEventProvider = World.GetOrCreateSystem<FlowRhythmBeatEventProvider>();
+			m_BeatEventProvider     = World.GetOrCreateSystem<FlowRhythmBeatEventProvider>();
 			m_PressureEventProvider = World.GetOrCreateSystem<FlowRhythmPressureEventProvider>();
 
 			if (World.GetExistingSystem<ServerSimulationSystemGroup>() != null)
@@ -38,6 +59,13 @@ namespace Patapon4TLB.Default
 			}
 
 			SortSystemUpdateList();
+
+			// do some tests
+
+			var f1 = FlowRhythmEngine.GetRhythmBeat(33359, 500);
+			var f2 = FlowRhythmEngine.GetRhythmBeat(33620, 500);
+			Debug.Assert(f1.original == 66 && f1.correct == 67, "f1.original == 66 && f1.correct == 67");
+			Debug.Assert(f2.original == 67 && f2.correct == 67, "f2.original == 67 && f2.correct == 67");
 		}
 
 		protected override void OnUpdate()

@@ -30,7 +30,7 @@ namespace Patapon4TLB.Default
 				{
 					PredictedCommandFromEntity[pressureEvent.Engine].Add(new RhythmEngineClientPredictedCommand
 					{
-						Data = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.Time, process.Beat)
+						Data = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.TimeTick)
 					});
 					return;
 				}

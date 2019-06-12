@@ -3,6 +3,7 @@ using package.patapon.def.Data;
 using Runtime.EcsComponents;
 using StormiumTeam.GameBase;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.NetCode;
 using Unity.Entities;
 using Unity.Jobs;
@@ -92,7 +93,7 @@ namespace Patapon4TLB.Default
 			[ReadOnly]
 			public ComponentDataFromEntity<RhythmEngineSimulateTag> SimulateTagFromEntity;
 
-			[ReadOnly]
+			[ReadOnly, NativeDisableContainerSafetyRestriction]
 			public NativeHashMap<int, GhostEntity> GhostEntityMap;
 
 			public EntityCommandBuffer.Concurrent CommandBuffer;

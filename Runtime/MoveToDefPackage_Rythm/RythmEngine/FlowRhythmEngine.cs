@@ -94,29 +94,35 @@ namespace package.patapon.core
             return inputDeps;
         }
 
+        public static (int original, int correct) GetRhythmBeat(int pressureTimeTick, int beatIntervalTick)
+        {
+            var original = pressureTimeTick != 0 ? pressureTimeTick / beatIntervalTick : 0;
+            var add      = pressureTimeTick + (beatIntervalTick / 2);
+            var correct  = add != 0 ? add / beatIntervalTick : 0;
+
+            return (original, correct);
+        }
+
         /// <summary>
         /// Compute the score from a beat and time.
         /// </summary>
-        /// <param name="time">The time</param>
-        /// <param name="beat">The beat</param>
-        /// <param name="beatInterval">The interval between each beat</param>
-        /// <param name="correctedBeat">The new corrected beat (as it can be shifted to the next one)</param>
+        /// <param name="timeTick">The time</param>
+        /// <param name="originalBeat">The ORIGINAL beat</param>
+        /// <param name="interval">The interval between each beat</param>
         /// <returns></returns>
-        public static float GetScore(double time, int beat, double beatInterval, out int correctedBeat)
+        public static float GetScore(int timeTick, int originalBeat, int interval)
         {
-            var beatTimeDelta  = time % beatInterval;
-            var halvedInterval = beatInterval * 0.5;
+            var beatTimeDelta  = timeTick % interval;
+            var halvedInterval = interval * 0.5;
             var correctedTime  = (beatTimeDelta - halvedInterval);
-
-            correctedBeat = correctedTime >= 0 ? beat + 1 : beat;
 
             // this may happen if 'beatInterval' is 0
             if (double.IsNaN(correctedTime))
             {
                 correctedTime = 0.0;
-                if (beatInterval == default)
+                if (interval == default)
                 {
-                    throw new InvalidOperationException($"{nameof(beatInterval)} is set to 0, which is not allowed in FlowRhythmEngine.GetScore()");
+                    throw new InvalidOperationException($"{nameof(interval)} is set to 0, which is not allowed in FlowRhythmEngine.GetScore()");
                 }
             }
 
@@ -131,9 +137,11 @@ namespace package.patapon.core
 
     public struct RhythmEngineProcess : IComponentData
     {
-        public int    Beat;
-        public double Time;
-        public int    StartTime;
+        public int Beat;
+        public int TimeTick;
+        public int StartTime;
+
+        public double TimeReal => TimeTick * 0.001;
     }
 
     public struct RhythmPressureData : IComponentData
@@ -154,6 +162,11 @@ namespace package.patapon.core
         public int CorrectedBeat;
 
         /// <summary>
+        /// The time of the beat (in ms tick), it will be used to do server side check
+        /// </summary>
+        public int Time;
+
+        /// <summary>
         /// The score of the pressure [range -1 - 1, where 0 is perfect]
         /// </summary>
         /// <example>
@@ -166,12 +179,14 @@ namespace package.patapon.core
         /// </example>
         public float Score;
 
-        public RhythmPressureData(int keyId, int beatInterval, double time, int beat)
+        public RhythmPressureData(int keyId, int beatInterval, int timeTick)
         {
-            Score = FlowRhythmEngine.GetScore(time, beat, beatInterval * 0.001f, out CorrectedBeat);
+            (OriginalBeat, CorrectedBeat) = FlowRhythmEngine.GetRhythmBeat(timeTick, beatInterval);
 
-            KeyId        = keyId;
-            OriginalBeat = beat;
+            Score = FlowRhythmEngine.GetScore(timeTick, OriginalBeat, beatInterval);
+
+            KeyId = keyId;
+            Time  = timeTick;
         }
 
         public float GetAbsoluteScore()

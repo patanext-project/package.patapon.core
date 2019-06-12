@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using package.patapon.core;
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -27,8 +28,15 @@ namespace Patapon4TLB.Default.Test
 		{
 			if (!EntityManager.HasComponent(pressureEvent.Engine, typeof(RhythmEngineSimulateTag)))
 				return;
-			
-			m_AudioSourceOnNewPressure.PlayOneShot(m_AudioOnPressure[pressureEvent.Key][0]);
+
+			var absRealScore = math.abs(pressureEvent.Score);
+			var score        = 0;
+			if (absRealScore <= 0.15f)
+				score = 0;
+			else
+				score = 1;
+
+			m_AudioSourceOnNewPressure.PlayOneShot(m_AudioOnPressure[pressureEvent.Key][score]);
 		}
 
 		private EntityQueryBuilder.F_D<RhythmEngineProcess> m_EngineDelegate;
