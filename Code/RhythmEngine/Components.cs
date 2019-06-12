@@ -11,6 +11,7 @@ namespace Patapon4TLB.Default
 	{
 		public bool IsPaused;
 		public bool IsNewBeat;
+		public bool IsNewPressure;
 		public bool ApplyCommandNextBeat;
 	}
 

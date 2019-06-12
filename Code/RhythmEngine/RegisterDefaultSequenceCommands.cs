@@ -101,7 +101,7 @@ namespace Patapon4TLB.Default
 			{
 				new RhythmCommandSequence(0, RhythmKeys.Up),
 				new RhythmCommandSequence(1, RhythmKeys.Up),
-				new RhythmCommandSequence(1, RhythmKeys.Right),
+				new RhythmCommandSequence(2, RhythmKeys.Right),
 				new RhythmCommandSequence(3, RhythmKeys.Right),
 			});
 			EntityManager.AddComponent(skip, typeof(SkipCommand));

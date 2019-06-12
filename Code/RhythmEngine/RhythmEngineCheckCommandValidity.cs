@@ -108,7 +108,7 @@ namespace Patapon4TLB.Default
 			                    [ReadOnly] ref RhythmEngineSettings settings, ref RhythmEngineState    state,
 			                    ref            RhythmEngineProcess  process,  ref RhythmCurrentCommand rhythmCurrentCommand)
 			{
-				if (state.IsPaused || (!IsServer && !state.IsNewBeat))
+				if (state.IsPaused || (!IsServer && !state.IsNewPressure))
 					return;
 
 				if (IsServer && settings.UseClientSimulation && !state.ApplyCommandNextBeat)
@@ -121,6 +121,8 @@ namespace Patapon4TLB.Default
 				{
 					return;
 				}
+
+				state.IsNewPressure = false;
 
 				var targetBeat = process.Beat;
 				var lastCommand = currCommandArray[currCommandArray.Length - 1].Data;
@@ -135,7 +137,7 @@ namespace Patapon4TLB.Default
 				
 				Debug.Log($"target: {targetBeat} (t: {lastCommand.Time}) original: {lastCommand.CorrectedBeat} left: {left}");
 				*/
-				targetBeat = lastCommand.CorrectedBeat;
+				targetBeat = lastCommand.CorrectedBeat + 1;
 				
 				rhythmCurrentCommand.ActiveAtBeat  = targetBeat;
 				rhythmCurrentCommand.CommandTarget = result;

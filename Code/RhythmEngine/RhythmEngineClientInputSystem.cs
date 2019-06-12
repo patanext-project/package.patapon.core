@@ -35,6 +35,7 @@ namespace Patapon4TLB.Default
 				ref var pressureEvent   = ref UnsafeUtilityEx.ArrayElementAsRef<RhythmRpcPressureFromClient>(PressureEventSingleArray.GetUnsafePtr(), 0);
 
 				pressureEvent.Beat = process.Beat;
+				state.IsNewPressure = true;
 
 				var pressureData = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.TimeTick);
 				commandSequence.Add(new RhythmEngineCurrentCommand
