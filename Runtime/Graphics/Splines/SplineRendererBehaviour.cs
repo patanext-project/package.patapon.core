@@ -1,11 +1,19 @@
-﻿#if UNITY_EDITOR
+﻿using System;
+using System.Collections.Generic;
+using package.stormiumteam.shared;
+using Unity.Entities;
+using Unity.Mathematics;
+using UnityEditor;
+using UnityEngine;
+
+#if UNITY_EDITOR
 
 #endif
 
 namespace package.patapon.core
 {
     // TODO: UPGRADE
-    /*[Serializable]
+    [Serializable]
     public struct DSplineData : IComponentData
     {
         public float Tension;
@@ -83,7 +91,7 @@ namespace package.patapon.core
                 Debug.LogError("No GameObjectEntity found on " + gameObject.name);
             }
             
-            World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(goEntity.Value.Entity);
+            //World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(goEntity.Value.Entity);
         }
 
         private void OnValidate()
@@ -99,7 +107,7 @@ namespace package.patapon.core
 
             goEntity.EntityManager.SetComponentData(goEntity.Entity, GetData());
 
-            World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(goEntity.Entity);
+            //World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(goEntity.Entity);
         }
 
         private void Update()
@@ -127,7 +135,7 @@ namespace package.patapon.core
 
             if (needToUpdate)
             {
-                World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(e); 
+                //World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(e); 
             }
         }
         
@@ -225,7 +233,7 @@ namespace package.patapon.core
             if (World.Active == null)
                 return;
             
-            World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(goEntity.Value.Entity);
+            //World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(goEntity.Value.Entity);
         }
 
         // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
@@ -250,5 +258,5 @@ namespace package.patapon.core
         {
             Points[i].position = value;
         }
-    }*/
+    }
 }

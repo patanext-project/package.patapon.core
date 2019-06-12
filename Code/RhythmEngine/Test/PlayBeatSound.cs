@@ -5,6 +5,7 @@ using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using Random = UnityEngine.Random;
 
 namespace Patapon4TLB.Default.Test
 {
@@ -14,6 +15,8 @@ namespace Patapon4TLB.Default.Test
 	{
 		private int  m_LastBeat;
 		private bool m_Play;
+
+		public bool VoiceOverlay;
 
 		private void ForEachEngine(ref RhythmEngineProcess process)
 		{
@@ -36,20 +39,44 @@ namespace Patapon4TLB.Default.Test
 			else
 				score = 1;
 
-			m_AudioSourceOnNewPressure.PlayOneShot(m_AudioOnPressure[pressureEvent.Key][score]);
+			m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPressureDrum[pressureEvent.Key][score]);
+			if (VoiceOverlay)
+			{
+				var id = score;
+				if (id > 0)
+				{
+					id = Mathf.Clamp(Random.Range(-1, 3), 1, 2); // more chance to have a 1
+				}
+
+				m_AudioSourceOnNewPressureVoice.PlayOneShot(m_AudioOnPressureVoice[pressureEvent.Key][id]);
+			}
 		}
 
 		private EntityQueryBuilder.F_D<RhythmEngineProcess> m_EngineDelegate;
 		private EntityQueryBuilder.F_ED<PressureEvent> m_PressureEventDelegate;
 
 		private AudioSource m_AudioSourceOnNewBeat;
-		private AudioSource m_AudioSourceOnNewPressure;
+		private AudioSource m_AudioSourceOnNewPressureDrum;
+		private AudioSource m_AudioSourceOnNewPressureVoice;
 
 		private AudioClip                                   m_AudioOnNewBeat;
-		private Dictionary<int, Dictionary<int, AudioClip>> m_AudioOnPressure;
+		private Dictionary<int, Dictionary<int, AudioClip>> m_AudioOnPressureDrum;
+		private Dictionary<int, Dictionary<int, AudioClip>> m_AudioOnPressureVoice;
 
 		protected override void OnCreate()
 		{
+			VoiceOverlay = true;
+			
+			AudioSource CreateAudioSource(string name, float volume)
+			{
+				var audioSource = new GameObject("(Clip) " + name, typeof(AudioSource)).GetComponent<AudioSource>();
+				audioSource.reverbZoneMix = 0f;
+				audioSource.spatialBlend  = 0f;
+				audioSource.volume        = volume;
+
+				return audioSource;
+			}
+
 			base.OnCreate();
 
 			if (!Application.isPlaying)
@@ -57,18 +84,12 @@ namespace Patapon4TLB.Default.Test
 
 			Addressables.InitializationOperation.Completed += op => { OnLoadAssets(); };
 
-			m_EngineDelegate = ForEachEngine;
+			m_EngineDelegate        = ForEachEngine;
 			m_PressureEventDelegate = ForEachPressureEvent;
 
-			m_AudioSourceOnNewBeat               = new GameObject("(Clip) On New Beat", typeof(AudioSource)).GetComponent<AudioSource>();
-			m_AudioSourceOnNewBeat.reverbZoneMix = 0f;
-			m_AudioSourceOnNewBeat.spatialBlend  = 0f;
-			m_AudioSourceOnNewBeat.volume        = 0.25f;
-			
-			m_AudioSourceOnNewPressure = new GameObject("(Clip) On New Pressure", typeof(AudioSource)).GetComponent<AudioSource>();
-			m_AudioSourceOnNewPressure.reverbZoneMix = 0f;
-			m_AudioSourceOnNewPressure.spatialBlend  = 0f;
-			m_AudioSourceOnNewPressure.volume        = 0.33f;
+			m_AudioSourceOnNewBeat          = CreateAudioSource("On New Beat", 0.25f);
+			m_AudioSourceOnNewPressureDrum  = CreateAudioSource("On New Pressure -> Drum", 0.33f);
+			m_AudioSourceOnNewPressureVoice = CreateAudioSource("On New Pressure -> Voice", 0.33f);
 		}
 
 		protected void OnLoadAssets()
@@ -76,25 +97,35 @@ namespace Patapon4TLB.Default.Test
 			Addressables.LoadAsset<AudioClip>("int:RhythmEngine/Sounds/on_new_beat.ogg")
 			            .Completed += op => m_AudioOnNewBeat = op.Result;
 
-			m_AudioOnPressure = new Dictionary<int, Dictionary<int, AudioClip>>(12);
+			m_AudioOnPressureDrum = new Dictionary<int, Dictionary<int, AudioClip>>(12);
+			m_AudioOnPressureVoice = new Dictionary<int, Dictionary<int, AudioClip>>(12);
 
 			for (int i = 0; i != 4; i++)
 			{
 				var key = i + 1;
 
-				m_AudioOnPressure[key] = new Dictionary<int, AudioClip>(3);
+				m_AudioOnPressureVoice[key] = new Dictionary<int, AudioClip>(3);
+				m_AudioOnPressureDrum[key] = new Dictionary<int, AudioClip>(3);
 
 				for (int r = 0; r != 3; r++)
 				{
 					var rank = r;
 
-					m_AudioOnPressure[key][rank] = null;
+					m_AudioOnPressureDrum[key][rank] = null;
+					m_AudioOnPressureVoice[key][rank] = null;
 
 					Addressables.LoadAsset<AudioClip>($"int:RhythmEngine/Sounds/drum_{key}_{rank}.ogg").Completed += op =>
 					{
 						Debug.Assert(op.IsValid, "op.IsValid");
 
-						m_AudioOnPressure[key][rank] = op.Result;
+						m_AudioOnPressureDrum[key][rank] = op.Result;
+					};
+					
+					Addressables.LoadAsset<AudioClip>($"int:RhythmEngine/Sounds/voice_{key}_{rank}.wav").Completed += op =>
+					{
+						Debug.Assert(op.IsValid, "op.IsValid");
+
+						m_AudioOnPressureVoice[key][rank] = op.Result;
 					};
 				}
 			}
