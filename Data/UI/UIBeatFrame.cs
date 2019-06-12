@@ -51,10 +51,15 @@ namespace Patapon4TLB.UI
 					LastBeatTime = Time.time;
 				}
 
-				IsCommandServer = gameCommandState.StartBeat >= Beat && gameCommandState.EndBeat > Beat;
+				IsCommandServer = gameCommandState.StartBeat <= Beat && gameCommandState.EndBeat > Beat;
 				if (EntityManager.HasComponent<RhythmEngineSimulateTag>(entity))
 				{
-					IsCommandClient = currentCommand.ActiveAtBeat >= Beat && predictedCommand.EndBeat > Beat;
+					IsCommandClient = currentCommand.ActiveAtBeat <= Beat && predictedCommand.EndBeat > Beat;
+				}
+
+				if (LastBeatTime == Time.time)
+				{
+					Debug.Log($"({gameCommandState.StartBeat} {gameCommandState.EndBeat}) ({predictedCommand.StartBeat} {predictedCommand.EndBeat})");
 				}
 
 				//Debug.Log($"{currentCommand.ActiveAtBeat} {Beat} && {gameCommandState.EndBeat} > {Beat} == {IsCommandServer} {IsCommandClient}");

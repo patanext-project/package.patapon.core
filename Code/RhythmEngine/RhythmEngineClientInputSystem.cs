@@ -110,6 +110,9 @@ namespace Patapon4TLB.Default
 			// not enabled
 			if (!World.GetExistingSystem<ClientPresentationSystemGroup>().Enabled)
 				return inputDeps;
+			
+			inputDeps.Complete();
+			EntityManager.CompleteAllJobs();
 
 			var pressureEvent = new RhythmRpcPressureFromClient {Key = -1};
 			foreach (var ev in InputEvents)

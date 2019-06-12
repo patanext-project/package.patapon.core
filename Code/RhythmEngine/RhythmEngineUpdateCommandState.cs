@@ -3,6 +3,7 @@ using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 
@@ -50,7 +51,7 @@ namespace Patapon4TLB.Default
 				{
 					var commandData = CommandDataFromEntity[rhythm.CommandTarget];
 					beatLength = commandData.BeatLength;
-					
+
 					isActive =
 						// check start
 						(rhythm.ActiveAtBeat < 0 || rhythm.ActiveAtBeat <= process.Beat)

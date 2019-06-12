@@ -5,6 +5,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 
@@ -122,7 +123,21 @@ namespace Patapon4TLB.Default
 					return;
 				}
 
-				rhythmCurrentCommand.ActiveAtBeat  = process.Beat;
+				var currBeatWithOffset = process.Beat;
+				var lastCommand = currCommandArray[currCommandArray.Length - 1].Data;
+				if (lastCommand.OriginalBeat != lastCommand.CorrectedBeat) // if it's the same beat, shift the offset
+				{
+					Debug.Log("IsServer offset: " + IsServer);
+					currBeatWithOffset++;
+				}
+				// When we have a new beat, we need to be sure the command wasn't aligned to this beat
+				// (we could also check if the pressure corrected beat isn't going to be this one...)
+				/*if (currCommandArray[currCommandArray.Length - 1].Data.CorrectedBeat == process.Beat)
+					currBeatWithOffset++;*/
+				
+				//Debug.Log( IsServer + " " +  + " " + process.Beat);
+
+				rhythmCurrentCommand.ActiveAtBeat  = currBeatWithOffset;
 				rhythmCurrentCommand.CommandTarget = result;
 
 				state.ApplyCommandNextBeat = false;

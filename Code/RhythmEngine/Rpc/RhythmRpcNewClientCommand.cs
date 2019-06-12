@@ -129,7 +129,7 @@ namespace Patapon4TLB.Default
 
 				if (executeCommand.Connection == default)
 					return;
-				
+
 				var currentCommand   = CurrentCommandFromEntity[entity].Reinterpret<RhythmPressureData>();
 				var predictedCommand = PredictedCommandFromEntity[entity].Reinterpret<RhythmPressureData>();
 				var requestedCommand = RequestedCommandFromEntity[executeCommandEntity].Reinterpret<RhythmPressureData>();
@@ -137,19 +137,21 @@ namespace Patapon4TLB.Default
 				if (AllowCommandChange)
 				{
 					currentCommand.CopyFrom(requestedCommand);
-					
+
 					// it may be possible that client is delayed by one beat
 					var firstBeat = currentCommand[0].CorrectedBeat;
-					var offset = process.Beat - (firstBeat + (settings.MaxBeats - 1));
+					var offset    = process.Beat - (firstBeat + (settings.MaxBeats - 1));
 					if (offset != 0)
 					{
 						for (var com = 0; com != currentCommand.Length; com++)
 						{
 							var tmp = currentCommand[com];
-							tmp.CorrectedBeat += offset; // should we also modify tmp.OriginalBeat ?
-							currentCommand[com] = tmp;
+							tmp.CorrectedBeat   += offset;
+							tmp.OriginalBeat    += offset;
+							currentCommand[com] =  tmp;
 						}
 					}
+
 					Debug.Log($"{firstBeat} {process.Beat} {offset}");
 				}
 				else
