@@ -151,8 +151,6 @@ namespace Patapon4TLB.Default
 							currentCommand[com] =  tmp;
 						}
 					}
-
-					Debug.Log($"{firstBeat} {process.Beat} {offset}");
 				}
 				else
 				{

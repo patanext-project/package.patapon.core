@@ -56,13 +56,6 @@ namespace Patapon4TLB.UI
 				{
 					IsCommandClient = currentCommand.ActiveAtBeat <= Beat && predictedCommand.EndBeat > Beat;
 				}
-
-				if (LastBeatTime == Time.time)
-				{
-					Debug.Log($"({gameCommandState.StartBeat} {gameCommandState.EndBeat}) ({predictedCommand.StartBeat} {predictedCommand.EndBeat})");
-				}
-
-				//Debug.Log($"{currentCommand.ActiveAtBeat} {Beat} && {gameCommandState.EndBeat} > {Beat} == {IsCommandServer} {IsCommandClient}");
 			}
 
 			protected override void OnCreate()
