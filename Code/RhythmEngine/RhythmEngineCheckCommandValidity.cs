@@ -5,6 +5,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 
@@ -124,21 +125,10 @@ namespace Patapon4TLB.Default
 
 				state.IsNewPressure = false;
 
-				var targetBeat = process.Beat;
+
 				var lastCommand = currCommandArray[currCommandArray.Length - 1].Data;
-				/*if (lastCommand.OriginalBeat != lastCommand.CorrectedBeat) // if it's the same beat, shift the offset
-				{
-					targetBeat++;
-				}
+				var targetBeat  = lastCommand.CorrectedBeat + 1;
 
-				targetBeat = (lastCommand.Time / settings.BeatInterval) + 1;
-
-				var left = lastCommand.Time / (float) settings.BeatInterval;
-				
-				Debug.Log($"target: {targetBeat} (t: {lastCommand.Time}) original: {lastCommand.CorrectedBeat} left: {left}");
-				*/
-				targetBeat = lastCommand.CorrectedBeat + 1;
-				
 				rhythmCurrentCommand.ActiveAtBeat  = targetBeat;
 				rhythmCurrentCommand.CommandTarget = result;
 
@@ -157,6 +147,22 @@ namespace Patapon4TLB.Default
 					clientRequest.Dispose();
 				}
 
+				var power = 0.0f;
+				for (var i = 0; i != currCommandArray.Length; i++)
+				{
+					// perfect
+					if (currCommandArray[i].Data.GetAbsoluteScore() <= 0.15f)
+					{
+						power += 1.0f;
+					}
+					else
+					{
+						power += 0.25f;
+					}
+				}
+
+				rhythmCurrentCommand.Power = math.clamp((int)math.ceil(power * 100 / currCommandArray.Length), 0, 100);
+				
 				currCommandArray.Clear();
 			}
 		}

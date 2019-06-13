@@ -15,7 +15,7 @@ namespace Patapon4TLB.Default
 	[UpdateAfter(typeof(RhythmEngineCheckCommandValidity))]
 	public class RhythmEngineUpdateCommandState : JobGameBaseSystem
 	{
-		private struct Job : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineState, RhythmEngineProcess, GameCommandState, RhythmCurrentCommand>
+		private struct Job : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineState, RhythmEngineProcess, GameCommandState, RhythmCurrentCommand, GameComboState>
 		{
 			public bool IsServer;
 
@@ -31,7 +31,8 @@ namespace Patapon4TLB.Default
 			public void Execute(Entity entity, int index,
 			                    // components
 			                    ref RhythmEngineSettings settings,     ref RhythmEngineState    state, ref RhythmEngineProcess process,
-			                    ref GameCommandState     commandState, ref RhythmCurrentCommand rhythm)
+			                    ref GameCommandState     commandState, ref RhythmCurrentCommand rhythm,
+			                    ref GameComboState       comboState)
 			{
 				if (state.IsPaused
 				    || (!IsServer && settings.UseClientSimulation && !SimulateTagFromEntity.Exists(entity)))
@@ -68,7 +69,7 @@ namespace Patapon4TLB.Default
 				{
 					PredictedFromEntity[entity] = new GamePredictedCommandState
 					{
-						IsActive = isActive,
+						IsActive  = isActive,
 						StartBeat = rhythm.ActiveAtBeat,
 						// todo: we shouldn't do that
 						EndBeat = (rhythm.CustomEndBeat == 0 || rhythm.CustomEndBeat == -1) ? rhythm.ActiveAtBeat + beatLength : rhythm.CustomEndBeat
@@ -76,9 +77,37 @@ namespace Patapon4TLB.Default
 				}
 				else
 				{
+					var isNew = isActive && (commandState.StartBeat != rhythm.ActiveAtBeat || !commandState.IsActive);
+
 					commandState.IsActive  = isActive;
 					commandState.StartBeat = rhythm.ActiveAtBeat;
 					commandState.EndBeat   = rhythm.CustomEndBeat == -1 ? rhythm.ActiveAtBeat + beatLength : rhythm.CustomEndBeat;
+
+					if (isNew)
+					{
+						var p = rhythm.Power - 50;
+						if (p > 0 && comboState.Score < 0)
+							comboState.Score = 0;
+						
+						comboState.Chain++;
+						comboState.Score += p;
+						if (!comboState.IsFever)
+						{
+							comboState.ChainToFever++;
+						}
+
+						if (comboState.IsFever)
+						{
+							// add jinn energy
+						}
+
+						if (comboState.ChainToFever >= 9)
+						{
+							comboState.IsFever = true;
+						}
+						
+						Debug.Log(comboState.Score);
+					}
 				}
 			}
 		}

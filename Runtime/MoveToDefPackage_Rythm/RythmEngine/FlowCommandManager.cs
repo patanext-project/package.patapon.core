@@ -41,6 +41,7 @@ namespace package.patapon.core
         /// </summary>
         /// <remarks>
         /// This is not associated at all with fever state, the command will check if there is fever or not on the engine.
+        /// The game will check if it can enable hero mode if power is 100.
         /// </remarks>
         public int Power;
     }
@@ -50,6 +51,37 @@ namespace package.patapon.core
         public bool IsActive;
         public int  StartBeat;
         public int  EndBeat;
+    }
+
+    public struct GameComboState : IComponentData
+    {
+        /// <summary>
+        /// The score of the current combo. A perfect combo do a +5
+        /// </summary>
+        public int Score;
+
+        /// <summary>
+        /// The current chain of the combo
+        /// </summary>
+        public int Chain;
+
+        /// <summary>
+        /// It will be used to know when we should have the fever, it shouldn't be used to know the current chain.
+        /// </summary>
+        public int ChainToFever;
+
+        /// <summary>
+        /// The fever state, enabled if we have a score or 6 or more.
+        /// </summary>
+        public bool IsFever;
+
+        public int JinnEnergy;
+        public int JinnEnergyMax;
+    }
+
+    public struct GameComboChain : IBufferElementData
+    {
+        
     }
 
     public struct GameCommandState : IComponentData

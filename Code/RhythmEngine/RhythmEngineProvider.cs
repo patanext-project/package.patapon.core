@@ -37,6 +37,7 @@ namespace Patapon4TLB.Default
 				ComponentType.ReadWrite<RhythmEngineSimulateTag>(),
 				ComponentType.ReadWrite<ShardRhythmEngine>(),
 				ComponentType.ReadWrite<GameCommandState>(),
+				ComponentType.ReadWrite<GameComboState>(),
 				ComponentType.ReadWrite<RhythmCurrentCommand>(),
 				ComponentType.ReadWrite<GhostComponent>(),
 			};

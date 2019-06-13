@@ -106,7 +106,7 @@ namespace Patapon4TLB.UI
 				}
 				else
 				{
-					m_BeatTime += Time.deltaTime * 2f + m_BeatTimeExp;
+					m_BeatTime += Time.deltaTime * 2f + (m_BeatTimeExp * 0.5f);
 					m_BeatTimeExp += Time.deltaTime;
 				}
 

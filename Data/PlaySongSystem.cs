@@ -27,18 +27,66 @@ namespace Patapon4TLB.Default.Test
 		public int Tick;
 
 		public bool HasActiveRhythmEngine;
-		
+		public bool IsCommand;
+		public bool IsNewCommand;
+		public bool IsNewBeat;
+
+		public int CommandStartBeat;
+
+		private int m_LastBeat;
+		private int m_LastCommandStartBeat;
+
 		protected override void OnUpdate()
 		{
 			HasActiveRhythmEngine = false;
+			IsNewCommand = false;
+			IsNewBeat = false;
+			
 			Entities.WithAll<RhythmEngineSimulateTag>().ForEach((ref RhythmEngineSettings settings, ref RhythmEngineState state, ref RhythmEngineProcess process) =>
 			{
+				if (process.Beat != m_LastBeat)
+				{
+					m_LastBeat = process.Beat;
+					IsNewBeat  = true;
+				}
+
 				Beat = process.Beat;
-				Tick = process.TimeTick;
+
+				Tick     = process.TimeTick;
 				Interval = settings.BeatInterval;
 
 				HasActiveRhythmEngine = process.StartTime != 0;
-			});		
+			});
+
+			Entities.WithAll<RhythmEngineSimulateTag>().ForEach((ref GameCommandState gameCommandState, ref RhythmCurrentCommand currentCommand, ref GamePredictedCommandState predictedCommand) =>
+			{
+				var tmp = gameCommandState.StartBeat <= Beat && gameCommandState.EndBeat > Beat      // server
+				            || currentCommand.ActiveAtBeat <= Beat && predictedCommand.EndBeat > Beat; // client
+
+				CommandStartBeat = math.max(currentCommand.ActiveAtBeat, gameCommandState.StartBeat);
+
+				if (tmp && !IsCommand || (IsCommand && CommandStartBeat != m_LastCommandStartBeat))
+				{
+					m_LastCommandStartBeat = CommandStartBeat;
+					IsNewCommand = true;
+				}
+
+				IsCommand = tmp;
+			});
+		}
+
+		public RhythmCommandData GetCommandData()
+		{
+			if (!IsCommand)
+				throw new InvalidOperationException("???");
+
+			var result = default(RhythmCommandData);
+			Entities.WithAll<RhythmEngineSimulateTag>().ForEach((ref RhythmCurrentCommand currentCommand) =>
+			{
+				result = EntityManager.GetComponentData<RhythmCommandData>(currentCommand.CommandTarget);
+			});
+
+			return result;
 		}
 	}
 
@@ -49,6 +97,7 @@ namespace Patapon4TLB.Default.Test
 		public SongDescription CurrentSong;
 
 		private AudioSource[] m_BgmSources;
+		private AudioSource m_CommandSource;
 
 		protected override void OnCreate()
 		{
@@ -88,7 +137,9 @@ namespace Patapon4TLB.Default.Test
 				}
 			}
 
-			m_BgmSources = new[] {CreateAudioSource("Background Music Primary", 1), CreateAudioSource("Background Music Secondary", 1)};
+			m_BgmSources         = new[] {CreateAudioSource("Background Music Primary", 1), CreateAudioSource("Background Music Secondary", 1)};
+			m_CommandSource      = CreateAudioSource("Command", 1);
+			m_CommandSource.loop = false;
 		}
 
 		private int m_CurrentBeat;
@@ -97,22 +148,8 @@ namespace Patapon4TLB.Default.Test
 
 		private AudioClip m_LastClip;
 
-		protected override void OnUpdate()
+		private void UpdateBgm(PlaySongClientSystem clientSystem)
 		{
-			if (CurrentSong.AreAddressableCompleted && !CurrentSong.IsFinalized)
-			{
-				CurrentSong.FinalizeOperation();
-				Debug.Log("Finalize");
-			}
-
-			if (!CurrentSong.IsFinalized)
-				return;
-
-			var activeClientWorld = GetActiveClientWorld();
-			if (activeClientWorld == null)
-				return;
-
-			var clientSystem = activeClientWorld.GetOrCreateSystem<PlaySongClientSystem>();
 			if (!clientSystem.HasActiveRhythmEngine)
 			{
 				m_BgmSources[0].Stop();
@@ -166,6 +203,57 @@ namespace Patapon4TLB.Default.Test
 			{
 				
 			}
+		}
+
+		private void UpdateCommand(PlaySongClientSystem clientSystem)
+		{
+			if (!clientSystem.IsCommand)
+			{
+				if (m_CommandSource.isPlaying)
+					m_CommandSource.Stop();
+			}
+			
+			if (!clientSystem.IsNewCommand)
+			{
+				return;
+			}
+
+			var commandTarget = default(AudioClip);
+			var data          = clientSystem.GetCommandData();
+
+			var id = data.Identifier.ToString();
+			if (CurrentSong.CommandsAudio.ContainsKey(id))
+			{
+				commandTarget = CurrentSong.CommandsAudio[id][SongDescription.CmdKeyFever][0];
+			}
+
+			if (commandTarget == null)
+				return;
+
+			var nextBeatDelay = ((clientSystem.CommandStartBeat) * clientSystem.Interval - clientSystem.Tick) * 0.001f;
+			m_CommandSource.clip = commandTarget;
+			m_CommandSource.PlayScheduled(AudioSettings.dspTime + nextBeatDelay);
+		}
+
+		protected override void OnUpdate()
+		{
+			if (CurrentSong.AreAddressableCompleted && !CurrentSong.IsFinalized)
+			{
+				CurrentSong.FinalizeOperation();
+				Debug.Log("Finalize");
+			}
+
+			if (!CurrentSong.IsFinalized)
+				return;
+
+			var activeClientWorld = GetActiveClientWorld();
+			if (activeClientWorld == null)
+				return;
+
+			var clientSystem = activeClientWorld.GetOrCreateSystem<PlaySongClientSystem>();
+
+			UpdateBgm(clientSystem);
+			UpdateCommand(clientSystem);
 		}
 
 		public void LoadSong(string fileId)

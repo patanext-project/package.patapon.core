@@ -29,6 +29,7 @@ namespace Patapon4TLB.Default.Snapshot
 				ComponentType.ReadWrite<ShardRhythmEngine>(),
 				ComponentType.ReadWrite<FlowCommandManagerTypeDefinition>(),
 				ComponentType.ReadWrite<GameCommandState>(),
+				ComponentType.ReadWrite<GameComboState>(),
 				ComponentType.ReadWrite<GamePredictedCommandState>(),
 				ComponentType.ReadWrite<RhythmCurrentCommand>(),
 				ComponentType.ReadWrite<ReplicatedEntityComponent>()
