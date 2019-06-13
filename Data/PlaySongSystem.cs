@@ -86,12 +86,12 @@ namespace Patapon4TLB.Default.Test
 				}
 			}
 
-			m_BgmSources = new[] {CreateAudioSource("Background Music Primary", 1), CreateAudioSource("Background Music Secondary", 1)};
+			m_BgmSources = new[] {CreateAudioSource("Background Music Primary", 0.33f), CreateAudioSource("Background Music Secondary", 0.33f)};
 		}
 
 		private int m_CurrentBeat;
 		private int m_Flip;
-		private const int CmdBeats = 4;
+		private const int SongBeatSize = 8;
 
 		private AudioClip m_LastClip;
 
@@ -123,15 +123,17 @@ namespace Patapon4TLB.Default.Test
 			var targetAudio = default(AudioClip);
 			var targetTime  = 0.0f;
 
-			if (clientSystem.Beat >= CurrentSong.BgmEntranceClips.Count * CmdBeats)
+			if (clientSystem.Beat >= CurrentSong.BgmEntranceClips.Count * SongBeatSize)
 			{
 				var part          = CurrentSong.BgmComboParts[score];
-				var commandLength = clientSystem.Beat != 0 ? clientSystem.Beat / CmdBeats : 0;
-				targetAudio = part.Clips[commandLength % part.Clips.Count];
+				var commandLength = clientSystem.Beat != 0 ? clientSystem.Beat / SongBeatSize : 0;
+				//targetAudio = part.Clips[commandLength % part.Clips.Count];
+				
+				targetAudio = CurrentSong.BgmFeverLoopClips[commandLength % CurrentSong.BgmFeverLoopClips.Count];
 			}
 			else
 			{
-				var commandLength = clientSystem.Beat != 0 ? clientSystem.Beat / CmdBeats : 0;
+				var commandLength = clientSystem.Beat != 0 ? clientSystem.Beat / SongBeatSize : 0;
 				targetAudio = CurrentSong.BgmEntranceClips[commandLength % CurrentSong.BgmEntranceClips.Count];
 			}
 
@@ -151,11 +153,16 @@ namespace Patapon4TLB.Default.Test
 					m_BgmSources[1 - m_Flip].SetScheduledEndTime(AudioSettings.dspTime + nextBeatDelay);
 					m_BgmSources[m_Flip].clip = m_LastClip;
 					
-					Debug.Log(nextBeatDelay);
 					m_BgmSources[m_Flip].PlayScheduled(AudioSettings.dspTime + nextBeatDelay);
 				}
 
 				m_Flip = 1 - m_Flip;
+			}
+
+			var currBgmSource = m_BgmSources[1 - m_Flip];
+			if (currBgmSource.clip != null)
+			{
+				
 			}
 		}
 

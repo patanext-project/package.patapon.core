@@ -27,7 +27,6 @@ namespace Patapon4TLB.Default
 					return;
 
 				process.TimeTick = (int) (CurrentTime - process.StartTime);
-				Debug.Log($"{CurrentTime} {process.StartTime}");
 				if (settings.BeatInterval <= 0.0001f)
 				{
 					NonBurst_ThrowWarning(entity);
