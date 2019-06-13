@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using StormiumTeam.GameBase;
+using Unity.Collections;
+using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -12,6 +14,7 @@ using Object = UnityEngine.Object;
 
 namespace Patapon4TLB.Default.Test
 {
+	[AlwaysUpdateSystem]
 	public class PlaySongSystem : GameBaseSystem
 	{
 		[Serializable]
@@ -34,17 +37,70 @@ namespace Patapon4TLB.Default.Test
 
 		public class SongDescription : IDisposable
 		{
+			private enum OpType
+			{
+				BgmFull,
+				BgmSlice,
+				Command,
+			}
+
+			private enum OpBgmSliceType
+			{
+				NormalEntrance,
+				Normal,
+				FeverEntrance,
+				Fever
+			}
+
+			private struct OperationData
+			{
+				public OpType Type;
+
+				public OpBgmSliceType BgmSliceType;
+				public int            BgmSliceNormalCmdRank;
+				public int            BgmSliceOrder;
+			}
+
+			public struct BgmComboPart
+			{
+				public int ScoreNeeded;
+				public int Start, End;
+			}
+
+			private List<IAsyncOperation> m_AddrOperations;
+			private List<OperationData>   m_OperationData;
+			private bool                  m_IsFinalized;
+
+			public bool AreAddressableCompleted
+			{
+				get
+				{
+					var done = 0;
+					for (var i = 0; i != m_AddrOperations.Count; i++)
+						if (m_AddrOperations[i].IsDone)
+							done++;
+					return done == m_AddrOperations.Count;
+				}
+			}
+
+			public bool IsFinalized => m_IsFinalized;
+
 			public readonly DescriptionFileJsonData File;
-			
+
 			// example of the possibilities: normal, pre-fever, fever
 			public Dictionary<string, Dictionary<string, List<AudioClip>>> CommandsAudio;
 
-			public AudioClip Bgm;
-			public int FeverStartBeat;
+			public AudioClip          Bgm;
+			public int                BgmFeverEntrance;
+			public int                BgmFeverLoopStart;
+			public List<BgmComboPart> BgmComboParts;
 
 			public SongDescription(DescriptionFileJsonData file)
 			{
 				File = file;
+
+				m_AddrOperations = new List<IAsyncOperation>();
+				m_OperationData  = new List<OperationData>();
 
 				CommandsAudio = new Dictionary<string, Dictionary<string, List<AudioClip>>>();
 				foreach (var fileCmdAudio in file.commandsAudio)
@@ -81,19 +137,66 @@ namespace Patapon4TLB.Default.Test
 				if (file.bgmAudioSliced == null)
 					throw new Exception("sliced and full values are not set!");
 
-				// We actually merge all the parts
-				var bgmAudioClips = new List<AudioClip>();
-				if (!file.bgmAudioSliced.ContainsKey("normal"))
-					throw new Exception("normal key was not set for bgmAudioSliced");
+				var  bgmAudioClipCount = 0;
+				bool hasEntrancePart   = false, hasNormalPart = false, hasFeverEntrancePart = false, hasFeverPart = false;
+				foreach (var bgm in file.bgmAudioSliced)
+				{
+					bgmAudioClipCount += bgm.Value.Length;
+					if (bgm.Key == "entrance")
+						hasEntrancePart = true;
+					if (bgm.Key.StartsWith("normal"))
+						hasNormalPart = true;
+					if (bgm.Key == "fever_entrance")
+						hasFeverEntrancePart = true;
+					if (bgm.Key == "fever")
+						hasFeverPart = true;
+				}
 
-
-				var normalAudio = file.bgmAudioSliced["normal"];
-				var feverAudio  = file.bgmAudioSliced["fever"];
-
-				bgmAudioClips.AddRange(new AudioClip[normalAudio.Length + feverAudio.Length]);
+				if (!hasNormalPart && !hasFeverPart)
+					throw new Exception($"e: {hasEntrancePart}, n: {hasNormalPart}, fe: {hasFeverEntrancePart}, f: {hasFeverPart}");
 
 				var order = 0;
-				foreach (var audio in normalAudio)
+				foreach (var bgm in file.bgmAudioSliced)
+				{
+					foreach (var bgmAudioFile in bgm.Value)
+					{
+						var data = new OperationData {Type = OpType.BgmSlice, BgmSliceOrder = order};
+						if (bgm.Key == "entrance")
+						{
+							data.BgmSliceType = OpBgmSliceType.NormalEntrance;
+						}
+						else if (bgm.Key.StartsWith("normal"))
+						{
+							data.BgmSliceType = OpBgmSliceType.Normal;
+							if (bgm.Key == "normal") data.BgmSliceNormalCmdRank = 0;
+							else if (bgm.Key.StartsWith("normal_"))
+							{
+								var strRank = bgm.Key.Replace("normal_", string.Empty);
+								if (int.TryParse(strRank, out var rank))
+								{
+									data.BgmSliceNormalCmdRank = rank;
+								}
+							}
+						}
+						else if (bgm.Key == "fever_entrance")
+						{
+							data.BgmSliceType = OpBgmSliceType.FeverEntrance;
+						}
+						else if (bgm.Key == "fever")
+						{
+							data.BgmSliceType = OpBgmSliceType.Fever;
+						}
+
+						var op = Addressables.LoadAsset<AudioClip>(bgmAudioFile.Replace("{p}", $"songs:{file.identifier}/bgm/"));
+
+						m_OperationData.Add(data);
+						m_AddrOperations.Add(op);
+
+						order++;
+					}
+				}
+
+				/*foreach (var audio in normalAudio)
 				{
 					order++;
 
@@ -114,7 +217,7 @@ namespace Patapon4TLB.Default.Test
 					};
 				}
 
-				var feverOrder = order + 1;
+				BgmFeverLoopStart = order + 1;
 				foreach (var audio in feverAudio)
 				{
 					order++;
@@ -130,11 +233,89 @@ namespace Patapon4TLB.Default.Test
 
 						Bgm = AudioClipUtility.Combine("Combined", bgmAudioClips.Where(t => t != null).ToArray());
 					};
+				}*/
+			}
+
+			public void FinalizeOperation()
+			{
+				if (!AreAddressableCompleted)
+					throw new InvalidOperationException("We haven't loaded all addressable asset yet!");
+
+				var bgmPriorities = new NativeList<PriorityBgmSlice>(Allocator.TempJob);
+				var bgmAudioClips = new List<AudioClip>();
+
+				var count = m_AddrOperations.Count;
+				for (var op = 0; op != count; op++)
+				{
+					var opAddr = m_AddrOperations[op];
+					var opData = m_OperationData[op];
+
+					if (!opAddr.IsValid)
+					{
+						Debug.Log($"An operation is not valid. (status={opAddr.Status})");
+						continue;
+					}
+
+					switch (opData.Type)
+					{
+						case OpType.BgmSlice:
+						{
+							bgmPriorities.Add(new PriorityBgmSlice
+							{
+								OpIndex = op,
+
+								Type    = opData.BgmSliceType,
+								CmdRank = opData.BgmSliceNormalCmdRank,
+								Order   = opData.BgmSliceOrder
+							});
+							break;
+						}
+					}
 				}
+
+				((NativeArray<PriorityBgmSlice>) bgmPriorities).Sort();
+				bgmAudioClips.Capacity = bgmPriorities.Length;
+
+				for (var i = 0; i != bgmPriorities.Length; i++)
+				{
+					bgmAudioClips.Add((AudioClip) m_AddrOperations[bgmPriorities[i].OpIndex].Result);
+				}
+
+				bgmPriorities.Dispose();
+
+				Bgm = AudioClipUtility.Combine("Combined", bgmAudioClips.ToArray());
+
+				m_IsFinalized = true;
 			}
 
 			public void Dispose()
 			{
+				for (var i = 0; i != m_AddrOperations.Count; i++)
+				{
+					m_AddrOperations[i].Release();
+					if (m_AddrOperations[i].Result != null)
+						Addressables.ReleaseAsset(m_AddrOperations[i].Result);
+				}
+			}
+
+			private struct PriorityBgmSlice : IComparable<PriorityBgmSlice>
+			{
+				public OpBgmSliceType Type;
+				public int            CmdRank;
+				public int            Order;
+
+				public int OpIndex;
+
+				public int CompareTo(PriorityBgmSlice other)
+				{
+					if (Type > other.Type)
+						return 1;
+
+					if (CmdRank > other.CmdRank)
+						return 1;
+
+					return Order > other.Order ? 1 : -1;
+				}
 			}
 		}
 
@@ -179,23 +360,23 @@ namespace Patapon4TLB.Default.Test
 			}
 
 			m_BgmSource = CreateAudioSource("Bgm", 1);
-			
-			RequireForUpdate(GetEntityQuery(typeof(Translation)));
 		}
 
 		private bool m_playTest;
 		protected override void OnUpdate()
 		{
-			Debug.Log(CurrentSong.Bgm);
-			if (!m_playTest && CurrentSong.Bgm != null)
+			if (CurrentSong.AreAddressableCompleted && !CurrentSong.IsFinalized)
+			{
+				CurrentSong.FinalizeOperation();
+			}
+			
+			if (!m_playTest && CurrentSong.AreAddressableCompleted)
 			{
 				m_playTest = true;
 
-				Debug.Log("State: " + CurrentSong.Bgm.loadState);
 				CurrentSong.Bgm.LoadAudioData();
-				
-				m_BgmSource.PlayOneShot(CurrentSong.Bgm);
-				SaveAudioToWav.Save(Application.streamingAssetsPath + "/combined.bgm", CurrentSong.Bgm);
+				m_BgmSource.clip = CurrentSong.Bgm;
+				m_BgmSource.Play();
 			}
 		}
 
