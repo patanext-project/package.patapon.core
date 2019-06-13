@@ -30,9 +30,9 @@ namespace Patapon4TLB.Default
 
 	public struct RhythmRpcServerSendCommandChain : IRpcCommand
 	{
-		public bool                             IsValid;
+		public bool                               IsValid;
 		public NativeArray<RhythmCommandSequence> ResultBuffer;
-		public RhythmCommandData CommandData;
+		public RhythmCommandData                  CommandData;
 
 		public int ChainId;
 		public int TypeId;
@@ -49,7 +49,7 @@ namespace Patapon4TLB.Default
 			{
 				ChainId = ChainId,
 				TypeId  = TypeId,
-				
+
 				CommandData = CommandData
 			});
 
@@ -68,6 +68,12 @@ namespace Patapon4TLB.Default
 				writer.Write(ResultBuffer[i].Key);
 				writer.Write(ResultBuffer[i].BeatRange.start);
 				writer.Write(ResultBuffer[i].BeatRange.length);
+			}
+
+			writer.Write(CommandData.Identifier.Length);
+			for (var c = 0; c != CommandData.Identifier.Length; c++)
+			{
+				writer.Write((uint) CommandData.Identifier[c]);
 			}
 
 			writer.Write(CommandData.BeatLength);
@@ -89,7 +95,14 @@ namespace Patapon4TLB.Default
 				};
 			}
 
-			CommandData = new RhythmCommandData {BeatLength = reader.ReadInt(ref ctx)};
+			var idLength     = reader.ReadInt(ref ctx);
+			var nativeString = new NativeString64 {Length = idLength};
+			for (var c = 0; c != idLength; c++)
+			{
+				nativeString[c] = (char) reader.ReadUInt(ref ctx);
+			}
+
+			CommandData = new RhythmCommandData {Identifier = nativeString, BeatLength = reader.ReadInt(ref ctx)};
 		}
 	}
 
@@ -211,7 +224,7 @@ namespace Patapon4TLB.Default
 		{
 			if (m_CommandRequest.CalculateLength() <= 0)
 				return;
-			
+
 			EntityManager.CompleteAllJobs();
 
 			var validEntities = new NativeList<Entity>(Allocator.TempJob);
@@ -253,7 +266,7 @@ namespace Patapon4TLB.Default
 					typeof(CommandChainGroup)
 				);*/
 
-				var requestData   = EntityManager.GetComponentData<RequestCreateCommand>(validEntities[ent]);
+				var requestData = EntityManager.GetComponentData<RequestCreateCommand>(validEntities[ent]);
 				var requestBuffer = EntityManager.GetBuffer<RhythmCommandSequenceContainer>(validEntities[ent])
 				                                 .Reinterpret<RhythmCommandSequence>()
 				                                 .ToNativeArray(Allocator.TempJob);
@@ -262,10 +275,10 @@ namespace Patapon4TLB.Default
 				EntityManager.SetOrAddComponentData(cmdEntity, new FlowClientCheckCommandTag());
 				EntityManager.SetOrAddComponentData(cmdEntity, new CommandChainGroup());
 				EntityManager.SetOrAddComponentData(cmdEntity, new RhythmCommandData());
-				
-				EntityManager.SetComponentData(cmdEntity, new RhythmCommandId {Value     = requestData.TypeId});
+
+				EntityManager.SetComponentData(cmdEntity, new RhythmCommandId {Value   = requestData.TypeId});
 				EntityManager.SetComponentData(cmdEntity, new CommandChainGroup {Value = requestData.ChainId});
-				EntityManager.SetComponentData(cmdEntity, new RhythmCommandData {BeatLength = requestData.CommandData.BeatLength});
+				EntityManager.SetComponentData(cmdEntity, requestData.CommandData);
 
 				var cmdBuffer = EntityManager.GetBuffer<RhythmCommandSequenceContainer>(cmdEntity);
 				cmdBuffer.CopyFrom(EntityManager.GetBuffer<RhythmCommandSequenceContainer>(validEntities[ent]));

@@ -15,7 +15,7 @@ namespace Patapon4TLB.Default
 
 			var builder = World.GetOrCreateSystem<RhythmCommandBuilder>();
 
-			var march = Build(builder, new RhythmCommandData {BeatLength = 4}, new[]
+			var march = Build(builder, new RhythmCommandData {Identifier = new NativeString64("march"), BeatLength = 4}, new[]
 			{
 				new RhythmCommandSequence(0, RhythmKeys.Left),
 				new RhythmCommandSequence(1, RhythmKeys.Left),
@@ -24,7 +24,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(march, typeof(MarchCommand));
 
-			var attack = Build(builder, new RhythmCommandData {BeatLength = 4}, new[]
+			var attack = Build(builder, new RhythmCommandData {Identifier = new NativeString64("attack"), BeatLength = 4}, new[]
 			{
 				new RhythmCommandSequence(0, RhythmKeys.Right),
 				new RhythmCommandSequence(1, RhythmKeys.Right),
@@ -33,7 +33,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(attack, typeof(AttackCommand));
 
-			var defend = Build(builder, new RhythmCommandData {BeatLength = 4}, new[]
+			var defend = Build(builder, new RhythmCommandData {Identifier = new NativeString64("defend"), BeatLength = 4}, new[]
 			{
 				new RhythmCommandSequence(0, RhythmKeys.Up),
 				new RhythmCommandSequence(1, RhythmKeys.Up),
@@ -42,7 +42,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(defend, typeof(DefendCommand));
 
-			var charge = Build(builder, new RhythmCommandData {BeatLength = 4}, new[]
+			var charge = Build(builder, new RhythmCommandData {Identifier = new NativeString64("charge"), BeatLength = 4}, new[]
 			{
 				new RhythmCommandSequence(0, RhythmKeys.Right),
 				new RhythmCommandSequence(1, RhythmKeys.Right),
@@ -51,7 +51,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(charge, typeof(ChargeCommand));
 
-			var retreat = Build(builder, new RhythmCommandData {BeatLength = 4}, new[]
+			var retreat = Build(builder, new RhythmCommandData {Identifier = new NativeString64("retreat"), BeatLength = 4}, new[]
 			{
 				new RhythmCommandSequence(0, RhythmKeys.Right),
 				new RhythmCommandSequence(1, RhythmKeys.Left),
@@ -60,7 +60,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(retreat, typeof(RetreatCommand));
 
-			var jump = Build(builder, new RhythmCommandData {BeatLength = 4}, new[]
+			var jump = Build(builder, new RhythmCommandData {Identifier = new NativeString64("jump"), BeatLength = 4}, new[]
 			{
 				new RhythmCommandSequence(0, RhythmKeys.Down),
 				new RhythmCommandSequence(1, RhythmKeys.Down),
@@ -69,7 +69,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(jump, typeof(JumpCommand));
 
-			var party = Build(builder, new RhythmCommandData {BeatLength = 4}, new[]
+			var party = Build(builder, new RhythmCommandData {Identifier = new NativeString64("party"), BeatLength = 4}, new[]
 			{
 				new RhythmCommandSequence(0, RhythmKeys.Left),
 				new RhythmCommandSequence(1, RhythmKeys.Right),
@@ -78,7 +78,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(party, typeof(PartyCommand));
 
-			var summon = Build(builder, new RhythmCommandData {BeatLength = 4}, new[]
+			var summon = Build(builder, new RhythmCommandData {Identifier = new NativeString64("summon"), BeatLength = 4}, new[]
 			{
 				new RhythmCommandSequence(0, RhythmKeys.Down),
 				new RhythmCommandSequence(1, RhythmKeys.Down),
@@ -88,7 +88,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(summon, typeof(SummonCommand));
 
-			var backward = Build(builder, new RhythmCommandData {BeatLength = 4}, new[]
+			var backward = Build(builder, new RhythmCommandData {Identifier = new NativeString64("backward"), BeatLength = 4}, new[]
 			{
 				new RhythmCommandSequence(0, RhythmKeys.Up),
 				new RhythmCommandSequence(1, RhythmKeys.Left),
@@ -97,7 +97,7 @@ namespace Patapon4TLB.Default
 			});
 			EntityManager.AddComponent(backward, typeof(BackwardCommand));
 
-			var skip = Build(builder, new RhythmCommandData {BeatLength = 3}, new[]
+			var skip = Build(builder, new RhythmCommandData {Identifier = new NativeString64("skip"), BeatLength = 3}, new[]
 			{
 				new RhythmCommandSequence(0, RhythmKeys.Up),
 				new RhythmCommandSequence(1, RhythmKeys.Up),

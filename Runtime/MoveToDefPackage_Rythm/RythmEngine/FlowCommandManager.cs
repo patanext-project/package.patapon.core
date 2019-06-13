@@ -86,6 +86,7 @@ namespace package.patapon.core
 
     public struct RhythmCommandData : IComponentData
     {
-        public int BeatLength;
+        public NativeString64 Identifier;
+        public int            BeatLength;
     }
 }
