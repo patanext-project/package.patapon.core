@@ -141,8 +141,6 @@ namespace package.patapon.core
         public int TimeTick;
         public int StartTime;
 
-        public bool IsNewProcess;
-
         public double TimeReal => TimeTick * 0.001;
     }
 

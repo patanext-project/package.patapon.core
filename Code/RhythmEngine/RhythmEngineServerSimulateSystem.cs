@@ -44,6 +44,8 @@ namespace Patapon4TLB.Default
 				if (process.TimeTick != 0)
 				{
 					process.Beat = process.TimeTick / settings.BeatInterval;
+					if (process.TimeTick < 0)
+						process.Beat++;
 				}
 				else
 				{
