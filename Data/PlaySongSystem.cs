@@ -65,6 +65,8 @@ namespace Patapon4TLB.Default.Test
 
 			base.OnCreate();
 
+			AudioListener.volume = 0.5f;
+
 			Files = new Dictionary<string, DescriptionFileJsonData>();
 
 			var songFiles = Directory.GetFiles(Application.streamingAssetsPath + "/songs", "*.json", SearchOption.TopDirectoryOnly);
@@ -86,7 +88,7 @@ namespace Patapon4TLB.Default.Test
 				}
 			}
 
-			m_BgmSources = new[] {CreateAudioSource("Background Music Primary", 0.33f), CreateAudioSource("Background Music Secondary", 0.33f)};
+			m_BgmSources = new[] {CreateAudioSource("Background Music Primary", 1), CreateAudioSource("Background Music Secondary", 1)};
 		}
 
 		private int m_CurrentBeat;

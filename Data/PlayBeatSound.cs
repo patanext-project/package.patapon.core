@@ -87,9 +87,9 @@ namespace Patapon4TLB.Default.Test
 			m_EngineDelegate        = ForEachEngine;
 			m_PressureEventDelegate = ForEachPressureEvent;
 
-			m_AudioSourceOnNewBeat          = CreateAudioSource("On New Beat", 0.25f);
-			m_AudioSourceOnNewPressureDrum  = CreateAudioSource("On New Pressure -> Drum", 0.33f);
-			m_AudioSourceOnNewPressureVoice = CreateAudioSource("On New Pressure -> Voice", 0.33f);
+			m_AudioSourceOnNewBeat          = CreateAudioSource("On New Beat", 1);
+			m_AudioSourceOnNewPressureDrum  = CreateAudioSource("On New Pressure -> Drum", 1);
+			m_AudioSourceOnNewPressureVoice = CreateAudioSource("On New Pressure -> Voice", 1);
 		}
 
 		protected void OnLoadAssets()
