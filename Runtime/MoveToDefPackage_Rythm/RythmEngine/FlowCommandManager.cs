@@ -97,6 +97,8 @@ namespace package.patapon.core
 
 		    Chain++;
 		    Score = math.min(Score + p, 200);
+		    Score = p;
+		    
 		    if (!IsFever)
 		    {
 			    ChainToFever++;

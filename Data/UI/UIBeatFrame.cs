@@ -34,17 +34,25 @@ namespace Patapon4TLB.UI
 		public class ClientSystem : GameBaseSystem
 		{
 			public int   Beat;
-			public bool  IsFever;
 			public bool  IsCommandServer;
 			public bool  IsCommandClient;
 			public float LastBeatTime;
 
-			private EntityQueryBuilder.F_EDDDD<RhythmEngineProcess, GameCommandState, RhythmCurrentCommand, GamePredictedCommandState> m_Delegate;
+			public GameComboState ComboState;
+			
+			private EntityQueryBuilder.F_EDDDDDD<RhythmEngineProcess, GameCommandState, RhythmCurrentCommand, GamePredictedCommandState, GameComboState, GameComboPredictedClient> m_Delegate;
 
-			private void ForEach(Entity entity, ref RhythmEngineProcess process, ref GameCommandState gameCommandState, ref RhythmCurrentCommand currentCommand, ref GamePredictedCommandState predictedCommand)
+			private void ForEach(Entity entity, ref RhythmEngineProcess process, ref GameCommandState gameCommandState, ref RhythmCurrentCommand currentCommand, ref GamePredictedCommandState predictedCommand, ref GameComboState comboState, ref GameComboPredictedClient predictedCombo)
 			{
-				IsFever = false; // not yet amigo
-
+				if (gameCommandState.StartBeat >= currentCommand.ActiveAtBeat)
+				{
+					ComboState = comboState;
+				}
+				else
+				{
+					ComboState         = predictedCombo.State;
+				}
+				
 				if (process.Beat != Beat)
 				{
 					Beat         = process.Beat;
@@ -78,8 +86,9 @@ namespace Patapon4TLB.UI
 		{
 			private float m_BeatTime;
 			private float m_BeatTimeExp;
-			private int m_PreviousBeat;
-
+			private int m_PreviousBeat; 
+			private int m_CurrentHue;
+			
 			private static void SetGrayScale(ref Color c, float v)
 			{
 				c.r = v;
@@ -106,14 +115,28 @@ namespace Patapon4TLB.UI
 				}
 				else
 				{
-					m_BeatTime += Time.deltaTime * 2f + (m_BeatTimeExp * 0.5f);
+					if (uiBeatFrame.CurrPhase != Phase.Fever)
+					{
+						m_BeatTime += Time.deltaTime * 2f + (m_BeatTimeExp * 0.5f);
+					}
+					else
+					{
+						m_BeatTime += Time.deltaTime * 2f;
+					}
+
 					m_BeatTimeExp += Time.deltaTime;
 				}
 
 				uiBeatFrame.Color.a = 1;
-				if (!m_ClientSystem.IsFever && newBeat)
+				if (!m_ClientSystem.ComboState.IsFever && newBeat)
 				{
 					uiBeatFrame.CurrPhase = Phase.NoCommand;
+				}
+
+				if (m_ClientSystem.ComboState.IsFever && newBeat)
+				{
+					uiBeatFrame.CurrPhase = Phase.Fever;
+					m_CurrentHue += 1;
 				}
 
 				if ((m_ClientSystem.IsCommandServer || m_ClientSystem.IsCommandClient) && newBeat)
@@ -130,21 +153,33 @@ namespace Patapon4TLB.UI
 						uiBeatFrame.Lines[0].gameObject.SetActive(false);
 						uiBeatFrame.Lines[1].gameObject.SetActive(true);
 						uiBeatFrame.Lines[2].gameObject.SetActive(false);
-						
+
 						break;
 					}
 					case Phase.Command:
 					{
 						SetGrayScale(ref uiBeatFrame.Color, 0.5f);
-					
+
 						uiBeatFrame.Lines[0].gameObject.SetActive(true);
 						uiBeatFrame.Lines[1].gameObject.SetActive(false);
 						uiBeatFrame.Lines[2].gameObject.SetActive(true);
-						
+
 						break;
 					}
 					case Phase.Fever:
 					{
+						// goooo crazy
+						for (var i = 0; i != 3; i++)
+						{
+							uiBeatFrame.Color[i] = Mathf.Lerp(uiBeatFrame.Color[i], Random.Range(0f, 1f), Time.deltaTime * 25f);
+						}
+
+						uiBeatFrame.Color[m_CurrentHue % 3] = 1;
+
+						uiBeatFrame.Lines[0].gameObject.SetActive(true);
+						uiBeatFrame.Lines[1].gameObject.SetActive(true);
+						uiBeatFrame.Lines[2].gameObject.SetActive(true);
+
 						break;
 					}
 				}
