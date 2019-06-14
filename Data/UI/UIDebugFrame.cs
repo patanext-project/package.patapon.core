@@ -30,7 +30,8 @@ namespace Patapon4TLB.UI
 
 			public int ClientBeat, ServerBeat;
 			public int TimeDiff;
-			public int ClientCmdBeat, ClientCmd, ServerCmdBeat, ServerCmd;
+			public int ClientCmdBeat, ServerCmdBeat;
+			public bool IsCmdClient, IsCmdServer;
 
 			protected override void OnCreate()
 			{
@@ -49,21 +50,12 @@ namespace Patapon4TLB.UI
 					ServerBeat = predictedProcess.Beat;
 					TimeDiff   = process.TimeTick - (int) (predictedProcess.Time * 1000);
 
-					bool isCmdServer = false, isCmdClient = false;
 
-					isCmdServer = gameCommandState.StartBeat <= process.Beat && gameCommandState.EndBeat > process.Beat;
-					isCmdClient = currentCommand.ActiveAtBeat <= process.Beat && predictedCommand.EndBeat > process.Beat;
+					IsCmdServer = gameCommandState.StartBeat <= process.Beat && gameCommandState.EndBeat > process.Beat;
+					IsCmdClient = currentCommand.ActiveAtBeat <= process.Beat && predictedCommand.EndBeat > process.Beat;
 
 					ServerCmdBeat = gameCommandState.StartBeat;
 					ClientCmdBeat = currentCommand.ActiveAtBeat;
-					
-					ServerCmd = -1;
-
-					if (isCmdClient)
-					{
-						ClientCmd = EntityManager.GetComponentData<RhythmCommandId>(currentCommand.CommandTarget).Value;
-					}
-					else ClientCmd = -1;
 				});
 			}
 		}
@@ -98,7 +90,7 @@ namespace Patapon4TLB.UI
 
 				l = StringFormatter.Write(ref m_Buffer, 0, "C: {0}\nS: {1}\nC cmd|sb: {2}  {4}\nS cmd|sb: {3}  {5}",
 					m_InternalSystem.ClientBeat, m_InternalSystem.ServerBeat,
-					m_InternalSystem.ClientCmd, m_InternalSystem.ServerCmd,
+					m_InternalSystem.IsCmdClient ? 1 : 0, m_InternalSystem.IsCmdServer ? 1 : 0,
 					m_InternalSystem.ClientCmdBeat, m_InternalSystem.ServerCmdBeat);
 				fixed (char* ptr = m_Buffer)
 				{

@@ -6,6 +6,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Networking.Transport;
 using UnityEngine;
@@ -143,7 +144,7 @@ namespace Patapon4TLB.Default
 					// it may be possible that client is delayed by one beat
 					var lastCmdTime = currentCommand[currentCommand.Length - 1].Time;
 					var offset    = process.Beat - (currentCommand[0].CorrectedBeat + (settings.MaxBeats - 1));
-					if (offset != 0)
+					if (math.abs(offset) > 1)
 					{
 						for (var com = 0; com != currentCommand.Length; com++)
 						{
@@ -153,7 +154,7 @@ namespace Patapon4TLB.Default
 							currentCommand[com] =  tmp;
 						}
 					}
-					
+
 					Debug.Log($"Difference: {process.TimeTick - lastCmdTime}\t o: {offset}");
 				}
 				else

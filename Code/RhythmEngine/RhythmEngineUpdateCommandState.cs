@@ -105,8 +105,6 @@ namespace Patapon4TLB.Default
 						{
 							comboState.IsFever = true;
 						}
-						
-						Debug.Log(comboState.Score);
 					}
 				}
 			}

@@ -12,6 +12,12 @@ namespace Patapon4TLB.Default
 		public bool IsPaused;
 		public bool IsNewBeat;
 		public bool IsNewPressure;
+
+		/// <summary>
+		/// If a user do a f**k-up (doing pressure in an active command, waited a beat too much,...), he will need to wait a beat before starting to do pressures.
+		/// </summary>
+		public int NextBeatRecovery;
+
 		public bool ApplyCommandNextBeat;
 	}
 
