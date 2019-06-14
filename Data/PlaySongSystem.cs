@@ -31,6 +31,9 @@ namespace Patapon4TLB.Default.Test
 		public bool IsNewCommand;
 		public bool IsNewBeat;
 
+		public GameComboState PreviousComboState;
+		public GameComboState ComboState;
+
 		public int CommandStartBeat;
 
 		private int m_LastBeat;
@@ -58,7 +61,7 @@ namespace Patapon4TLB.Default.Test
 				HasActiveRhythmEngine = process.StartTime != 0;
 			});
 
-			Entities.WithAll<RhythmEngineSimulateTag>().ForEach((ref GameCommandState gameCommandState, ref RhythmCurrentCommand currentCommand, ref GamePredictedCommandState predictedCommand) =>
+			Entities.WithAll<RhythmEngineSimulateTag>().ForEach((ref GameCommandState gameCommandState, ref RhythmCurrentCommand currentCommand, ref GamePredictedCommandState predictedCommand, ref GameComboState comboState, ref GameComboPredictedClient predictedCombo) =>
 			{
 				var tmp = gameCommandState.StartBeat <= Beat && gameCommandState.EndBeat > Beat      // server
 				            || currentCommand.ActiveAtBeat <= Beat && predictedCommand.EndBeat > Beat; // client
@@ -69,6 +72,17 @@ namespace Patapon4TLB.Default.Test
 				{
 					m_LastCommandStartBeat = CommandStartBeat;
 					IsNewCommand = true;
+				}
+
+				var isClientPrediction = false;
+				if (gameCommandState.StartBeat >= currentCommand.ActiveAtBeat)
+				{
+					ComboState = comboState;
+				}
+				else
+				{
+					ComboState = predictedCombo.State;
+					isClientPrediction = true;
 				}
 
 				IsCommand = tmp;
@@ -95,6 +109,8 @@ namespace Patapon4TLB.Default.Test
 	{
 		public Dictionary<string, DescriptionFileJsonData> Files;
 		public SongDescription CurrentSong;
+
+		private AudioClip m_FeverClip;
 
 		private AudioSource[] m_BgmSources;
 		private AudioSource m_CommandSource;
@@ -137,15 +153,20 @@ namespace Patapon4TLB.Default.Test
 				}
 			}
 
-			m_BgmSources         = new[] {CreateAudioSource("Background Music Primary", 1), CreateAudioSource("Background Music Secondary", 1)};
+			m_BgmSources         = new[] {CreateAudioSource("Background Music Primary", 0.75f), CreateAudioSource("Background Music Secondary", 0.75f)};
 			m_CommandSource      = CreateAudioSource("Command", 1);
 			m_CommandSource.loop = false;
+
+			Addressables.LoadAsset<AudioClip>("int:RhythmEngine/Sounds/voice_fever.wav").Completed += (op) => m_FeverClip = op.Result;
 		}
 
 		private int m_CurrentBeat;
 		private int m_Flip;
 		private const int SongBeatSize = 8;
 
+		// used to not throw the same audio for the command.
+		private Dictionary<int, int> m_CommandChain = new Dictionary<int, int>();
+		
 		private AudioClip m_LastClip;
 
 		private void UpdateBgm(PlaySongClientSystem clientSystem)
@@ -205,6 +226,7 @@ namespace Patapon4TLB.Default.Test
 			}
 		}
 
+		private bool m_WasFever;
 		private void UpdateCommand(PlaySongClientSystem clientSystem)
 		{
 			if (!clientSystem.IsCommand)
@@ -222,10 +244,43 @@ namespace Patapon4TLB.Default.Test
 			var data          = clientSystem.GetCommandData();
 
 			var id = data.Identifier.ToString();
+			var hash = data.Identifier.GetHashCode();
+
+			if (!m_CommandChain.ContainsKey(hash))
+			{
+				m_CommandChain[hash] = 0;
+			}
+
 			if (CurrentSong.CommandsAudio.ContainsKey(id))
 			{
-				commandTarget = CurrentSong.CommandsAudio[id][SongDescription.CmdKeyFever][0];
+				var key = SongDescription.CmdKeyNormal;
+				if (clientSystem.ComboState.IsFever)
+				{
+					key = SongDescription.CmdKeyFever;
+				}
+				else if (clientSystem.ComboState.ChainToFever > 1 && clientSystem.ComboState.Score >= 0)
+				{
+					key = SongDescription.CmdKeyPreFever;
+				}
+
+				if (!clientSystem.ComboState.IsFever)
+				{
+					m_WasFever = false;
+				}
+
+				if (clientSystem.ComboState.IsFever && !m_WasFever)
+				{
+					m_WasFever    = true;
+					commandTarget = m_FeverClip;
+				}
+				else
+				{
+					var clips = CurrentSong.CommandsAudio[id][key];
+					commandTarget = clips[m_CommandChain[data.Identifier.GetHashCode()] % (clips.Count)];
+				}
 			}
+
+			m_CommandChain[hash] = m_CommandChain[hash] + 1;
 
 			if (commandTarget == null)
 				return;

@@ -30,6 +30,7 @@ namespace Patapon4TLB.Default.Snapshot
 				ComponentType.ReadWrite<FlowCommandManagerTypeDefinition>(),
 				ComponentType.ReadWrite<GameCommandState>(),
 				ComponentType.ReadWrite<GameComboState>(),
+				ComponentType.ReadWrite<GameComboPredictedClient>(),
 				ComponentType.ReadWrite<GamePredictedCommandState>(),
 				ComponentType.ReadWrite<RhythmCurrentCommand>(),
 				ComponentType.ReadWrite<ReplicatedEntityComponent>()
@@ -44,7 +45,7 @@ namespace Patapon4TLB.Default.Snapshot
 
 	public struct RhythmPredictedProcess : IComponentData
 	{
-		public int Beat;
+		public int    Beat;
 		public double Time;
 	}
 
@@ -61,6 +62,9 @@ namespace Patapon4TLB.Default.Snapshot
 			public uint ServerTime;
 
 			[ReadOnly] public ComponentDataFromEntity<RhythmEngineSimulateTag> SimulateTagFromEntity;
+
+			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GameComboState>           ComboStateFromEntity;
+			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GameComboPredictedClient> PredictedComboFromEntity;
 
 			public void Execute(Entity entity, int _,
 			                    // components
@@ -90,6 +94,22 @@ namespace Patapon4TLB.Default.Snapshot
 
 				predictedProcess.Beat = snapshotData.Beat;
 				predictedProcess.Time = snapshotData.StartTime > 0 ? (ServerTime - snapshotData.StartTime) * 0.001f : 0;
+
+				var comboState     = ComboStateFromEntity[entity];
+				var predictedCombo = PredictedComboFromEntity[entity];
+
+				comboState = new GameComboState
+				{
+					Score         = snapshotData.ComboScore,
+					Chain         = snapshotData.ComboChain,
+					ChainToFever  = snapshotData.ComboChainToFever,
+					IsFever       = snapshotData.ComboIsFever,
+					JinnEnergy    = snapshotData.ComboJinnEnergy,
+					JinnEnergyMax = snapshotData.ComboJinnEnergyMax
+				};
+
+				ComboStateFromEntity[entity]     = comboState;
+				PredictedComboFromEntity[entity] = predictedCombo;
 			}
 		}
 
@@ -124,10 +144,13 @@ namespace Patapon4TLB.Default.Snapshot
 		{
 			inputDeps = new SyncJob()
 			{
-				SnapshotFromEntity = GetBufferFromEntity<RhythmEngineSnapshotData>(),
-				ServerTime = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Value.Predicted,
-				SimulateTagFromEntity = GetComponentDataFromEntity<RhythmEngineSimulateTag>(),
-				TargetTick         = NetworkTimeSystem.predictTargetTick
+				SnapshotFromEntity       = GetBufferFromEntity<RhythmEngineSnapshotData>(),
+				ServerTime               = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Value.Predicted,
+				SimulateTagFromEntity    = GetComponentDataFromEntity<RhythmEngineSimulateTag>(),
+				ComboStateFromEntity     = GetComponentDataFromEntity<GameComboState>(),
+				PredictedComboFromEntity = GetComponentDataFromEntity<GameComboPredictedClient>(),
+
+				TargetTick = NetworkTimeSystem.predictTargetTick
 			}.Schedule(this, inputDeps);
 
 			var localPlayerLength = m_LocalPlayerQuery.CalculateLength();

@@ -1,6 +1,7 @@
 ﻿using package.stormiumteam.shared;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace package.patapon.core
@@ -53,30 +54,73 @@ namespace package.patapon.core
         public int  EndBeat;
     }
 
+    /// <summary>
+    /// The predicted client should only be used for presentation stuff (UI, sounds).
+    /// To see if you should use the predicted component, check first if the server sided one is active or not.
+    /// If false, then use the predicted one.
+    /// </summary>
+    public struct GameComboPredictedClient : IComponentData
+    {
+        public GameComboState State;
+    }
+
     public struct GameComboState : IComponentData
     {
-        /// <summary>
-        /// The score of the current combo. A perfect combo do a +5
-        /// </summary>
-        public int Score;
+	    /// <summary>
+	    /// The score of the current combo. A perfect combo do a +5
+	    /// </summary>
+	    public int Score;
 
-        /// <summary>
-        /// The current chain of the combo
-        /// </summary>
-        public int Chain;
+	    /// <summary>
+	    /// The current chain of the combo
+	    /// </summary>
+	    public int Chain;
 
-        /// <summary>
-        /// It will be used to know when we should have the fever, it shouldn't be used to know the current chain.
-        /// </summary>
-        public int ChainToFever;
+	    /// <summary>
+	    /// It will be used to know when we should have the fever, it shouldn't be used to know the current chain.
+	    /// </summary>
+	    public int ChainToFever;
 
-        /// <summary>
-        /// The fever state, enabled if we have a score or 6 or more.
-        /// </summary>
-        public bool IsFever;
+	    /// <summary>
+	    /// The fever state, enabled if we have a score or 6 or more.
+	    /// </summary>
+	    public bool IsFever;
 
-        public int JinnEnergy;
-        public int JinnEnergyMax;
+	    public int JinnEnergy;
+	    public int JinnEnergyMax;
+
+	    public void Update(RhythmCurrentCommand rhythm)
+	    {
+		    var p = rhythm.Power - 50;
+		    if (p > 0 && Score < 0)
+			    Score = 0;
+
+		    Chain++;
+		    Score = math.min(Score + p, 200);
+		    if (!IsFever)
+		    {
+			    ChainToFever++;
+		    }
+
+		    if (IsFever)
+		    {
+			    ChainToFever = 0;
+
+			    // add jinn energy
+		    }
+
+		    var needed = 0;
+		    if (ChainToFever < 2)
+			    needed += 100;
+
+		    if (!IsFever &&
+		        (ChainToFever >= 9) ||
+		        (ChainToFever >= 3 && rhythm.Power >= 50) ||
+		        (Score > (10 - ChainToFever) * 10 + needed))
+		    {
+			    IsFever = true;
+		    }
+	    }
     }
 
     public struct GameComboChain : IBufferElementData

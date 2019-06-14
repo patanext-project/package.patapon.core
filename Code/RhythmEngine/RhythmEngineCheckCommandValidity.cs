@@ -114,7 +114,7 @@ namespace Patapon4TLB.Default
 
 				if (IsServer && settings.UseClientSimulation && !state.ApplyCommandNextBeat)
 					return;
-
+				
 				var currCommandArray = CurrentCommandFromEntity[entity];
 				var result           = GetCurrentCommand(currCommandArray.Reinterpret<RhythmPressureData>());
 
@@ -157,7 +157,7 @@ namespace Patapon4TLB.Default
 					}
 					else
 					{
-						power += 0.25f;
+						power += 0.33f;
 					}
 				}
 

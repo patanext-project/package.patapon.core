@@ -23,7 +23,10 @@ namespace Patapon4TLB.Default
 			public ComponentDataFromEntity<RhythmCommandData> CommandDataFromEntity;
 
 			[NativeDisableParallelForRestriction]
-			public ComponentDataFromEntity<GamePredictedCommandState> PredictedFromEntity;
+			public ComponentDataFromEntity<GamePredictedCommandState> PredictedCommandFromEntity;
+
+			[NativeDisableParallelForRestriction]
+			public ComponentDataFromEntity<GameComboPredictedClient> PredictedComboFromEntity;
 
 			[ReadOnly]
 			public ComponentDataFromEntity<RhythmEngineSimulateTag> SimulateTagFromEntity;
@@ -67,13 +70,25 @@ namespace Patapon4TLB.Default
 				// prediction
 				if (!IsServer && settings.UseClientSimulation && SimulateTagFromEntity.Exists(entity))
 				{
-					PredictedFromEntity[entity] = new GamePredictedCommandState
+					var previousPrediction = PredictedCommandFromEntity[entity];
+					
+					PredictedCommandFromEntity[entity] = new GamePredictedCommandState
 					{
 						IsActive  = isActive,
 						StartBeat = rhythm.ActiveAtBeat,
 						// todo: we shouldn't do that
 						EndBeat = (rhythm.CustomEndBeat == 0 || rhythm.CustomEndBeat == -1) ? rhythm.ActiveAtBeat + beatLength : rhythm.CustomEndBeat
 					};
+
+					var isNew = isActive && (previousPrediction.StartBeat != rhythm.ActiveAtBeat || !previousPrediction.IsActive);
+
+					if (isNew)
+					{
+						var predictedCombo = PredictedComboFromEntity[entity];
+						predictedCombo.State.Update(rhythm);
+						
+						PredictedComboFromEntity[entity] = predictedCombo;
+					}
 				}
 				else
 				{
@@ -85,26 +100,7 @@ namespace Patapon4TLB.Default
 
 					if (isNew)
 					{
-						var p = rhythm.Power - 50;
-						if (p > 0 && comboState.Score < 0)
-							comboState.Score = 0;
-						
-						comboState.Chain++;
-						comboState.Score += p;
-						if (!comboState.IsFever)
-						{
-							comboState.ChainToFever++;
-						}
-
-						if (comboState.IsFever)
-						{
-							// add jinn energy
-						}
-
-						if (comboState.ChainToFever >= 9)
-						{
-							comboState.IsFever = true;
-						}
+						comboState.Update(rhythm);
 					}
 				}
 			}
@@ -116,8 +112,9 @@ namespace Patapon4TLB.Default
 			{
 				IsServer              = IsServer,
 				CommandDataFromEntity = GetComponentDataFromEntity<RhythmCommandData>(true),
-				PredictedFromEntity   = GetComponentDataFromEntity<GamePredictedCommandState>(),
+				PredictedCommandFromEntity   = GetComponentDataFromEntity<GamePredictedCommandState>(),
 				SimulateTagFromEntity = GetComponentDataFromEntity<RhythmEngineSimulateTag>(true),
+				PredictedComboFromEntity = GetComponentDataFromEntity<GameComboPredictedClient>(),
 			}.Schedule(this, inputDeps);
 
 			return inputDeps;

@@ -19,15 +19,16 @@ namespace Patapon4TLB.Default.Snapshot
 
 		public bool WantsPredictionDelta => false;
 
-		public GhostComponentType<Owner>                   GhostOwnerType;
-		public GhostComponentType<RhythmEngineSettings>    GhostEngineSettingsType;
-		public GhostComponentType<RhythmEngineProcess> GhostEngineProcessType;
-		public GhostComponentType<RhythmEngineState>       GhostEngineStateType;
-		public GhostComponentType<RhythmCurrentCommand>      GhostCurrentCommandType;
-		public GhostComponentType<GameCommandState>        GhostCommandStateType;
+		public GhostComponentType<Owner>                GhostOwnerType;
+		public GhostComponentType<RhythmEngineSettings> GhostEngineSettingsType;
+		public GhostComponentType<RhythmEngineProcess>  GhostEngineProcessType;
+		public GhostComponentType<RhythmEngineState>    GhostEngineStateType;
+		public GhostComponentType<RhythmCurrentCommand> GhostCurrentCommandType;
+		public GhostComponentType<GameCommandState>     GhostCommandStateType;
+		public GhostComponentType<GameComboState>       GhostComboStateType;
 
 		public ComponentDataFromEntity<GhostSystemStateComponent> GhostStateFromEntity;
-		public ComponentDataFromEntity<RhythmCommandId>             CommandDataFromEntity;
+		public ComponentDataFromEntity<RhythmCommandId>           CommandDataFromEntity;
 
 		public void BeginSerialize(ComponentSystemBase system)
 		{
@@ -37,6 +38,7 @@ namespace Patapon4TLB.Default.Snapshot
 			system.GetGhostComponentType(out GhostEngineStateType);
 			system.GetGhostComponentType(out GhostCurrentCommandType);
 			system.GetGhostComponentType(out GhostCommandStateType);
+			system.GetGhostComponentType(out GhostComboStateType);
 
 			GhostStateFromEntity  = system.GetComponentDataFromEntity<GhostSystemStateComponent>();
 			CommandDataFromEntity = system.GetComponentDataFromEntity<RhythmCommandId>();
@@ -54,9 +56,12 @@ namespace Patapon4TLB.Default.Snapshot
 				if (types[i] == GhostEngineStateType) matches++;
 				if (types[i] == GhostCurrentCommandType) matches++;
 				if (types[i] == GhostCommandStateType) matches++;
+				if (types[i] == GhostComboStateType) matches++;
 			}
+			
+			Debug.Log("serialize");
 
-			return matches == 6;
+			return matches == 7;
 		}
 
 		public void CopyToSnapshot(ArchetypeChunk chunk, int ent, uint tick, ref RhythmEngineSnapshotData snapshot)
@@ -83,6 +88,14 @@ namespace Patapon4TLB.Default.Snapshot
 			snapshot.CommandTypeId    = currentCommand.CommandTarget == default || !commandState.IsActive ? 0 : CommandDataFromEntity[currentCommand.CommandTarget].Value;
 			snapshot.CommandStartBeat = commandState.StartBeat;
 			snapshot.CommandEndBeat   = commandState.EndBeat;
+
+			var comboState = chunk.GetNativeArray(GhostComboStateType.Archetype)[ent];
+			snapshot.ComboIsFever       = comboState.IsFever;
+			snapshot.ComboScore         = comboState.Score;
+			snapshot.ComboChain         = comboState.Chain;
+			snapshot.ComboChainToFever  = comboState.ChainToFever;
+			snapshot.ComboJinnEnergy    = comboState.JinnEnergy;
+			snapshot.ComboJinnEnergyMax = comboState.JinnEnergyMax;
 		}
 	}
 }

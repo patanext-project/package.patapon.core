@@ -12,10 +12,10 @@ namespace Patapon4TLB.Default.Test
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	[UpdateAfter(typeof(RhythmEngineClientInputSystem))]
 	public class PlayBeatSound : ComponentSystem
-	{
+	{	
 		private int  m_LastBeat;
 		private bool m_Play;
-
+		
 		public bool VoiceOverlay;
 
 		private void ForEachEngine(ref RhythmEngineProcess process)
@@ -39,7 +39,29 @@ namespace Patapon4TLB.Default.Test
 			else
 				score = 1;
 
+			var gameCommandState = EntityManager.GetComponentData<GameCommandState>(pressureEvent.Engine);
+			var currentCommand   = EntityManager.GetComponentData<RhythmCurrentCommand>(pressureEvent.Engine);
+			var predictedCommand = EntityManager.GetComponentData<GamePredictedCommandState>(pressureEvent.Engine);
+			var process          = EntityManager.GetComponentData<RhythmEngineProcess>(pressureEvent.Engine);
+			var state            = EntityManager.GetComponentData<RhythmEngineState>(pressureEvent.Engine);
+
+			var isRunningCommand = gameCommandState.StartBeat <= process.Beat && gameCommandState.EndBeat > process.Beat + 1      // server
+			                       || currentCommand.ActiveAtBeat <= process.Beat && predictedCommand.EndBeat > process.Beat + 1; // client
+
+			var shouldFail = isRunningCommand || state.NextBeatRecovery > process.Beat;
+			if (shouldFail)
+			{
+				score = 2;
+			}
+
+			// do the perfect sound
+			if (currentCommand.ActiveAtBeat >= process.Beat && currentCommand.Power >= 100)
+			{
+				m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPerfect);
+			}
+
 			m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPressureDrum[pressureEvent.Key][score]);
+
 			if (VoiceOverlay)
 			{
 				var id = score;
@@ -60,13 +82,14 @@ namespace Patapon4TLB.Default.Test
 		private AudioSource m_AudioSourceOnNewPressureVoice;
 
 		private AudioClip                                   m_AudioOnNewBeat;
+		private AudioClip m_AudioOnPerfect;
 		private Dictionary<int, Dictionary<int, AudioClip>> m_AudioOnPressureDrum;
 		private Dictionary<int, Dictionary<int, AudioClip>> m_AudioOnPressureVoice;
 
 		protected override void OnCreate()
 		{
 			VoiceOverlay = true;
-			
+
 			AudioSource CreateAudioSource(string name, float volume)
 			{
 				var audioSource = new GameObject("(Clip) " + name, typeof(AudioSource)).GetComponent<AudioSource>();
@@ -90,12 +113,17 @@ namespace Patapon4TLB.Default.Test
 			m_AudioSourceOnNewBeat          = CreateAudioSource("On New Beat", 1);
 			m_AudioSourceOnNewPressureDrum  = CreateAudioSource("On New Pressure -> Drum", 1);
 			m_AudioSourceOnNewPressureVoice = CreateAudioSource("On New Pressure -> Voice", 1);
+
+			m_AudioSourceOnNewPressureVoice.priority = m_AudioSourceOnNewPressureDrum.priority - 1;
 		}
 
 		protected void OnLoadAssets()
 		{
 			Addressables.LoadAsset<AudioClip>("int:RhythmEngine/Sounds/on_new_beat.ogg")
 			            .Completed += op => m_AudioOnNewBeat = op.Result;
+
+			Addressables.LoadAsset<AudioClip>("int:RhythmEngine/Sounds/perfect_1.wav")
+			            .Completed += op => m_AudioOnPerfect = op.Result;
 
 			m_AudioOnPressureDrum = new Dictionary<int, Dictionary<int, AudioClip>>(12);
 			m_AudioOnPressureVoice = new Dictionary<int, Dictionary<int, AudioClip>>(12);
@@ -106,7 +134,7 @@ namespace Patapon4TLB.Default.Test
 
 				m_AudioOnPressureVoice[key] = new Dictionary<int, AudioClip>(3);
 				m_AudioOnPressureDrum[key] = new Dictionary<int, AudioClip>(3);
-
+				
 				for (int r = 0; r != 3; r++)
 				{
 					var rank = r;
