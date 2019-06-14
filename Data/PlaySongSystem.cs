@@ -114,6 +114,7 @@ namespace Patapon4TLB.Default.Test
 		public SongDescription CurrentSong;
 
 		private AudioClip m_FeverClip;
+		private AudioClip m_FeverLostClip;
 
 		private AudioSource[] m_BgmSources;
 		private AudioSource m_CommandSource;
@@ -160,7 +161,8 @@ namespace Patapon4TLB.Default.Test
 			m_CommandSource      = CreateAudioSource("Command", 1);
 			m_CommandSource.loop = false;
 
-			Addressables.LoadAsset<AudioClip>("int:RhythmEngine/Sounds/voice_fever.wav").Completed += (op) => m_FeverClip = op.Result;
+			Addressables.LoadAsset<AudioClip>("int:RhythmEngine/Sounds/voice_fever.wav").Completed += (op) => m_FeverClip     = op.Result;
+			Addressables.LoadAsset<AudioClip>("int:RhythmEngine/Sounds/fever_lost.wav").Completed  += (op) => m_FeverLostClip = op.Result;
 		}
 
 		private int m_CurrentBeat;
@@ -298,15 +300,14 @@ namespace Patapon4TLB.Default.Test
 		private bool m_WasFever;
 		private void UpdateCommand(PlaySongClientSystem clientSystem)
 		{
-			if (!clientSystem.IsCommand)
+			if (m_WasFever && !clientSystem.ComboState.IsFever)
 			{
-				if (m_CommandSource.isPlaying)
-					m_CommandSource.Stop();
-			}
-
-			if (clientSystem.IsNewCommand)
-			{
-				Debug.Log($"{clientSystem.ComboState.IsFever} {clientSystem.IsCommand} {clientSystem.IsNewCommand}");
+				m_WasFever = false;
+				
+				m_CommandSource.Stop();
+				m_CommandSource.clip = m_FeverLostClip;
+				m_CommandSource.time = 0;
+				m_CommandSource.Play();
 			}
 
 			if (!clientSystem.IsNewCommand)

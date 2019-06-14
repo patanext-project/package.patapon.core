@@ -41,7 +41,24 @@ namespace Patapon4TLB.Default
 				    || (!IsServer && settings.UseClientSimulation && !SimulateTagFromEntity.Exists(entity)))
 					return;
 
-				if (rhythm.CommandTarget == default)
+				var mercy = 0;
+				if (IsServer)
+					mercy++; // we allow a mercy offset on a server in case the client is a bit laggy
+
+				var checkStopBeat = math.max(state.LastPressureBeat, commandState.EndBeat + 1);
+				
+				if (state.IsRecovery(process.Beat) || (!commandState.IsActive && rhythm.ActiveAtBeat < process.Beat && checkStopBeat + mercy < process.Beat))
+				{
+					comboState.Chain        = 0;
+					comboState.Score        = 0;
+					comboState.IsFever      = false;
+					comboState.JinnEnergy   = 0;
+					comboState.ChainToFever = 0;
+
+					commandState.IsActive = false;
+				}
+
+				if (rhythm.CommandTarget == default || state.IsRecovery(process.Beat))
 				{
 					commandState.IsActive  = false;
 					commandState.StartBeat = -1;

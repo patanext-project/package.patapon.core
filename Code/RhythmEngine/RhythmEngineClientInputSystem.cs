@@ -8,6 +8,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -34,14 +35,23 @@ namespace Patapon4TLB.Default
 				var     commandSequence = CommandSequenceFromEntity[entity];
 				ref var pressureEvent   = ref UnsafeUtilityEx.ArrayElementAsRef<RhythmRpcPressureFromClient>(PressureEventSingleArray.GetUnsafePtr(), 0);
 
-				pressureEvent.Beat = process.Beat;
+				pressureEvent.Beat  = process.Beat;
 				state.IsNewPressure = true;
 
 				var pressureData = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.TimeTick);
-				commandSequence.Add(new RhythmEngineCurrentCommand
+				if (!state.IsRecovery(process.Beat))
 				{
-					Data = pressureData
-				});
+					commandSequence.Add(new RhythmEngineCurrentCommand
+					{
+						Data = pressureData
+					});
+				}
+				else
+				{
+					pressureEvent.ShouldStartRecovery = true;
+				}
+				
+				state.LastPressureBeat = math.max(state.LastPressureBeat, pressureData.CorrectedBeat);
 
 				CreatePressureEventList.Add(new FlowRhythmPressureEventProvider.Create
 				{

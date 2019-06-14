@@ -20,6 +20,12 @@ namespace Patapon4TLB.Default
 
 		public bool ApplyCommandNextBeat;
 		public bool VerifyCommand;
+		public int LastPressureBeat;
+
+		public bool IsRecovery(int processBeat)
+		{
+			return NextBeatRecovery > processBeat;
+		}
 	}
 
 	public struct RhythmEngineSettings : IComponentData

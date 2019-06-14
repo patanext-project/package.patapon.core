@@ -16,17 +16,20 @@ namespace Patapon4TLB.Default
 	{
 		public int Key;
 		public int Beat;
+		public bool ShouldStartRecovery;
 
 		public void Serialize(DataStreamWriter data)
 		{
 			data.Write(Key);
 			data.Write(Beat);
+			data.Write(ShouldStartRecovery ? 1 : 0);
 		}
 
 		public void Deserialize(DataStreamReader reader, ref DataStreamReader.Context ctx)
 		{
 			Key  = reader.ReadInt(ref ctx);
 			Beat = reader.ReadInt(ref ctx);
+			ShouldStartRecovery = reader.ReadInt(ref ctx) == 1;
 		}
 
 		public void Execute(Entity connection, EntityCommandBuffer.Concurrent commandBuffer, int jobIndex)
@@ -112,11 +115,11 @@ namespace Patapon4TLB.Default
 					{
 						Ev = new PressureEvent
 						{
-							Engine = ghostEntity.entity,
+							Engine        = ghostEntity.entity,
 							CorrectedBeat = executePressure.RpcData.Beat,
-							OriginalBeat = executePressure.RpcData.Beat,
-							Key = executePressure.RpcData.Key,
-							Score = executePressure.RpcData.Score
+							OriginalBeat  = executePressure.RpcData.Beat,
+							Key           = executePressure.RpcData.Key,
+							Score         = executePressure.RpcData.Score
 						}
 					});
 				}
@@ -130,7 +133,7 @@ namespace Patapon4TLB.Default
 		}
 
 		private EndPresentationEntityCommandBufferSystem m_Barrier;
-		private FlowRhythmPressureEventProvider        m_PressureEventProvider;
+		private FlowRhythmPressureEventProvider          m_PressureEventProvider;
 
 		protected override void OnCreate()
 		{
@@ -167,17 +170,21 @@ namespace Patapon4TLB.Default
 		{
 			[DeallocateOnJobCompletion] public NativeArray<ArchetypeChunk> EngineChunks;
 
-			[ReadOnly] public            ArchetypeChunkEntityType              EntityType;
-			[ReadOnly] public ArchetypeChunkComponentType<Owner>    OwnerType;
-			[ReadOnly] public ComponentDataFromEntity<NetworkOwner> NetworkOwnerFromEntity;
+			[ReadOnly] public ArchetypeChunkEntityType                           EntityType;
+			[ReadOnly] public ArchetypeChunkComponentType<Owner>                 OwnerType;
+			[ReadOnly] public ComponentDataFromEntity<NetworkOwner>              NetworkOwnerFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<GhostSystemStateComponent> GhostStateFromEntity;
 
 			[NativeDisableParallelForRestriction]
 			public BufferFromEntity<OutgoingRpcDataStreamBufferComponent> OutgoingDataFromEntity;
 
+			[ReadOnly] public ComponentDataFromEntity<RhythmEngineProcess> ProcessFromEntity;
+			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<RhythmEngineState>   StateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<GameCommandState>    CommandStateFromEntity;
+
 			[ReadOnly, DeallocateOnJobCompletion]
 			public NativeArray<Entity> ConnectionEntities;
-			
+
 			public RpcQueue<RhythmRpcPressureFromServer> RpcQueue;
 
 			public EntityCommandBuffer.Concurrent CommandBuffer;
@@ -195,6 +202,21 @@ namespace Patapon4TLB.Default
 						var targetConnectionEntity = NetworkOwnerFromEntity[ownerArray[ent].Target].Value;
 						if (targetConnectionEntity != executePressure.Connection)
 							continue;
+
+						var engine  = EngineChunks[chunk].GetNativeArray(EntityType)[ent];
+						var process = ProcessFromEntity[engine];
+						var state   = StateFromEntity[engine];
+						var command = CommandStateFromEntity[engine];
+
+						if (command.IsActive || executePressure.RpcData.ShouldStartRecovery)
+						{
+							// recover...
+							Debug.Log("recover...");
+							state.NextBeatRecovery  = process.Beat + 1;
+						}
+
+						state.LastPressureBeat = process.Beat;
+						StateFromEntity[engine] = state;
 
 						// When the client will send a command event, we will be able to check if the command is valid or not (if he used cheats)
 						var bufferedEntity = CommandBuffer.CreateEntity(jobIndex);
@@ -223,18 +245,18 @@ namespace Patapon4TLB.Default
 			}
 		}
 
-		private EntityQuery              m_EngineQuery;
+		private EntityQuery m_EngineQuery;
 		private EntityQuery m_ConnectionQuery;
-		
+
 		private RhythmEngineBeginBarrier m_Barrier;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			m_Barrier     = World.GetOrCreateSystem<RhythmEngineBeginBarrier>();
+			m_Barrier         = World.GetOrCreateSystem<RhythmEngineBeginBarrier>();
 			m_ConnectionQuery = GetEntityQuery(typeof(NetworkStreamInGame), ComponentType.Exclude<NetworkStreamDisconnected>());
-			m_EngineQuery = GetEntityQuery(typeof(ShardRhythmEngine), typeof(RhythmEngineSettings), typeof(Owner));
+			m_EngineQuery     = GetEntityQuery(typeof(ShardRhythmEngine), typeof(RhythmEngineSettings), typeof(Owner));
 
 			RequireForUpdate(GetEntityQuery(typeof(RhythmServerExecutePressure)));
 		}
@@ -250,11 +272,14 @@ namespace Patapon4TLB.Default
 				OwnerType              = GetArchetypeChunkComponentType<Owner>(true),
 				NetworkOwnerFromEntity = GetComponentDataFromEntity<NetworkOwner>(true),
 				GhostStateFromEntity   = GetComponentDataFromEntity<GhostSystemStateComponent>(true),
+				ProcessFromEntity      = GetComponentDataFromEntity<RhythmEngineProcess>(true),
+				CommandStateFromEntity = GetComponentDataFromEntity<GameCommandState>(true),
+				StateFromEntity        = GetComponentDataFromEntity<RhythmEngineState>(false),
 				CommandBuffer          = m_Barrier.CreateCommandBuffer().ToConcurrent(),
 
 				ConnectionEntities     = m_ConnectionQuery.ToEntityArray(Allocator.TempJob, out var queryHandle),
 				OutgoingDataFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>(),
-				RpcQueue = World.GetExistingSystem<RpcQueueSystem<RhythmRpcPressureFromServer>>().GetRpcQueue()
+				RpcQueue               = World.GetExistingSystem<RpcQueueSystem<RhythmRpcPressureFromServer>>().GetRpcQueue()
 			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, queryHandle));
 
 			m_Barrier.AddJobHandleForProducer(inputDeps);

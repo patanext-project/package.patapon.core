@@ -124,7 +124,6 @@ namespace package.patapon.core
 		        (ChainToFever >= 3 && Score >= 50) ||
 		        (Score > (12 - ChainToFever) * 10 + needed))
 		    {
-			    Debug.Log($"{Score} {(12 - ChainToFever) * 10 + needed} {ChainToFever}");
 			    IsFever = true;
 		    }
 	    }

@@ -48,7 +48,7 @@ namespace Patapon4TLB.Default.Test
 			var isRunningCommand = gameCommandState.StartBeat <= process.Beat && gameCommandState.EndBeat > process.Beat + 1      // server
 			                       || currentCommand.ActiveAtBeat <= process.Beat && predictedCommand.EndBeat > process.Beat + 1; // client
 
-			var shouldFail = isRunningCommand || state.NextBeatRecovery > process.Beat;
+			var shouldFail = isRunningCommand || state.IsRecovery(process.Beat);
 			if (shouldFail)
 			{
 				score = 2;

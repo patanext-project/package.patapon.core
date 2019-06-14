@@ -22,6 +22,7 @@ namespace Patapon4TLB.Default.Snapshot
 		public int CommandTypeId; // CommandState.IsActive will be set if ghostId is null or not
 		public int CommandStartBeat;
 		public int CommandEndBeat;
+		public int Recovery;
 
 		public int  ComboScore;
 		public int  ComboChain;
@@ -52,6 +53,7 @@ namespace Patapon4TLB.Default.Snapshot
 			writer.WritePackedUInt((uint) CommandTypeId, compressionModel);
 			writer.WritePackedUInt((uint) CommandStartBeat, compressionModel);
 			writer.WritePackedUInt((uint) CommandEndBeat, compressionModel);
+			writer.WritePackedUInt((uint) Recovery, compressionModel);
 
 			writer.WritePackedInt(ComboScore, compressionModel);
 			writer.WritePackedInt(ComboChain, compressionModel);
@@ -75,6 +77,7 @@ namespace Patapon4TLB.Default.Snapshot
 			CommandTypeId    = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
 			CommandStartBeat = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
 			CommandEndBeat   = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
+			Recovery         = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
 
 			ComboScore         = reader.ReadPackedInt(ref ctx, compressionModel);
 			ComboChainToFever  = reader.ReadPackedInt(ref ctx, compressionModel);
