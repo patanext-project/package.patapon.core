@@ -71,7 +71,7 @@ namespace Patapon4TLB.Default
 				if (!IsServer && settings.UseClientSimulation && SimulateTagFromEntity.Exists(entity))
 				{
 					var previousPrediction = PredictedCommandFromEntity[entity];
-					
+
 					PredictedCommandFromEntity[entity] = new GamePredictedCommandState
 					{
 						IsActive  = isActive,
@@ -80,19 +80,18 @@ namespace Patapon4TLB.Default
 						EndBeat = (rhythm.CustomEndBeat == 0 || rhythm.CustomEndBeat == -1) ? rhythm.ActiveAtBeat + beatLength : rhythm.CustomEndBeat
 					};
 
-					var isNew = isActive && (previousPrediction.StartBeat != rhythm.ActiveAtBeat || !previousPrediction.IsActive);
-
+					var isNew = state.ApplyCommandNextBeat;
 					if (isNew)
 					{
 						var predictedCombo = PredictedComboFromEntity[entity];
 						predictedCombo.State.Update(rhythm);
-						
+
 						PredictedComboFromEntity[entity] = predictedCombo;
 					}
 				}
 				else
 				{
-					var isNew = isActive && (commandState.StartBeat != rhythm.ActiveAtBeat || !commandState.IsActive);
+					var isNew = state.ApplyCommandNextBeat;
 
 					commandState.IsActive  = isActive;
 					commandState.StartBeat = rhythm.ActiveAtBeat;
@@ -103,6 +102,8 @@ namespace Patapon4TLB.Default
 						comboState.Update(rhythm);
 					}
 				}
+
+				state.ApplyCommandNextBeat = false;
 			}
 		}
 

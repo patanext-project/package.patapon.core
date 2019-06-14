@@ -112,7 +112,7 @@ namespace Patapon4TLB.Default
 				if (state.IsPaused || (!IsServer && !state.IsNewPressure))
 					return;
 
-				if (IsServer && settings.UseClientSimulation && !state.ApplyCommandNextBeat)
+				if (IsServer && settings.UseClientSimulation && !state.VerifyCommand)
 					return;
 				
 				var currCommandArray = CurrentCommandFromEntity[entity];
@@ -132,7 +132,8 @@ namespace Patapon4TLB.Default
 				rhythmCurrentCommand.ActiveAtBeat  = targetBeat;
 				rhythmCurrentCommand.CommandTarget = result;
 
-				state.ApplyCommandNextBeat = false;
+				state.VerifyCommand = false;
+				state.ApplyCommandNextBeat = true;
 
 				if (!IsServer && settings.UseClientSimulation)
 				{

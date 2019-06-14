@@ -165,7 +165,7 @@ namespace Patapon4TLB.Default
 				predictedCommand.Clear();
 				requestedCommand.Clear();
 
-				state.ApplyCommandNextBeat = true;
+				state.VerifyCommand = true;
 			}
 		}
 

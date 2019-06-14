@@ -109,6 +109,10 @@ namespace package.patapon.core
 			    ChainToFever = 0;
 
 			    // add jinn energy
+			    if (Score >= 50) // we have a little bonus when doing a perfect command
+			    {
+				    JinnEnergy += 10;
+			    }
 		    }
 
 		    var needed = 0;
@@ -117,9 +121,10 @@ namespace package.patapon.core
 
 		    if (!IsFever &&
 		        (ChainToFever >= 9) ||
-		        (ChainToFever >= 3 && rhythm.Power >= 50) ||
-		        (Score > (10 - ChainToFever) * 10 + needed))
+		        (ChainToFever >= 3 && Score >= 50) ||
+		        (Score > (12 - ChainToFever) * 10 + needed))
 		    {
+			    Debug.Log($"{Score} {(12 - ChainToFever) * 10 + needed} {ChainToFever}");
 			    IsFever = true;
 		    }
 	    }
