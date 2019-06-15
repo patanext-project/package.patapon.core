@@ -89,7 +89,7 @@ namespace package.patapon.core
 	    public int JinnEnergy;
 	    public int JinnEnergyMax;
 
-	    public void Update(RhythmCurrentCommand rhythm)
+	    public void Update(RhythmCurrentCommand rhythm, bool predicted)
 	    {
 		    var p = rhythm.Power - 50;
 		    if (p > 0 && Score < 0)
@@ -124,6 +124,7 @@ namespace package.patapon.core
 		        (ChainToFever >= 3 && Score >= 50) ||
 		        (Score > (12 - ChainToFever) * 10 + needed))
 		    {
+			    Debug.Log($"{predicted} -> {ChainToFever} {Score} {(12 - ChainToFever) * 10 + needed}");
 			    IsFever = true;
 		    }
 	    }

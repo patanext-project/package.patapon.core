@@ -7,6 +7,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 
@@ -79,7 +80,8 @@ namespace Patapon4TLB.Default.Snapshot
 				settings.BeatInterval        = snapshotData.BeatInterval;
 				settings.UseClientSimulation = snapshotData.UseClientSimulation;
 
-				state.IsPaused = snapshotData.IsPaused;
+				state.IsPaused         = snapshotData.IsPaused;
+				state.NextBeatRecovery = math.max(state.NextBeatRecovery, snapshotData.Recovery);
 
 				commandState.IsActive  = snapshotData.CommandTypeId != 0;
 				commandState.StartBeat = snapshotData.CommandStartBeat;

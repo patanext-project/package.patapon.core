@@ -67,10 +67,10 @@ namespace Patapon4TLB.Default.Test
 
 			Entities.WithAll<RhythmEngineSimulateTag>().ForEach((ref GameCommandState gameCommandState, ref RhythmCurrentCommand currentCommand, ref GamePredictedCommandState predictedCommand, ref GameComboState comboState, ref GameComboPredictedClient predictedCombo) =>
 			{
-				var tmp = gameCommandState.StartBeat <= Beat && gameCommandState.EndBeat > Beat      // server
-				          || currentCommand.ActiveAtBeat <= Beat && predictedCommand.EndBeat > Beat; // client
+				var tmp = gameCommandState.StartBeat <= Beat && gameCommandState.EndBeat > Beat     // server
+				          || predictedCommand.StartBeat <= Beat && predictedCommand.EndBeat > Beat; // client
 
-				CommandStartBeat = math.max(currentCommand.ActiveAtBeat, gameCommandState.StartBeat);
+				CommandStartBeat = math.max(predictedCommand.StartBeat, gameCommandState.StartBeat);
 				CommandEndBeat   = math.max(gameCommandState.EndBeat, predictedCommand.EndBeat);
 
 				if (tmp && !IsCommand || (IsCommand && CommandStartBeat != m_LastCommandStartBeat))
@@ -225,9 +225,9 @@ namespace Patapon4TLB.Default.Test
 
 						m_BgmWasFever = true;
 					}
-					else if (m_EndFeverEntranceAt <= clientSystem.Beat)
+					else if (m_EndFeverEntranceAt < clientSystem.Beat)
 					{
-						var commandLength = m_BgmFeverChain;
+						var commandLength = math.max(m_BgmFeverChain - 1, 0);
 						targetAudio = CurrentSong.BgmFeverLoopClips[commandLength % CurrentSong.BgmFeverLoopClips.Count];
 					}
 				}
@@ -248,6 +248,8 @@ namespace Patapon4TLB.Default.Test
 			var hasSwitched = false;
 			if (m_LastClip != targetAudio)
 			{
+				Debug.Log($"Switch from {m_LastClip?.name} to {targetAudio?.name}, delay: {nextBeatDelay} (b: {clientSystem.Beat}, s: {clientSystem.CommandStartBeat})");
+				
 				m_LastClip = targetAudio;
 				if (targetAudio == null)
 				{

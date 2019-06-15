@@ -103,6 +103,7 @@ namespace Patapon4TLB.Default.Snapshot
 			CommandTypeId    = target.CommandTypeId;
 			CommandStartBeat = target.CommandStartBeat;
 			CommandEndBeat   = target.CommandEndBeat;
+			Recovery         = target.Recovery;
 
 			ComboIsFever       = target.ComboIsFever;
 			ComboScore         = target.ComboScore;

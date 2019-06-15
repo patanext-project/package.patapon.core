@@ -20,7 +20,7 @@ namespace Patapon4TLB.Default
 	{
 		[BurstCompile]
 		[RequireComponentTag(typeof(RhythmEngineSimulateTag))]
-		private struct SendLocalEventToEngine : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineProcess, RhythmEngineState>
+		private struct SendLocalEventToEngine : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineProcess, RhythmEngineState, GamePredictedCommandState>
 		{
 			public NativeArray<RhythmRpcPressureFromClient> PressureEventSingleArray;
 
@@ -30,7 +30,7 @@ namespace Patapon4TLB.Default
 			[NativeDisableParallelForRestriction]
 			public NativeList<FlowRhythmPressureEventProvider.Create> CreatePressureEventList;
 
-			public unsafe void Execute(Entity entity, int _, ref RhythmEngineSettings settings, ref RhythmEngineProcess process, ref RhythmEngineState state)
+			public unsafe void Execute(Entity entity, int _, ref RhythmEngineSettings settings, ref RhythmEngineProcess process, ref RhythmEngineState state, ref GamePredictedCommandState predictedCommand)
 			{
 				var     commandSequence = CommandSequenceFromEntity[entity];
 				ref var pressureEvent   = ref UnsafeUtilityEx.ArrayElementAsRef<RhythmRpcPressureFromClient>(PressureEventSingleArray.GetUnsafePtr(), 0);
@@ -39,16 +39,27 @@ namespace Patapon4TLB.Default
 				state.IsNewPressure = true;
 
 				var pressureData = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.TimeTick);
-				if (!state.IsRecovery(process.Beat))
+				var offset = pressureData.CorrectedBeat - pressureData.OriginalBeat;
+				var failFlag = commandSequence.Length == 0 
+				               && (pressureData.CorrectedBeat > predictedCommand.EndBeat && predictedCommand.EndBeat + offset > process.Beat && predictedCommand.EndBeat > 0);
+				
+				Debug.Log($"{failFlag} ---> {process.TimeTick} {pressureData.CorrectedBeat} > {predictedCommand.EndBeat} && {predictedCommand.EndBeat + offset} > {process.Beat}");
+				
+				if (state.IsRecovery(process.Beat))
+				{
+					
+				}
+				else if (predictedCommand.EndBeat > process.Beat + 1 || failFlag)
+				{
+					pressureEvent.ShouldStartRecovery = true;
+					state.NextBeatRecovery = process.Beat + 1;
+				}
+				else
 				{
 					commandSequence.Add(new RhythmEngineCurrentCommand
 					{
 						Data = pressureData
 					});
-				}
-				else
-				{
-					pressureEvent.ShouldStartRecovery = true;
 				}
 				
 				state.LastPressureBeat = math.max(state.LastPressureBeat, pressureData.CorrectedBeat);

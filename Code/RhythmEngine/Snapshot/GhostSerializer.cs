@@ -58,8 +58,6 @@ namespace Patapon4TLB.Default.Snapshot
 				if (types[i] == GhostCommandStateType) matches++;
 				if (types[i] == GhostComboStateType) matches++;
 			}
-			
-			Debug.Log("serialize");
 
 			return matches == 7;
 		}
@@ -82,6 +80,7 @@ namespace Patapon4TLB.Default.Snapshot
 
 			var engineState = chunk.GetNativeArray(GhostEngineStateType.Archetype)[ent];
 			snapshot.IsPaused = engineState.IsPaused;
+			snapshot.Recovery = engineState.NextBeatRecovery;
 
 			var currentCommand = chunk.GetNativeArray(GhostCurrentCommandType.Archetype)[ent];
 			var commandState   = chunk.GetNativeArray(GhostCommandStateType.Archetype)[ent];

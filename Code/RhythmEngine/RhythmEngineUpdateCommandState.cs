@@ -41,12 +41,16 @@ namespace Patapon4TLB.Default
 				    || (!IsServer && settings.UseClientSimulation && !SimulateTagFromEntity.Exists(entity)))
 					return;
 
-				var mercy = 0;
+				var mercy = 1;
 				if (IsServer)
 					mercy++; // we allow a mercy offset on a server in case the client is a bit laggy
 
 				var checkStopBeat = math.max(state.LastPressureBeat, commandState.EndBeat + 1);
-				
+				if (!IsServer && SimulateTagFromEntity.Exists(entity))
+				{
+					checkStopBeat = math.max(checkStopBeat, PredictedCommandFromEntity[entity].EndBeat + 1);
+				}
+
 				if (state.IsRecovery(process.Beat) || (!commandState.IsActive && rhythm.ActiveAtBeat < process.Beat && checkStopBeat + mercy < process.Beat))
 				{
 					comboState.Chain        = 0;
@@ -56,6 +60,12 @@ namespace Patapon4TLB.Default
 					comboState.ChainToFever = 0;
 
 					commandState.IsActive = false;
+
+					if (!IsServer && SimulateTagFromEntity.Exists(entity))
+					{
+						var p = PredictedCommandFromEntity[entity];
+						PredictedComboFromEntity[entity] = new GameComboPredictedClient {State = comboState};
+					}
 				}
 
 				if (rhythm.CommandTarget == default || state.IsRecovery(process.Beat))
@@ -100,8 +110,10 @@ namespace Patapon4TLB.Default
 					var isNew = state.ApplyCommandNextBeat;
 					if (isNew)
 					{
+						Debug.Log($"Command start at {rhythm.ActiveAtBeat}, currbeat: {process.Beat}");
+						
 						var predictedCombo = PredictedComboFromEntity[entity];
-						predictedCombo.State.Update(rhythm);
+						predictedCombo.State.Update(rhythm, true);
 
 						PredictedComboFromEntity[entity] = predictedCombo;
 					}
@@ -116,7 +128,7 @@ namespace Patapon4TLB.Default
 
 					if (isNew)
 					{
-						comboState.Update(rhythm);
+						comboState.Update(rhythm, false);
 					}
 				}
 

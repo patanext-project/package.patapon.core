@@ -211,7 +211,7 @@ namespace Patapon4TLB.Default
 						if (command.IsActive || executePressure.RpcData.ShouldStartRecovery)
 						{
 							// recover...
-							Debug.Log("recover...");
+							Debug.Log($"recover... {command.IsActive} or {executePressure.RpcData.ShouldStartRecovery}");
 							state.NextBeatRecovery  = process.Beat + 1;
 						}
 

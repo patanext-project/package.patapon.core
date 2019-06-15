@@ -134,9 +134,9 @@ namespace Patapon4TLB.Default
 
 				state.VerifyCommand = false;
 				state.ApplyCommandNextBeat = true;
-
+				
 				if (!IsServer && settings.UseClientSimulation)
-				{
+				{					
 					var clientRequest = new NativeArray<RhythmEngineClientRequestedCommand>(currCommandArray.Length, Allocator.Temp);
 					for (var com = 0; com != clientRequest.Length; com++)
 					{
