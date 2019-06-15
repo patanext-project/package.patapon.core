@@ -208,10 +208,10 @@ namespace Patapon4TLB.Default
 						var state   = StateFromEntity[engine];
 						var command = CommandStateFromEntity[engine];
 
-						if (command.IsActive || executePressure.RpcData.ShouldStartRecovery)
+						if (command.EndBeat > process.Beat + 1 || executePressure.RpcData.ShouldStartRecovery)
 						{
 							// recover...
-							Debug.Log($"recover... {command.IsActive} or {executePressure.RpcData.ShouldStartRecovery}");
+							Debug.Log($"recover... ({command.EndBeat} > {process.Beat + 1}) or {executePressure.RpcData.ShouldStartRecovery}");
 							state.NextBeatRecovery  = process.Beat + 1;
 						}
 
