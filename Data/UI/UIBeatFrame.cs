@@ -1,11 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using package.patapon.core;
+﻿using package.patapon.core;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
-using NotImplementedException = System.NotImplementedException;
 
 namespace Patapon4TLB.UI
 {
@@ -105,6 +102,11 @@ namespace Patapon4TLB.UI
 					return;
 				}
 
+				foreach (var line in uiBeatFrame.Lines)
+				{
+					line.SetActive(true);
+				}
+
 				var newBeat = false;
 				if (m_PreviousBeat != m_ClientSystem.Beat)
 				{
@@ -151,9 +153,9 @@ namespace Patapon4TLB.UI
 					{
 						SetGrayScale(ref uiBeatFrame.Color, 0.75f);
 
-						uiBeatFrame.Lines[0].gameObject.SetActive(false);
-						uiBeatFrame.Lines[1].gameObject.SetActive(true);
-						uiBeatFrame.Lines[2].gameObject.SetActive(false);
+						uiBeatFrame.Lines[0].SetActive(false);
+						uiBeatFrame.Lines[1].SetActive(true);
+						uiBeatFrame.Lines[2].SetActive(false);
 
 						break;
 					}
@@ -161,9 +163,9 @@ namespace Patapon4TLB.UI
 					{
 						SetGrayScale(ref uiBeatFrame.Color, 0.5f);
 
-						uiBeatFrame.Lines[0].gameObject.SetActive(true);
-						uiBeatFrame.Lines[1].gameObject.SetActive(false);
-						uiBeatFrame.Lines[2].gameObject.SetActive(true);
+						uiBeatFrame.Lines[0].SetActive(true);
+						uiBeatFrame.Lines[1].SetActive(false);
+						uiBeatFrame.Lines[2].SetActive(true);
 
 						break;
 					}
@@ -177,9 +179,9 @@ namespace Patapon4TLB.UI
 
 						uiBeatFrame.Color[m_CurrentHue % 3] = 1;
 
-						uiBeatFrame.Lines[0].gameObject.SetActive(true);
-						uiBeatFrame.Lines[1].gameObject.SetActive(true);
-						uiBeatFrame.Lines[2].gameObject.SetActive(true);
+						uiBeatFrame.Lines[0].SetActive(true);
+						uiBeatFrame.Lines[1].SetActive(true);
+						uiBeatFrame.Lines[2].SetActive(true);
 
 						break;
 					}

@@ -1,5 +1,4 @@
 using package.patapon.core;
-using Patapon4TLB.Core;
 using Runtime.EcsComponents;
 using StormiumTeam.GameBase;
 using Unity.Entities;

@@ -1,10 +1,8 @@
 using package.patapon.core;
 using package.patapon.def.Data;
-using Patapon4TLB.Core;
 using Runtime.Systems;
 using StormiumTeam.GameBase;
 using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;

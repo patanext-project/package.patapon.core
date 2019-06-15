@@ -1,10 +1,7 @@
 ﻿using System;
-using package.patapon.def.Data;
-using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Unity.Mathematics;
 using UnityEngine;
 
 namespace package.patapon.core

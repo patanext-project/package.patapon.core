@@ -1,13 +1,3 @@
-using package.StormiumTeam.GameBase;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Data;
-using Unity.Collections;
-using Unity.Entities;
-using Unity.Mathematics;
-using Unity.Physics;
-using Unity.Transforms;
-
 namespace Patapon4TLB.Default
 {
 	// todo

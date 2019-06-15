@@ -1,9 +1,5 @@
-using DefaultNamespace;
 using package.patapon.core;
-using Patapon4TLB.Default.Snapshot;
 using Unity.Entities;
-using Unity.NetCode;
-using Unity.Networking.Transport;
 
 namespace Patapon4TLB.Default
 {

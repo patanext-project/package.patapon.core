@@ -1,6 +1,4 @@
-﻿using package.stormiumteam.shared;
-using Unity.Collections;
-using Unity.Entities;
+﻿using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 

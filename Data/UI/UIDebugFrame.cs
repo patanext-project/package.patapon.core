@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using package.patapon.core;
 using P4.Core;
 using Patapon4TLB.Default.Snapshot;
@@ -8,9 +7,9 @@ using StormiumTeam.ThirdParty;
 using TMPro;
 using Unity.Entities;
 using Unity.NetCode;
+using Unity.Networking.Transport;
 using UnityEngine;
 using UnityEngine.UI;
-using NotImplementedException = System.NotImplementedException;
 
 namespace Patapon4TLB.UI
 {
@@ -37,6 +36,8 @@ namespace Patapon4TLB.UI
 	        
 	        ConnectedFrame.SetActive(false);
 	        DisconnectedFrame.SetActive(false);
+
+	        PortField.text = "50001";
         }
 
         [UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
@@ -104,51 +105,62 @@ namespace Patapon4TLB.UI
 				debugFrame.ConnectedFrame.SetActive(m_InternalSystem != null);
 				debugFrame.DisconnectedFrame.SetActive(m_InternalSystem == null);
 
+				debugFrame.HostButton.interactable = debugFrame.PortField.text.Length > 0;
+				debugFrame.ConnectButton.interactable = debugFrame.PortField.text.Length > 0 && debugFrame.AddressField.text.Length > 0;
+
 				if (debugFrame.m_WantToDisconnect)
 				{
-					if (ClientServerBootstrap.clientWorld != null)
-					{
-						foreach (var world in ClientServerBootstrap.clientWorld)
-						{
-							var tickClientPresentationGroup = World.GetExistingSystem<TickClientPresentationSystem>();
-							var tickClientSimulationGroup   = World.GetExistingSystem<TickClientSimulationSystem>();
-
-							tickClientPresentationGroup.RemoveSystemFromUpdateList(world.GetExistingSystem<ClientPresentationSystemGroup>());
-							tickClientSimulationGroup.RemoveSystemFromUpdateList(world.GetExistingSystem<ClientSimulationSystemGroup>());
-
-							world.Dispose();
-						}
-					}
-
-					if (ClientServerBootstrap.serverWorld != null)
-					{
-						var tickServerSimulationGroup = World.GetExistingSystem<TickServerSimulationSystem>();
-						foreach (var system in tickServerSimulationGroup.Systems)
-						{
-							Debug.Log($"{system.World} {system.GetType().Name}");
-						}
-						var simulationGroup = ClientServerBootstrap.serverWorld.GetExistingSystem<ServerSimulationSystemGroup>();
-						
-						Debug.Log($"{simulationGroup.World} {tickServerSimulationGroup.Systems.ToList().IndexOf(simulationGroup)}");
-						
-						tickServerSimulationGroup.RemoveSystemFromUpdateList(simulationGroup);
-
-						ClientServerBootstrap.serverWorld.Dispose();
-					}
-
-					ClientServerBootstrap.clientWorld = null;
-					ClientServerBootstrap.serverWorld = null;
+					ClientServerBootstrap.StopClientWorlds(World);
+					ClientServerBootstrap.StopServerWorld(World);
 				}
 
 				if (debugFrame.m_WantToConnect)
 				{
+					ClientServerBootstrap.CreateClientWorlds();
 					
+					var port = (ushort) int.Parse(debugFrame.PortField.text);
+					var ep = NetworkEndPoint.Parse(debugFrame.AddressField.text, port);
+					
+					var clientWorld = ClientServerBootstrap.clientWorld;
+					if (clientWorld != null)
+					{
+						foreach (var world in ClientServerBootstrap.clientWorld)
+						{
+							var ent = world.GetExistingSystem<NetworkStreamReceiveSystem>().Connect(ep);
+						}
+					}
 				}
 
 				if (debugFrame.m_WantToHost)
 				{
+					ClientServerBootstrap.CreateClientWorlds();
+					ClientServerBootstrap.CreateServerWorld();
+
+					var port = (ushort) int.Parse(debugFrame.PortField.text);
 					
+					var serverWorld = ClientServerBootstrap.serverWorld;
+					if (serverWorld != null)
+					{
+						var ep = NetworkEndPoint.AnyIpv4;
+						ep.Port = port;
+						serverWorld.GetExistingSystem<NetworkStreamReceiveSystem>().Listen(ep);
+					}
+
+					var clientWorld = ClientServerBootstrap.clientWorld;
+					if (clientWorld != null)
+					{
+						foreach (var world in ClientServerBootstrap.clientWorld)
+						{
+							var ep = NetworkEndPoint.LoopbackIpv4;
+							ep.Port = port;
+							var ent = world.GetExistingSystem<NetworkStreamReceiveSystem>().Connect(ep);
+						}
+					}
 				}
+
+				debugFrame.m_WantToHost = false;
+				debugFrame.m_WantToConnect = false;
+				debugFrame.m_WantToDisconnect = false;
 				
 				m_GameRuleSystem.VoiceOverlayProperty.Value = debugFrame.ToggleVoiceOverlay.isOn;
 

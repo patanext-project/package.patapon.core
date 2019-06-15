@@ -1,9 +1,7 @@
-using DefaultNamespace;
 using package.stormiumteam.shared;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Networking.Transport;
-using UnityEngine;
 
 namespace Patapon4TLB.Default.Snapshot
 {

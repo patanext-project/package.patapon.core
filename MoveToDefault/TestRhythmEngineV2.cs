@@ -2,7 +2,6 @@ using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Data;
 using Unity.Collections;
 using Unity.Entities;
-using UnityEngine;
 
 namespace Patapon4TLB.Default
 {

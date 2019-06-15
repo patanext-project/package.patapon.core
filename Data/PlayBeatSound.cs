@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using package.patapon.core;
-using Runtime.BaseSystems;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;

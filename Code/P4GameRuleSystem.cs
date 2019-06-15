@@ -2,8 +2,6 @@ using Patapon4TLB.Default.Test;
 using Runtime.BaseSystems;
 using Unity.Entities;
 using Unity.Jobs;
-using Unity.Transforms;
-using UnityEngine;
 
 namespace P4.Core
 {

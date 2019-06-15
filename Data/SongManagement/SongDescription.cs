@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Patapon4TLB.Core.json;
-using StormiumTeam.GameBase;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
-using Object = UnityEngine.Object;
 
 namespace Patapon4TLB.Core
 {

@@ -1,9 +1,6 @@
 using package.patapon.def.Data;
 using StormiumTeam.GameBase;
-using Unity.Burst;
 using Unity.Entities;
-using Unity.Jobs;
-using Unity.NetCode;
 
 namespace package.patapon.core
 {
