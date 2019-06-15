@@ -100,7 +100,8 @@ namespace Patapon4TLB.UI
 			{
 				if (m_ClientSystem == null)
 				{
-					uiBeatFrame.gameObject.SetActive(false);
+					foreach (var line in uiBeatFrame.Lines)
+						line.SetActive(false);
 					return;
 				}
 

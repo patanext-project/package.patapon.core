@@ -77,6 +77,18 @@
                 },
                 {
                     "name": "",
+                    "id": "9b998187-4a07-4d8b-9e56-f5c309ff5ce1",
+                    "path": "<HID::DragonRise Inc.   Generic   USB  Joystick   Joystick>/button2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pressure1",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
                     "id": "dce5f843-4280-4456-b044-bca063c52ff6",
                     "path": "<Keyboard>/numpad6",
                     "interactions": "",

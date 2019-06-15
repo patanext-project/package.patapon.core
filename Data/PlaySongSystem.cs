@@ -227,7 +227,7 @@ namespace Patapon4TLB.Default.Test
 					}
 					else if (m_EndFeverEntranceAt < clientSystem.Beat)
 					{
-						var commandLength = math.max(m_BgmFeverChain - 1, 0);
+						var commandLength = math.max(m_BgmFeverChain - 2, 0);
 						targetAudio = CurrentSong.BgmFeverLoopClips[commandLength % CurrentSong.BgmFeverLoopClips.Count];
 					}
 				}
@@ -335,7 +335,7 @@ namespace Patapon4TLB.Default.Test
 				{
 					key = SongDescription.CmdKeyFever;
 				}
-				else if (clientSystem.ComboState.ChainToFever > 1 && clientSystem.ComboState.Score >= 0)
+				else if (clientSystem.ComboState.ChainToFever > 1 && clientSystem.ComboState.Score >= 33)
 				{
 					key = SongDescription.CmdKeyPreFever;
 				}

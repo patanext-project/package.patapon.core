@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using package.patapon.core;
 using P4.Core;
 using Patapon4TLB.Default.Snapshot;
@@ -20,7 +21,25 @@ namespace Patapon4TLB.UI
 
 		public Toggle ToggleVoiceOverlay;
 
-		[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
+		public GameObject ConnectedFrame;
+		public GameObject DisconnectedFrame;
+		
+		public TMP_InputField AddressField, PortField;
+ 		public Button ConnectButton, HostButton, DisconnectButton;
+
+        private bool m_WantToConnect, m_WantToDisconnect, m_WantToHost;
+
+        private void Awake()
+        {
+	        ConnectButton.onClick.AddListener(() => { m_WantToConnect       = true; });
+	        HostButton.onClick.AddListener(() => { m_WantToHost             = true; });
+	        DisconnectButton.onClick.AddListener(() => { m_WantToDisconnect = true; });
+	        
+	        ConnectedFrame.SetActive(false);
+	        DisconnectedFrame.SetActive(false);
+        }
+
+        [UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
 		public class InternalSystem : GameBaseSystem
 		{
 			public List<(Entity connection, uint ping)> States = new List<(Entity connection, uint ping)>();
@@ -36,6 +55,7 @@ namespace Patapon4TLB.UI
 			public int  TimeDiff;
 			public int  ClientCmdBeat, ServerCmdBeat;
 			public bool IsCmdClient,   IsCmdServer;
+			public bool HasConnection;
 
 			protected override void OnCreate()
 			{
@@ -61,6 +81,9 @@ namespace Patapon4TLB.UI
 					ServerCmdBeat = gameCommandState.StartBeat;
 					ClientCmdBeat = currentCommand.ActiveAtBeat;
 				});
+
+				var driver = World.GetExistingSystem<NetworkStreamReceiveSystem>().Driver;
+				HasConnection = driver.LocalEndPoint().IsValid;
 			}
 		}
 
@@ -78,9 +101,58 @@ namespace Patapon4TLB.UI
 
 			private unsafe void ForEach(UIDebugFrame debugFrame)
 			{
+				debugFrame.ConnectedFrame.SetActive(m_InternalSystem != null);
+				debugFrame.DisconnectedFrame.SetActive(m_InternalSystem == null);
+
+				if (debugFrame.m_WantToDisconnect)
+				{
+					if (ClientServerBootstrap.clientWorld != null)
+					{
+						foreach (var world in ClientServerBootstrap.clientWorld)
+						{
+							var tickClientPresentationGroup = World.GetExistingSystem<TickClientPresentationSystem>();
+							var tickClientSimulationGroup   = World.GetExistingSystem<TickClientSimulationSystem>();
+
+							tickClientPresentationGroup.RemoveSystemFromUpdateList(world.GetExistingSystem<ClientPresentationSystemGroup>());
+							tickClientSimulationGroup.RemoveSystemFromUpdateList(world.GetExistingSystem<ClientSimulationSystemGroup>());
+
+							world.Dispose();
+						}
+					}
+
+					if (ClientServerBootstrap.serverWorld != null)
+					{
+						var tickServerSimulationGroup = World.GetExistingSystem<TickServerSimulationSystem>();
+						foreach (var system in tickServerSimulationGroup.Systems)
+						{
+							Debug.Log($"{system.World} {system.GetType().Name}");
+						}
+						var simulationGroup = ClientServerBootstrap.serverWorld.GetExistingSystem<ServerSimulationSystemGroup>();
+						
+						Debug.Log($"{simulationGroup.World} {tickServerSimulationGroup.Systems.ToList().IndexOf(simulationGroup)}");
+						
+						tickServerSimulationGroup.RemoveSystemFromUpdateList(simulationGroup);
+
+						ClientServerBootstrap.serverWorld.Dispose();
+					}
+
+					ClientServerBootstrap.clientWorld = null;
+					ClientServerBootstrap.serverWorld = null;
+				}
+
+				if (debugFrame.m_WantToConnect)
+				{
+					
+				}
+
+				if (debugFrame.m_WantToHost)
+				{
+					
+				}
+				
 				m_GameRuleSystem.VoiceOverlayProperty.Value = debugFrame.ToggleVoiceOverlay.isOn;
 
-				if (m_InternalSystem.States.Count < 0)
+				if (m_InternalSystem == null || m_InternalSystem.States.Count <= 0)
 					return;
 
 				var l = StringFormatter.Write(ref m_Buffer, 0, "RTT: {0}", (int) m_InternalSystem.States[0].ping);

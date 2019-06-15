@@ -122,9 +122,8 @@ namespace package.patapon.core
 		    if (!IsFever &&
 		        (ChainToFever >= 9) ||
 		        (ChainToFever >= 3 && Score >= 50) ||
-		        (Score > (12 - ChainToFever) * 10 + needed))
+		        (Score > (10 - ChainToFever) * 10 + needed))
 		    {
-			    Debug.Log($"{predicted} -> {ChainToFever} {Score} {(12 - ChainToFever) * 10 + needed}");
 			    IsFever = true;
 		    }
 	    }
