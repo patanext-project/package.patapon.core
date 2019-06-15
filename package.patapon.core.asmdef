@@ -4,6 +4,7 @@
         "package.guerro.shared",
         "package.stormiumteam.gamebase",
         "package.stormiumteam.networking",
+        "Unity.ugui",
         "Unity.TextMeshPro",
         "Unity.InputSystem",
         "Unity.Networking.Transport",

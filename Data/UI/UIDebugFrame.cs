@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using package.patapon.core;
+using P4.Core;
 using Patapon4TLB.Default.Snapshot;
 using StormiumTeam.GameBase;
 using StormiumTeam.ThirdParty;
@@ -7,6 +8,7 @@ using TMPro;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
+using UnityEngine.UI;
 using NotImplementedException = System.NotImplementedException;
 
 namespace Patapon4TLB.UI
@@ -15,6 +17,8 @@ namespace Patapon4TLB.UI
 	{
 		public TextMeshProUGUI[] PingText;
 		public TextMeshProUGUI[] CompareBeatText;
+
+		public Toggle ToggleVoiceOverlay;
 
 		[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
 		public class InternalSystem : GameBaseSystem
@@ -28,10 +32,10 @@ namespace Patapon4TLB.UI
 
 			private EntityQueryBuilder.F_ED<NetworkSnapshotAckComponent> m_ForEachDelegate;
 
-			public int ClientBeat, ServerBeat;
-			public int TimeDiff;
-			public int ClientCmdBeat, ServerCmdBeat;
-			public bool IsCmdClient, IsCmdServer;
+			public int  ClientBeat, ServerBeat;
+			public int  TimeDiff;
+			public int  ClientCmdBeat, ServerCmdBeat;
+			public bool IsCmdClient,   IsCmdServer;
 
 			protected override void OnCreate()
 			{
@@ -64,6 +68,7 @@ namespace Patapon4TLB.UI
 		public class System : GameBaseSystem
 		{
 			private InternalSystem m_InternalSystem;
+			private P4GameRuleSystem m_GameRuleSystem;
 
 			private EntityQueryBuilder.F_C<UIDebugFrame> m_ForEachDelegate;
 			private char[]                               m_Buffer = new char[512];
@@ -73,6 +78,8 @@ namespace Patapon4TLB.UI
 
 			private unsafe void ForEach(UIDebugFrame debugFrame)
 			{
+				m_GameRuleSystem.VoiceOverlayProperty.Value = debugFrame.ToggleVoiceOverlay.isOn;
+
 				if (m_InternalSystem.States.Count < 0)
 					return;
 
@@ -108,6 +115,8 @@ namespace Patapon4TLB.UI
 			{
 				base.OnCreate();
 				m_ForEachDelegate = ForEach;
+
+				m_GameRuleSystem = World.GetOrCreateSystem<P4GameRuleSystem>();
 
 				RequireForUpdate(GetEntityQuery(typeof(UIDebugFrame)));
 			}

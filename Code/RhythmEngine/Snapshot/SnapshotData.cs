@@ -44,10 +44,12 @@ namespace Patapon4TLB.Default.Snapshot
 
 			writer.WritePackedUInt(boolBitFields, compressionModel);
 
+			// 3
 			writer.WritePackedUInt((uint) MaxBeats, compressionModel);
 			writer.WritePackedUInt((uint) BeatInterval, compressionModel);
 			writer.WritePackedUInt((uint) Beat, compressionModel);
 
+			// 6
 			writer.WritePackedUInt((uint) OwnerGhostId, compressionModel);
 			writer.WritePackedUInt((uint) StartTime, compressionModel);
 			writer.WritePackedUInt((uint) CommandTypeId, compressionModel);
@@ -55,11 +57,14 @@ namespace Patapon4TLB.Default.Snapshot
 			writer.WritePackedUInt((uint) CommandEndBeat, compressionModel);
 			writer.WritePackedUInt((uint) Recovery, compressionModel);
 
+			// 5
 			writer.WritePackedInt(ComboScore, compressionModel);
 			writer.WritePackedInt(ComboChain, compressionModel);
 			writer.WritePackedInt(ComboChainToFever, compressionModel);
 			writer.WritePackedInt(ComboJinnEnergy, compressionModel);
 			writer.WritePackedInt(ComboJinnEnergyMax, compressionModel);
+			
+			Debug.Log("sending ghostId: " + OwnerGhostId);
 		}
 
 		public void Deserialize(uint tick, ref RhythmEngineSnapshotData baseline, DataStreamReader reader, ref DataStreamReader.Context ctx, NetworkCompressionModel compressionModel)
@@ -68,10 +73,12 @@ namespace Patapon4TLB.Default.Snapshot
 
 			var boolBitFields = (byte) reader.ReadPackedUInt(ref ctx, compressionModel);
 
+			// 3
 			MaxBeats     = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
 			BeatInterval = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
 			Beat         = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
 
+			// 6
 			OwnerGhostId     = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
 			StartTime        = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
 			CommandTypeId    = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
@@ -79,7 +86,9 @@ namespace Patapon4TLB.Default.Snapshot
 			CommandEndBeat   = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
 			Recovery         = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
 
+			// 5
 			ComboScore         = reader.ReadPackedInt(ref ctx, compressionModel);
+			ComboChain         = reader.ReadPackedInt(ref ctx, compressionModel);
 			ComboChainToFever  = reader.ReadPackedInt(ref ctx, compressionModel);
 			ComboJinnEnergy    = reader.ReadPackedInt(ref ctx, compressionModel);
 			ComboJinnEnergyMax = reader.ReadPackedInt(ref ctx, compressionModel);
@@ -87,6 +96,8 @@ namespace Patapon4TLB.Default.Snapshot
 			IsPaused            = MainBit.GetBitAt(boolBitFields, 0) == 1;
 			UseClientSimulation = MainBit.GetBitAt(boolBitFields, 1) == 1;
 			ComboIsFever        = MainBit.GetBitAt(boolBitFields, 2) == 1;
+
+			Debug.Log("receiving ghostId: " + OwnerGhostId);
 		}
 
 		public void Interpolate(ref RhythmEngineSnapshotData target, float factor)

@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using package.patapon.core;
+using Runtime.BaseSystems;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
@@ -18,8 +20,10 @@ namespace Patapon4TLB.Default.Test
 		
 		public bool VoiceOverlay;
 
-		private void ForEachEngine(ref RhythmEngineProcess process)
+		private void ForEachEngine(Entity e, ref RhythmEngineProcess process)
 		{
+			Debug.Log($"{World} {m_Play} {m_LastBeat} {process.Beat} {e}");
+			
 			if (m_LastBeat == process.Beat)
 				return;
 
@@ -76,7 +80,7 @@ namespace Patapon4TLB.Default.Test
 			}
 		}
 
-		private EntityQueryBuilder.F_D<RhythmEngineProcess> m_EngineDelegate;
+		private EntityQueryBuilder.F_ED<RhythmEngineProcess> m_EngineDelegate;
 		private EntityQueryBuilder.F_ED<PressureEvent> m_PressureEventDelegate;
 
 		private AudioSource m_AudioSourceOnNewBeat;

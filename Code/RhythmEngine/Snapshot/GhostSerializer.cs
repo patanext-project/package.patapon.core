@@ -68,7 +68,7 @@ namespace Patapon4TLB.Default.Snapshot
 
 			var owner = chunk.GetNativeArray(GhostOwnerType.Archetype)[ent];
 			snapshot.OwnerGhostId = GhostStateFromEntity.Exists(owner.Target) ? GhostStateFromEntity[owner.Target].ghostId : 0;
-
+			
 			var engineSettings = chunk.GetNativeArray(GhostEngineSettingsType.Archetype)[ent];
 			snapshot.MaxBeats            = engineSettings.MaxBeats;
 			snapshot.UseClientSimulation = engineSettings.UseClientSimulation;

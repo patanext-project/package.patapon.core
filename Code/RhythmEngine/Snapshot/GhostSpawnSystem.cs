@@ -126,7 +126,12 @@ namespace Patapon4TLB.Default.Snapshot
 			{
 				if (owner.Target == LocalPlayerEntity[0])
 				{
+					Debug.Log(owner.Target + ", " + LocalPlayerEntity[0]);
 					CommandBuffer.AddComponent(jobIndex, entity, new RhythmEngineSimulateTag());
+				}
+				else
+				{
+					CommandBuffer.RemoveComponent(jobIndex, entity, typeof(RhythmEngineSimulateTag));
 				}
 			}
 		}
