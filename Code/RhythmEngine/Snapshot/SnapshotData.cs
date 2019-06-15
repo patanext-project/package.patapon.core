@@ -63,8 +63,6 @@ namespace Patapon4TLB.Default.Snapshot
 			writer.WritePackedInt(ComboChainToFever, compressionModel);
 			writer.WritePackedInt(ComboJinnEnergy, compressionModel);
 			writer.WritePackedInt(ComboJinnEnergyMax, compressionModel);
-			
-			Debug.Log("sending ghostId: " + OwnerGhostId);
 		}
 
 		public void Deserialize(uint tick, ref RhythmEngineSnapshotData baseline, DataStreamReader reader, ref DataStreamReader.Context ctx, NetworkCompressionModel compressionModel)
@@ -96,8 +94,6 @@ namespace Patapon4TLB.Default.Snapshot
 			IsPaused            = MainBit.GetBitAt(boolBitFields, 0) == 1;
 			UseClientSimulation = MainBit.GetBitAt(boolBitFields, 1) == 1;
 			ComboIsFever        = MainBit.GetBitAt(boolBitFields, 2) == 1;
-
-			Debug.Log("receiving ghostId: " + OwnerGhostId);
 		}
 
 		public void Interpolate(ref RhythmEngineSnapshotData target, float factor)

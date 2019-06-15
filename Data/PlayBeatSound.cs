@@ -22,8 +22,6 @@ namespace Patapon4TLB.Default.Test
 
 		private void ForEachEngine(Entity e, ref RhythmEngineProcess process)
 		{
-			Debug.Log($"{World} {m_Play} {m_LastBeat} {process.Beat} {e}");
-			
 			if (m_LastBeat == process.Beat)
 				return;
 
@@ -53,7 +51,6 @@ namespace Patapon4TLB.Default.Test
 			                       || currentCommand.ActiveAtBeat <= process.Beat && predictedCommand.EndBeat > process.Beat + 1; // client
 
 			var shouldFail = isRunningCommand || state.IsRecovery(process.Beat);
-			Debug.Log($"Command: {isRunningCommand} {state.IsRecovery(process.Beat)}({state.NextBeatRecovery} {process.Beat} {process.TimeTick})");
 			if (shouldFail)
 			{
 				score = 2;
