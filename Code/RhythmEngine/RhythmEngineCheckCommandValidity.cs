@@ -169,11 +169,11 @@ namespace Patapon4TLB.Default
 				var lastCommand = currCommandArray[currCommandArray.Length - 1].Data;
 				var targetBeat  = process.GetFlowBeat(settings.BeatInterval) + 1;
 
-				rhythmCurrentCommand.ActiveAtBeat  = targetBeat;
+				rhythmCurrentCommand.ActiveAtTime  = targetBeat * settings.BeatInterval;
 				rhythmCurrentCommand.CommandTarget = result;
 				
-				Debug.Log($"Active At: {targetBeat}, last command beat: {lastCommand.RenderBeat} ({process.TimeTick}, {lastCommand.Time}; --> d: {process.TimeTick - lastCommand.Time})");
-
+				Debug.Log("Target time: " + rhythmCurrentCommand.ActiveAtTime);
+				
 				state.VerifyCommand        = false;
 				state.ApplyCommandNextBeat = true;
 

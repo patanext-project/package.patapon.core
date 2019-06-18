@@ -4,173 +4,185 @@ using UnityEngine;
 
 namespace package.patapon.core
 {
-    // this is a header
-    public struct FlowCommandManagerTypeDefinition : IComponentData
-    {
-        
-    }
+	// this is a header
+	public struct FlowCommandManagerTypeDefinition : IComponentData
+	{
 
-    public struct RhythmCurrentCommand : IComponentData
-    {
-        public Entity CommandTarget;
-        
-        /// <summary>
-        /// When will the command be active?
-        /// </summary>
-        /// <remarks>
-        /// >=0 = the active beat (will have the same effect as -1 if CommandTarget don't exist or is null).
-        /// -1 = not in effect.
-        /// -2 = forever.
-        /// </remarks>
-        public int    ActiveAtBeat;
+	}
 
-        /// <summary>
-        /// If you want to set a custom beat ending.
-        /// </summary>
-        /// <remarks>
-        /// >0 = the ending beat.
-        /// 0 = the command will never be executed (but why).
-        /// -1 = not in effect.
-        /// -2 = forever (you can make a combo with ActiveAtBeat set at -1 to have a forever non ending command).
-        /// </remarks>
-        public int CustomEndBeat;
+	public struct RhythmCurrentCommand : IComponentData
+	{
+		public Entity CommandTarget;
 
-        /// <summary>
-        /// Power is associated with beat score, this is a value between 0 and 100.
-        /// </summary>
-        /// <remarks>
-        /// This is not associated at all with fever state, the command will check if there is fever or not on the engine.
-        /// The game will check if it can enable hero mode if power is 100.
-        /// </remarks>
-        public int Power;
+		/// <summary>
+		/// When will the command be active?
+		/// </summary>
+		/// <remarks>
+		/// >=0 = the active beat (will have the same effect as -1 if CommandTarget don't exist or is null).
+		/// -1 = not in effect.
+		/// -2 = forever.
+		/// </remarks>
+		public int ActiveAtTime;
 
-        public bool HasPredictedCommands;
-    }
+		/// <summary>
+		/// If you want to set a custom beat ending.
+		/// </summary>
+		/// <remarks>
+		/// >0 = the ending beat.
+		/// 0 = the command will never be executed (but why).
+		/// -1 = not in effect.
+		/// -2 = forever (you can make a combo with ActiveAtBeat set at -1 to have a forever non ending command).
+		/// </remarks>
+		public int CustomEndTime;
 
-    public struct GamePredictedCommandState : IComponentData
-    {
-	    public bool IsActive;
-	    public int  StartBeat;
-	    public int  EndBeat;
-	    public int  ChainEndBeat;
-    }
+		/// <summary>
+		/// Power is associated with beat score, this is a value between 0 and 100.
+		/// </summary>
+		/// <remarks>
+		/// This is not associated at all with fever state, the command will check if there is fever or not on the engine.
+		/// The game will check if it can enable hero mode if power is 100.
+		/// </remarks>
+		public int Power;
 
-    /// <summary>
-    /// The predicted client should only be used for presentation stuff (UI, sounds).
-    /// To see if you should use the predicted component, check first if the server sided one is active or not.
-    /// If false, then use the predicted one.
-    /// </summary>
-    public struct GameComboPredictedClient : IComponentData
-    {
-        public GameComboState State;
-    }
+		public bool HasPredictedCommands;
+	}
 
-    public struct GameComboState : IComponentData
-    {
-	    /// <summary>
-	    /// The score of the current combo. A perfect combo do a +5
-	    /// </summary>
-	    public int Score;
+	public struct GamePredictedCommandState : IComponentData
+	{
+		public GameCommandState State;
+	}
 
-	    /// <summary>
-	    /// The current chain of the combo
-	    /// </summary>
-	    public int Chain;
+	/// <summary>
+	/// The predicted client should only be used for presentation stuff (UI, sounds).
+	/// To see if you should use the predicted component, check first if the server sided one is active or not.
+	/// If false, then use the predicted one.
+	/// </summary>
+	public struct GameComboPredictedClient : IComponentData
+	{
+		public GameComboState State;
+	}
 
-	    /// <summary>
-	    /// It will be used to know when we should have the fever, it shouldn't be used to know the current chain.
-	    /// </summary>
-	    public int ChainToFever;
+	public struct GameComboState : IComponentData
+	{
+		/// <summary>
+		/// The score of the current combo. A perfect combo do a +5
+		/// </summary>
+		public int Score;
 
-	    /// <summary>
-	    /// The fever state, enabled if we have a score or 6 or more.
-	    /// </summary>
-	    public bool IsFever;
+		/// <summary>
+		/// The current chain of the combo
+		/// </summary>
+		public int Chain;
 
-	    public int JinnEnergy;
-	    public int JinnEnergyMax;
+		/// <summary>
+		/// It will be used to know when we should have the fever, it shouldn't be used to know the current chain.
+		/// </summary>
+		public int ChainToFever;
 
-	    public void Update(RhythmCurrentCommand rhythm, bool predicted)
-	    {
-		    var p = rhythm.Power - 50;
-		    if (p > 0 && Score < 0)
-			    Score = 0;
+		/// <summary>
+		/// The fever state, enabled if we have a score or 6 or more.
+		/// </summary>
+		public bool IsFever;
 
-		    Chain++;
-		    Score = math.min(Score + p, 200);
-		    Score = p;
-		    
-		    if (!IsFever)
-		    {
-			    ChainToFever++;
-		    }
+		public int JinnEnergy;
+		public int JinnEnergyMax;
 
-		    if (IsFever)
-		    {
-			    ChainToFever = 0;
+		public void Update(RhythmCurrentCommand rhythm, bool predicted)
+		{
+			var p = rhythm.Power - 50;
+			if (p > 0 && Score < 0)
+				Score = 0;
 
-			    // add jinn energy
-			    if (Score >= 50) // we have a little bonus when doing a perfect command
-			    {
-				    JinnEnergy += 10;
-			    }
-		    }
+			Chain++;
+			Score = math.min(Score + p, 200);
+			Score = p;
 
-		    var needed = 0;
-		    if (ChainToFever < 2)
-			    needed += 100;
+			if (!IsFever)
+			{
+				ChainToFever++;
+			}
 
-		    if (!IsFever &&
-		        (ChainToFever >= 9) ||
-		        (ChainToFever >= 3 && Score >= 50) ||
-		        (Score > (10 - ChainToFever) * 10 + needed))
-		    {
-			    IsFever = true;
-		    }
-	    }
-    }
+			if (IsFever)
+			{
+				ChainToFever = 0;
 
-    public struct GameComboChain : IBufferElementData
-    {
-        
-    }
+				// add jinn energy
+				if (Score >= 50) // we have a little bonus when doing a perfect command
+				{
+					JinnEnergy += 10;
+				}
+			}
 
-    public struct GameCommandState : IComponentData
-    {
-	    public bool IsActive;
-	    public int  StartBeat;
-	    public int  EndBeat;
-	    public int  ChainEndBeat;
-    }
+			var needed = 0;
+			if (ChainToFever < 2)
+				needed += 100;
 
-    public struct RhythmCommandSequence
-    {
-        public RangeInt BeatRange;
-        public int Key;
+			if (!IsFever &&
+			    (ChainToFever >= 9) ||
+			    (ChainToFever >= 3 && Score >= 50) ||
+			    (Score > (10 - ChainToFever) * 10 + needed))
+			{
+				IsFever = true;
+			}
+		}
+	}
 
-        public RhythmCommandSequence(int beatFract, int key)
-        {
-            BeatRange = new RangeInt(beatFract, 0);
-            Key = key;
-        }
-        
-        public RhythmCommandSequence(int beatFract, int beatFractLength, int key)
-        {
-            BeatRange = new RangeInt(beatFract, beatFractLength);
-            Key       = key;
-        }
+	public struct GameComboChain : IBufferElementData
+	{
 
-        public int BeatEnd => BeatRange.end;
-    }
+	}
 
-    public struct RhythmCommandSequenceContainer : IBufferElementData
-    {
-        public RhythmCommandSequence Value;
-    }
+	public struct GameCommandState : IComponentData
+	{
+		public int StartTime;
+		public int EndTime;
+		public int ChainEndTime;
 
-    public struct RhythmCommandData : IComponentData
-    {
-        public NativeString64 Identifier;
-        public int            BeatLength;
-    }
+		public bool IsGamePlayActive(int tick)
+		{
+			return tick >= StartTime && tick <= EndTime;
+		}
+
+		public bool IsInputActive(int tick, int beatInterval)
+		{
+			return tick >= EndTime && tick <= EndTime + beatInterval;
+		}
+
+		public bool HasActivity(int tick, int beatInterval)
+		{
+			return IsGamePlayActive(tick)
+			       || IsInputActive(tick, beatInterval);
+		}
+	}
+
+	public struct RhythmCommandSequence
+	{
+		public RangeInt BeatRange;
+		public int      Key;
+
+		public RhythmCommandSequence(int beatFract, int key)
+		{
+			BeatRange = new RangeInt(beatFract, 0);
+			Key       = key;
+		}
+
+		public RhythmCommandSequence(int beatFract, int beatFractLength, int key)
+		{
+			BeatRange = new RangeInt(beatFract, beatFractLength);
+			Key       = key;
+		}
+
+		public int BeatEnd => BeatRange.end;
+	}
+
+	public struct RhythmCommandSequenceContainer : IBufferElementData
+	{
+		public RhythmCommandSequence Value;
+	}
+
+	public struct RhythmCommandData : IComponentData
+	{
+		public NativeString64 Identifier;
+		public int            BeatLength;
+	}
 }

@@ -32,11 +32,11 @@ namespace Patapon4TLB.Default.Test
 		public GameComboState PreviousComboState;
 		public GameComboState ComboState;
 
-		public int CommandStartBeat;
-		public int CommandEndBeat;
+		public int CommandStartTime;
+		public int CommandEndTime;
 
 		private int m_PreviousActivationBeat;
-		private int m_LastCommandStartBeat;
+		private int m_LastCommandStartTime;
 
 		protected override void OnUpdate()
 		{
@@ -64,20 +64,20 @@ namespace Patapon4TLB.Default.Test
 
 			Entities.WithAll<RhythmEngineSimulateTag>().ForEach((ref GameCommandState gameCommandState, ref RhythmCurrentCommand currentCommand, ref GamePredictedCommandState predictedCommand, ref GameComboState comboState, ref GameComboPredictedClient predictedCombo) =>
 			{
-				var tmp = gameCommandState.StartBeat <= FlowBeat && gameCommandState.EndBeat > FlowBeat     // server
-				          || predictedCommand.StartBeat <= FlowBeat && predictedCommand.EndBeat > FlowBeat; // client
+				var tmp = gameCommandState.StartTime <= Tick && gameCommandState.StartTime > Tick // server
+				          || predictedCommand.State.StartTime <= Tick && predictedCommand.State.EndTime > Tick; // client
 
-				CommandStartBeat = math.max(predictedCommand.StartBeat, gameCommandState.StartBeat);
-				CommandEndBeat   = math.max(gameCommandState.EndBeat, predictedCommand.EndBeat);
+				CommandStartTime = math.max(predictedCommand.State.StartTime, gameCommandState.StartTime);
+				CommandEndTime   = math.max(gameCommandState.EndTime, predictedCommand.State.EndTime);
 
-				if (tmp && !IsCommand || (IsCommand && CommandStartBeat != m_LastCommandStartBeat))
+				if (tmp && !IsCommand || (IsCommand && CommandStartTime != m_LastCommandStartTime))
 				{
-					m_LastCommandStartBeat = CommandStartBeat;
+					m_LastCommandStartTime = CommandStartTime;
 					IsNewCommand           = true;
 				}
 
 				var isClientPrediction = false;
-				if (gameCommandState.StartBeat >= currentCommand.ActiveAtBeat)
+				if (gameCommandState.StartTime >= currentCommand.ActiveAtTime)
 				{
 					ComboState = comboState;
 				}
@@ -86,7 +86,7 @@ namespace Patapon4TLB.Default.Test
 					ComboState         = predictedCombo.State;
 					isClientPrediction = true;
 				}
-
+				
 				IsCommand = tmp;
 			});
 		}
@@ -237,16 +237,17 @@ namespace Patapon4TLB.Default.Test
 			}
 
 			var nextBeatDelay = (((clientSystem.ActivationBeat + 1) * clientSystem.Interval) - clientSystem.Tick) * 0.001f;
-			if (clientSystem.CommandStartBeat >= clientSystem.ActivationBeat) // we have a planned command
+			var cmdStartActivationBeat = RhythmEngineProcess.CalculateActivationBeat(clientSystem.CommandStartTime, clientSystem.Interval);
+			if (cmdStartActivationBeat >= clientSystem.ActivationBeat) // we have a planned command
 			{
-				nextBeatDelay = (clientSystem.CommandStartBeat * clientSystem.Interval - clientSystem.Tick) * 0.001f;
+				nextBeatDelay = (cmdStartActivationBeat * clientSystem.Interval - clientSystem.Tick) * 0.001f;
 			}
 
 			// Check if we should change clips or if we are requested to...
 			var hasSwitched = false;
 			if (m_LastClip != targetAudio)
 			{
-				Debug.Log($"Switch from {m_LastClip?.name} to {targetAudio?.name}, delay: {nextBeatDelay} (b: {clientSystem.ActivationBeat}, f: {clientSystem.FlowBeat}, s: {clientSystem.CommandStartBeat})");
+				Debug.Log($"Switch from {m_LastClip?.name} to {targetAudio?.name}, delay: {nextBeatDelay} (b: {clientSystem.ActivationBeat}, f: {clientSystem.FlowBeat}, s: {cmdStartActivationBeat})");
 
 				m_LastClip = targetAudio;
 				if (targetAudio == null)
@@ -277,7 +278,8 @@ namespace Patapon4TLB.Default.Test
 					var cmdData = clientSystem.GetCommandData();
 					if (cmdData.BeatLength == 3)
 					{
-						var endBeatDelay = (clientSystem.CommandEndBeat * clientSystem.Interval - clientSystem.Tick) * 0.001f;
+						var cmdEndActivationBeat = RhythmEngineProcess.CalculateActivationBeat(clientSystem.CommandEndTime, clientSystem.Interval);
+						var endBeatDelay = (cmdEndActivationBeat * clientSystem.Interval - clientSystem.Tick) * 0.001f;
 
 						m_BgmSources[m_Flip].clip = currBgmSource.clip;
 						m_BgmSources[m_Flip].PlayScheduled(AudioSettings.dspTime + nextBeatDelay);
@@ -382,7 +384,8 @@ namespace Patapon4TLB.Default.Test
 			if (commandTarget == null)
 				return;
 
-			var nextBeatDelay = ((clientSystem.CommandStartBeat) * clientSystem.Interval - clientSystem.Tick) * 0.001f;
+			var cmdStartActivationBeat = RhythmEngineProcess.CalculateActivationBeat(clientSystem.CommandStartTime, clientSystem.Interval);
+			var nextBeatDelay          = (cmdStartActivationBeat * clientSystem.Interval - clientSystem.Tick) * 0.001f;
 			m_CommandSource.clip = commandTarget;
 			m_CommandSource.PlayScheduled(AudioSettings.dspTime + nextBeatDelay);
 		}

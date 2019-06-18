@@ -81,9 +81,8 @@ namespace Patapon4TLB.Default.Snapshot
 				state.IsPaused         = snapshotData.IsPaused;
 				state.NextBeatRecovery = math.max(state.NextBeatRecovery, snapshotData.Recovery);
 
-				commandState.IsActive  = snapshotData.CommandTypeId != 0;
-				commandState.StartBeat = snapshotData.CommandStartBeat;
-				commandState.EndBeat   = snapshotData.CommandEndBeat;
+				commandState.StartTime = snapshotData.CommandStartBeat;
+				commandState.EndTime   = snapshotData.CommandEndBeat;
 
 				process.StartTime = snapshotData.StartTime;
 				if (!SimulateTagFromEntity.Exists(entity))

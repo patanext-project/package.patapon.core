@@ -210,12 +210,14 @@ namespace Patapon4TLB.Default
 						var state    = StateFromEntity[engine];
 						var command  = CommandStateFromEntity[engine];
 
-						var       flowBeat = process.GetFlowBeat(settings.BeatInterval);
-						const int mercy    = 1;
-						if (command.EndBeat > flowBeat + mercy || executePressure.RpcData.ShouldStartRecovery)
+						var flowBeat       = process.GetFlowBeat(settings.BeatInterval);
+						var cmdEndFlowBeat = RhythmEngineProcess.CalculateFlowBeat(command.EndTime, settings.BeatInterval);
+
+						const int mercy = 1;
+						if (cmdEndFlowBeat > flowBeat + mercy || executePressure.RpcData.ShouldStartRecovery)
 						{
 							// recover...
-							Debug.Log($"recover... ({command.EndBeat} > {flowBeat + 1}) or {executePressure.RpcData.ShouldStartRecovery}");
+							Debug.Log($"recover... ({cmdEndFlowBeat} > {flowBeat + 1}) or {executePressure.RpcData.ShouldStartRecovery}");
 							state.NextBeatRecovery = flowBeat + 1;
 						}
 

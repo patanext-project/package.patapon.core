@@ -67,7 +67,7 @@ namespace Patapon4TLB.Default.Snapshot
 
 			var owner = chunk.GetNativeArray(GhostOwnerType.Archetype)[ent];
 			snapshot.OwnerGhostId = GhostStateFromEntity.Exists(owner.Target) ? GhostStateFromEntity[owner.Target].ghostId : 0;
-			
+
 			var engineSettings = chunk.GetNativeArray(GhostEngineSettingsType.Archetype)[ent];
 			snapshot.MaxBeats            = engineSettings.MaxBeats;
 			snapshot.UseClientSimulation = engineSettings.UseClientSimulation;
@@ -82,9 +82,9 @@ namespace Patapon4TLB.Default.Snapshot
 
 			var currentCommand = chunk.GetNativeArray(GhostCurrentCommandType.Archetype)[ent];
 			var commandState   = chunk.GetNativeArray(GhostCommandStateType.Archetype)[ent];
-			snapshot.CommandTypeId    = currentCommand.CommandTarget == default || !commandState.IsActive ? 0 : CommandDataFromEntity[currentCommand.CommandTarget].Value;
-			snapshot.CommandStartBeat = commandState.StartBeat;
-			snapshot.CommandEndBeat   = commandState.EndBeat;
+			snapshot.CommandTypeId    = currentCommand.CommandTarget == default ? 0 : CommandDataFromEntity[currentCommand.CommandTarget].Value;
+			snapshot.CommandStartBeat = commandState.StartTime;
+			snapshot.CommandEndBeat   = commandState.EndTime;
 
 			var comboState = chunk.GetNativeArray(GhostComboStateType.Archetype)[ent];
 			snapshot.ComboIsFever       = comboState.IsFever;

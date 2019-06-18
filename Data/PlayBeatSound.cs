@@ -25,7 +25,7 @@ namespace Patapon4TLB.Default.Test
 				return;
 
 			m_PreviousActivationBeat = currActivationBeat;
-			m_Play             = true;
+			m_Play                   = true;
 		}
 
 		private void ForEachPressureEvent(Entity entity, ref PressureEvent pressureEvent)
@@ -49,8 +49,8 @@ namespace Patapon4TLB.Default.Test
 
 			var currFlowBeat = process.GetFlowBeat(settings.BeatInterval);
 
-			var isRunningCommand = gameCommandState.StartBeat <= currFlowBeat && gameCommandState.EndBeat > currFlowBeat      // server
-			                       || currentCommand.ActiveAtBeat <= currFlowBeat && predictedCommand.EndBeat > currFlowBeat; // client
+			var isRunningCommand = gameCommandState.StartTime <= process.TimeTick && gameCommandState.EndTime > process.TimeTick            // server
+			                       || currentCommand.ActiveAtTime <= process.TimeTick && predictedCommand.State.EndTime > process.TimeTick; // client
 
 			var shouldFail = isRunningCommand || state.IsRecovery(currFlowBeat);
 			if (shouldFail)
@@ -60,7 +60,7 @@ namespace Patapon4TLB.Default.Test
 			}
 
 			// do the perfect sound
-			var isPerfect = currentCommand.ActiveAtBeat >= currFlowBeat && currentCommand.Power >= 100;
+			var isPerfect = currentCommand.ActiveAtTime >= process.TimeTick && currentCommand.Power >= 100;
 			if (isPerfect)
 			{
 				m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPerfect, 1.25f);

@@ -39,31 +39,30 @@ namespace Patapon4TLB.Default
 				pressureEvent.FlowBeat = flowBeat;
 				state.IsNewPressure    = true;
 
-				var pressureData = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.TimeTick);
-				var cmdOffset    = predictedCommand.EndBeat - predictedCommand.StartBeat;
-				var failFlag = commandSequence.Length == 0
-				               && (pressureData.RenderBeat > predictedCommand.EndBeat && predictedCommand.EndBeat < flowBeat && predictedCommand.EndBeat > 0);
-				var failFlag2 = pressureData.RenderBeat > predictedCommand.ChainEndBeat
-				                && predictedCommand.ChainEndBeat > flowBeat
-				                && predictedCommand.ChainEndBeat > 0;
+				var pressureData    = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.TimeTick);
+				var cmdChainEndFlow = RhythmEngineProcess.CalculateFlowBeat(predictedCommand.State.ChainEndTime, settings.BeatInterval);
+				var cmdEndFlow      = RhythmEngineProcess.CalculateFlowBeat(predictedCommand.State.EndTime, settings.BeatInterval);
+				var failFlag2 = pressureData.RenderBeat > cmdChainEndFlow
+				                && cmdChainEndFlow > flowBeat
+				                && cmdChainEndFlow > 0;
 
 				if (state.IsRecovery(flowBeat))
 				{
-					predictedCommand.ChainEndBeat = -1;
+					predictedCommand.State.ChainEndTime = -1;
 				}
-				else if (predictedCommand.EndBeat > flowBeat || failFlag2)
+				else if (cmdEndFlow > flowBeat || failFlag2)
 				{
-					Debug.Log($"{predictedCommand.EndBeat > flowBeat}: {predictedCommand.EndBeat}, {flowBeat}");
-					Debug.Log($"{failFlag2}: {pressureData.RenderBeat} > {predictedCommand.ChainEndBeat} && {predictedCommand.ChainEndBeat} > {flowBeat}");
+					Debug.Log($"{cmdEndFlow > flowBeat}: {cmdEndFlow}, {flowBeat}");
+					Debug.Log($"{failFlag2}: {pressureData.RenderBeat} > {cmdChainEndFlow} && {cmdChainEndFlow} > {flowBeat}");
 
-					pressureEvent.ShouldStartRecovery = true;
-					state.NextBeatRecovery            = flowBeat + 1;
-					predictedCommand.ChainEndBeat     = -1;
+					pressureEvent.ShouldStartRecovery             = true;
+					state.NextBeatRecovery                        = flowBeat + 1;
+					predictedCommand.State.ChainEndTime = -1;
 				}
 				else
 				{
 					Debug.Log($"Pressure --> beat={pressureData.RenderBeat}, time={pressureData.Time}");
-					
+
 					commandSequence.Add(new RhythmEngineCurrentCommand
 					{
 						Data = pressureData

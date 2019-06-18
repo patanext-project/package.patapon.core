@@ -22,11 +22,11 @@ namespace Patapon4TLB.Default.Test
 			{
 				var reEnt = CommandBuffer.CreateEntity(jobIndex, RhythmEngineArchetype);
 
-				CommandBuffer.SetComponent(jobIndex, reEnt, new RhythmEngineSettings {MaxBeats     = 4, BeatInterval  = 500, UseClientSimulation = true});
-				CommandBuffer.SetComponent(jobIndex, reEnt, new RhythmCurrentCommand {CustomEndBeat  = -1, ActiveAtBeat = -1, Power                = 0});
-				CommandBuffer.SetComponent(jobIndex, reEnt, new RhythmEngineProcess {StartTime = (int) ServerTime});
-				CommandBuffer.SetComponent(jobIndex, reEnt, new Owner {Target                      = ev.Player});
-				CommandBuffer.SetComponent(jobIndex, reEnt, new NetworkOwner {Value                = ev.Connection});
+				CommandBuffer.SetComponent(jobIndex, reEnt, new RhythmEngineSettings {MaxBeats      = 4, BeatInterval  = 500, UseClientSimulation = true});
+				CommandBuffer.SetComponent(jobIndex, reEnt, new RhythmCurrentCommand {CustomEndTime = -1, ActiveAtTime = -1, Power                = 0});
+				CommandBuffer.SetComponent(jobIndex, reEnt, new RhythmEngineProcess {StartTime      = (int) ServerTime});
+				CommandBuffer.SetComponent(jobIndex, reEnt, new Owner {Target                       = ev.Player});
+				CommandBuffer.SetComponent(jobIndex, reEnt, new NetworkOwner {Value                 = ev.Connection});
 			}
 		}
 

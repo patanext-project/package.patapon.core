@@ -174,6 +174,16 @@ namespace package.patapon.core
                 b--;
             return b;
         }
+        
+        public static int CalculateActivationBeat(int timeTick, int interval)
+        {
+            return new RhythmEngineProcess {TimeTick = timeTick}.GetActivationBeat(interval);
+        }
+
+        public static int CalculateFlowBeat(int timeTick, int interval)
+        {
+            return new RhythmEngineProcess {TimeTick = timeTick}.GetFlowBeat(interval);
+        }
     }
 
     public struct RhythmPressureData : IComponentData

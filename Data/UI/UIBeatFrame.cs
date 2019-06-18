@@ -42,7 +42,7 @@ namespace Patapon4TLB.UI
 
 			private void ForEach(Entity entity, ref RhythmEngineProcess process, ref GameCommandState gameCommandState, ref RhythmCurrentCommand currentCommand, ref GamePredictedCommandState predictedCommand, ref GameComboState comboState, ref GameComboPredictedClient predictedCombo)
 			{
-				if (gameCommandState.StartBeat >= currentCommand.ActiveAtBeat)
+				if (gameCommandState.StartTime >= currentCommand.ActiveAtTime)
 				{
 					ComboState = comboState;
 				}
@@ -58,10 +58,10 @@ namespace Patapon4TLB.UI
 					LastBeatTime   = Time.time;
 				}
 
-				IsCommandServer = gameCommandState.StartBeat <= ActivationBeat && gameCommandState.EndBeat > ActivationBeat;
+				IsCommandServer = gameCommandState.StartTime <= process.TimeTick && gameCommandState.EndTime > process.TimeTick;
 				if (EntityManager.HasComponent<RhythmEngineSimulateTag>(entity))
 				{
-					IsCommandClient = currentCommand.ActiveAtBeat <= ActivationBeat && predictedCommand.EndBeat > ActivationBeat;
+					IsCommandClient = currentCommand.ActiveAtTime <= process.TimeTick && predictedCommand.State.EndTime > process.TimeTick;
 				}
 			}
 

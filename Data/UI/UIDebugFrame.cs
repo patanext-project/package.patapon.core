@@ -22,25 +22,25 @@ namespace Patapon4TLB.UI
 
 		public GameObject ConnectedFrame;
 		public GameObject DisconnectedFrame;
-		
-		public TMP_InputField AddressField, PortField;
- 		public Button ConnectButton, HostButton, DisconnectButton;
 
-        private bool m_WantToConnect, m_WantToDisconnect, m_WantToHost;
+		public TMP_InputField AddressField,  PortField;
+		public Button         ConnectButton, HostButton, DisconnectButton;
 
-        private void Awake()
-        {
-	        ConnectButton.onClick.AddListener(() => { m_WantToConnect       = true; });
-	        HostButton.onClick.AddListener(() => { m_WantToHost             = true; });
-	        DisconnectButton.onClick.AddListener(() => { m_WantToDisconnect = true; });
-	        
-	        ConnectedFrame.SetActive(false);
-	        DisconnectedFrame.SetActive(false);
+		private bool m_WantToConnect, m_WantToDisconnect, m_WantToHost;
 
-	        PortField.text = "50001";
-        }
+		private void Awake()
+		{
+			ConnectButton.onClick.AddListener(() => { m_WantToConnect       = true; });
+			HostButton.onClick.AddListener(() => { m_WantToHost             = true; });
+			DisconnectButton.onClick.AddListener(() => { m_WantToDisconnect = true; });
 
-        [UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
+			ConnectedFrame.SetActive(false);
+			DisconnectedFrame.SetActive(false);
+
+			PortField.text = "50001";
+		}
+
+		[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
 		public class InternalSystem : GameBaseSystem
 		{
 			public List<(Entity connection, uint ping)> States = new List<(Entity connection, uint ping)>();
@@ -72,18 +72,18 @@ namespace Patapon4TLB.UI
 				Entities.WithAll<RhythmEngineSimulateTag>().ForEach((ref RhythmEngineProcess process, ref RhythmPredictedProcess predictedProcess, ref GameCommandState gameCommandState, ref RhythmCurrentCommand currentCommand, ref GamePredictedCommandState predictedCommand) =>
 				{
 					var activationBeat = process.GetActivationBeat(500);
-					var flowBeat = process.GetFlowBeat(500);
-					
+					var flowBeat       = process.GetFlowBeat(500);
+
 					ClientActivationBeat = activationBeat;
 					ServerActivationBeat = predictedProcess.Beat;
-					TimeDiff   = process.TimeTick - (int) (predictedProcess.Time * 1000);
+					TimeDiff             = process.TimeTick - (int) (predictedProcess.Time * 1000);
 
 
-					IsCmdServer = gameCommandState.StartBeat <= flowBeat && gameCommandState.EndBeat > flowBeat;
-					IsCmdClient = currentCommand.ActiveAtBeat <= flowBeat && predictedCommand.EndBeat > flowBeat;
+					IsCmdServer = gameCommandState.StartTime <= process.TimeTick && gameCommandState.EndTime > process.TimeTick;
+					IsCmdClient = currentCommand.ActiveAtTime <= process.TimeTick && predictedCommand.State.EndTime > process.TimeTick;
 
-					ServerCmdBeat = gameCommandState.StartBeat;
-					ClientCmdBeat = currentCommand.ActiveAtBeat;
+					ServerCmdBeat = gameCommandState.StartTime;
+					ClientCmdBeat = currentCommand.CustomEndTime;
 				});
 
 				var driver = World.GetExistingSystem<NetworkStreamReceiveSystem>().Driver;
@@ -94,7 +94,7 @@ namespace Patapon4TLB.UI
 		[UpdateInGroup(typeof(PresentationSystemGroup))]
 		public class System : GameBaseSystem
 		{
-			private InternalSystem m_InternalSystem;
+			private InternalSystem   m_InternalSystem;
 			private P4GameRuleSystem m_GameRuleSystem;
 
 			private EntityQueryBuilder.F_C<UIDebugFrame> m_ForEachDelegate;
@@ -108,7 +108,7 @@ namespace Patapon4TLB.UI
 				debugFrame.ConnectedFrame.SetActive(m_InternalSystem != null);
 				debugFrame.DisconnectedFrame.SetActive(m_InternalSystem == null);
 
-				debugFrame.HostButton.interactable = debugFrame.PortField.text.Length > 0;
+				debugFrame.HostButton.interactable    = debugFrame.PortField.text.Length > 0;
 				debugFrame.ConnectButton.interactable = debugFrame.PortField.text.Length > 0 && debugFrame.AddressField.text.Length > 0;
 
 				if (debugFrame.m_WantToDisconnect)
@@ -120,10 +120,10 @@ namespace Patapon4TLB.UI
 				if (debugFrame.m_WantToConnect)
 				{
 					ClientServerBootstrap.CreateClientWorlds();
-					
+
 					var port = (ushort) int.Parse(debugFrame.PortField.text);
-					var ep = NetworkEndPoint.Parse(debugFrame.AddressField.text, port);
-					
+					var ep   = NetworkEndPoint.Parse(debugFrame.AddressField.text, port);
+
 					var clientWorld = ClientServerBootstrap.clientWorld;
 					if (clientWorld != null)
 					{
@@ -140,7 +140,7 @@ namespace Patapon4TLB.UI
 					ClientServerBootstrap.CreateServerWorld();
 
 					var port = (ushort) int.Parse(debugFrame.PortField.text);
-					
+
 					var serverWorld = ClientServerBootstrap.serverWorld;
 					if (serverWorld != null)
 					{
@@ -161,10 +161,10 @@ namespace Patapon4TLB.UI
 					}
 				}
 
-				debugFrame.m_WantToHost = false;
-				debugFrame.m_WantToConnect = false;
+				debugFrame.m_WantToHost       = false;
+				debugFrame.m_WantToConnect    = false;
 				debugFrame.m_WantToDisconnect = false;
-				
+
 				m_GameRuleSystem.VoiceOverlayProperty.Value = debugFrame.ToggleVoiceOverlay.isOn;
 
 				if (m_InternalSystem == null || m_InternalSystem.States.Count <= 0)
