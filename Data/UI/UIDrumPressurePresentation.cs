@@ -68,6 +68,8 @@ namespace Patapon4TLB.UI
 	{
 		public Dictionary<int, AsyncAssetPool<GameObject>> DrumPresentationPools = new Dictionary<int, AsyncAssetPool<GameObject>>();
 		public Dictionary<int, AssetPool<GameObject>>      DrumBackendPools      = new Dictionary<int, AssetPool<GameObject>>();
+		
+		public Dictionary<int, int> DrumVariantCount = new Dictionary<int, int>();
 
 		private EntityQuery m_DrumCanvasQuery;
 
@@ -84,6 +86,7 @@ namespace Patapon4TLB.UI
 			{
 				DrumPresentationPools[i] = new AsyncAssetPool<GameObject>("int:RhythmEngine/UI/DrumPressure");
 				DrumBackendPools[i]      = new AssetPool<GameObject>(CreateBackendDrumGameObject);
+				DrumVariantCount[i]      = 0;
 
 				Debug.Log("Created with " + i);
 			}
@@ -138,17 +141,17 @@ namespace Patapon4TLB.UI
 					
 					backend.play    = true;
 					backend.key     = ev.Key;
-					backend.rand    = Random.Range(0, 2);
+					backend.rand    = DrumVariantCount[ev.Key];
 					backend.perfect = math.abs(ev.Score) <= 0.15f;
 					backend.endTime = Time.time + 1f;
 
 					var i = 0;
-					while (prevRand == backend.rand && i < 3)
+					while (prevRand == DrumVariantCount[ev.Key] && i < 3)
 					{
-						backend.rand = Random.Range(0, 2);
+						DrumVariantCount[ev.Key] = Random.Range(0, 2);
 						i++;
 					}
-					
+
 					Debug.Log("KeyRand: " + backend.rand);
 				}
 			}
