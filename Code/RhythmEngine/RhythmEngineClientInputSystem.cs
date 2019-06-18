@@ -34,48 +34,53 @@ namespace Patapon4TLB.Default
 				var     commandSequence = CommandSequenceFromEntity[entity];
 				ref var pressureEvent   = ref UnsafeUtilityEx.ArrayElementAsRef<RhythmRpcPressureFromClient>(PressureEventSingleArray.GetUnsafePtr(), 0);
 
-				pressureEvent.Beat  = process.Beat;
-				state.IsNewPressure = true;
+				var flowBeat = process.GetFlowBeat(settings.BeatInterval);
+
+				pressureEvent.FlowBeat = flowBeat;
+				state.IsNewPressure    = true;
 
 				var pressureData = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.TimeTick);
-				var offset = pressureData.CorrectedBeat - pressureData.OriginalBeat;
-				var cmdOffset = predictedCommand.EndBeat - predictedCommand.StartBeat;
-				var failFlag = commandSequence.Length == 0 
-				               && (pressureData.CorrectedBeat > predictedCommand.EndBeat && predictedCommand.EndBeat + offset < process.Beat && predictedCommand.EndBeat > 0);
-				var failFlag2 = (pressureData.CorrectedBeat - offset > predictedCommand.ChainEndBeat && predictedCommand.ChainEndBeat > 0);
-				
-				if (state.IsRecovery(process.Beat))
+				var cmdOffset    = predictedCommand.EndBeat - predictedCommand.StartBeat;
+				var failFlag = commandSequence.Length == 0
+				               && (pressureData.RenderBeat > predictedCommand.EndBeat && predictedCommand.EndBeat < flowBeat && predictedCommand.EndBeat > 0);
+				var failFlag2 = pressureData.RenderBeat > predictedCommand.ChainEndBeat
+				                && predictedCommand.ChainEndBeat > flowBeat
+				                && predictedCommand.ChainEndBeat > 0;
+
+				if (state.IsRecovery(flowBeat))
 				{
 					predictedCommand.ChainEndBeat = -1;
 				}
-				else if (predictedCommand.EndBeat > process.Beat + 1 || failFlag2)
+				else if (predictedCommand.EndBeat > flowBeat || failFlag2)
 				{
-					Debug.Log($"{predictedCommand.EndBeat > process.Beat + 1}: {predictedCommand.EndBeat}, {process.Beat}");
-					Debug.Log($"{failFlag2}: {pressureData.CorrectedBeat - offset} > {predictedCommand.ChainEndBeat} && {predictedCommand.ChainEndBeat - offset} > {process.Beat}");
-					
+					Debug.Log($"{predictedCommand.EndBeat > flowBeat}: {predictedCommand.EndBeat}, {flowBeat}");
+					Debug.Log($"{failFlag2}: {pressureData.RenderBeat} > {predictedCommand.ChainEndBeat} && {predictedCommand.ChainEndBeat} > {flowBeat}");
+
 					pressureEvent.ShouldStartRecovery = true;
-					state.NextBeatRecovery = process.Beat + 1;
-					predictedCommand.ChainEndBeat = -1;
+					state.NextBeatRecovery            = flowBeat + 1;
+					predictedCommand.ChainEndBeat     = -1;
 				}
 				else
 				{
+					Debug.Log($"Pressure --> beat={pressureData.RenderBeat}, time={pressureData.Time}");
+					
 					commandSequence.Add(new RhythmEngineCurrentCommand
 					{
 						Data = pressureData
 					});
 				}
-				
-				state.LastPressureBeat = math.max(state.LastPressureBeat, pressureData.CorrectedBeat);
+
+				state.LastPressureBeat = math.max(state.LastPressureBeat, pressureData.RenderBeat);
 
 				CreatePressureEventList.Add(new FlowRhythmPressureEventProvider.Create
 				{
 					Ev = new PressureEvent
 					{
-						Engine        = entity,
-						Key           = pressureEvent.Key,
-						CorrectedBeat = pressureData.CorrectedBeat,
-						OriginalBeat  = pressureData.OriginalBeat,
-						Score         = pressureData.Score
+						Engine     = entity,
+						Key        = pressureEvent.Key,
+						Time       = process.TimeTick,
+						RenderBeat = pressureData.RenderBeat,
+						Score      = pressureData.Score
 					}
 				});
 			}
@@ -85,7 +90,7 @@ namespace Patapon4TLB.Default
 		private struct SendRpcEvent : IJobForEachWithEntity<NetworkIdComponent>
 		{
 			[DeallocateOnJobCompletion] public NativeArray<RhythmRpcPressureFromClient> PressureEventSingleArray;
-			public RpcQueue<RhythmRpcPressureFromClient> RpcQueue;
+			public                             RpcQueue<RhythmRpcPressureFromClient>    RpcQueue;
 
 			[NativeDisableParallelForRestriction]
 			public BufferFromEntity<OutgoingRpcDataStreamBufferComponent> OutgoingDataBufferFromEntity;
@@ -100,7 +105,7 @@ namespace Patapon4TLB.Default
 		public const int    ActionLength  = 4;
 
 		public InputAction[] m_Actions;
-		
+
 		private FlowRhythmPressureEventProvider m_PressureEventProvider;
 
 		protected override void OnCreate()
@@ -131,11 +136,11 @@ namespace Patapon4TLB.Default
 			// this will happen if the client didn't pressed any keys (or if it's not a client at all)
 			if (InputEvents.Count < 0)
 				return inputDeps;
-			
+
 			// not enabled
 			if (!World.GetExistingSystem<ClientPresentationSystemGroup>().Enabled)
 				return inputDeps;
-			
+
 			inputDeps.Complete();
 			EntityManager.CompleteAllJobs();
 
@@ -144,8 +149,8 @@ namespace Patapon4TLB.Default
 			{
 				pressureEvent = new RhythmRpcPressureFromClient
 				{
-					Beat = -1,                                     // the beat will be assigned SendLocalEventToEngine job
-					Key  = Array.IndexOf(m_Actions, ev.action) + 1 // match RhythmKeys
+					FlowBeat = -1,                                     // the beat will be assigned SendLocalEventToEngine job
+					Key      = Array.IndexOf(m_Actions, ev.action) + 1 // match RhythmKeys
 				};
 			}
 
@@ -164,19 +169,19 @@ namespace Patapon4TLB.Default
 			{
 				PressureEventSingleArray  = pressureEventSingleArray,
 				CommandSequenceFromEntity = GetBufferFromEntity<RhythmEngineCurrentCommand>(),
-				
+
 				CreatePressureEventList = m_PressureEventProvider.GetEntityDelayedList()
 			}.Schedule(this, inputDeps);
-			
+
 			m_PressureEventProvider.AddJobHandleForProducer(inputDeps);
-			
+
 			inputDeps = new SendRpcEvent
 			{
 				PressureEventSingleArray     = pressureEventSingleArray,
 				RpcQueue                     = rpcQueue,
 				OutgoingDataBufferFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>()
 			}.Schedule(this, inputDeps);
-			
+
 			inputDeps.Complete();
 
 			return inputDeps;

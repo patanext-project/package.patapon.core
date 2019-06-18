@@ -26,6 +26,8 @@ namespace Patapon4TLB.Default
 				if (state.IsPaused)
 					return;
 
+				var previousBeat = process.GetActivationBeat(settings.BeatInterval);
+
 				process.TimeTick = (int) (CurrentTime - process.StartTime);
 				if (settings.BeatInterval <= 0.0001f)
 				{
@@ -33,20 +35,7 @@ namespace Patapon4TLB.Default
 					return;
 				}
 
-				var previousBeat = process.Beat;
-
-				if (process.TimeTick != 0)
-				{
-					process.Beat = process.TimeTick / settings.BeatInterval;
-					if (process.TimeTick < 0)
-						process.Beat++;
-				}
-				else
-				{
-					process.Beat = 0;
-				}
-
-				var diff = predictedProcess.Beat - process.Beat;
+				var diff = process.GetActivationBeat(settings.BeatInterval) - previousBeat;
 				if (diff != 0)
 				{
 					state.IsNewBeat = true;
@@ -67,7 +56,7 @@ namespace Patapon4TLB.Default
 		{
 			if (IsServer)
 				return inputDeps;
-			
+
 			return new SimulateJob
 			{
 				CurrentTime = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Value.Predicted

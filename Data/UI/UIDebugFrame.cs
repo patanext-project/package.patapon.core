@@ -52,7 +52,7 @@ namespace Patapon4TLB.UI
 
 			private EntityQueryBuilder.F_ED<NetworkSnapshotAckComponent> m_ForEachDelegate;
 
-			public int  ClientBeat, ServerBeat;
+			public int  ClientActivationBeat, ServerActivationBeat;
 			public int  TimeDiff;
 			public int  ClientCmdBeat, ServerCmdBeat;
 			public bool IsCmdClient,   IsCmdServer;
@@ -71,13 +71,16 @@ namespace Patapon4TLB.UI
 				Entities.ForEach(m_ForEachDelegate);
 				Entities.WithAll<RhythmEngineSimulateTag>().ForEach((ref RhythmEngineProcess process, ref RhythmPredictedProcess predictedProcess, ref GameCommandState gameCommandState, ref RhythmCurrentCommand currentCommand, ref GamePredictedCommandState predictedCommand) =>
 				{
-					ClientBeat = process.Beat;
-					ServerBeat = predictedProcess.Beat;
+					var activationBeat = process.GetActivationBeat(500);
+					var flowBeat = process.GetFlowBeat(500);
+					
+					ClientActivationBeat = activationBeat;
+					ServerActivationBeat = predictedProcess.Beat;
 					TimeDiff   = process.TimeTick - (int) (predictedProcess.Time * 1000);
 
 
-					IsCmdServer = gameCommandState.StartBeat <= process.Beat && gameCommandState.EndBeat > process.Beat;
-					IsCmdClient = currentCommand.ActiveAtBeat <= process.Beat && predictedCommand.EndBeat > process.Beat;
+					IsCmdServer = gameCommandState.StartBeat <= flowBeat && gameCommandState.EndBeat > flowBeat;
+					IsCmdClient = currentCommand.ActiveAtBeat <= flowBeat && predictedCommand.EndBeat > flowBeat;
 
 					ServerCmdBeat = gameCommandState.StartBeat;
 					ClientCmdBeat = currentCommand.ActiveAtBeat;
@@ -180,7 +183,7 @@ namespace Patapon4TLB.UI
 				}
 
 				l = StringFormatter.Write(ref m_Buffer, 0, "C: {0}\nS: {1}\nC cmd|sb: {2}  {4}\nS cmd|sb: {3}  {5}",
-					m_InternalSystem.ClientBeat, m_InternalSystem.ServerBeat,
+					m_InternalSystem.ClientActivationBeat, m_InternalSystem.ServerActivationBeat,
 					m_InternalSystem.IsCmdClient ? 1 : 0, m_InternalSystem.IsCmdServer ? 1 : 0,
 					m_InternalSystem.ClientCmdBeat, m_InternalSystem.ServerCmdBeat);
 				fixed (char* ptr = m_Buffer)

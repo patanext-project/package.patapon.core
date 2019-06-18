@@ -35,13 +35,15 @@ namespace Patapon4TLB.Default
 					var stateData         = stateDataArray[i];
 					var currCommandBuffer = currCommandAccessor[i];
 
+					var flowBeat = predictedData.GetFlowBeat(settingsData.BeatInterval);
+
 					for (var j = 0; j != currCommandBuffer.Length; j++)
 					{
 						var currCommand = currCommandBuffer[j];
-						if (predictedData.Beat > currCommand.Data.OriginalBeat + 1 + settingsData.MaxBeats
-						    || stateData.IsRecovery(predictedData.Beat))
+						if (flowBeat > currCommand.Data.RenderBeat + 1 + settingsData.MaxBeats
+						    || stateData.IsRecovery(flowBeat))
 						{
-							Debug.Log($"Deleted (c:{predictedData.Beat}), {currCommand.Data.OriginalBeat} {currCommand.Data.CorrectedBeat}");
+							Debug.Log($"Deleted (fb: {flowBeat}), {currCommand.Data.RenderBeat}");
 							currCommandBuffer.RemoveAt(j);
 							j--; // swap back method.
 						}

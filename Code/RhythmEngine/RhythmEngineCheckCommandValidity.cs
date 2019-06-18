@@ -65,23 +65,27 @@ namespace Patapon4TLB.Default
 
 			public bool SameAsSequence(DynamicBuffer<RhythmCommandSequence> commandSequence, DynamicBuffer<RhythmPressureData> currentCommand, bool predict)
 			{
-				if (commandSequence.Length != currentCommand.Length && !predict)
-					return false;
-
 				if (currentCommand.Length <= 0)
 					return false;
 
-				var lastCommandBeat = currentCommand[currentCommand.Length - 1].CorrectedBeat;
+				var lastCommandBeat  = currentCommand[currentCommand.Length - 1].RenderBeat;
 				var lastSequenceBeat = commandSequence[commandSequence.Length - 1].BeatEnd;
-				var diff = lastCommandBeat - lastSequenceBeat;
-				
+				var diff             = lastCommandBeat - lastSequenceBeat;
+
 				var length = math.min(currentCommand.Length, commandSequence.Length);
+				if (!predict && length != commandSequence.Length)
+					return false;
+
+				var comOffset = currentCommand.Length - length;
+				if (comOffset < 0)
+					return false;
+				
 				for (var com = length - 1; com >= 0; com--)
 				{
 					var range   = commandSequence[com].BeatRange;
-					var comBeat = diff - currentCommand[com].CorrectedBeat;
+					var comBeat = diff - currentCommand[com + comOffset].RenderBeat;
 
-					if (commandSequence[com].Key != currentCommand[com].KeyId)
+					if (commandSequence[com].Key != currentCommand[com + comOffset].KeyId)
 						return false;
 
 					if (!(range.start >= comBeat && comBeat <= range.end))
@@ -143,7 +147,7 @@ namespace Patapon4TLB.Default
 
 				if (IsServer && settings.UseClientSimulation && !state.VerifyCommand)
 					return;
-				
+
 				var currCommandArray = CurrentCommandFromEntity[entity];
 				var result           = GetCurrentCommand(currCommandArray.Reinterpret<RhythmPressureData>());
 
@@ -155,7 +159,7 @@ namespace Patapon4TLB.Default
 						rhythmCurrentCommand.HasPredictedCommands = true;
 
 					predictions.Dispose();
-					
+
 					return;
 				}
 
@@ -163,16 +167,18 @@ namespace Patapon4TLB.Default
 
 
 				var lastCommand = currCommandArray[currCommandArray.Length - 1].Data;
-				var targetBeat  = lastCommand.CorrectedBeat + 1;
+				var targetBeat  = process.GetFlowBeat(settings.BeatInterval) + 1;
 
 				rhythmCurrentCommand.ActiveAtBeat  = targetBeat;
 				rhythmCurrentCommand.CommandTarget = result;
-
-				state.VerifyCommand = false;
-				state.ApplyCommandNextBeat = true;
 				
+				Debug.Log($"Active At: {targetBeat}, last command beat: {lastCommand.RenderBeat} ({process.TimeTick}, {lastCommand.Time}; --> d: {process.TimeTick - lastCommand.Time})");
+
+				state.VerifyCommand        = false;
+				state.ApplyCommandNextBeat = true;
+
 				if (!IsServer && settings.UseClientSimulation)
-				{					
+				{
 					var clientRequest = new NativeArray<RhythmEngineClientRequestedCommand>(currCommandArray.Length, Allocator.Temp);
 					for (var com = 0; com != clientRequest.Length; com++)
 					{
@@ -198,8 +204,8 @@ namespace Patapon4TLB.Default
 					}
 				}
 
-				rhythmCurrentCommand.Power = math.clamp((int)math.ceil(power * 100 / currCommandArray.Length), 0, 100);
-				
+				rhythmCurrentCommand.Power = math.clamp((int) math.ceil(power * 100 / currCommandArray.Length), 0, 100);
+
 				currCommandArray.Clear();
 			}
 		}

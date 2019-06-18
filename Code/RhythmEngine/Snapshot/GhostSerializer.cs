@@ -74,7 +74,6 @@ namespace Patapon4TLB.Default.Snapshot
 			snapshot.BeatInterval        = engineSettings.BeatInterval;
 
 			var engineProcess = chunk.GetNativeArray(GhostEngineProcessType.Archetype)[ent];
-			snapshot.Beat      = engineProcess.Beat;
 			snapshot.StartTime = engineProcess.StartTime;
 
 			var engineState = chunk.GetNativeArray(GhostEngineStateType.Archetype)[ent];

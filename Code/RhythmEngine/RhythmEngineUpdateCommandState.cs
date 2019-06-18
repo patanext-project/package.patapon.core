@@ -50,7 +50,8 @@ namespace Patapon4TLB.Default
 					checkStopBeat = math.max(checkStopBeat, PredictedCommandFromEntity[entity].EndBeat + 1);
 				}
 
-				if (state.IsRecovery(process.Beat) || (!commandState.IsActive && rhythm.ActiveAtBeat < process.Beat && checkStopBeat + mercy < process.Beat)
+				var flowBeat = process.GetFlowBeat(settings.BeatInterval);
+				if (state.IsRecovery(flowBeat) || (!commandState.IsActive && rhythm.ActiveAtBeat < flowBeat && checkStopBeat + mercy < flowBeat)
 				                                   || (rhythm.CommandTarget == default && rhythm.HasPredictedCommands && rhythm.ActiveAtBeat < state.LastPressureBeat))
 				{
 					comboState.Chain        = 0;
@@ -69,7 +70,7 @@ namespace Patapon4TLB.Default
 					}
 				}
 
-				if (rhythm.CommandTarget == default || state.IsRecovery(process.Beat))
+				if (rhythm.CommandTarget == default || state.IsRecovery(flowBeat))
 				{
 					commandState.IsActive     = false;
 					commandState.StartBeat    = -1;
@@ -87,11 +88,11 @@ namespace Patapon4TLB.Default
 
 					isActive =
 						// check start
-						(rhythm.ActiveAtBeat < 0 || rhythm.ActiveAtBeat <= process.Beat)
+						(rhythm.ActiveAtBeat < 0 || rhythm.ActiveAtBeat <= flowBeat)
 						// check end
 						&& (rhythm.CustomEndBeat == -2
-						    || (rhythm.ActiveAtBeat >= 0 && rhythm.ActiveAtBeat + commandData.BeatLength > process.Beat)
-						    || rhythm.CustomEndBeat > process.Beat)
+						    || (rhythm.ActiveAtBeat >= 0 && rhythm.ActiveAtBeat + commandData.BeatLength > flowBeat)
+						    || rhythm.CustomEndBeat > flowBeat)
 						// if both are set to no effect, then the command is not active
 						&& rhythm.ActiveAtBeat != 1 && rhythm.CustomEndBeat != 1;
 				}
@@ -103,7 +104,7 @@ namespace Patapon4TLB.Default
 					var isNew = state.ApplyCommandNextBeat;
 					if (isNew)
 					{
-						Debug.Log($"Command start at {rhythm.ActiveAtBeat}, currbeat: {process.Beat}");
+						Debug.Log($"Command start at {rhythm.ActiveAtBeat}, currFlowBeat: {flowBeat}, currBeat: {process.GetActivationBeat(settings.BeatInterval)}");
 						
 						previousPrediction.ChainEndBeat = (rhythm.CustomEndBeat == 0 || rhythm.CustomEndBeat == -1) ? rhythm.ActiveAtBeat + beatLength * 2 : rhythm.CustomEndBeat;
 

@@ -58,8 +58,7 @@ namespace Patapon4TLB.Default
 				writer.Write(ResultBuffer[com].Data.Score);
 				writer.Write(ResultBuffer[com].Data.KeyId);
 				writer.Write(ResultBuffer[com].Data.Time);
-				writer.Write(ResultBuffer[com].Data.OriginalBeat);
-				writer.Write(ResultBuffer[com].Data.CorrectedBeat);
+				writer.Write(ResultBuffer[com].Data.RenderBeat);
 			}
 		}
 
@@ -74,11 +73,10 @@ namespace Patapon4TLB.Default
 			for (var com = 0; com != count; com++)
 			{
 				var temp = default(RhythmPressureData);
-				temp.Score         = reader.ReadFloat(ref ctx);
-				temp.KeyId         = reader.ReadInt(ref ctx);
-				temp.Time          = reader.ReadInt(ref ctx);
-				temp.OriginalBeat  = reader.ReadInt(ref ctx);
-				temp.CorrectedBeat = reader.ReadInt(ref ctx);
+				temp.Score      = reader.ReadFloat(ref ctx);
+				temp.KeyId      = reader.ReadInt(ref ctx);
+				temp.Time       = reader.ReadInt(ref ctx);
+				temp.RenderBeat = reader.ReadInt(ref ctx);
 
 				ResultBuffer[com] = new RhythmEngineClientRequestedCommand {Data = temp};
 			}
@@ -141,15 +139,15 @@ namespace Patapon4TLB.Default
 					currentCommand.CopyFrom(requestedCommand);
 
 					// it may be possible that client is delayed by one beat
-					var lastCmdTime = currentCommand[currentCommand.Length - 1].Time;
-					var offset    = process.Beat - (currentCommand[0].CorrectedBeat + (settings.MaxBeats - 1));
+					var lastCmdTime  = currentCommand[currentCommand.Length - 1].Time;
+					var currFlowBeat = process.GetFlowBeat(settings.BeatInterval);
+					var offset       = currFlowBeat - (currentCommand[0].RenderBeat + (settings.MaxBeats - 1));
 					if (math.abs(offset) > 1)
 					{
 						for (var com = 0; com != currentCommand.Length; com++)
 						{
 							var tmp = currentCommand[com];
-							tmp.CorrectedBeat   += offset;
-							tmp.OriginalBeat    += offset;
+							tmp.RenderBeat      += offset;
 							currentCommand[com] =  tmp;
 						}
 					}
@@ -180,7 +178,7 @@ namespace Patapon4TLB.Default
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
 			m_ExecuteCommandQuery.AddDependency(inputDeps);
-			
+
 			inputDeps = new Job
 			{
 				AllowCommandChange = true,
@@ -198,7 +196,7 @@ namespace Patapon4TLB.Default
 				inputDeps.Complete();
 				EntityManager.DestroyEntity(m_ExecuteCommandQuery);
 			}
-			
+
 			return inputDeps;
 		}
 	}

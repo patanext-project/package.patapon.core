@@ -14,21 +14,21 @@ namespace Patapon4TLB.Default
 {
 	public struct RhythmRpcPressureFromClient : IRpcCommand
 	{
-		public int Key;
-		public int Beat;
+		public int  Key;
+		public int  FlowBeat;
 		public bool ShouldStartRecovery;
 
 		public void Serialize(DataStreamWriter data)
 		{
 			data.Write(Key);
-			data.Write(Beat);
+			data.Write(FlowBeat);
 			data.Write(ShouldStartRecovery ? 1 : 0);
 		}
 
 		public void Deserialize(DataStreamReader reader, ref DataStreamReader.Context ctx)
 		{
-			Key  = reader.ReadInt(ref ctx);
-			Beat = reader.ReadInt(ref ctx);
+			Key                 = reader.ReadInt(ref ctx);
+			FlowBeat            = reader.ReadInt(ref ctx);
 			ShouldStartRecovery = reader.ReadInt(ref ctx) == 1;
 		}
 
@@ -115,11 +115,11 @@ namespace Patapon4TLB.Default
 					{
 						Ev = new PressureEvent
 						{
-							Engine        = ghostEntity.entity,
-							CorrectedBeat = executePressure.RpcData.Beat,
-							OriginalBeat  = executePressure.RpcData.Beat,
-							Key           = executePressure.RpcData.Key,
-							Score         = executePressure.RpcData.Score
+							Engine     = ghostEntity.entity,
+							Time       = -1, // find the time
+							RenderBeat = executePressure.RpcData.Beat,
+							Key        = executePressure.RpcData.Key,
+							Score      = executePressure.RpcData.Score
 						}
 					});
 				}
@@ -178,9 +178,10 @@ namespace Patapon4TLB.Default
 			[NativeDisableParallelForRestriction]
 			public BufferFromEntity<OutgoingRpcDataStreamBufferComponent> OutgoingDataFromEntity;
 
-			[ReadOnly] public ComponentDataFromEntity<RhythmEngineProcess> ProcessFromEntity;
-			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<RhythmEngineState>   StateFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<GameCommandState>    CommandStateFromEntity;
+			[ReadOnly]                            public ComponentDataFromEntity<RhythmEngineProcess>  ProcessFromEntity;
+			[ReadOnly]                            public ComponentDataFromEntity<RhythmEngineSettings> SettingsFromEntity;
+			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<RhythmEngineState>    StateFromEntity;
+			[ReadOnly]                            public ComponentDataFromEntity<GameCommandState>     CommandStateFromEntity;
 
 			[ReadOnly, DeallocateOnJobCompletion]
 			public NativeArray<Entity> ConnectionEntities;
@@ -203,19 +204,22 @@ namespace Patapon4TLB.Default
 						if (targetConnectionEntity != executePressure.Connection)
 							continue;
 
-						var engine  = EngineChunks[chunk].GetNativeArray(EntityType)[ent];
-						var process = ProcessFromEntity[engine];
-						var state   = StateFromEntity[engine];
-						var command = CommandStateFromEntity[engine];
+						var engine   = EngineChunks[chunk].GetNativeArray(EntityType)[ent];
+						var process  = ProcessFromEntity[engine];
+						var settings = SettingsFromEntity[engine];
+						var state    = StateFromEntity[engine];
+						var command  = CommandStateFromEntity[engine];
 
-						if (command.EndBeat > process.Beat + 1 || executePressure.RpcData.ShouldStartRecovery)
+						var       flowBeat = process.GetFlowBeat(settings.BeatInterval);
+						const int mercy    = 1;
+						if (command.EndBeat > flowBeat + mercy || executePressure.RpcData.ShouldStartRecovery)
 						{
 							// recover...
-							Debug.Log($"recover... ({command.EndBeat} > {process.Beat + 1}) or {executePressure.RpcData.ShouldStartRecovery}");
-							state.NextBeatRecovery  = process.Beat + 1;
+							Debug.Log($"recover... ({command.EndBeat} > {flowBeat + 1}) or {executePressure.RpcData.ShouldStartRecovery}");
+							state.NextBeatRecovery = flowBeat + 1;
 						}
 
-						state.LastPressureBeat = process.Beat;
+						state.LastPressureBeat  = flowBeat;
 						StateFromEntity[engine] = state;
 
 						// When the client will send a command event, we will be able to check if the command is valid or not (if he used cheats)
@@ -273,6 +277,7 @@ namespace Patapon4TLB.Default
 				NetworkOwnerFromEntity = GetComponentDataFromEntity<NetworkOwner>(true),
 				GhostStateFromEntity   = GetComponentDataFromEntity<GhostSystemStateComponent>(true),
 				ProcessFromEntity      = GetComponentDataFromEntity<RhythmEngineProcess>(true),
+				SettingsFromEntity     = GetComponentDataFromEntity<RhythmEngineSettings>(true),
 				CommandStateFromEntity = GetComponentDataFromEntity<GameCommandState>(true),
 				StateFromEntity        = GetComponentDataFromEntity<RhythmEngineState>(false),
 				CommandBuffer          = m_Barrier.CreateCommandBuffer().ToConcurrent(),

@@ -1,4 +1,5 @@
 ﻿using package.patapon.core;
+using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.NetCode;
@@ -14,9 +15,9 @@ namespace Patapon4TLB.UI
 			Fever,
 			Command,
 		}
-		
+
 		public GameObject[] Lines = new GameObject[3];
-		public Material Material;
+		public Material     Material;
 
 		public Phase CurrPhase;
 		public Color Color;
@@ -30,13 +31,13 @@ namespace Patapon4TLB.UI
 		[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 		public class ClientSystem : GameBaseSystem
 		{
-			public int   Beat;
+			public int   ActivationBeat;
 			public bool  IsCommandServer;
 			public bool  IsCommandClient;
 			public float LastBeatTime;
 
 			public GameComboState ComboState;
-			
+
 			private EntityQueryBuilder.F_EDDDDDD<RhythmEngineProcess, GameCommandState, RhythmCurrentCommand, GamePredictedCommandState, GameComboState, GameComboPredictedClient> m_Delegate;
 
 			private void ForEach(Entity entity, ref RhythmEngineProcess process, ref GameCommandState gameCommandState, ref RhythmCurrentCommand currentCommand, ref GamePredictedCommandState predictedCommand, ref GameComboState comboState, ref GameComboPredictedClient predictedCombo)
@@ -47,19 +48,20 @@ namespace Patapon4TLB.UI
 				}
 				else
 				{
-					ComboState         = predictedCombo.State;
-				}
-				
-				if (process.Beat != Beat)
-				{
-					Beat         = process.Beat;
-					LastBeatTime = Time.time;
+					ComboState = predictedCombo.State;
 				}
 
-				IsCommandServer = gameCommandState.StartBeat <= Beat && gameCommandState.EndBeat > Beat;
+				var activationBeat = process.GetActivationBeat(EntityManager.GetComponentData<RhythmEngineSettings>(entity).BeatInterval);
+				if (activationBeat != ActivationBeat)
+				{
+					ActivationBeat = activationBeat;
+					LastBeatTime   = Time.time;
+				}
+
+				IsCommandServer = gameCommandState.StartBeat <= ActivationBeat && gameCommandState.EndBeat > ActivationBeat;
 				if (EntityManager.HasComponent<RhythmEngineSimulateTag>(entity))
 				{
-					IsCommandClient = currentCommand.ActiveAtBeat <= Beat && predictedCommand.EndBeat > Beat;
+					IsCommandClient = currentCommand.ActiveAtBeat <= ActivationBeat && predictedCommand.EndBeat > ActivationBeat;
 				}
 			}
 
@@ -83,16 +85,16 @@ namespace Patapon4TLB.UI
 		{
 			private float m_BeatTime;
 			private float m_BeatTimeExp;
-			private int m_PreviousBeat; 
-			private int m_CurrentHue;
-			
+			private int   m_PreviousBeat;
+			private int   m_CurrentHue;
+
 			private static void SetGrayScale(ref Color c, float v)
 			{
 				c.r = v;
 				c.g = v;
 				c.b = v;
 			}
-			
+
 			private void UpdateAll(UIBeatFrame uiBeatFrame)
 			{
 				if (m_ClientSystem == null)
@@ -108,11 +110,11 @@ namespace Patapon4TLB.UI
 				}
 
 				var newBeat = false;
-				if (m_PreviousBeat != m_ClientSystem.Beat)
+				if (m_PreviousBeat != m_ClientSystem.ActivationBeat)
 				{
-					m_BeatTime = 0;
-					m_BeatTimeExp = 0;
-					m_PreviousBeat = m_ClientSystem.Beat;
+					m_BeatTime     = 0;
+					m_BeatTimeExp  = 0;
+					m_PreviousBeat = m_ClientSystem.ActivationBeat;
 
 					newBeat = true;
 				}
@@ -138,8 +140,8 @@ namespace Patapon4TLB.UI
 
 				if (m_ClientSystem.ComboState.IsFever && newBeat)
 				{
-					uiBeatFrame.CurrPhase = Phase.Fever;
-					m_CurrentHue += 1;
+					uiBeatFrame.CurrPhase =  Phase.Fever;
+					m_CurrentHue          += 1;
 				}
 
 				if ((m_ClientSystem.IsCommandServer || m_ClientSystem.IsCommandClient) && newBeat)
@@ -199,15 +201,15 @@ namespace Patapon4TLB.UI
 			private ClientSystem                        m_ClientSystem;
 
 			private Material m_BeatMaterial;
-			private int m_ColorId;
+			private int      m_ColorId;
 
 			protected override void OnCreate()
 			{
 				base.OnCreate();
 
 				m_QueryUpdateAll = UpdateAll;
-				m_ColorId = Shader.PropertyToID("_Color");
-				
+				m_ColorId        = Shader.PropertyToID("_Color");
+
 				RequireForUpdate(GetEntityQuery(typeof(UIBeatFrame)));
 			}
 

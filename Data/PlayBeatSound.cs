@@ -12,19 +12,20 @@ namespace Patapon4TLB.Default.Test
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	[UpdateAfter(typeof(RhythmEngineClientInputSystem))]
 	public class PlayBeatSound : ComponentSystem
-	{	
-		private int  m_LastBeat;
+	{
+		private int  m_PreviousActivationBeat;
 		private bool m_Play;
-		
+
 		public bool VoiceOverlay;
 
-		private void ForEachEngine(Entity e, ref RhythmEngineProcess process)
+		private void ForEachEngine(Entity e, ref RhythmEngineProcess process, ref RhythmEngineSettings settings)
 		{
-			if (m_LastBeat == process.Beat)
+			var currActivationBeat = process.GetActivationBeat(settings.BeatInterval);
+			if (m_PreviousActivationBeat == currActivationBeat)
 				return;
 
-			m_LastBeat = process.Beat;
-			m_Play     = true;
+			m_PreviousActivationBeat = currActivationBeat;
+			m_Play             = true;
 		}
 
 		private void ForEachPressureEvent(Entity entity, ref PressureEvent pressureEvent)
@@ -44,11 +45,14 @@ namespace Patapon4TLB.Default.Test
 			var predictedCommand = EntityManager.GetComponentData<GamePredictedCommandState>(pressureEvent.Engine);
 			var process          = EntityManager.GetComponentData<RhythmEngineProcess>(pressureEvent.Engine);
 			var state            = EntityManager.GetComponentData<RhythmEngineState>(pressureEvent.Engine);
+			var settings         = EntityManager.GetComponentData<RhythmEngineSettings>(pressureEvent.Engine);
 
-			var isRunningCommand = gameCommandState.StartBeat <= process.Beat && gameCommandState.EndBeat > process.Beat + 1      // server
-			                       || currentCommand.ActiveAtBeat <= process.Beat && predictedCommand.EndBeat > process.Beat + 1; // client
+			var currFlowBeat = process.GetFlowBeat(settings.BeatInterval);
 
-			var shouldFail = isRunningCommand || state.IsRecovery(process.Beat);
+			var isRunningCommand = gameCommandState.StartBeat <= currFlowBeat && gameCommandState.EndBeat > currFlowBeat      // server
+			                       || currentCommand.ActiveAtBeat <= currFlowBeat && predictedCommand.EndBeat > currFlowBeat; // client
+
+			var shouldFail = isRunningCommand || state.IsRecovery(currFlowBeat);
 			if (shouldFail)
 			{
 				Debug.Log("Yes FAIL!" + Time.time);
@@ -56,7 +60,7 @@ namespace Patapon4TLB.Default.Test
 			}
 
 			// do the perfect sound
-			var isPerfect = currentCommand.ActiveAtBeat >= process.Beat && currentCommand.Power >= 100;
+			var isPerfect = currentCommand.ActiveAtBeat >= currFlowBeat && currentCommand.Power >= 100;
 			if (isPerfect)
 			{
 				m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPerfect, 1.25f);
@@ -76,15 +80,15 @@ namespace Patapon4TLB.Default.Test
 			}
 		}
 
-		private EntityQueryBuilder.F_ED<RhythmEngineProcess> m_EngineDelegate;
-		private EntityQueryBuilder.F_ED<PressureEvent> m_PressureEventDelegate;
+		private EntityQueryBuilder.F_EDD<RhythmEngineProcess, RhythmEngineSettings> m_EngineDelegate;
+		private EntityQueryBuilder.F_ED<PressureEvent>                              m_PressureEventDelegate;
 
 		private AudioSource m_AudioSourceOnNewBeat;
 		private AudioSource m_AudioSourceOnNewPressureDrum;
 		private AudioSource m_AudioSourceOnNewPressureVoice;
 
 		private AudioClip                                   m_AudioOnNewBeat;
-		private AudioClip m_AudioOnPerfect;
+		private AudioClip                                   m_AudioOnPerfect;
 		private Dictionary<int, Dictionary<int, AudioClip>> m_AudioOnPressureDrum;
 		private Dictionary<int, Dictionary<int, AudioClip>> m_AudioOnPressureVoice;
 
@@ -127,7 +131,7 @@ namespace Patapon4TLB.Default.Test
 			Addressables.LoadAsset<AudioClip>("int:RhythmEngine/Sounds/perfect_1.wav")
 			            .Completed += op => m_AudioOnPerfect = op.Result;
 
-			m_AudioOnPressureDrum = new Dictionary<int, Dictionary<int, AudioClip>>(12);
+			m_AudioOnPressureDrum  = new Dictionary<int, Dictionary<int, AudioClip>>(12);
 			m_AudioOnPressureVoice = new Dictionary<int, Dictionary<int, AudioClip>>(12);
 
 			for (int i = 0; i != 4; i++)
@@ -135,13 +139,13 @@ namespace Patapon4TLB.Default.Test
 				var key = i + 1;
 
 				m_AudioOnPressureVoice[key] = new Dictionary<int, AudioClip>(3);
-				m_AudioOnPressureDrum[key] = new Dictionary<int, AudioClip>(3);
-				
+				m_AudioOnPressureDrum[key]  = new Dictionary<int, AudioClip>(3);
+
 				for (int r = 0; r != 3; r++)
 				{
 					var rank = r;
 
-					m_AudioOnPressureDrum[key][rank] = null;
+					m_AudioOnPressureDrum[key][rank]  = null;
 					m_AudioOnPressureVoice[key][rank] = null;
 
 					Addressables.LoadAsset<AudioClip>($"int:RhythmEngine/Sounds/drum_{key}_{rank}.ogg").Completed += op =>
@@ -150,7 +154,7 @@ namespace Patapon4TLB.Default.Test
 
 						m_AudioOnPressureDrum[key][rank] = op.Result;
 					};
-					
+
 					Addressables.LoadAsset<AudioClip>($"int:RhythmEngine/Sounds/voice_{key}_{rank}.wav").Completed += op =>
 					{
 						Debug.Assert(op.IsValid, "op.IsValid");
@@ -165,7 +169,7 @@ namespace Patapon4TLB.Default.Test
 		{
 			if (!Application.isPlaying)
 				return;
-			
+
 			m_Play = false;
 
 			Entities.WithAll<RhythmEngineSimulateTag>().ForEach(m_EngineDelegate);

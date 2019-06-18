@@ -23,7 +23,7 @@ namespace Patapon4TLB.Default
 				new RhythmCommandSequence(3, RhythmKeys.Right),
 			});
 			EntityManager.AddComponent(march, typeof(MarchCommand));
-
+			
 			var attack = Build(builder, new RhythmCommandData {Identifier = new NativeString64("attack"), BeatLength = 4}, new[]
 			{
 				new RhythmCommandSequence(0, RhythmKeys.Right),

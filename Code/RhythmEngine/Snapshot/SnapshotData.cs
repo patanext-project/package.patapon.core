@@ -13,7 +13,6 @@ namespace Patapon4TLB.Default.Snapshot
 		public bool UseClientSimulation;
 		public int  MaxBeats;
 		public int  BeatInterval;
-		public int  Beat;
 
 		public int OwnerGhostId;
 		public int StartTime;     // in ms
@@ -42,10 +41,9 @@ namespace Patapon4TLB.Default.Snapshot
 
 			writer.WritePackedUInt(boolBitFields, compressionModel);
 
-			// 3
+			// 2
 			writer.WritePackedUInt((uint) MaxBeats, compressionModel);
 			writer.WritePackedUInt((uint) BeatInterval, compressionModel);
-			writer.WritePackedUInt((uint) Beat, compressionModel);
 
 			// 6
 			writer.WritePackedUInt((uint) OwnerGhostId, compressionModel);
@@ -69,10 +67,9 @@ namespace Patapon4TLB.Default.Snapshot
 
 			var boolBitFields = (byte) reader.ReadPackedUInt(ref ctx, compressionModel);
 
-			// 3
+			// 2
 			MaxBeats     = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
 			BeatInterval = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
-			Beat         = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
 
 			// 6
 			OwnerGhostId     = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
@@ -101,7 +98,6 @@ namespace Patapon4TLB.Default.Snapshot
 
 			MaxBeats     = target.MaxBeats;
 			BeatInterval = target.BeatInterval;
-			Beat         = target.Beat;
 
 			OwnerGhostId     = target.OwnerGhostId;
 			StartTime        = target.StartTime;

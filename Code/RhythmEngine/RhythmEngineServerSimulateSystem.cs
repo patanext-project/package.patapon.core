@@ -31,29 +31,18 @@ namespace Patapon4TLB.Default
 
 			public void Execute(Entity entity, int index, ref RhythmEngineProcess process, ref RhythmEngineState state, [ReadOnly] ref RhythmEngineSettings settings)
 			{
-				process.TimeTick = (int)(CurrentTime - process.StartTime);
+				var previousBeat = process.GetActivationBeat(settings.BeatInterval);
+
+				process.TimeTick = (int) (CurrentTime - process.StartTime);
 				if (settings.BeatInterval <= 0.0001f)
 				{
 					NonBurst_ThrowWarning(entity);
 					return;
 				}
 
-				var previousBeat = process.Beat;
-
-				if (process.TimeTick != 0)
-				{
-					process.Beat = process.TimeTick / settings.BeatInterval;
-					if (process.TimeTick < 0)
-						process.Beat++;
-				}
-				else
-				{
-					process.Beat = 0;
-				}
-
 				state.IsNewBeat = false;
 
-				var beatDiff = math.abs(previousBeat - process.Beat);
+				var beatDiff = math.abs(previousBeat - process.GetActivationBeat(settings.BeatInterval));
 				if (beatDiff == 0)
 					return;
 
@@ -68,7 +57,7 @@ namespace Patapon4TLB.Default
 				{
 					Target     = entity,
 					FrameCount = FrameCount,
-					Beat       = process.Beat
+					Beat       = process.GetActivationBeat(settings.BeatInterval)
 				});
 			}
 		}
