@@ -2,6 +2,7 @@ using package.patapon.core;
 using package.patapon.def.Data;
 using Runtime.EcsComponents;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Data;
 using Unity.Entities;
 using Unity.NetCode;
 
@@ -39,6 +40,7 @@ namespace Patapon4TLB.Default
 				ComponentType.ReadWrite<GameCommandState>(),
 				ComponentType.ReadWrite<GameComboState>(),
 				ComponentType.ReadWrite<RhythmCurrentCommand>(),
+				ComponentType.ReadWrite<DestroyChainReaction>(),
 				ComponentType.ReadWrite<GhostComponent>(),
 			};
 		}

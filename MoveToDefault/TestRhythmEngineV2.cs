@@ -10,7 +10,7 @@ namespace Patapon4TLB.Default
 	{
 		protected override void OnCreate()
 		{
-			var reProvider = World.GetOrCreateSystem<RhythmEngineProvider>();
+			/*var reProvider = World.GetOrCreateSystem<RhythmEngineProvider>();
 
 			// Create our player.
 			var player = EntityManager.CreateEntity(typeof(PlayerDescription));
@@ -23,7 +23,7 @@ namespace Patapon4TLB.Default
 			}
 
 			EntityManager.AddComponentData(engine, new DestroyChainReaction(player));
-			EntityManager.ReplaceOwnerData(engine, player);
+			EntityManager.ReplaceOwnerData(engine, player);*/
 		}
 
 		protected override void OnUpdate()

@@ -1,6 +1,7 @@
 using package.patapon.core;
 using Runtime.EcsComponents;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Data;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
@@ -25,8 +26,9 @@ namespace Patapon4TLB.Default.Test
 				CommandBuffer.SetComponent(jobIndex, reEnt, new RhythmEngineSettings {MaxBeats      = 4, BeatInterval  = 500, UseClientSimulation = true});
 				CommandBuffer.SetComponent(jobIndex, reEnt, new RhythmCurrentCommand {CustomEndTime = -1, ActiveAtTime = -1, Power                = 0});
 				CommandBuffer.SetComponent(jobIndex, reEnt, new RhythmEngineProcess {StartTime      = (int) ServerTime});
-				CommandBuffer.SetComponent(jobIndex, reEnt, new Owner {Target                       = ev.Player});
-				CommandBuffer.SetComponent(jobIndex, reEnt, new NetworkOwner {Value                 = ev.Connection});
+				CommandBuffer.SetComponent(jobIndex, reEnt, new DestroyChainReaction(ev.Player));
+				CommandBuffer.SetComponent(jobIndex, reEnt, new Owner {Target       = ev.Player});
+				CommandBuffer.SetComponent(jobIndex, reEnt, new NetworkOwner {Value = ev.Connection});
 			}
 		}
 
