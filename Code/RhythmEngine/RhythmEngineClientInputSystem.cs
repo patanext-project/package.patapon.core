@@ -39,19 +39,23 @@ namespace Patapon4TLB.Default
 
 				var pressureData = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.TimeTick);
 				var offset = pressureData.CorrectedBeat - pressureData.OriginalBeat;
+				var cmdOffset = predictedCommand.EndBeat - predictedCommand.StartBeat;
 				var failFlag = commandSequence.Length == 0 
-				               && (pressureData.CorrectedBeat > predictedCommand.EndBeat && predictedCommand.EndBeat + offset > process.Beat && predictedCommand.EndBeat > 0);
-				
-				Debug.Log($"{failFlag} ---> {process.TimeTick} {pressureData.CorrectedBeat} > {predictedCommand.EndBeat} && {predictedCommand.EndBeat + offset} > {process.Beat}");
+				               && (pressureData.CorrectedBeat > predictedCommand.EndBeat && predictedCommand.EndBeat + offset < process.Beat && predictedCommand.EndBeat > 0);
+				var failFlag2 = (pressureData.CorrectedBeat - offset > predictedCommand.ChainEndBeat && predictedCommand.ChainEndBeat > 0);
 				
 				if (state.IsRecovery(process.Beat))
 				{
-					
+					predictedCommand.ChainEndBeat = -1;
 				}
-				else if (predictedCommand.EndBeat > process.Beat + 1 || failFlag)
+				else if (predictedCommand.EndBeat > process.Beat + 1 || failFlag2)
 				{
+					Debug.Log($"{predictedCommand.EndBeat > process.Beat + 1}: {predictedCommand.EndBeat}, {process.Beat}");
+					Debug.Log($"{failFlag2}: {pressureData.CorrectedBeat - offset} > {predictedCommand.ChainEndBeat} && {predictedCommand.ChainEndBeat - offset} > {process.Beat}");
+					
 					pressureEvent.ShouldStartRecovery = true;
 					state.NextBeatRecovery = process.Beat + 1;
+					predictedCommand.ChainEndBeat = -1;
 				}
 				else
 				{

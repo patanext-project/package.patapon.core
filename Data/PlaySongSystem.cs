@@ -278,10 +278,13 @@ namespace Patapon4TLB.Default.Test
 						m_BgmSources[m_Flip].clip = currBgmSource.clip;
 						m_BgmSources[m_Flip].PlayScheduled(AudioSettings.dspTime + nextBeatDelay);
 						m_BgmSources[m_Flip].SetScheduledEndTime(AudioSettings.dspTime + endBeatDelay);
-						m_BgmSources[m_Flip].pitch  = 2;
+						m_BgmSources[m_Flip].pitch  = 1f;
 						m_BgmSources[m_Flip].volume = currBgmSource.volume;
+						m_EndTime = Time.time + 1.5f;
 						currBgmSource.volume        = 0;
 						currBgmSource.time          = 0.5f;
+
+						m_IsSkippingSong = true;
 					}
 				}
 				else if (!clientSystem.IsCommand)
@@ -291,7 +294,20 @@ namespace Patapon4TLB.Default.Test
 					currBgmSource.pitch = 1;
 				}
 			}
+
+			if (m_IsSkippingSong)
+			{
+				m_BgmSources[m_Flip].pitch += Time.deltaTime;
+			}
+
+			if (m_EndTime < Time.time)
+			{
+				m_IsSkippingSong = false;
+			}
 		}
+
+		private bool m_IsSkippingSong;
+		private float m_EndTime;
 
 		private bool m_WasFever;
 		private void UpdateCommand(PlaySongClientSystem clientSystem)

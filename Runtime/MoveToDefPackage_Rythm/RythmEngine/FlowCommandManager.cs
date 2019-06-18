@@ -43,13 +43,16 @@ namespace package.patapon.core
         /// The game will check if it can enable hero mode if power is 100.
         /// </remarks>
         public int Power;
+
+        public bool HasPredictedCommands;
     }
-    
+
     public struct GamePredictedCommandState : IComponentData
     {
-        public bool IsActive;
-        public int  StartBeat;
-        public int  EndBeat;
+	    public bool IsActive;
+	    public int  StartBeat;
+	    public int  EndBeat;
+	    public int  ChainEndBeat;
     }
 
     /// <summary>
@@ -134,9 +137,10 @@ namespace package.patapon.core
 
     public struct GameCommandState : IComponentData
     {
-        public bool IsActive;
-        public int  StartBeat;
-        public int  EndBeat;
+	    public bool IsActive;
+	    public int  StartBeat;
+	    public int  EndBeat;
+	    public int  ChainEndBeat;
     }
 
     public struct RhythmCommandSequence

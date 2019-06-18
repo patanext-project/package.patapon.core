@@ -63,16 +63,23 @@ namespace Patapon4TLB.Default
 
 			public RpcQueue<RhythmRpcNewClientCommand> RpcClientCommandQueue;
 
-			public bool SameAsSequence(DynamicBuffer<RhythmCommandSequence> commandSequence, DynamicBuffer<RhythmPressureData> currentCommand)
+			public bool SameAsSequence(DynamicBuffer<RhythmCommandSequence> commandSequence, DynamicBuffer<RhythmPressureData> currentCommand, bool predict)
 			{
-				if (commandSequence.Length != currentCommand.Length)
+				if (commandSequence.Length != currentCommand.Length && !predict)
 					return false;
 
-				var offset = currentCommand[0].CorrectedBeat;
-				for (var com = 0; com != commandSequence.Length; com++)
+				if (currentCommand.Length <= 0)
+					return false;
+
+				var lastCommandBeat = currentCommand[currentCommand.Length - 1].CorrectedBeat;
+				var lastSequenceBeat = commandSequence[commandSequence.Length - 1].BeatEnd;
+				var diff = lastCommandBeat - lastSequenceBeat;
+				
+				var length = math.min(currentCommand.Length, commandSequence.Length);
+				for (var com = length - 1; com >= 0; com--)
 				{
 					var range   = commandSequence[com].BeatRange;
-					var comBeat = currentCommand[com].CorrectedBeat - offset;
+					var comBeat = diff - currentCommand[com].CorrectedBeat;
 
 					if (commandSequence[com].Key != currentCommand[com].KeyId)
 						return false;
@@ -95,7 +102,7 @@ namespace Patapon4TLB.Default
 					for (var ent = 0; ent != count; ent++)
 					{
 						var container = containerArray[ent].Reinterpret<RhythmCommandSequence>();
-						if (SameAsSequence(container, currentCommand))
+						if (SameAsSequence(container, currentCommand, false))
 						{
 							return entityArray[ent];
 						}
@@ -103,6 +110,28 @@ namespace Patapon4TLB.Default
 				}
 
 				return default;
+			}
+
+			public NativeList<Entity> GetPredictedCommands(DynamicBuffer<RhythmPressureData> currentCommand)
+			{
+				var list = new NativeList<Entity>(Allocator.Temp);
+				for (var chunk = 0; chunk != AvailableCommandChunks.Length; chunk++)
+				{
+					var entityArray    = AvailableCommandChunks[chunk].GetNativeArray(EntityType);
+					var containerArray = AvailableCommandChunks[chunk].GetBufferAccessor(FlowCommandSequenceType);
+
+					var count = AvailableCommandChunks[chunk].Count;
+					for (var ent = 0; ent != count; ent++)
+					{
+						var container = containerArray[ent].Reinterpret<RhythmCommandSequence>();
+						if (SameAsSequence(container, currentCommand, true))
+						{
+							list.Add(entityArray[ent]);
+						}
+					}
+				}
+
+				return list;
 			}
 
 			public void Execute(Entity                              entity,   int                      index,
@@ -118,8 +147,15 @@ namespace Patapon4TLB.Default
 				var currCommandArray = CurrentCommandFromEntity[entity];
 				var result           = GetCurrentCommand(currCommandArray.Reinterpret<RhythmPressureData>());
 
+				rhythmCurrentCommand.HasPredictedCommands = false;
 				if (result == default)
 				{
+					var predictions = GetPredictedCommands(currCommandArray.Reinterpret<RhythmPressureData>());
+					if (predictions.Length > 0)
+						rhythmCurrentCommand.HasPredictedCommands = true;
+
+					predictions.Dispose();
+					
 					return;
 				}
 

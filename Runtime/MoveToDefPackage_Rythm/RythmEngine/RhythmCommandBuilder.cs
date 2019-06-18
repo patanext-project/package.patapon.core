@@ -53,7 +53,13 @@ namespace package.patapon.core
 			});
 
 			if (finalEntity != default)
+			{
+				if (dispose)
+				{
+					sequence.Dispose();
+				}
 				return finalEntity;
+			}
 
 			finalEntity = EntityManager.CreateEntity(typeof(RhythmCommandEntityTag), typeof(RhythmCommandSequenceContainer));
 

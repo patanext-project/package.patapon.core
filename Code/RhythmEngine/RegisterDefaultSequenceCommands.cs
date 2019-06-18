@@ -80,11 +80,11 @@ namespace Patapon4TLB.Default
 
 			var summon = Build(builder, new RhythmCommandData {Identifier = new NativeString64("summon"), BeatLength = 4}, new[]
 			{
-				new RhythmCommandSequence(0, RhythmKeys.Down),
-				new RhythmCommandSequence(1, RhythmKeys.Down),
-				new RhythmCommandSequence(1, RhythmKeys.Down),
-				new RhythmCommandSequence(2, RhythmKeys.Down),
-				new RhythmCommandSequence(3, RhythmKeys.Down),
+				new RhythmCommandSequence(0, 0, RhythmKeys.Down),
+				new RhythmCommandSequence(1, 1, RhythmKeys.Down),
+				new RhythmCommandSequence(1, 1, RhythmKeys.Down),
+				new RhythmCommandSequence(2, 1, RhythmKeys.Down),
+				new RhythmCommandSequence(3, 0, RhythmKeys.Down),
 			});
 			EntityManager.AddComponent(summon, typeof(SummonCommand));
 

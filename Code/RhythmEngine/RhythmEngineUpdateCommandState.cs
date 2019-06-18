@@ -50,7 +50,8 @@ namespace Patapon4TLB.Default
 					checkStopBeat = math.max(checkStopBeat, PredictedCommandFromEntity[entity].EndBeat + 1);
 				}
 
-				if (state.IsRecovery(process.Beat) || (!commandState.IsActive && rhythm.ActiveAtBeat < process.Beat && checkStopBeat + mercy < process.Beat))
+				if (state.IsRecovery(process.Beat) || (!commandState.IsActive && rhythm.ActiveAtBeat < process.Beat && checkStopBeat + mercy < process.Beat)
+				                                   || (rhythm.CommandTarget == default && rhythm.HasPredictedCommands && rhythm.ActiveAtBeat < state.LastPressureBeat))
 				{
 					comboState.Chain        = 0;
 					comboState.Score        = 0;
@@ -59,6 +60,7 @@ namespace Patapon4TLB.Default
 					comboState.ChainToFever = 0;
 
 					commandState.IsActive = false;
+					commandState.ChainEndBeat = -1;
 
 					if (!IsServer && SimulateTagFromEntity.Exists(entity))
 					{
@@ -69,9 +71,10 @@ namespace Patapon4TLB.Default
 
 				if (rhythm.CommandTarget == default || state.IsRecovery(process.Beat))
 				{
-					commandState.IsActive  = false;
-					commandState.StartBeat = -1;
-					commandState.EndBeat   = -1;
+					commandState.IsActive     = false;
+					commandState.StartBeat    = -1;
+					commandState.EndBeat      = -1;
+					commandState.ChainEndBeat = -1;
 					return;
 				}
 
@@ -97,36 +100,37 @@ namespace Patapon4TLB.Default
 				if (!IsServer && settings.UseClientSimulation && SimulateTagFromEntity.Exists(entity))
 				{
 					var previousPrediction = PredictedCommandFromEntity[entity];
-
-					PredictedCommandFromEntity[entity] = new GamePredictedCommandState
-					{
-						IsActive  = isActive,
-						StartBeat = rhythm.ActiveAtBeat,
-						// todo: we shouldn't do that
-						EndBeat = (rhythm.CustomEndBeat == 0 || rhythm.CustomEndBeat == -1) ? rhythm.ActiveAtBeat + beatLength : rhythm.CustomEndBeat
-					};
-
 					var isNew = state.ApplyCommandNextBeat;
 					if (isNew)
 					{
 						Debug.Log($"Command start at {rhythm.ActiveAtBeat}, currbeat: {process.Beat}");
 						
+						previousPrediction.ChainEndBeat = (rhythm.CustomEndBeat == 0 || rhythm.CustomEndBeat == -1) ? rhythm.ActiveAtBeat + beatLength * 2 : rhythm.CustomEndBeat;
+
 						var predictedCombo = PredictedComboFromEntity[entity];
 						predictedCombo.State.Update(rhythm, true);
 
 						PredictedComboFromEntity[entity] = predictedCombo;
 					}
+
+					previousPrediction.IsActive = isActive;
+					previousPrediction.StartBeat = rhythm.ActiveAtBeat;
+					previousPrediction.EndBeat = (rhythm.CustomEndBeat == 0 || rhythm.CustomEndBeat == -1) ? rhythm.ActiveAtBeat + beatLength : rhythm.CustomEndBeat;
+
+					PredictedCommandFromEntity[entity] = previousPrediction;
 				}
 				else
 				{
 					var isNew = state.ApplyCommandNextBeat;
 
-					commandState.IsActive  = isActive;
-					commandState.StartBeat = rhythm.ActiveAtBeat;
-					commandState.EndBeat   = rhythm.CustomEndBeat == -1 ? rhythm.ActiveAtBeat + beatLength : rhythm.CustomEndBeat;
+					commandState.IsActive     = isActive;
+					commandState.StartBeat    = rhythm.ActiveAtBeat;
+					commandState.EndBeat      = rhythm.CustomEndBeat == -1 ? rhythm.ActiveAtBeat + beatLength : rhythm.CustomEndBeat;
 
 					if (isNew)
 					{
+						commandState.ChainEndBeat = rhythm.CustomEndBeat == -1 ? rhythm.ActiveAtBeat + beatLength * 2 : rhythm.CustomEndBeat;
+						
 						comboState.Update(rhythm, false);
 					}
 				}

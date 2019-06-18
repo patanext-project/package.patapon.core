@@ -51,6 +51,7 @@ namespace Patapon4TLB.Default.Test
 			var shouldFail = isRunningCommand || state.IsRecovery(process.Beat);
 			if (shouldFail)
 			{
+				Debug.Log("Yes FAIL!" + Time.time);
 				score = 2;
 			}
 
