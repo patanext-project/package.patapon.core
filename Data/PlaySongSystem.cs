@@ -331,6 +331,9 @@ namespace Patapon4TLB.Default.Test
 
 			if (!clientSystem.IsNewCommand)
 			{
+				if (clientSystem.ComboState.Chain <= 0)
+					m_CommandSource.Stop(); // interrupted
+				
 				return;
 			}
 
