@@ -145,7 +145,7 @@ namespace package.patapon.core
 
 		public bool IsInputActive(int tick, int beatInterval)
 		{
-			return tick >= EndTime && tick <= EndTime + beatInterval;
+			return tick >= EndTime - beatInterval && tick <= EndTime + beatInterval;
 		}
 
 		public bool HasActivity(int tick, int beatInterval)

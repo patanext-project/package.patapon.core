@@ -53,10 +53,12 @@ namespace Patapon4TLB.Default.Test
 			var isRunningCommand = gameCommandState.StartTime <= process.TimeTick && gameCommandState.EndTime > process.TimeTick            // server
 			                       || currentCommand.ActiveAtTime <= process.TimeTick && predictedCommand.State.EndTime > process.TimeTick; // client
 */
+			var inputActive = gameCommandState.IsInputActive(process.TimeTick, settings.BeatInterval)
+			                  || predictedCommand.State.IsInputActive(process.TimeTick, settings.BeatInterval);
 			var commandIsRunning = gameCommandState.IsGamePlayActive(process.TimeTick)
 			                  || predictedCommand.State.IsGamePlayActive(process.TimeTick);
 			
-			var shouldFail = commandIsRunning || state.IsRecovery(currFlowBeat);
+			var shouldFail = (commandIsRunning && !inputActive) || state.IsRecovery(currFlowBeat);
 			if (shouldFail)
 			{
 				Debug.Log($"Yes FAIL! c:{commandIsRunning} r:{state.IsRecovery(currFlowBeat)}");
