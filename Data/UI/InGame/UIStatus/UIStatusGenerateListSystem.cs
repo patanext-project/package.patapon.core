@@ -4,8 +4,10 @@ using Patapon4TLB.UI.InGame;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 namespace Patapon4TLB.UI
 {
@@ -13,16 +15,32 @@ namespace Patapon4TLB.UI
 	public class UIStatusGenerateListSystem : UIGameSystemBase
 	{
 		private GameObject m_UIRoot;
-		private List<UIStatusPresentation> m_PresentationList;
+
+		private AssetPool<GameObject>      m_BackendPool;
+		private AsyncAssetPool<GameObject> m_PresentationPool;
 
 		private EntityQuery m_UnitQuery;
-		
+		private EntityQuery m_BackendQuery;
+
+		private const string KeyBase = "int:/UI/InGame/UnitStatus/";
+
 		protected override void OnStartRunning()
 		{
 			base.OnStartRunning();
 
-			m_PresentationList = new List<UIStatusPresentation>();
-			m_UnitQuery = GetEntityQuery(typeof(UnitDescription), typeof(Relative<TeamDescription>));
+			m_UnitQuery    = GetEntityQuery(typeof(UnitDescription), typeof(Relative<TeamDescription>));
+			m_BackendQuery = GetEntityQuery(typeof(UIStatusBackend));
+
+			m_PresentationPool = new AsyncAssetPool<GameObject>(KeyBase + "UIStatusObject");
+			m_BackendPool = new AssetPool<GameObject>(pool =>
+			{
+				// it's important to set GameObjectEntity as last! (or else other components will not get referenced????)
+				var gameObject = new GameObject("UIStatus Backend", typeof(RectTransform), typeof(UIStatusBackend), typeof(GameObjectEntity));
+				var backend    = gameObject.GetComponent<UIStatusBackend>();
+				backend.SetRootPool(pool);
+
+				return gameObject;
+			}, World);
 		}
 
 		protected override void OnUpdate()
@@ -32,17 +50,21 @@ namespace Patapon4TLB.UI
 			if (cameraState.Target == default)
 			{
 				ManageForUnits(default);
+				return;
 			}
-
+			
 			if (!TryGetRelative<TeamDescription>(cameraState.Target, out var teamEntity))
 			{
 				var units = new NativeArray<Entity>(1, Allocator.Temp);
 				if (EntityManager.HasComponent<UnitDescription>(cameraState.Target))
 				{
 					units[0] = cameraState.Target;
+					Debug.Log("Units[0] " + cameraState.Target);
 				}
 				else if (TryGetRelative<UnitDescription>(cameraState.Target, out var relativeUnit))
 				{
+					Debug.Log("hello");
+					
 					if (relativeUnit == cameraState.Target)
 						units[0] = cameraState.Target;
 					else
@@ -88,9 +110,64 @@ namespace Patapon4TLB.UI
 		{
 			if (entities == default || !entities.IsCreated)
 			{
-				
+				Entities.ForEach((UIStatusBackend backend) =>
+				{
+					backend.DisableNextUpdate                 = true;
+					backend.ReturnToPoolOnDisable             = true;
+					backend.ReturnPresentationToPoolNextFrame = true;
+				});
+
 				return;
 			}
+
+			var backendEntities = m_BackendQuery.ToEntityArray(Allocator.TempJob);
+			// first, we check the missing backends
+			for (var ent = 0; ent != entities.Length; ent++)
+			{
+				var backend = default(UIStatusBackend);
+				for (var back = 0; back != backendEntities.Length; back++)
+				{
+					var tmp = EntityManager.GetComponentObject<UIStatusBackend>(backendEntities[back]);
+					if (tmp.entity != entities[ent])
+						continue;
+
+					backend = tmp;
+					break;
+				}
+
+				if (backend != null)
+					continue;
+				
+				Debug.Log("Create for " + entities[ent]);
+
+				backend        = m_BackendPool.Dequeue().GetComponent<UIStatusBackend>();
+				backend.entity = entities[ent];
+			}
+			
+			// now, check for useless backends
+			for (var back = 0; back != backendEntities.Length; back++)
+			{
+				var backend = EntityManager.GetComponentObject<UIStatusBackend>(backendEntities[back]);
+				var result  = default(Entity);
+				
+				Debug.Log("Target backend entity: " + backend.entity);
+				for (var ent = 0; ent != entities.Length; ent++)
+				{
+					if (backend.entity != entities[ent])
+						continue;
+
+					result = entities[ent];
+					break;
+				}
+
+				if (result == default)
+				{
+					Debug.Log("Return");
+					backend.Return(true, true);
+				}
+			}
+
+			backendEntities.Dispose();
 		}
 	}
 }
