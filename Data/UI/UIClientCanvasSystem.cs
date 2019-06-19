@@ -5,10 +5,27 @@ using UnityEngine.UI;
 
 namespace Patapon4TLB.UI
 {
+	[UpdateInGroup(typeof(PresentationSystemGroup))]
+	public class UIClientCanvasManageStateSystem : ComponentSystem
+	{
+		protected override void OnUpdate()
+		{
+			if (ClientServerBootstrap.clientWorld == null)
+				return;
+
+			foreach (var clientW in ClientServerBootstrap.clientWorld)
+			{
+				var system = clientW.GetExistingSystem<UIClientCanvasSystem>();
+				system.InternalSetActive(clientW.GetExistingSystem<ClientPresentationSystemGroup>().Enabled);
+			}
+		}
+	}
+
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	public class UIClientCanvasSystem : ComponentSystem
 	{
-		public Canvas Current;
+		public  Canvas Current { get; private set; }
+		private bool   m_State;
 
 		protected override void OnCreate()
 		{
@@ -32,11 +49,13 @@ namespace Patapon4TLB.UI
 			var graphicRaycaster = gameObject.GetComponent<GraphicRaycaster>();
 			graphicRaycaster.ignoreReversedGraphics = true;
 			graphicRaycaster.blockingObjects        = GraphicRaycaster.BlockingObjects.None;
+
+			m_State = true;
 		}
 
 		protected override void OnUpdate()
 		{
-			
+
 		}
 
 		protected override void OnDestroy()
@@ -45,6 +64,15 @@ namespace Patapon4TLB.UI
 
 			Object.Destroy(Current.gameObject);
 			Current = null;
+		}
+
+		internal void InternalSetActive(bool state)
+		{
+			if (state == m_State)
+				return;
+
+			m_State = state;
+			Current.gameObject.SetActive(state);
 		}
 	}
 }
