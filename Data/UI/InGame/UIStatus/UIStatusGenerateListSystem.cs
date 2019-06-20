@@ -22,7 +22,7 @@ namespace Patapon4TLB.UI
 		private EntityQuery m_UnitQuery;
 		private EntityQuery m_BackendQuery;
 
-		private const string KeyBase = "int:/UI/InGame/UnitStatus/";
+		private const string KeyBase = "int:UI/InGame/UnitStatus/";
 
 		protected override void OnStartRunning()
 		{
@@ -31,7 +31,18 @@ namespace Patapon4TLB.UI
 			m_UnitQuery    = GetEntityQuery(typeof(UnitDescription), typeof(Relative<TeamDescription>));
 			m_BackendQuery = GetEntityQuery(typeof(UIStatusBackend));
 
-			m_PresentationPool = new AsyncAssetPool<GameObject>(KeyBase + "UIStatusObject");
+			m_UIRoot = new GameObject("UIStatus_RootContainer", typeof(RectTransform));
+			var rectTransform = m_UIRoot.GetComponent<RectTransform>();
+			rectTransform.parent     = World.GetOrCreateSystem<UIClientCanvasSystem>().Current.transform;
+			rectTransform.localScale = Vector3.one;
+
+			rectTransform.anchoredPosition = new Vector2(30, -30);
+			rectTransform.anchorMin        = new Vector2(0, 1);
+			rectTransform.anchorMax        = new Vector2(1, 1);
+			rectTransform.pivot            = new Vector2(0, 1);
+			rectTransform.sizeDelta        = new Vector2(-990, 100);
+
+			m_PresentationPool = new AsyncAssetPool<GameObject>(KeyBase + "UnitStatusObject.prefab");
 			m_BackendPool = new AssetPool<GameObject>(pool =>
 			{
 				// it's important to set GameObjectEntity as last! (or else other components will not get referenced????)
@@ -52,7 +63,7 @@ namespace Patapon4TLB.UI
 				ManageForUnits(default);
 				return;
 			}
-			
+
 			if (!TryGetRelative<TeamDescription>(cameraState.Target, out var teamEntity))
 			{
 				var units = new NativeArray<Entity>(1, Allocator.Temp);
@@ -64,7 +75,7 @@ namespace Patapon4TLB.UI
 				else if (TryGetRelative<UnitDescription>(cameraState.Target, out var relativeUnit))
 				{
 					Debug.Log("hello");
-					
+
 					if (relativeUnit == cameraState.Target)
 						units[0] = cameraState.Target;
 					else
@@ -137,19 +148,22 @@ namespace Patapon4TLB.UI
 
 				if (backend != null)
 					continue;
-				
+
 				Debug.Log("Create for " + entities[ent]);
 
-				backend        = m_BackendPool.Dequeue().GetComponent<UIStatusBackend>();
+				backend = m_BackendPool.Dequeue().GetComponent<UIStatusBackend>();
+				backend.transform.SetParent(m_UIRoot.transform, false);
 				backend.entity = entities[ent];
+
+				backend.SetFromPool(m_PresentationPool, EntityManager, entities[ent]);
 			}
-			
+
 			// now, check for useless backends
 			for (var back = 0; back != backendEntities.Length; back++)
 			{
 				var backend = EntityManager.GetComponentObject<UIStatusBackend>(backendEntities[back]);
 				var result  = default(Entity);
-				
+
 				Debug.Log("Target backend entity: " + backend.entity);
 				for (var ent = 0; ent != entities.Length; ent++)
 				{
