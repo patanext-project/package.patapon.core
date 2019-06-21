@@ -1,8 +1,10 @@
+using package.patapon.core;
 using package.StormiumTeam.GameBase;
 using Patapon4TLB.Core;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Data;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -85,10 +87,19 @@ namespace Patapon4TLB.GameModes.Basic
 				EntityManager.SetComponentData(unit, new DestroyChainReaction(playerEntity));
 
 				var marchAbility = EntityManager.CreateEntity();
+				// We should instead search for entities with 'MarchCommand' component tag...
+				var marchCommand = World.GetExistingSystem<RhythmCommandBuilder>().GetOrCreate(new NativeArray<RhythmCommandSequence>(4, Allocator.TempJob)
+				{
+					[0] = new RhythmCommandSequence(0, RhythmKeys.Left),
+					[1] = new RhythmCommandSequence(1, RhythmKeys.Left),
+					[2] = new RhythmCommandSequence(2, RhythmKeys.Left),
+					[3] = new RhythmCommandSequence(3, RhythmKeys.Right),
+				});
 				EntityManager.AddComponentData(marchAbility, new ActionDescription());
-				EntityManager.AddComponentData(marchAbility, new RhythmAbilityState());
+				EntityManager.AddComponentData(marchAbility, new RhythmAbilityState {Command      = marchCommand});
 				EntityManager.AddComponentData(marchAbility, new MarchAbility {AccelerationFactor = 1});
 				EntityManager.AddComponentData(marchAbility, new Owner {Target                    = unit});
+				EntityManager.AddComponentData(marchAbility, new DestroyChainReaction(unit));
 
 				playerData.Unit = unit;
 				EntityManager.SetComponentData(playerEntity, playerData);
