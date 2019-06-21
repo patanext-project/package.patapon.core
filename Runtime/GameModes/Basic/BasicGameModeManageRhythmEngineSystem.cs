@@ -40,6 +40,7 @@ namespace Patapon4TLB.GameModes.Basic
 				EntityManager.SetComponentData(engineEntity, new RhythmEngineProcess {StartTime      = (int) gameMode.GameModeData.StartTime});
 				EntityManager.SetComponentData(engineEntity, new DestroyChainReaction(playerEntity));
 				EntityManager.SetComponentData(engineEntity, new Owner {Target = playerEntity});
+				EntityManager.SetComponentData(engineEntity, EntityManager.GetComponentData<NetworkOwner>(playerEntity));
 
 				EntityManager.AddComponentData(engineEntity, new Relative<PlayerDescription> {Target = playerEntity});
 
