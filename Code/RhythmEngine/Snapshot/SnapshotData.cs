@@ -11,8 +11,8 @@ namespace Patapon4TLB.Default.Snapshot
 
 		public bool IsPaused;
 		public bool UseClientSimulation;
-		public int  MaxBeats;
-		public int  BeatInterval;
+		public uint MaxBeats;
+		public uint BeatInterval;
 
 		public int OwnerGhostId;
 		public int StartTime;     // in ms
@@ -42,23 +42,23 @@ namespace Patapon4TLB.Default.Snapshot
 			writer.WritePackedUInt(boolBitFields, compressionModel);
 
 			// 2
-			writer.WritePackedUInt((uint) MaxBeats, compressionModel);
-			writer.WritePackedUInt((uint) BeatInterval, compressionModel);
+			writer.WritePackedUIntDelta(MaxBeats, baseline.MaxBeats, compressionModel);
+			writer.WritePackedUIntDelta(BeatInterval, baseline.BeatInterval, compressionModel);
 
 			// 6
-			writer.WritePackedUInt((uint) OwnerGhostId, compressionModel);
-			writer.WritePackedUInt((uint) StartTime, compressionModel);
-			writer.WritePackedUInt((uint) CommandTypeId, compressionModel);
-			writer.WritePackedUInt((uint) CommandStartBeat, compressionModel);
-			writer.WritePackedUInt((uint) CommandEndBeat, compressionModel);
-			writer.WritePackedUInt((uint) Recovery, compressionModel);
+			writer.WritePackedIntDelta(OwnerGhostId, baseline.OwnerGhostId, compressionModel);
+			writer.WritePackedIntDelta(StartTime, baseline.StartTime, compressionModel);
+			writer.WritePackedIntDelta(CommandTypeId, baseline.CommandTypeId, compressionModel);
+			writer.WritePackedIntDelta(CommandStartBeat, baseline.CommandStartBeat, compressionModel);
+			writer.WritePackedIntDelta(CommandEndBeat, baseline.CommandEndBeat, compressionModel);
+			writer.WritePackedIntDelta(Recovery, baseline.Recovery, compressionModel);
 
 			// 5
-			writer.WritePackedInt(ComboScore, compressionModel);
-			writer.WritePackedInt(ComboChain, compressionModel);
-			writer.WritePackedInt(ComboChainToFever, compressionModel);
-			writer.WritePackedInt(ComboJinnEnergy, compressionModel);
-			writer.WritePackedInt(ComboJinnEnergyMax, compressionModel);
+			writer.WritePackedIntDelta(ComboScore, baseline.ComboScore, compressionModel);
+			writer.WritePackedIntDelta(ComboChain, baseline.ComboChain, compressionModel);
+			writer.WritePackedIntDelta(ComboChainToFever, baseline.ComboChainToFever, compressionModel);
+			writer.WritePackedIntDelta(ComboJinnEnergy, baseline.ComboJinnEnergy, compressionModel);
+			writer.WritePackedIntDelta(ComboJinnEnergyMax, baseline.ComboJinnEnergyMax, compressionModel);
 		}
 
 		public void Deserialize(uint tick, ref RhythmEngineSnapshotData baseline, DataStreamReader reader, ref DataStreamReader.Context ctx, NetworkCompressionModel compressionModel)
@@ -68,23 +68,23 @@ namespace Patapon4TLB.Default.Snapshot
 			var boolBitFields = (byte) reader.ReadPackedUInt(ref ctx, compressionModel);
 
 			// 2
-			MaxBeats     = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
-			BeatInterval = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
+			MaxBeats     = reader.ReadPackedUIntDelta(ref ctx, baseline.MaxBeats, compressionModel);
+			BeatInterval = reader.ReadPackedUIntDelta(ref ctx, baseline.BeatInterval, compressionModel);
 
 			// 6
-			OwnerGhostId     = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
-			StartTime        = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
-			CommandTypeId    = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
-			CommandStartBeat = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
-			CommandEndBeat   = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
-			Recovery         = (int) reader.ReadPackedUInt(ref ctx, compressionModel);
+			OwnerGhostId     = reader.ReadPackedIntDelta(ref ctx, baseline.OwnerGhostId, compressionModel);
+			StartTime        = reader.ReadPackedIntDelta(ref ctx, baseline.StartTime, compressionModel);
+			CommandTypeId    = reader.ReadPackedIntDelta(ref ctx, baseline.CommandTypeId, compressionModel);
+			CommandStartBeat = reader.ReadPackedIntDelta(ref ctx, baseline.CommandStartBeat, compressionModel);
+			CommandEndBeat   = reader.ReadPackedIntDelta(ref ctx, baseline.CommandEndBeat, compressionModel);
+			Recovery         = reader.ReadPackedIntDelta(ref ctx, baseline.Recovery, compressionModel);
 
 			// 5
-			ComboScore         = reader.ReadPackedInt(ref ctx, compressionModel);
-			ComboChain         = reader.ReadPackedInt(ref ctx, compressionModel);
-			ComboChainToFever  = reader.ReadPackedInt(ref ctx, compressionModel);
-			ComboJinnEnergy    = reader.ReadPackedInt(ref ctx, compressionModel);
-			ComboJinnEnergyMax = reader.ReadPackedInt(ref ctx, compressionModel);
+			ComboScore         = reader.ReadPackedIntDelta(ref ctx, baseline.ComboScore, compressionModel);
+			ComboChain         = reader.ReadPackedIntDelta(ref ctx, baseline.ComboChain, compressionModel);
+			ComboChainToFever  = reader.ReadPackedIntDelta(ref ctx, baseline.ComboChainToFever, compressionModel);
+			ComboJinnEnergy    = reader.ReadPackedIntDelta(ref ctx, baseline.ComboJinnEnergy, compressionModel);
+			ComboJinnEnergyMax = reader.ReadPackedIntDelta(ref ctx, baseline.ComboJinnEnergyMax, compressionModel);
 
 			IsPaused            = MainBit.GetBitAt(boolBitFields, 0) == 1;
 			UseClientSimulation = MainBit.GetBitAt(boolBitFields, 1) == 1;

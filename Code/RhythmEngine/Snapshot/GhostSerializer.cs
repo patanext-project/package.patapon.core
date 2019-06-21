@@ -29,8 +29,9 @@ namespace Patapon4TLB.Default.Snapshot
 
 		[NativeDisableContainerSafetyRestriction]
 		public ComponentDataFromEntity<GhostSystemStateComponent> GhostStateFromEntity;
+
 		[NativeDisableContainerSafetyRestriction]
-		public ComponentDataFromEntity<RhythmCommandId>           CommandDataFromEntity;
+		public ComponentDataFromEntity<RhythmCommandId> CommandDataFromEntity;
 
 		public void BeginSerialize(ComponentSystemBase system)
 		{
@@ -72,9 +73,9 @@ namespace Patapon4TLB.Default.Snapshot
 			snapshot.OwnerGhostId = GhostStateFromEntity.Exists(owner.Target) ? GhostStateFromEntity[owner.Target].ghostId : 0;
 
 			var engineSettings = chunk.GetNativeArray(GhostEngineSettingsType.Archetype)[ent];
-			snapshot.MaxBeats            = engineSettings.MaxBeats;
 			snapshot.UseClientSimulation = engineSettings.UseClientSimulation;
-			snapshot.BeatInterval        = engineSettings.BeatInterval;
+			snapshot.MaxBeats            = (uint) engineSettings.MaxBeats;
+			snapshot.BeatInterval        = (uint) engineSettings.BeatInterval;
 
 			var engineProcess = chunk.GetNativeArray(GhostEngineProcessType.Archetype)[ent];
 			snapshot.StartTime = engineProcess.StartTime;

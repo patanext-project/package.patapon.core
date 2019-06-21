@@ -74,8 +74,8 @@ namespace Patapon4TLB.Default.Snapshot
 				SnapshotFromEntity[entity].GetDataAtTick(TargetTick, out var snapshotData);
 
 				owner.GhostId                = snapshotData.OwnerGhostId;
-				settings.MaxBeats            = snapshotData.MaxBeats;
-				settings.BeatInterval        = snapshotData.BeatInterval;
+				settings.MaxBeats            = (int) snapshotData.MaxBeats;
+				settings.BeatInterval        = (int) snapshotData.BeatInterval;
 				settings.UseClientSimulation = snapshotData.UseClientSimulation;
 
 				state.IsPaused         = snapshotData.IsPaused;
