@@ -85,7 +85,7 @@ namespace Patapon4TLB.UI
 			for (var i = 1; i <= 4; i++)
 			{
 				DrumPresentationPools[i] = new AsyncAssetPool<GameObject>("int:RhythmEngine/UI/DrumPressure");
-				DrumBackendPools[i]      = new AssetPool<GameObject>(CreateBackendDrumGameObject);
+				DrumBackendPools[i]      = new AssetPool<GameObject>(CreateBackendDrumGameObject, World);
 				DrumVariantCount[i]      = 0;
 
 				Debug.Log("Created with " + i);

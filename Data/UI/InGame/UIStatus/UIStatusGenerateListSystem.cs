@@ -148,9 +148,7 @@ namespace Patapon4TLB.UI
 
 				if (backend != null)
 					continue;
-
-				Debug.Log("Create for " + entities[ent]);
-
+				
 				backend = m_BackendPool.Dequeue().GetComponent<UIStatusBackend>();
 				backend.transform.SetParent(m_UIRoot.transform, false);
 				backend.entity = entities[ent];
@@ -163,8 +161,7 @@ namespace Patapon4TLB.UI
 			{
 				var backend = EntityManager.GetComponentObject<UIStatusBackend>(backendEntities[back]);
 				var result  = default(Entity);
-
-				Debug.Log("Target backend entity: " + backend.entity);
+				
 				for (var ent = 0; ent != entities.Length; ent++)
 				{
 					if (backend.entity != entities[ent])
@@ -176,7 +173,6 @@ namespace Patapon4TLB.UI
 
 				if (result == default)
 				{
-					Debug.Log("Return");
 					backend.Return(true, true);
 				}
 			}

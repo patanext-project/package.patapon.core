@@ -14,11 +14,22 @@ namespace Patapon4TLB.Core.Tests
 				cameraState.Data.Mode = CameraMode.Forced;
 				if (cameraState.Target == default)
 				{
-					var e = PostUpdateCommands.CreateEntity();
-					PostUpdateCommands.AddComponent(e, new UnitDescription());
+					var team = PostUpdateCommands.CreateEntity();
+					PostUpdateCommands.AddComponent(team, new TeamDescription());
+
+					var firstEntity = default(Entity);
+					for (var i = 0; i != 4; i++)
+					{
+						var e = PostUpdateCommands.CreateEntity();
+						PostUpdateCommands.AddComponent(e, new UnitDescription());
+						PostUpdateCommands.AddComponent(e, new Relative<TeamDescription> {Target = team});
+
+						if (firstEntity == default)
+							firstEntity = e;
+					}
 
 					var cpy = cameraState;
-					cpy.Data.Target = e;
+					cpy.Data.Target = firstEntity;
 					PostUpdateCommands.SetComponent(entity, cpy);
 				}
 			});

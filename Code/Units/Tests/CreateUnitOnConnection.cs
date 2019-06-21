@@ -9,7 +9,7 @@ using Unity.NetCode;
 
 namespace Patapon4TLB.Core.Tests
 {
-	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
+	/*[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 	[UpdateBefore(typeof(CreateGamePlayerSystem))]
 	public class CreateUnitOnConnection : JobComponentSystem
 	{
@@ -21,7 +21,11 @@ namespace Patapon4TLB.Core.Tests
 
 			public void Execute(Entity _, int jobIndex, ref PlayerConnectedEvent ev)
 			{
-				var reEnt = CommandBuffer.CreateEntity(jobIndex);
+				var unitEntity = CommandBuffer.CreateEntity(jobIndex);
+				
+				CommandBuffer.AddComponent(jobIndex, unitEntity, new UnitDescription());
+				CommandBuffer.AddComponent(jobIndex, unitEntity, new UnitDirection());
+				CommandBuffer.AddComponent(jobIndex, unitEntity, new Velocity());
 				
 				// do smth
 			}
@@ -47,5 +51,5 @@ namespace Patapon4TLB.Core.Tests
 
 			return inputDeps;
 		}
-	}
+	}*/
 }

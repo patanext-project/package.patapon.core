@@ -59,7 +59,7 @@ namespace Patapon4TLB.Default.Test
 				Tick     = process.TimeTick;
 				Interval = settings.BeatInterval;
 
-				HasActiveRhythmEngine = process.StartTime != 0;
+				HasActiveRhythmEngine = true;
 			});
 
 			Entities.WithAll<RhythmEngineSimulateTag>().ForEach((ref GameCommandState gameCommandState, ref RhythmCurrentCommand currentCommand, ref GamePredictedCommandState predictedCommand, ref GameComboState comboState, ref GameComboPredictedClient predictedCombo) =>
@@ -105,6 +105,7 @@ namespace Patapon4TLB.Default.Test
 	}
 
 	[AlwaysUpdateSystem]
+	[UpdateInGroup(typeof(PresentationSystemGroup))]
 	public class PlaySongSystem : GameBaseSystem
 	{
 		public Dictionary<string, DescriptionFileJsonData> Files;

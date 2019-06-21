@@ -11,14 +11,22 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(RhythmEngineGroup))]
 	public class RhythmEngineClientSimulateLocalSystem : JobGameBaseSystem
 	{
+		[RequireComponentTag(typeof(RhythmEngineSimulateTag))]
+		[BurstCompile]
 		private struct SimulateJob : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineState, RhythmEngineProcess, RhythmPredictedProcess>
 		{
 			public uint CurrentTime;
 
 			[BurstDiscard]
-			private void NonBurst_ThrowWarning(Entity entity)
+			private void NonBurst_ThrowWarning0(Entity entity)
 			{
 				Debug.LogWarning($"Engine '{entity}' had a FlowRhythmEngineSettingsData.BeatInterval of 0 (or less), this is not accepted.");
+			}
+
+			[BurstDiscard]
+			private void NonBurst_ThrowWarning1(Entity entity, int beatDiff)
+			{
+				Debug.LogWarning($"Engine '{entity}' had a large different between the simulated and predicted process (diff={beatDiff})");
 			}
 
 			public void Execute(Entity entity, int index, ref RhythmEngineSettings settings, ref RhythmEngineState state, ref RhythmEngineProcess process, ref RhythmPredictedProcess predictedProcess)
@@ -31,7 +39,7 @@ namespace Patapon4TLB.Default
 				process.TimeTick = (int) (CurrentTime - process.StartTime);
 				if (settings.BeatInterval <= 0.0001f)
 				{
-					NonBurst_ThrowWarning(entity);
+					NonBurst_ThrowWarning0(entity);
 					return;
 				}
 
@@ -47,7 +55,7 @@ namespace Patapon4TLB.Default
 
 				if (diff > 2)
 				{
-					Debug.LogWarning("The difference of beats between the predicted process is greater!");
+					NonBurst_ThrowWarning1(entity, diff);
 				}
 			}
 		}

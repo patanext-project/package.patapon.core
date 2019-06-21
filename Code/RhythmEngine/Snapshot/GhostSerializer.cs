@@ -1,6 +1,7 @@
 using package.patapon.core;
 using StormiumTeam.GameBase;
 using StormiumTeam.Networking.Utilities;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.NetCode;
 
@@ -26,7 +27,9 @@ namespace Patapon4TLB.Default.Snapshot
 		public GhostComponentType<GameCommandState>     GhostCommandStateType;
 		public GhostComponentType<GameComboState>       GhostComboStateType;
 
+		[NativeDisableContainerSafetyRestriction]
 		public ComponentDataFromEntity<GhostSystemStateComponent> GhostStateFromEntity;
+		[NativeDisableContainerSafetyRestriction]
 		public ComponentDataFromEntity<RhythmCommandId>           CommandDataFromEntity;
 
 		public void BeginSerialize(ComponentSystemBase system)

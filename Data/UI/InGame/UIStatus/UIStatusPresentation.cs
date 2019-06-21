@@ -1,6 +1,7 @@
 using System;
 using Patapon4TLB.UI.InGame;
 using StormiumTeam.GameBase;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
@@ -11,8 +12,8 @@ namespace Patapon4TLB.UI
 	public class UIStatusBackend : CustomAsyncAsset<UIStatusPresentation>
 	{
 		public Entity entity;
-		public int    position;
-		
+		public int    priority;
+
 		public RectTransform rectTransform { get; private set; }
 
 		private void OnEnable()
@@ -50,25 +51,61 @@ namespace Patapon4TLB.UI
 	[UpdateAfter(typeof(UIStatusGenerateListSystem))]
 	public class UIStatusPresentationSystem : UIGameSystemBase
 	{
+		private struct SortBackend : IComparable<SortBackend>
+		{
+			public int index;
+			public int priority;
+
+			public int CompareTo(SortBackend other)
+			{
+				return other.priority - priority;
+			}
+		}
+
 		private EntityQuery m_Query;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			m_Query = GetEntityQuery(typeof(UIStatusBackend), typeof(UIStatusPresentation));
+			m_Query = GetEntityQuery(typeof(UIStatusBackend));
 		}
 
 		protected override void OnUpdate()
 		{
+			using (var chunks = m_Query.CreateArchetypeChunkArray(Allocator.TempJob))
+			{
+				var backendType = GetArchetypeChunkComponentType<UIStatusBackend>();
+				foreach (var chunk in chunks)
+				{
+					var backendArray = chunk.GetComponentObjects(backendType, EntityManager);
+					var sorted       = new NativeArray<SortBackend>(chunk.Count, Allocator.Temp);
+
+					// first, sort backends...
+					for (var ent = 0; ent != chunk.Count; ent++)
+					{
+						sorted[ent] = new SortBackend {index = ent, priority = backendArray[ent].priority};
+					}
+
+					sorted.Sort();
+
+					for (var i = 0; i != sorted.Length; i++)
+					{
+						var backend       = backendArray[sorted[i].index];
+						var rectTransform = backend.GetComponent<RectTransform>();
+
+						rectTransform.anchorMin        = new Vector2(0, 0.5f);
+						rectTransform.anchorMax        = new Vector2(0, 0.5f);
+						rectTransform.pivot            = new Vector2(0, 0.5f);
+						rectTransform.sizeDelta        = new Vector2(100, 100);
+						rectTransform.anchoredPosition = new Vector2(i * 100, 0);
+					}
+				}
+			}
+
 			Entities.ForEach((UIStatusBackend backend) =>
 			{
 				var rectTransform = backend.rectTransform;
-				rectTransform.anchorMin        = new Vector2(0, 0.5f);
-				rectTransform.anchorMax        = new Vector2(0, 0.5f);
-				rectTransform.pivot            = new Vector2(0, 0.5f);
-				rectTransform.sizeDelta        = new Vector2(100, 100);
-				rectTransform.anchoredPosition = new Vector2(backend.position * 100, 0);
 			});
 		}
 	}

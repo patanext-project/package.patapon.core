@@ -8,7 +8,7 @@ using Unity.NetCode;
 
 namespace Patapon4TLB.Default.Test
 {
-	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
+	/*[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 	[UpdateBefore(typeof(CreateGamePlayerSystem))]
 	public class CreateRhythmEngineOnPlayerConnectionSystem : JobComponentSystem
 	{
@@ -55,5 +55,5 @@ namespace Patapon4TLB.Default.Test
 
 			return inputDeps;
 		}
-	}
+	}*/
 }
