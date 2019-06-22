@@ -349,7 +349,7 @@ namespace Patapon4TLB.Default.Test
 				m_CommandChain[hash] = 0;
 			}
 
-			if (CurrentSong.CommandsAudio.ContainsKey(id))
+			if (CurrentSong.CommandsAudio.ContainsKey(id) && !(clientSystem.ComboState.IsFever && !m_WasFever))
 			{
 				var key = SongDescription.CmdKeyNormal;
 				if (clientSystem.ComboState.IsFever)
@@ -365,17 +365,14 @@ namespace Patapon4TLB.Default.Test
 				{
 					m_WasFever = false;
 				}
-
-				if (clientSystem.ComboState.IsFever && !m_WasFever)
-				{
-					m_WasFever    = true;
-					commandTarget = m_FeverClip;
-				}
-				else
-				{
-					var clips = CurrentSong.CommandsAudio[id][key];
-					commandTarget = clips[m_CommandChain[data.Identifier.GetHashCode()] % (clips.Count)];
-				}
+				
+				var clips = CurrentSong.CommandsAudio[id][key];
+				commandTarget = clips[m_CommandChain[data.Identifier.GetHashCode()] % (clips.Count)];
+			}
+			else if (clientSystem.ComboState.IsFever && !m_WasFever)
+			{
+				m_WasFever    = true;
+				commandTarget = m_FeverClip;
 			}
 
 			if (clientSystem.ComboState.IsFever)
