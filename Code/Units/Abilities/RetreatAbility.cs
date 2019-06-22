@@ -72,7 +72,7 @@ namespace Patapon4TLB.Default
 				{
 					if (wasRetreating)
 					{
-						ability.BackVelocity = math.abs(ability.StartPosition.x - translation.Value.x);
+						ability.BackVelocity = math.abs(ability.StartPosition.x - translation.Value.x) * 0.6f;
 					}
 
 					var newPosX = Mathf.MoveTowards(translation.Value.x, ability.StartPosition.x, ability.BackVelocity * DeltaTime);
@@ -84,7 +84,7 @@ namespace Patapon4TLB.Default
 				VelocityFromEntity[owner.Target] = velocity;
 
 				var controllerState = UnitControllerStateFromEntity[owner.Target];
-				controllerState.ControlOverVelocity         = ability.IsRetreating;
+				controllerState.ControlOverVelocity         = true;
 				//controllerState.OverrideTargetPosition      = true;
 				//controllerState.TargetPosition              = ability.StartPosition;
 				UnitControllerStateFromEntity[owner.Target] = controllerState;
