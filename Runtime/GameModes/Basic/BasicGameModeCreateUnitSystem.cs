@@ -70,9 +70,9 @@ namespace Patapon4TLB.GameModes.Basic
 				EntityManager.SetComponentData(unit, new UnitBaseSettings
 				{
 					MovementAttackSpeed = 2.25f,
-					BaseWalkSpeed  = 2f,
-					FeverWalkSpeed = 2.2f,
-					Weight         = 5
+					BaseWalkSpeed       = 2f,
+					FeverWalkSpeed      = 2.2f,
+					Weight              = 5
 				});
 				EntityManager.SetComponentData(unit, UnitDirection.Right);
 				EntityManager.SetComponentData(unit, new UnitRhythmState());
@@ -105,7 +105,14 @@ namespace Patapon4TLB.GameModes.Basic
 					[2] = new RhythmCommandSequence(2, RhythmKeys.Right),
 					[3] = new RhythmCommandSequence(3, RhythmKeys.Left),
 				});
-				
+				var backwardCommand = World.GetExistingSystem<RhythmCommandBuilder>().GetOrCreate(new NativeArray<RhythmCommandSequence>(4, Allocator.TempJob)
+				{
+					[0] = new RhythmCommandSequence(0, RhythmKeys.Up),
+					[1] = new RhythmCommandSequence(1, RhythmKeys.Left),
+					[2] = new RhythmCommandSequence(2, RhythmKeys.Up),
+					[3] = new RhythmCommandSequence(3, RhythmKeys.Left),
+				});
+
 				using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
 				{
 					World.GetOrCreateSystem<MarchAbilityProvider>().SpawnLocalEntityWithArguments(new MarchAbilityProvider.Create
@@ -115,6 +122,7 @@ namespace Patapon4TLB.GameModes.Basic
 						Owner              = unit
 					}, createList);
 				}
+
 				using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
 				{
 					World.GetOrCreateSystem<MarchWithTargetAbilityProvider>().SpawnLocalEntityWithArguments(new MarchWithTargetAbilityProvider.Create
@@ -130,6 +138,26 @@ namespace Patapon4TLB.GameModes.Basic
 					World.GetOrCreateSystem<RetreatAbilityProvider>().SpawnLocalEntityWithArguments(new RetreatAbilityProvider.Create
 					{
 						Command            = retreatCommand,
+						AccelerationFactor = 1,
+						Owner              = unit
+					}, createList);
+				}
+
+				using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
+				{
+					World.GetOrCreateSystem<BackwardAbilityProvider>().SpawnLocalEntityWithArguments(new BackwardAbilityProvider.Create
+					{
+						Command            = backwardCommand,
+						AccelerationFactor = 1,
+						Owner              = unit
+					}, createList);
+				}
+
+				using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
+				{
+					World.GetOrCreateSystem<BackwardWithTargetAbilityProvider>().SpawnLocalEntityWithArguments(new BackwardWithTargetAbilityProvider.Create
+					{
+						Command            = backwardCommand,
 						AccelerationFactor = 1,
 						Owner              = unit
 					}, createList);
