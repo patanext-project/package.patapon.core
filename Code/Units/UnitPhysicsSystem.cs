@@ -27,24 +27,27 @@ namespace Patapon4TLB.Core
 					return target;
 				return current + Mathf.Sign(target - current) * maxDelta;
 			}
-			
+
 			public void Execute(ref UnitControllerState controllerState, ref Translation translation, ref Velocity velocity, [ReadOnly] ref UnitBaseSettings unitSettings, [ReadOnly] ref UnitTargetPosition targetPosition)
 			{
-				
+				var target = controllerState.OverrideTargetPosition ? controllerState.TargetPosition : targetPosition.Value;
 				if (!controllerState.ControlOverVelocity)
 				{
 					// We should instead have another system to damp the velocity... (along with settings + taking in account weight)
 					var acceleration = math.clamp(math.rcp(unitSettings.Weight), 0, 1) * 10;
-					acceleration = math.min(acceleration * DeltaTime, 1);
-					
+					acceleration = math.min(acceleration * DeltaTime, 1) * 1.5f;
+
 					// Instead of just assigning the translation value here, we calculate the velocity between the new position and the previous position.
-					var newPosX = MoveTowards(translation.Value.x, targetPosition.Value.x, acceleration);
+					var newPosX = MoveTowards(translation.Value.x, target.x, acceleration);
 					velocity.Value.x = (newPosX - translation.Value.x) / DeltaTime;
 				}
-				translation.Value += velocity.Value * DeltaTime;
-				
 
-				controllerState.ControlOverVelocity = false;
+				translation.Value += velocity.Value * DeltaTime;
+
+
+				controllerState.ControlOverVelocity    = false;
+				controllerState.OverrideTargetPosition = false;
+				controllerState.PassThroughEnemies     = false;
 			}
 		}
 
