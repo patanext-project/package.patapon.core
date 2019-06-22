@@ -54,7 +54,7 @@ namespace Patapon4TLB.Default
 					walkSpeed = unitSettings.FeverWalkSpeed;
 				}
 
-				walkSpeed *= 0.5f;
+				walkSpeed *= -0.5f;
 
 				targetPosition.Value.x += walkSpeed * unitDirection.Value * acceleration;
 
