@@ -1,11 +1,14 @@
 using package.patapon.core;
 using Patapon4TLB.Core;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Data;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Physics;
+using Unity.Transforms;
+using UnityEngine;
 
 namespace Patapon4TLB.Default
 {
@@ -21,29 +24,23 @@ namespace Patapon4TLB.Default
 		{
 			public float DeltaTime;
 
-			[ReadOnly]
-			public ComponentDataFromEntity<UnitRhythmState> UnitStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<Translation>        TranslationFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<UnitRhythmState>    UnitStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<GroundState>        GroundStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<UnitBaseSettings>   UnitSettingsFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<UnitTargetPosition> UnitTargetPositionFromEntity;
 
-			[ReadOnly]
-			public ComponentDataFromEntity<GroundState> GroundStateFromEntity;
-
-			[ReadOnly]
-			public ComponentDataFromEntity<UnitBaseSettings> UnitSettingsFromEntity;
-
-			[ReadOnly]
-			public ComponentDataFromEntity<UnitDirection> UnitDirectionFromEntity;
-
-			[NativeDisableParallelForRestriction]
-			public ComponentDataFromEntity<PhysicsVelocity> VelocityFromEntity;
+			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitControllerState> UnitControllerStateFromEntity;
+			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Velocity>            VelocityFromEntity;
 
 			public void Execute(Entity entity, int _, [ReadOnly] ref Owner owner, [ReadOnly] ref RhythmAbilityState state, [ReadOnly] ref MarchAbility marchAbility)
 			{
 				if (!state.IsActive)
 					return;
 
-				var unitSettings  = UnitSettingsFromEntity[owner.Target];
-				var unitDirection = UnitDirectionFromEntity[owner.Target];
-				var groundState   = GroundStateFromEntity[owner.Target];
+				var unitSettings   = UnitSettingsFromEntity[owner.Target];
+				var targetPosition = UnitTargetPositionFromEntity[owner.Target];
+				var groundState    = GroundStateFromEntity[owner.Target];
 
 				if (!groundState.Value)
 					return;
@@ -52,7 +49,7 @@ namespace Patapon4TLB.Default
 				var velocity = VelocityFromEntity[owner.Target];
 
 				// to not make tanks op, we need to get the weight from entity and use it as an acceleration factor
-				var acceleration = math.clamp(math.rcp(unitSettings.Weight), 0, 1) * marchAbility.AccelerationFactor;
+				var acceleration = math.clamp(math.rcp(unitSettings.Weight), 0, 1) * marchAbility.AccelerationFactor * 50;
 				acceleration = math.min(acceleration * DeltaTime, 1);
 
 				var walkSpeed = unitSettings.BaseWalkSpeed;
@@ -61,9 +58,14 @@ namespace Patapon4TLB.Default
 					walkSpeed = unitSettings.FeverWalkSpeed;
 				}
 
-				velocity.Linear.x = math.lerp(velocity.Linear.x, walkSpeed * unitDirection.Value, acceleration);
+				var direction = System.Math.Sign(targetPosition.Value.x - TranslationFromEntity[owner.Target].Value.x);
 
+				velocity.Value.x                 = math.lerp(velocity.Value.x, walkSpeed * direction, acceleration);
 				VelocityFromEntity[owner.Target] = velocity;
+
+				var controllerState = UnitControllerStateFromEntity[owner.Target];
+				controllerState.ControlOverVelocity         = true;
+				UnitControllerStateFromEntity[owner.Target] = controllerState;
 			}
 		}
 
@@ -74,13 +76,46 @@ namespace Patapon4TLB.Default
 
 			return new JobProcess
 			{
-				DeltaTime               = GetSingleton<GameTimeComponent>().DeltaTime,
-				UnitStateFromEntity     = GetComponentDataFromEntity<UnitRhythmState>(true),
-				UnitSettingsFromEntity  = GetComponentDataFromEntity<UnitBaseSettings>(true),
-				UnitDirectionFromEntity = GetComponentDataFromEntity<UnitDirection>(true),
-				GroundStateFromEntity   = GetComponentDataFromEntity<GroundState>(),
-				VelocityFromEntity      = GetComponentDataFromEntity<PhysicsVelocity>()
+				DeltaTime                     = GetSingleton<GameTimeComponent>().DeltaTime,
+				UnitStateFromEntity           = GetComponentDataFromEntity<UnitRhythmState>(true),
+				UnitSettingsFromEntity        = GetComponentDataFromEntity<UnitBaseSettings>(true),
+				TranslationFromEntity         = GetComponentDataFromEntity<Translation>(true),
+				GroundStateFromEntity         = GetComponentDataFromEntity<GroundState>(true),
+				UnitTargetPositionFromEntity  = GetComponentDataFromEntity<UnitTargetPosition>(true),
+				UnitControllerStateFromEntity = GetComponentDataFromEntity<UnitControllerState>(),
+				VelocityFromEntity            = GetComponentDataFromEntity<Velocity>()
 			}.Schedule(this, inputDeps);
+		}
+	}
+
+	public class MarchAbilityProvider : BaseProviderBatch<MarchAbilityProvider.Create>
+	{
+		public struct Create
+		{
+			public Entity Owner;
+			public Entity Command;
+			public float  AccelerationFactor;
+		}
+
+		public override void GetComponents(out ComponentType[] entityComponents)
+		{
+			entityComponents = new ComponentType[]
+			{
+				typeof(ActionDescription),
+				typeof(RhythmAbilityState),
+				typeof(MarchAbility),
+				typeof(Owner),
+				typeof(DestroyChainReaction)
+			};
+		}
+
+		public override void SetEntityData(Entity entity, Create data)
+		{
+			EntityManager.ReplaceOwnerData(entity, data.Owner);
+			EntityManager.SetComponentData(entity, new RhythmAbilityState {Command      = data.Command});
+			EntityManager.SetComponentData(entity, new MarchAbility {AccelerationFactor = data.AccelerationFactor});
+			EntityManager.SetComponentData(entity, new Owner {Target                    = data.Owner});
+			EntityManager.SetComponentData(entity, new DestroyChainReaction(data.Owner));
 		}
 	}
 }

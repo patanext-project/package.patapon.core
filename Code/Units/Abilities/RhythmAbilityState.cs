@@ -27,8 +27,6 @@ namespace Patapon4TLB.Default
 			if (commandState.IsGamePlayActive(engineProcess.TimeTick))
 			{
 				abilityState.IsActive = EntityManager.GetComponentData<RhythmCurrentCommand>(engine).CommandTarget == abilityState.Command;
-				if (abilityState.IsActive)
-					Debug.Log("Active!");
 			}
 			else
 			{

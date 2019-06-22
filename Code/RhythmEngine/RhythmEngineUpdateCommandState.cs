@@ -64,11 +64,15 @@ namespace Patapon4TLB.Default
 					comboState.ChainToFever = 0;
 
 					commandState.ChainEndTime = -1;
+					commandState.StartTime    = -1;
+					commandState.EndTime      = -1;
 
 					if (!IsServer && SimulateTagFromEntity.Exists(entity))
 					{
 						var p = PredictedCommandFromEntity[entity];
-						PredictedComboFromEntity[entity] = new GameComboPredictedClient {State = comboState};
+
+						PredictedCommandFromEntity[entity] = new GamePredictedCommandState {State = commandState};
+						PredictedComboFromEntity[entity]   = new GameComboPredictedClient {State  = comboState};
 					}
 				}
 
@@ -103,10 +107,9 @@ namespace Patapon4TLB.Default
 				{
 					var previousPrediction = PredictedCommandFromEntity[entity].State;
 					var isNew              = state.ApplyCommandNextBeat;
+					var madOp = math.mad(beatLength, settings.BeatInterval, rhythm.ActiveAtTime);
 					if (isNew)
 					{
-						//Debug.Log($"Command start at {rhythm.ActiveAtBeat}, currFlowBeat: {flowBeat}, currBeat: {process.GetActivationBeat(settings.BeatInterval)}");
-
 						previousPrediction.ChainEndTime = (rhythm.CustomEndTime == 0 || rhythm.CustomEndTime == -1)
 							? rhythmActiveAtFlowBeat + beatLength * 2
 							: rhythm.CustomEndTime;
@@ -115,12 +118,10 @@ namespace Patapon4TLB.Default
 						predictedCombo.State.Update(rhythm, true);
 
 						PredictedComboFromEntity[entity] = predictedCombo;
+
+						previousPrediction.StartTime = rhythm.ActiveAtTime;
+						previousPrediction.EndTime   = (rhythm.CustomEndTime == 0 || rhythm.CustomEndTime == -1) ? madOp : rhythm.CustomEndTime;
 					}
-
-					var madOp = math.mad(beatLength, settings.BeatInterval, rhythm.ActiveAtTime);
-
-					previousPrediction.StartTime = rhythm.ActiveAtTime;
-					previousPrediction.EndTime   = (rhythm.CustomEndTime == 0 || rhythm.CustomEndTime == -1) ? madOp : rhythm.CustomEndTime;
 
 					PredictedCommandFromEntity[entity] = new GamePredictedCommandState {State = previousPrediction};
 				}
@@ -128,12 +129,11 @@ namespace Patapon4TLB.Default
 				{
 					var isNew = state.ApplyCommandNextBeat;
 					var madOp = math.mad(beatLength, settings.BeatInterval, rhythm.ActiveAtTime);
-
-					commandState.StartTime = rhythm.ActiveAtTime;
-					commandState.EndTime   = rhythm.CustomEndTime == -1 ? madOp : rhythm.CustomEndTime;
-
+					
 					if (isNew)
 					{
+						commandState.StartTime = rhythm.ActiveAtTime;
+						commandState.EndTime   = rhythm.CustomEndTime == -1 ? madOp : rhythm.CustomEndTime;
 						commandState.ChainEndTime = rhythm.CustomEndTime == -1 ? rhythmActiveAtFlowBeat + beatLength * 2 : rhythm.CustomEndTime;
 
 						comboState.Update(rhythm, false);

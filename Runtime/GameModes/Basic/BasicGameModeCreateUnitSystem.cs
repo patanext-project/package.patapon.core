@@ -26,10 +26,13 @@ namespace Patapon4TLB.GameModes.Basic
 
 			m_UnitArchetype = EntityManager.CreateArchetype
 			(
+				typeof(EntityAuthority),
 				typeof(UnitDescription),
 
 				typeof(UnitBaseSettings),
+				typeof(UnitControllerState),
 				typeof(UnitDirection),
+				typeof(UnitTargetPosition),
 				typeof(UnitRhythmState),
 
 				typeof(Translation),
@@ -39,7 +42,7 @@ namespace Patapon4TLB.GameModes.Basic
 				typeof(PhysicsCollider),
 				typeof(PhysicsDamping),
 				typeof(PhysicsMass),
-				typeof(PhysicsVelocity), // right now, we don't have 2D Controller, so we need to use rigidBody based physics...
+				typeof(Velocity),
 				typeof(GroundState),
 
 				typeof(Relative<PlayerDescription>),
@@ -66,8 +69,8 @@ namespace Patapon4TLB.GameModes.Basic
 
 				EntityManager.SetComponentData(unit, new UnitBaseSettings
 				{
-					BaseWalkSpeed  = 3.5f,
-					FeverWalkSpeed = 5f,
+					BaseWalkSpeed  = 2f,
+					FeverWalkSpeed = 2.2f,
 					Weight         = 5
 				});
 				EntityManager.SetComponentData(unit, UnitDirection.Right);
@@ -86,7 +89,6 @@ namespace Patapon4TLB.GameModes.Basic
 				EntityManager.SetComponentData(unit, new Relative<RhythmEngineDescription> {Target = playerData.RhythmEngine});
 				EntityManager.SetComponentData(unit, new DestroyChainReaction(playerEntity));
 
-				var marchAbility = EntityManager.CreateEntity();
 				// We should instead search for entities with 'MarchCommand' component tag...
 				var marchCommand = World.GetExistingSystem<RhythmCommandBuilder>().GetOrCreate(new NativeArray<RhythmCommandSequence>(4, Allocator.TempJob)
 				{
@@ -95,17 +97,47 @@ namespace Patapon4TLB.GameModes.Basic
 					[2] = new RhythmCommandSequence(2, RhythmKeys.Left),
 					[3] = new RhythmCommandSequence(3, RhythmKeys.Right),
 				});
-				EntityManager.AddComponentData(marchAbility, new ActionDescription());
-				EntityManager.AddComponentData(marchAbility, new RhythmAbilityState {Command      = marchCommand});
-				EntityManager.AddComponentData(marchAbility, new MarchAbility {AccelerationFactor = 1});
-				EntityManager.AddComponentData(marchAbility, new Owner {Target                    = unit});
-				EntityManager.AddComponentData(marchAbility, new DestroyChainReaction(unit));
+
+				Entity marchAbility;
+				using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
+				{
+					World.GetOrCreateSystem<MarchAbilityProvider>().SpawnLocalEntityWithArguments(new MarchAbilityProvider.Create
+					{
+						Command            = marchCommand,
+						AccelerationFactor = 1,
+						Owner              = unit
+					}, createList);
+					marchAbility = createList[0];
+				}
+
+				Entity marchWithTargetAbility;
+				using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
+				{
+					World.GetOrCreateSystem<MarchWithTargetAbilityProvider>().SpawnLocalEntityWithArguments(new MarchWithTargetAbilityProvider.Create
+					{
+						Command            = marchCommand,
+						AccelerationFactor = 1,
+						Owner              = unit
+					}, createList);
+					marchWithTargetAbility = createList[0];
+				}
 
 				playerData.Unit = unit;
 				EntityManager.SetComponentData(playerEntity, playerData);
 
 				Debug.Log($"Create entity with {unit} {playerData.RhythmEngine}");
 			}
+
+			Entities.ForEach((ref Translation translation, ref UnitTargetPosition target) =>
+			{
+				Debug.DrawRay(translation.Value, Vector3.up, Color.blue);
+				Debug.DrawRay(target.Value, Vector3.up, Color.red);
+
+				if (Input.GetKeyDown(KeyCode.RightArrow))
+					target.Value.x += 1;
+				else if (Input.GetKeyDown(KeyCode.LeftArrow))
+					target.Value.x -= 1;
+			});
 		}
 	}
 }
