@@ -11,21 +11,18 @@ using UnityEngine;
 
 namespace Patapon4TLB.Default
 {
-	public struct RetreatAbility : IComponentData
+	public struct JumpAbility : IComponentData
 	{
 		public int LastActiveId;
-
-		public float  AccelerationFactor;
-		public float3 StartPosition;
-		public float  BackVelocity;
-		public bool   IsRetreating;
+		
+		public bool   IsJumping;
 		public float  ActiveTime;
 	}
 
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-	public class RetreatAbilitySystem : JobGameBaseSystem
+	public class JumpAbilitySystem : JobGameBaseSystem
 	{
-		private struct Job : IJobForEach<Owner, RhythmAbilityState, RetreatAbility>
+		private struct Job : IJobForEach<Owner, RhythmAbilityState, JumpAbility>
 		{
 			[ReadOnly] public float DeltaTime;
 
@@ -36,65 +33,50 @@ namespace Patapon4TLB.Default
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitControllerState> UnitControllerStateFromEntity;
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Velocity>            VelocityFromEntity;
 
-			public void Execute(ref Owner owner, ref RhythmAbilityState state, ref RetreatAbility ability)
+			public void Execute(ref Owner owner, ref RhythmAbilityState state, ref JumpAbility ability)
 			{
 				if (state.ActiveId != ability.LastActiveId)
 				{
-					ability.IsRetreating = false;
+					ability.IsJumping    = false;
 					ability.ActiveTime   = 0;
 					ability.LastActiveId = state.ActiveId;
 				}
 
 				if (!state.IsActive && !state.IsStillChaining)
 				{
-					ability.ActiveTime   = 0;
-					ability.IsRetreating = false;
+					ability.ActiveTime = 0;
+					ability.IsJumping  = false;
 					return;
 				}
 
-				var wasRetreating = ability.IsRetreating;
-				ability.IsRetreating = ability.ActiveTime <= 2.0f;
+				var wasJumping = ability.IsJumping;
+				ability.IsJumping = ability.ActiveTime <= 0.5f;
 
 				var translation   = TranslationFromEntity[owner.Target];
 				var unitSettings  = UnitSettingsFromEntity[owner.Target];
 				var unitDirection = UnitDirectionFromEntity[owner.Target];
 				var velocity      = VelocityFromEntity[owner.Target];
 
-				var retreatSpeed = unitSettings.MovementAttackSpeed * 2.5f;
-
-				if (!wasRetreating && ability.IsRetreating)
+				if (!wasJumping && ability.IsJumping)
 				{
-					ability.StartPosition = translation.Value;
-					velocity.Value.x      = -unitDirection.Value * retreatSpeed;
+					velocity.Value.y = math.max(velocity.Value.y + 20, 20);
 				}
 
-				// there is a little stop when the character is stopping retreating
-				if (ability.IsRetreating && ability.ActiveTime >= 1.75f)
-				{
-					// if he weight more, he will stop faster
-					velocity.Value.x = math.lerp(velocity.Value.x, 0, unitSettings.Weight * DeltaTime);
-				}
+				velocity.Value.x = math.lerp(velocity.Value.x, 0, DeltaTime * (ability.ActiveTime + 1));
 
-				if (!ability.IsRetreating)
-				{
-					if (wasRetreating)
-					{
-						ability.BackVelocity = math.abs(ability.StartPosition.x - translation.Value.x) * 0.6f;
-					}
-
-					var newPosX = Mathf.MoveTowards(translation.Value.x, ability.StartPosition.x, ability.BackVelocity * DeltaTime);
-					velocity.Value.x = (newPosX - translation.Value.x) / DeltaTime;
-				}
+				if (!ability.IsJumping && wasJumping)
+					velocity.Value.y = 0;
 
 				ability.ActiveTime += DeltaTime;
 
 				VelocityFromEntity[owner.Target] = velocity;
 
 				var controllerState = UnitControllerStateFromEntity[owner.Target];
-				controllerState.ControlOverVelocity.x = true;
-				//controllerState.OverrideTargetPosition      = true;
-				//controllerState.TargetPosition              = ability.StartPosition;
+				controllerState.ControlOverVelocity.x       = true;
+				controllerState.ControlOverVelocity.y       = ability.ActiveTime < 2.5f;
 				UnitControllerStateFromEntity[owner.Target] = controllerState;
+
+				Debug.Log($"{ability.ActiveTime}");
 			}
 		}
 
@@ -112,7 +94,7 @@ namespace Patapon4TLB.Default
 		}
 	}
 
-	public class RetreatAbilityProvider : BaseProviderBatch<RetreatAbilityProvider.Create>
+	public class JumpAbilityProvider : BaseProviderBatch<JumpAbilityProvider.Create>
 	{
 		public struct Create
 		{
@@ -127,7 +109,7 @@ namespace Patapon4TLB.Default
 			{
 				typeof(ActionDescription),
 				typeof(RhythmAbilityState),
-				typeof(RetreatAbility),
+				typeof(JumpAbility),
 				typeof(Owner),
 				typeof(DestroyChainReaction)
 			};
@@ -137,7 +119,7 @@ namespace Patapon4TLB.Default
 		{
 			EntityManager.ReplaceOwnerData(entity, data.Owner);
 			EntityManager.SetComponentData(entity, new RhythmAbilityState {Command        = data.Command});
-			EntityManager.SetComponentData(entity, new RetreatAbility {AccelerationFactor = data.AccelerationFactor});
+			EntityManager.SetComponentData(entity, new JumpAbility {});
 			EntityManager.SetComponentData(entity, new Owner {Target                      = data.Owner});
 			EntityManager.SetComponentData(entity, new DestroyChainReaction(data.Owner));
 		}

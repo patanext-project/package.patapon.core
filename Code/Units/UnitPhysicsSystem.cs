@@ -16,7 +16,7 @@ namespace Patapon4TLB.Core
 	{
 		// Right now, there is no collisions or things like that
 		[RequireComponentTag(typeof(UnitDescription), typeof(EntityAuthority))]
-		private struct Job : IJobForEach<UnitControllerState, Translation, Velocity, UnitBaseSettings, UnitTargetPosition>
+		private struct Job : IJobForEach<UnitControllerState, GroundState, Translation, Velocity, UnitBaseSettings, UnitTargetPosition>
 		{
 			public float  DeltaTime;
 			public float3 Gravity;
@@ -28,21 +28,38 @@ namespace Patapon4TLB.Core
 				return current + Mathf.Sign(target - current) * maxDelta;
 			}
 
-			public void Execute(ref UnitControllerState controllerState, ref Translation translation, ref Velocity velocity, [ReadOnly] ref UnitBaseSettings unitSettings, [ReadOnly] ref UnitTargetPosition targetPosition)
+			public void Execute(ref UnitControllerState controllerState, ref GroundState groundState, ref Translation translation, ref Velocity velocity, [ReadOnly] ref UnitBaseSettings unitSettings, [ReadOnly] ref UnitTargetPosition targetPosition)
 			{
 				var target = controllerState.OverrideTargetPosition ? controllerState.TargetPosition : targetPosition.Value;
-				if (!controllerState.ControlOverVelocity)
+				if (!controllerState.ControlOverVelocity.x)
 				{
 					// We should instead have another system to damp the velocity... (along with settings + taking in account weight)
 					var acceleration = math.clamp(math.rcp(unitSettings.Weight), 0, 1) * 10;
 					acceleration = math.min(acceleration * DeltaTime, 1) * 1.5f;
+
+					if (!groundState.Value)
+					{
+						acceleration *= 0.1f;
+					}
 
 					// Instead of just assigning the translation value here, we calculate the velocity between the new position and the previous position.
 					var newPosX = MoveTowards(translation.Value.x, target.x, acceleration);
 					velocity.Value.x = (newPosX - translation.Value.x) / DeltaTime;
 				}
 
+				if (!controllerState.ControlOverVelocity.y)
+				{
+					if (!groundState.Value)
+						velocity.Value += Gravity * DeltaTime;
+				}
+
 				translation.Value += velocity.Value * DeltaTime;
+				if (translation.Value.y < 0) // meh
+					translation.Value.y = 0;
+
+				groundState.Value = translation.Value.y <= 0;
+				if (!controllerState.ControlOverVelocity.y && groundState.Value)
+					velocity.Value.y = math.max(velocity.Value.y, 0);
 
 
 				controllerState.ControlOverVelocity    = false;
@@ -56,7 +73,7 @@ namespace Patapon4TLB.Core
 			return new Job
 			{
 				DeltaTime = GetSingleton<GameTimeComponent>().DeltaTime,
-				Gravity   = new float3(0, -10, 0)
+				Gravity   = new float3(0, -15, 0)
 			}.Schedule(this, inputDeps);
 		}
 	}

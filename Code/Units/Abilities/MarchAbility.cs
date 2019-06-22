@@ -64,7 +64,7 @@ namespace Patapon4TLB.Default
 				VelocityFromEntity[owner.Target] = velocity;
 
 				var controllerState = UnitControllerStateFromEntity[owner.Target];
-				controllerState.ControlOverVelocity         = true;
+				controllerState.ControlOverVelocity.x       = true;
 				UnitControllerStateFromEntity[owner.Target] = controllerState;
 			}
 		}

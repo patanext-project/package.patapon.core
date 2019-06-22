@@ -112,6 +112,13 @@ namespace Patapon4TLB.GameModes.Basic
 					[2] = new RhythmCommandSequence(2, RhythmKeys.Up),
 					[3] = new RhythmCommandSequence(3, RhythmKeys.Left),
 				});
+				var jumpCommand = World.GetExistingSystem<RhythmCommandBuilder>().GetOrCreate(new NativeArray<RhythmCommandSequence>(4, Allocator.TempJob)
+				{
+					[0] = new RhythmCommandSequence(0, RhythmKeys.Down),
+					[1] = new RhythmCommandSequence(1, RhythmKeys.Down),
+					[2] = new RhythmCommandSequence(2, RhythmKeys.Up),
+					[3] = new RhythmCommandSequence(3, RhythmKeys.Up),
+				});
 
 				using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
 				{
@@ -158,6 +165,16 @@ namespace Patapon4TLB.GameModes.Basic
 					World.GetOrCreateSystem<BackwardWithTargetAbilityProvider>().SpawnLocalEntityWithArguments(new BackwardWithTargetAbilityProvider.Create
 					{
 						Command            = backwardCommand,
+						AccelerationFactor = 1,
+						Owner              = unit
+					}, createList);
+				}
+				
+				using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
+				{
+					World.GetOrCreateSystem<JumpAbilityProvider>().SpawnLocalEntityWithArguments(new JumpAbilityProvider.Create
+					{
+						Command            = jumpCommand,
 						AccelerationFactor = 1,
 						Owner              = unit
 					}, createList);
