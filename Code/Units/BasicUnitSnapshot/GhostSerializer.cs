@@ -29,7 +29,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			system.GetGhostComponentType(out UnitDirectionGhostType);
 			system.GetGhostComponentType(out TranslationGhostType);
 			system.GetGhostComponentType(out VelocityGhostType);
-			system.GetGhostComponentType(out OwnerGhostType);
+			system.GetGhostComponentType(out RelativePlayerGhostType);
 			system.GetGhostComponentType(out RelativeTeamGhostType);
 			system.GetGhostComponentType(out RelativeRhythmEngineGhostType);
 		}
@@ -37,7 +37,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 		public GhostComponentType<UnitDirection>                     UnitDirectionGhostType;
 		public GhostComponentType<Translation>                       TranslationGhostType;
 		public GhostComponentType<Velocity>                          VelocityGhostType;
-		public GhostComponentType<Owner>                             OwnerGhostType;
+		public GhostComponentType<Relative<PlayerDescription>>       RelativePlayerGhostType;
 		public GhostComponentType<Relative<TeamDescription>>         RelativeTeamGhostType;
 		public GhostComponentType<Relative<RhythmEngineDescription>> RelativeRhythmEngineGhostType;
 
@@ -50,12 +50,11 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				if (comps[i] == UnitDirectionGhostType) matches++;
 				if (comps[i] == TranslationGhostType) matches++;
 				if (comps[i] == VelocityGhostType) matches++;
-				if (comps[i] == OwnerGhostType) matches++;
-				if (comps[i] == RelativeTeamGhostType) matches++;
-				if (comps[i] == RelativeRhythmEngineGhostType) matches++;
+
+				// we don't check for other components as they are not that important...
 			}
 
-			return matches == 6;
+			return matches == 3;
 		}
 
 		public void CopyToSnapshot(ArchetypeChunk chunk, int ent, uint tick, ref BasicUnitSnapshotData snapshot)
@@ -71,14 +70,26 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			var velocity = chunk.GetNativeArray(VelocityGhostType.Archetype)[ent];
 			snapshot.Velocity.Set(BasicUnitSnapshotData.Quantization, velocity.Value);
 
-			var owner = chunk.GetNativeArray(OwnerGhostType.Archetype)[ent];
-			snapshot.OwnerGhostId = GetGhostId(owner.Target);
+			if (chunk.Has(RelativePlayerGhostType.Archetype))
+			{
+				var relativePlayer = chunk.GetNativeArray(RelativePlayerGhostType.Archetype)[ent];
+				snapshot.PlayerGhostId = GetGhostId(relativePlayer.Target);
+			}
+			else snapshot.PlayerGhostId = 0;
 
-			var relativeTeam = chunk.GetNativeArray(RelativeTeamGhostType.Archetype)[ent];
-			snapshot.TeamGhostId = GetGhostId(relativeTeam.Target);
+			if (chunk.Has(RelativeTeamGhostType.Archetype))
+			{
+				var relativeTeam = chunk.GetNativeArray(RelativeTeamGhostType.Archetype)[ent];
+				snapshot.TeamGhostId = GetGhostId(relativeTeam.Target);
+			}
+			else snapshot.TeamGhostId = 0;
 
-			var relativeRhythmEngine = chunk.GetNativeArray(RelativeRhythmEngineGhostType.Archetype)[ent];
-			snapshot.RhythmEngineGhostId = GetGhostId(relativeRhythmEngine.Target);
+			if (chunk.Has(RelativeRhythmEngineGhostType.Archetype))
+			{
+				var relativeRhythmEngine = chunk.GetNativeArray(RelativeRhythmEngineGhostType.Archetype)[ent];
+				snapshot.RhythmEngineGhostId = GetGhostId(relativeRhythmEngine.Target);
+			}
+			else snapshot.RhythmEngineGhostId = 0;
 		}
 
 		private uint GetGhostId(Entity target)

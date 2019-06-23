@@ -8,6 +8,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
+using Unity.NetCode;
 using Unity.Physics;
 using Unity.Transforms;
 using UnityEngine;
@@ -26,6 +27,8 @@ namespace Patapon4TLB.GameModes.Basic
 
 			m_UnitArchetype = EntityManager.CreateArchetype
 			(
+				typeof(GhostComponent),
+				
 				typeof(EntityAuthority),
 				typeof(UnitDescription),
 

@@ -75,9 +75,6 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				typeof(Velocity),
 				typeof(GroundState),
 
-				typeof(GhostOwner),
-				typeof(Owner),
-
 				typeof(GhostRelative<PlayerDescription>),
 				typeof(Relative<PlayerDescription>),
 				typeof(GhostRelative<RhythmEngineDescription>),
@@ -105,7 +102,6 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 			[ReadOnly] public BufferFromEntity<BasicUnitSnapshotData> SnapshotDataFromEntity;
 
-			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostOwner>                             OwnerFromEntity;
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostRelative<PlayerDescription>>       RelativePlayerFromEntity;
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostRelative<TeamDescription>>         RelativeTeamFromEntity;
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostRelative<RhythmEngineDescription>> RelativeRhythmEngineFromEntity;
@@ -118,13 +114,9 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				translation.Value   = snapshot.Position.Get(BasicUnitSnapshotData.DeQuantization);
 				velocity.Value      = snapshot.Velocity.Get(BasicUnitSnapshotData.DeQuantization);
 
-				OwnerFromEntity[entity] = new GhostOwner
-				{
-					GhostId = (int) snapshot.OwnerGhostId
-				};
 				RelativePlayerFromEntity[entity] = new GhostRelative<PlayerDescription>
 				{
-					GhostId = (int) snapshot.OwnerGhostId
+					GhostId = (int) snapshot.PlayerGhostId
 				};
 				RelativeTeamFromEntity[entity] = new GhostRelative<TeamDescription>
 				{
@@ -145,7 +137,6 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 				SnapshotDataFromEntity = GetBufferFromEntity<BasicUnitSnapshotData>(true),
 
-				OwnerFromEntity                = GetComponentDataFromEntity<GhostOwner>(),
 				RelativePlayerFromEntity       = GetComponentDataFromEntity<GhostRelative<PlayerDescription>>(),
 				RelativeTeamFromEntity         = GetComponentDataFromEntity<GhostRelative<TeamDescription>>(),
 				RelativeRhythmEngineFromEntity = GetComponentDataFromEntity<GhostRelative<RhythmEngineDescription>>(),

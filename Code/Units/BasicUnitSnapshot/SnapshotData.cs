@@ -12,7 +12,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 		
 		public uint Tick { get; set; }
 
-		public uint OwnerGhostId;
+		public uint PlayerGhostId;
 		public uint TeamGhostId;
 		public uint RhythmEngineGhostId;
 
@@ -33,7 +33,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 		public void Serialize(ref BasicUnitSnapshotData baseline, DataStreamWriter writer, NetworkCompressionModel compressionModel)
 		{
 			// 4
-			writer.WritePackedUIntDelta(OwnerGhostId, baseline.OwnerGhostId, compressionModel);
+			writer.WritePackedUIntDelta(PlayerGhostId, baseline.PlayerGhostId, compressionModel);
 			writer.WritePackedUIntDelta(TeamGhostId, baseline.TeamGhostId, compressionModel);
 			writer.WritePackedUIntDelta(RhythmEngineGhostId, baseline.RhythmEngineGhostId, compressionModel);
 			writer.WritePackedInt(Direction, compressionModel);
@@ -52,7 +52,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			Tick = tick;
 			
 			// 4
-			OwnerGhostId        = reader.ReadPackedUIntDelta(ref ctx, baseline.OwnerGhostId, compressionModel);
+			PlayerGhostId        = reader.ReadPackedUIntDelta(ref ctx, baseline.PlayerGhostId, compressionModel);
 			TeamGhostId         = reader.ReadPackedUIntDelta(ref ctx, baseline.TeamGhostId, compressionModel);
 			RhythmEngineGhostId = reader.ReadPackedUIntDelta(ref ctx, baseline.RhythmEngineGhostId, compressionModel);
 			Direction           = reader.ReadPackedInt(ref ctx, compressionModel);
@@ -68,7 +68,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 		public void Interpolate(ref BasicUnitSnapshotData target, float factor)
 		{
-			OwnerGhostId = target.OwnerGhostId;
+			PlayerGhostId = target.PlayerGhostId;
 			Direction    = target.Direction;
 
 			Position.Result = (int3) math.lerp(Position.Result, target.Position.Result, factor);
