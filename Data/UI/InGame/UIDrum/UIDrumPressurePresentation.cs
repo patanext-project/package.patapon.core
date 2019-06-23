@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using package.patapon.core;
 using Patapon4TLB.Default;
 using Patapon4TLB.UI.InGame;
+using Runtime.Misc;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Collections;
@@ -110,48 +112,80 @@ namespace Patapon4TLB.UI
 			
 			var currentGamePlayer = GetFirstSelfGamePlayer();
 			var currentCameraState = GetCurrentCameraState(currentGamePlayer);
-			if (currentCameraState.Target != default)
+
+			var isWorldSpace = currentCameraState.Target != default;
+			if (isWorldSpace)
 			{
 				var translation = EntityManager.GetComponentData<Translation>(currentCameraState.Target);
 				m_Canvas.transform.position = new Vector3(translation.Value.x, translation.Value.y, cameraPosition.z + 10);
+
+				var rectTransform = m_Canvas.GetComponent<RectTransform>();
+				rectTransform.sizeDelta = new Vector2(100, 100);
 			}
+			else
+			{
+				m_Canvas.transform.position = Vector3.zero;
+				m_Canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+			}
+
+			var canvasRect = m_Canvas.pixelRect;
 			
 			var internalSystem = World.GetExistingSystem<UIDrumPressureSystemClientInternal>();
+			var pixelRange = new float2(canvasRect.width, canvasRect.height);
 			foreach (var ev in internalSystem.Events)
 			{
-				var keyPos = new Vector3();
+				var keyRange = new float2();
 				if (ev.Key <= 2)
 				{
 					if (ev.Key == 1)
-						keyPos.x = -35f;
+						keyRange.x = -0.35f;
 					else
-						keyPos.x = 35f;
+						keyRange.x = 0.35f;
 
-					keyPos.x += Random.Range(-2.5f, 2.5f);
-					keyPos.y =  Random.Range(-10f, 10f);
+					keyRange.x += Random.Range(-0.025f, 0.025f);
+					keyRange.y =  Random.Range(-0.1f, 0.1f);
 				}
 				else
 				{
 					if (ev.Key == 3)
-						keyPos.y = -37.5f;
+						keyRange.y = -0.375f;
 					else
-						keyPos.y = 37.5f;
+						keyRange.y = 0.375f;
 
-					keyPos.y += Random.Range(-2.5f, 2.5f);
-					keyPos.x =  Random.Range(-10f, 10f);
+					keyRange.y += Random.Range(-0.025f, 0.025f);
+					keyRange.x =  Random.Range(-0.1f, 0.1f);
 				}
 
+				/*if (!isWorldSpace)
+				{
+					keyPos.x += canvasRect.width * 0.4f * Math.Sign(keyPos.x);
+					keyPos.y += canvasRect.height * 0.4f * Math.Sign(keyPos.y);
+				}*/
+				keyRange += 0.5f;
+				
+				var width = pixelRange.x * 0.5f;
+				var height = pixelRange.y * 0.5f;
+				var keyPos = new float2(math.lerp(-width, width, keyRange.x), math.lerp(-height, height, keyRange.y));
+
+				Debug.Log(keyPos + ", " + keyRange + ", " + pixelRange);
+				
 				var beGameObject = DrumBackendPools[ev.Key].Dequeue();
-				beGameObject.name = $"BackendPressure (Key: {ev.Key})";
-				beGameObject.SetActive(true);
-				beGameObject.transform.SetParent(m_Canvas.transform, false);
-				beGameObject.transform.localScale    = new Vector3(0.5f, 0.5f, 0.5f);
-				beGameObject.transform.localPosition = keyPos;
-				beGameObject.transform.rotation      = Quaternion.Euler(0, 0, Random.Range(-12.5f, 12.5f));
+				var rectTransform = beGameObject.GetComponent<RectTransform>();
+				using (new SetTemporaryActiveWorld(World))
+				{
+					beGameObject.name = $"BackendPressure (Key: {ev.Key})";
+					beGameObject.SetActive(true);
+					beGameObject.transform.SetParent(m_Canvas.transform, false);
+					beGameObject.transform.localScale = m_Canvas.renderMode == RenderMode.WorldSpace
+						? Vector3.one * 0.5f
+						: 0.75f * (canvasRect.width / canvasRect.height) * Vector3.one;
+					beGameObject.transform.position = new Vector3(keyPos.x, keyPos.y, 0);
+					beGameObject.transform.rotation = Quaternion.Euler(0, 0, Random.Range(-12.5f, 12.5f));
+				}
 
 				var backend = beGameObject.GetComponent<UIDrumPressureBackend>();
 				backend.OnReset();
-				backend.SetFromPool(DrumPresentationPools[ev.Key], internalSystem.EntityManager);
+				backend.SetFromPool(DrumPresentationPools[ev.Key], EntityManager);
 
 				var prevRand = backend.rand;
 
@@ -205,9 +239,13 @@ namespace Patapon4TLB.UI
 
 		private GameObject CreateBackendDrumGameObject(AssetPool<GameObject> poolCaller)
 		{
-			var go = new GameObject("(Not Init) BackendPressure", typeof(GameObjectEntity), typeof(UIDrumPressureBackend));
+			var go = new GameObject("(Not Init) BackendPressure", typeof(RectTransform), typeof(UIDrumPressureBackend), typeof(GameObjectEntity));
 			go.SetActive(false);
 			go.GetComponent<UIDrumPressureBackend>().SetRootPool(poolCaller);
+
+			/*var rectTransform = go.GetComponent<RectTransform>();
+			rectTransform.anchorMin = Vector2.zero;
+			rectTransform.anchorMax = Vector2.one;*/
 
 			return go;
 		}

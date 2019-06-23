@@ -1,3 +1,4 @@
+using Runtime.Misc;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Entities;
@@ -16,15 +17,16 @@ namespace Patapon4TLB.UI.InGame
 		{
 			base.OnCreate();
 
-			var previousActiveWorld = World.Active;
-			World.Active = World;
-			var gameObject = new GameObject($"(World: {World.Name}) GameCamera",
-				typeof(Camera),
-				typeof(GameCamera),
-				typeof(AudioListener),
-				typeof(GameObjectEntity));
-			m_Camera = gameObject.GetComponent<Camera>();
-			World.Active = previousActiveWorld;
+			GameObject gameObject;
+			using (new SetTemporaryActiveWorld(World))
+			{
+				gameObject = new GameObject($"(World: {World.Name}) GameCamera",
+					typeof(Camera),
+					typeof(GameCamera),
+					typeof(AudioListener),
+					typeof(GameObjectEntity));
+				m_Camera = gameObject.GetComponent<Camera>();
+			}
 
 			gameObject.SetActive(false);
 		}
@@ -49,10 +51,10 @@ namespace Patapon4TLB.UI.InGame
 
 			m_PreviousState = state;
 
-			var previousActiveWorld = World.Active;
-			World.Active = World;
-			m_Camera.gameObject.SetActive(state);
-			World.Active = previousActiveWorld;
+			using (new SetTemporaryActiveWorld(World))
+			{
+				m_Camera.gameObject.SetActive(state);
+			}
 		}
 	}
 
