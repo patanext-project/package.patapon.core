@@ -1,4 +1,5 @@
 using System;
+using Patapon4TLB.Core.BasicUnitSnapshot;
 using Patapon4TLB.Default.Snapshot;
 using Patapon4TLB.GameModes.Basic;
 using StormiumTeam.GameBase;
@@ -6,7 +7,6 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Networking.Transport;
 using Unity.NetCode;
-using UnityEngine;
 
 public struct GhostSerializerCollection : IGhostSerializerCollection
 {
@@ -14,14 +14,16 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
     {
         if (m_BasicGameModeSerializer.CanSerialize(arch))
             return 0;
-        if (m_DefaultRhythmEngineGhostSerializer.CanSerialize(arch))
+        if (m_BasicUnitGhostSerializer.CanSerialize(arch))
             return 1;
-        if (m_SynchronizedSimulationTimeGhostSerializer.CanSerialize(arch))
+        if (m_DefaultRhythmEngineGhostSerializer.CanSerialize(arch))
             return 2;
-        if (m_GamePlayerGhostSerializer.CanSerialize(arch))
+        if (m_SynchronizedSimulationTimeGhostSerializer.CanSerialize(arch))
             return 3;
-        if (m_TeamEmptyGhostSerializer.CanSerialize(arch))
+        if (m_GamePlayerGhostSerializer.CanSerialize(arch))
             return 4;
+        if (m_TeamEmptyGhostSerializer.CanSerialize(arch))
+            return 5;
 
         throw new ArgumentException("Invalid serializer type");
     }
@@ -29,6 +31,7 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
     public void BeginSerialize(ComponentSystemBase system)
     {
         m_BasicGameModeSerializer.BeginSerialize(system);
+        m_BasicUnitGhostSerializer.BeginSerialize(system);
         m_DefaultRhythmEngineGhostSerializer.BeginSerialize(system);
         m_SynchronizedSimulationTimeGhostSerializer.BeginSerialize(system);
         m_GamePlayerGhostSerializer.BeginSerialize(system);
@@ -43,12 +46,14 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
             case 0:
                 return m_BasicGameModeSerializer.CalculateImportance(chunk);
             case 1:
-                return m_DefaultRhythmEngineGhostSerializer.CalculateImportance(chunk);
+                return m_BasicUnitGhostSerializer.CalculateImportance(chunk);
             case 2:
-                return m_SynchronizedSimulationTimeGhostSerializer.CalculateImportance(chunk);
+                return m_DefaultRhythmEngineGhostSerializer.CalculateImportance(chunk);
             case 3:
-                return m_GamePlayerGhostSerializer.CalculateImportance(chunk);
+                return m_SynchronizedSimulationTimeGhostSerializer.CalculateImportance(chunk);
             case 4:
+                return m_GamePlayerGhostSerializer.CalculateImportance(chunk);
+            case 5:
                 return m_TeamEmptyGhostSerializer.CalculateImportance(chunk);
 
         }
@@ -63,12 +68,14 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
             case 0:
                 return m_BasicGameModeSerializer.WantsPredictionDelta;
             case 1:
-                return m_DefaultRhythmEngineGhostSerializer.WantsPredictionDelta;
+                return m_BasicUnitGhostSerializer.WantsPredictionDelta;
             case 2:
-                return m_SynchronizedSimulationTimeGhostSerializer.WantsPredictionDelta;
+                return m_DefaultRhythmEngineGhostSerializer.WantsPredictionDelta;
             case 3:
-                return m_GamePlayerGhostSerializer.WantsPredictionDelta;
+                return m_SynchronizedSimulationTimeGhostSerializer.WantsPredictionDelta;
             case 4:
+                return m_GamePlayerGhostSerializer.WantsPredictionDelta;
+            case 5:
                 return m_TeamEmptyGhostSerializer.WantsPredictionDelta;
 
         }
@@ -83,12 +90,14 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
             case 0:
                 return m_BasicGameModeSerializer.SnapshotSize;
             case 1:
-                return m_DefaultRhythmEngineGhostSerializer.SnapshotSize;
+                return m_BasicUnitGhostSerializer.SnapshotSize;
             case 2:
-                return m_SynchronizedSimulationTimeGhostSerializer.SnapshotSize;
+                return m_DefaultRhythmEngineGhostSerializer.SnapshotSize;
             case 3:
-                return m_GamePlayerGhostSerializer.SnapshotSize;
+                return m_SynchronizedSimulationTimeGhostSerializer.SnapshotSize;
             case 4:
+                return m_GamePlayerGhostSerializer.SnapshotSize;
+            case 5:
                 return m_TeamEmptyGhostSerializer.SnapshotSize;
 
         }
@@ -113,26 +122,33 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
             }
             case 1:
             {
+                return GhostSendSystem<GhostSerializerCollection>.InvokeSerialize(m_BasicUnitGhostSerializer, serializer,
+                    chunk, startIndex, currentTick, currentSnapshotEntity, (BasicUnitSnapshotData*)currentSnapshotData,
+                    ghosts, ghostEntities, baselinePerEntity, availableBaselines,
+                    dataStream, compressionModel);
+            }
+            case 2:
+            {
                 return GhostSendSystem<GhostSerializerCollection>.InvokeSerialize(m_DefaultRhythmEngineGhostSerializer, serializer,
                     chunk, startIndex, currentTick, currentSnapshotEntity, (RhythmEngineSnapshotData*)currentSnapshotData,
                     ghosts, ghostEntities, baselinePerEntity, availableBaselines,
                     dataStream, compressionModel);
             }
-            case 2:
+            case 3:
             {
                 return GhostSendSystem<GhostSerializerCollection>.InvokeSerialize(m_SynchronizedSimulationTimeGhostSerializer, serializer,
                     chunk, startIndex, currentTick, currentSnapshotEntity, (SynchronizedSimulationTimeSnapshot*)currentSnapshotData,
                     ghosts, ghostEntities, baselinePerEntity, availableBaselines,
                     dataStream, compressionModel);
             }
-            case 3:
+            case 4:
             {
                 return GhostSendSystem<GhostSerializerCollection>.InvokeSerialize(m_GamePlayerGhostSerializer, serializer,
                     chunk, startIndex, currentTick, currentSnapshotEntity, (GamePlayerSnapshot*)currentSnapshotData,
                     ghosts, ghostEntities, baselinePerEntity, availableBaselines,
                     dataStream, compressionModel);
             }
-            case 4:
+            case 5:
             {
                 return GhostSendSystem<GhostSerializerCollection>.InvokeSerialize(m_TeamEmptyGhostSerializer, serializer,
                     chunk, startIndex, currentTick, currentSnapshotEntity, (TeamEmptySnapshotData*)currentSnapshotData,
@@ -145,6 +161,7 @@ public struct GhostSerializerCollection : IGhostSerializerCollection
         }
     }
     private BasicGameModeSerializer m_BasicGameModeSerializer;
+    private BasicUnitGhostSerializer m_BasicUnitGhostSerializer;
     private DefaultRhythmEngineGhostSerializer m_DefaultRhythmEngineGhostSerializer;
     private SynchronizedSimulationTimeGhostSerializer m_SynchronizedSimulationTimeGhostSerializer;
     private GamePlayerGhostSerializer m_GamePlayerGhostSerializer;

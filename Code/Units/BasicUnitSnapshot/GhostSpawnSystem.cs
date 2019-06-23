@@ -2,6 +2,7 @@ using package.StormiumTeam.GameBase;
 using Patapon4TLB.Default;
 using Runtime.Systems;
 using StormiumTeam.GameBase;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
@@ -100,13 +101,14 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 	{
 		private struct Job : IJobForEachWithEntity<UnitDirection, Translation, Velocity>
 		{
-			public uint                                    Tick;
-			public BufferFromEntity<BasicUnitSnapshotData> SnapshotDataFromEntity;
+			public uint Tick;
 
-			public ComponentDataFromEntity<GhostOwner>                             OwnerFromEntity;
-			public ComponentDataFromEntity<GhostRelative<PlayerDescription>>       RelativePlayerFromEntity;
-			public ComponentDataFromEntity<GhostRelative<TeamDescription>>         RelativeTeamFromEntity;
-			public ComponentDataFromEntity<GhostRelative<RhythmEngineDescription>> RelativeRhythmEngineFromEntity;
+			[ReadOnly] public BufferFromEntity<BasicUnitSnapshotData> SnapshotDataFromEntity;
+
+			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostOwner>                             OwnerFromEntity;
+			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostRelative<PlayerDescription>>       RelativePlayerFromEntity;
+			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostRelative<TeamDescription>>         RelativeTeamFromEntity;
+			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostRelative<RhythmEngineDescription>> RelativeRhythmEngineFromEntity;
 
 			public void Execute(Entity entity, int jobIndex, ref UnitDirection unitDirection, ref Translation translation, ref Velocity velocity)
 			{
@@ -139,7 +141,14 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 		{
 			return new Job
 			{
-				Tick = NetworkTimeSystem.interpolateTargetTick
+				Tick = NetworkTimeSystem.interpolateTargetTick,
+
+				SnapshotDataFromEntity = GetBufferFromEntity<BasicUnitSnapshotData>(true),
+
+				OwnerFromEntity                = GetComponentDataFromEntity<GhostOwner>(),
+				RelativePlayerFromEntity       = GetComponentDataFromEntity<GhostRelative<PlayerDescription>>(),
+				RelativeTeamFromEntity         = GetComponentDataFromEntity<GhostRelative<TeamDescription>>(),
+				RelativeRhythmEngineFromEntity = GetComponentDataFromEntity<GhostRelative<RhythmEngineDescription>>(),
 			}.Schedule(this, inputDeps);
 		}
 	}
