@@ -44,6 +44,13 @@ namespace Patapon4TLB.Default
 
 				if (!state.IsActive && !state.IsStillChaining)
 				{
+					if (ability.IsJumping)
+					{
+						var temp = VelocityFromEntity[owner.Target];
+						temp.Value.y = math.max(0, temp.Value.y - 20 * (ability.ActiveTime * 2));
+						VelocityFromEntity[owner.Target] = temp;
+					}
+					
 					ability.ActiveTime = 0;
 					ability.IsJumping  = false;
 					return;

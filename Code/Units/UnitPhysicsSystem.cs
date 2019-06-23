@@ -73,7 +73,7 @@ namespace Patapon4TLB.Core
 			return new Job
 			{
 				DeltaTime = GetSingleton<GameTimeComponent>().DeltaTime,
-				Gravity   = new float3(0, -15, 0)
+				Gravity   = new float3(0, -20f, 0)
 			}.Schedule(this, inputDeps);
 		}
 	}
