@@ -1,11 +1,14 @@
 using System.Collections.Generic;
 using package.patapon.core;
 using Patapon4TLB.Default;
+using Patapon4TLB.UI.InGame;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
+using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -63,24 +66,31 @@ namespace Patapon4TLB.UI
 	}
 
 	[AlwaysUpdateSystem]
-	[UpdateInGroup(typeof(PresentationSystemGroup))]
-	public class UIDrumPressureSystem : GameBaseSystem
+	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
+	public class UIDrumPressureSystem : UIGameSystemBase
 	{
 		public Dictionary<int, AsyncAssetPool<GameObject>> DrumPresentationPools = new Dictionary<int, AsyncAssetPool<GameObject>>();
 		public Dictionary<int, AssetPool<GameObject>>      DrumBackendPools      = new Dictionary<int, AssetPool<GameObject>>();
 		
 		public Dictionary<int, int> DrumVariantCount = new Dictionary<int, int>();
-
-		private EntityQuery m_DrumCanvasQuery;
-
+		
 		private static readonly int StrHashPlay    = Animator.StringToHash("Play");
 		private static readonly int StrHashVariant = Animator.StringToHash("Variant");
 		private static readonly int StrHashKey     = Animator.StringToHash("Key");
 		private static readonly int StrHashPerfect = Animator.StringToHash("Perfect");
 
+		private Canvas m_Canvas;
+		private EntityQuery m_CameraQuery;
+		
 		protected override void OnCreate()
 		{
 			base.OnCreate();
+
+			m_Canvas = World.GetOrCreateSystem<UIClientCanvasSystem>().CreateCanvas(out _, "UIDrumCanvas");
+			m_Canvas.renderMode = RenderMode.WorldSpace;
+			m_Canvas.transform.localScale = new Vector3() * 0.05f;
+
+			m_CameraQuery = GetEntityQuery(typeof(GameCamera));
 
 			for (var i = 1; i <= 4; i++)
 			{
@@ -90,70 +100,75 @@ namespace Patapon4TLB.UI
 
 				Debug.Log("Created with " + i);
 			}
-
-			m_DrumCanvasQuery = GetEntityQuery(typeof(UIDrumCanvas));
 		}
 
 		protected override void OnUpdate()
 		{
-			var internalSystem = GetActiveClientWorld()?.GetExistingSystem<UIDrumPressureSystemClientInternal>();
-			if (internalSystem != null)
+			var cameraEntity = m_CameraQuery.GetSingletonEntity();
+			var cameraObject = EntityManager.GetComponentObject<Camera>(cameraEntity);
+			var cameraPosition = cameraObject.transform.position;
+			
+			var currentGamePlayer = GetFirstSelfGamePlayer();
+			var currentCameraState = GetCurrentCameraState(currentGamePlayer);
+			if (currentCameraState.Target != default)
 			{
-				var canvas = EntityManager.GetComponentObject<Canvas>(m_DrumCanvasQuery.GetSingletonEntity());
-
-				foreach (var ev in internalSystem.Events)
+				var translation = EntityManager.GetComponentData<Translation>(currentCameraState.Target);
+				m_Canvas.transform.position = new Vector3(translation.Value.x, translation.Value.y, cameraPosition.z + 10);
+			}
+			
+			var internalSystem = World.GetExistingSystem<UIDrumPressureSystemClientInternal>();
+			foreach (var ev in internalSystem.Events)
+			{
+				var keyPos = new Vector3();
+				if (ev.Key <= 2)
 				{
-					var keyPos = new Vector3();
-					if (ev.Key <= 2)
-					{
-						if (ev.Key == 1)
-							keyPos.x = -35f;
-						else
-							keyPos.x = 35f;
-
-						keyPos.x += Random.Range(-2.5f, 2.5f);
-						keyPos.y =  Random.Range(-10f, 10f);
-					}
+					if (ev.Key == 1)
+						keyPos.x = -35f;
 					else
-					{
-						if (ev.Key == 3)
-							keyPos.y = -37.5f;
-						else
-							keyPos.y = 37.5f;
+						keyPos.x = 35f;
 
-						keyPos.y += Random.Range(-2.5f, 2.5f);
-						keyPos.x =  Random.Range(-10f, 10f);
-					}
-
-					var beGameObject = DrumBackendPools[ev.Key].Dequeue();
-					beGameObject.name = $"BackendPressure (Key: {ev.Key})";
-					beGameObject.SetActive(true);
-					beGameObject.transform.SetParent(canvas.transform, false);
-					beGameObject.transform.localScale    = new Vector3(0.5f, 0.5f, 0.5f);
-					beGameObject.transform.localPosition = keyPos;
-					beGameObject.transform.rotation      = Quaternion.Euler(0, 0, Random.Range(-12.5f, 12.5f));
-
-					var backend = beGameObject.GetComponent<UIDrumPressureBackend>();
-					backend.OnReset();
-					backend.SetFromPool(DrumPresentationPools[ev.Key], internalSystem.EntityManager);
-
-					var prevRand = backend.rand;
-					
-					backend.play    = true;
-					backend.key     = ev.Key;
-					backend.rand    = DrumVariantCount[ev.Key];
-					backend.perfect = math.abs(ev.Score) <= 0.15f;
-					backend.endTime = Time.time + 1f;
-
-					var i = 0;
-					while (prevRand == DrumVariantCount[ev.Key] && i < 3)
-					{
-						DrumVariantCount[ev.Key] = Random.Range(0, 2);
-						i++;
-					}
-
-					Debug.Log("KeyRand: " + backend.rand);
+					keyPos.x += Random.Range(-2.5f, 2.5f);
+					keyPos.y =  Random.Range(-10f, 10f);
 				}
+				else
+				{
+					if (ev.Key == 3)
+						keyPos.y = -37.5f;
+					else
+						keyPos.y = 37.5f;
+
+					keyPos.y += Random.Range(-2.5f, 2.5f);
+					keyPos.x =  Random.Range(-10f, 10f);
+				}
+
+				var beGameObject = DrumBackendPools[ev.Key].Dequeue();
+				beGameObject.name = $"BackendPressure (Key: {ev.Key})";
+				beGameObject.SetActive(true);
+				beGameObject.transform.SetParent(m_Canvas.transform, false);
+				beGameObject.transform.localScale    = new Vector3(0.5f, 0.5f, 0.5f);
+				beGameObject.transform.localPosition = keyPos;
+				beGameObject.transform.rotation      = Quaternion.Euler(0, 0, Random.Range(-12.5f, 12.5f));
+
+				var backend = beGameObject.GetComponent<UIDrumPressureBackend>();
+				backend.OnReset();
+				backend.SetFromPool(DrumPresentationPools[ev.Key], internalSystem.EntityManager);
+
+				var prevRand = backend.rand;
+
+				backend.play    = true;
+				backend.key     = ev.Key;
+				backend.rand    = DrumVariantCount[ev.Key];
+				backend.perfect = math.abs(ev.Score) <= 0.15f;
+				backend.endTime = Time.time + 1f;
+
+				var i = 0;
+				while (prevRand == DrumVariantCount[ev.Key] && i < 3)
+				{
+					DrumVariantCount[ev.Key] = Random.Range(0, 2);
+					i++;
+				}
+
+				Debug.Log("KeyRand: " + backend.rand);
 			}
 
 			Entities.ForEach((UIDrumPressureBackend backend) =>

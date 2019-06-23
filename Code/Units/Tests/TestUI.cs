@@ -4,7 +4,7 @@ using Unity.NetCode;
 
 namespace Patapon4TLB.Core.Tests
 {
-	[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
+	/*[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
 	public class TestUI : ComponentSystem
 	{
 		protected override void OnUpdate()
@@ -34,5 +34,5 @@ namespace Patapon4TLB.Core.Tests
 				}
 			});
 		}
-	}
+	}*/
 }

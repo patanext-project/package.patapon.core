@@ -70,18 +70,14 @@ namespace Patapon4TLB.UI
 				if (EntityManager.HasComponent<UnitDescription>(cameraState.Target))
 				{
 					units[0] = cameraState.Target;
-					Debug.Log("Units[0] " + cameraState.Target);
 				}
 				else if (TryGetRelative<UnitDescription>(cameraState.Target, out var relativeUnit))
 				{
-					Debug.Log("hello");
-
 					if (relativeUnit == cameraState.Target)
 						units[0] = cameraState.Target;
 					else
 					{
 						units[0] = relativeUnit;
-						Debug.Log("Relative? " + relativeUnit);
 					}
 				}
 

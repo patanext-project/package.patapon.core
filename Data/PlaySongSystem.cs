@@ -116,6 +116,7 @@ namespace Patapon4TLB.Default.Test
 
 		private AudioSource[] m_BgmSources;
 		private AudioSource   m_CommandSource;
+		private AudioSource m_CommandVfxSource;
 
 		protected override void OnCreate()
 		{
@@ -158,6 +159,9 @@ namespace Patapon4TLB.Default.Test
 			m_BgmSources         = new[] {CreateAudioSource("Background Music Primary", 0.75f), CreateAudioSource("Background Music Secondary", 0.75f)};
 			m_CommandSource      = CreateAudioSource("Command", 1);
 			m_CommandSource.loop = false;
+
+			m_CommandVfxSource = CreateAudioSource("Vfx Command", 1);
+			m_CommandVfxSource.loop = false;
 
 			Addressables.LoadAsset<AudioClip>("int:RhythmEngine/Sounds/voice_fever.wav").Completed += (op) => m_FeverClip     = op.Result;
 			Addressables.LoadAsset<AudioClip>("int:RhythmEngine/Sounds/fever_lost.wav").Completed  += (op) => m_FeverLostClip = op.Result;
@@ -324,10 +328,10 @@ namespace Patapon4TLB.Default.Test
 			{
 				m_WasFever = false;
 
-				m_CommandSource.Stop();
-				m_CommandSource.clip = m_FeverLostClip;
-				m_CommandSource.time = 0;
-				m_CommandSource.Play();
+				m_CommandVfxSource.Stop();
+				m_CommandVfxSource.clip = m_FeverLostClip;
+				m_CommandVfxSource.time = 0;
+				m_CommandVfxSource.Play();
 			}
 
 			if (!clientSystem.IsNewCommand)
