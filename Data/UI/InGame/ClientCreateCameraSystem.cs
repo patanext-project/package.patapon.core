@@ -1,8 +1,12 @@
+using System.Collections.Generic;
+using package.patapon.core;
+using package.stormiumteam.shared.ecs;
 using Runtime.Misc;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Entities;
 using Unity.NetCode;
+using Unity.Transforms;
 using UnityEngine;
 
 namespace Patapon4TLB.UI.InGame
@@ -25,7 +29,11 @@ namespace Patapon4TLB.UI.InGame
 					typeof(GameCamera),
 					typeof(AudioListener),
 					typeof(GameObjectEntity));
-				m_Camera = gameObject.GetComponent<Camera>();
+				m_Camera                  = gameObject.GetComponent<Camera>();
+				m_Camera.orthographicSize = 10;
+				m_Camera.orthographic     = true;
+
+				gameObject.transform.position = new Vector3(0, 0, -100);
 			}
 
 			gameObject.SetActive(false);
@@ -54,6 +62,18 @@ namespace Patapon4TLB.UI.InGame
 			using (new SetTemporaryActiveWorld(World))
 			{
 				m_Camera.gameObject.SetActive(state);
+			}
+
+			var e = m_Camera.GetComponent<GameObjectEntity>().Entity;
+			if (state)
+			{
+				EntityManager.SetOrAddComponentData(e, new Translation());
+				EntityManager.SetOrAddComponentData(e, new Rotation());
+				EntityManager.SetOrAddComponentData(e, new LocalToWorld());
+				EntityManager.SetOrAddComponentData(e, new CopyTransformToGameObject());
+				EntityManager.SetOrAddComponentData(e, new CameraTargetAnchor());
+				EntityManager.SetOrAddComponentData(e, new AnchorOrthographicCameraData());
+				EntityManager.SetOrAddComponentData(e, new AnchorOrthographicCameraOutput());
 			}
 		}
 	}
@@ -103,5 +123,54 @@ namespace Patapon4TLB.UI.InGame
 				m_Camera.gameObject.SetActive(false);
 			}
 		}
+	}
+
+	[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
+	public class ClientSimulationTransformSystemGroup : ComponentSystemGroup
+	{
+		public override void SortSystemUpdateList()
+		{
+			m_systemsToUpdate = new List<ComponentSystemBase>();
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<CopyTransformFromGameObjectSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameCompositeScaleSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameParentSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFramePostRotationEulerSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameRotationEulerSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameCompositeRotationSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameParentScaleInverseSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameTRSToLocalToParentSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameTRSToLocalToWorldSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameLocalToParentSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<CopyTransformToGameObjectSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameWorldToLocalSystem>());
+		}
+	}
+
+	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
+	public class ClientPresentationTransformSystemGroup : ComponentSystemGroup
+	{
+		protected override void OnUpdate()
+		{
+			base.OnUpdate();
+			
+			EntityManager.CompleteAllJobs();
+		}
+
+		public override void SortSystemUpdateList()
+		{
+			m_systemsToUpdate = new List<ComponentSystemBase>();
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<CopyTransformFromGameObjectSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameCompositeScaleSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameParentSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFramePostRotationEulerSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameRotationEulerSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameCompositeRotationSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameParentScaleInverseSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameTRSToLocalToParentSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameTRSToLocalToWorldSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameLocalToParentSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<CopyTransformToGameObjectSystem>());
+			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameWorldToLocalSystem>());
+		}		
 	}
 }

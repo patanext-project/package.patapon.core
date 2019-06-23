@@ -98,7 +98,7 @@ namespace package.patapon.core
             Gizmos.DrawWireSphere(posLeft, 0.25f);
 
             // Draw lines
-            Gizmos.color = Color.white;
+            Gizmos.color = Color.magenta;
             Gizmos.DrawLine(posUp - new Vector3(width, 0, 0), posUp + new Vector3(width, 0, 0));
             Gizmos.DrawLine(posLeft - new Vector3(0, height, 0), posLeft + new Vector3(0, height, 0));
         }

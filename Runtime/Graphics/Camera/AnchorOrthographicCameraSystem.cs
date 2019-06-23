@@ -1,5 +1,6 @@
 ﻿using System;
 using package.stormiumteam.shared;
+using StormiumTeam.GameBase.Components;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -12,10 +13,13 @@ namespace package.patapon.core
     // Update after animators
     public class AnchorOrthographicCameraSystem : ComponentSystem
     {
+        private Entity      m_FirstCamera;
         private EntityQuery m_CameraEntityQuery;
 
-        struct TargetJob : IJobProcessComponentData<CameraTargetData, CameraTargetAnchor, CameraTargetPosition>
+        struct TargetJob : IJobForEach<CameraTargetData, CameraTargetAnchor, CameraTargetPosition>
         {
+            public Entity DefaultCamera;
+
             [DeallocateOnJobCompletion]
             public UnsafeAllocation<int> HighestPriorityAllocation;
 
@@ -42,10 +46,11 @@ namespace package.patapon.core
                 highestPriority = data.Priority;
 
                 // Update target
-                if (data.CameraId == default || !CameraDataFromEntity.Exists(data.CameraId))
+                if (data.CameraId != default && !CameraDataFromEntity.Exists(data.CameraId))
                     return;
-
-                var cameraData = CameraDataFromEntity[data.CameraId];
+                var targetCamera = data.CameraId == default ? DefaultCamera : data.CameraId;
+                
+                var cameraData = CameraDataFromEntity[targetCamera];
                 var camSize    = new float2(cameraData.Width, cameraData.Height);
                 var anchorPos  = new float2(anchor.Value.x, anchor.Value.y);
                 if (anchor.Type == AnchorType.World)
@@ -56,17 +61,19 @@ namespace package.patapon.core
 
                 var left = math.float2(1, 0) * (anchorPos.x * camSize.x);
                 var up   = math.float2(0, 1) * (anchorPos.y * camSize.y);
+                
+                Debug.Log($"{math.float3(position.Value.xy + left + up, -100)}");
 
-                TranslationFromEntity[data.CameraId] = new Translation
+                TranslationFromEntity[targetCamera] = new Translation
                 {
                     Value = math.float3(position.Value.xy + left + up, -100)
                 };
 
                 // Debug usage, render an output
-                if (!OutputFromEntity.Exists(data.CameraId))
+                if (!OutputFromEntity.Exists(targetCamera))
                     return;
 
-                OutputFromEntity[data.CameraId] = new AnchorOrthographicCameraOutput
+                OutputFromEntity[targetCamera] = new AnchorOrthographicCameraOutput
                 {
                     Target     = position.Value.xy,
                     AnchorType = anchor.Type,
@@ -92,26 +99,32 @@ namespace package.patapon.core
 
         protected override void OnUpdate()
         {
+            if (m_FirstCamera == default)
+            {
+                Entities.ForEach((Entity e, GameCamera gameCamera) => { m_FirstCamera = e; });
+            }
+
             // ------------------------------------------------------ //
             // Update camera data
             // ------------------------------------------------------ //
-            ForEach((Camera camera, ref AnchorOrthographicCameraData data) =>
+            Entities.With(m_CameraEntityQuery).ForEach((Camera camera, ref AnchorOrthographicCameraData data) =>
             {
                 data.Height = camera.orthographicSize;
                 data.Width  = camera.aspect * data.Height;
-            }, m_CameraEntityQuery);
-            
+            });
+
             // ------------------------------------------------------ //
             // Update camera positions from targets
             // ------------------------------------------------------ //
             var jobHandle = new TargetJob
             {
+                DefaultCamera             = m_FirstCamera,
                 HighestPriorityAllocation = new UnsafeAllocation<int>(Allocator.TempJob, int.MinValue),
                 CameraDataFromEntity      = GetComponentDataFromEntity<AnchorOrthographicCameraData>(),
                 TranslationFromEntity     = GetComponentDataFromEntity<Translation>(),
                 OutputFromEntity          = GetComponentDataFromEntity<AnchorOrthographicCameraOutput>()
             }.Schedule(this);
-            
+
             jobHandle.Complete();
         }
     }
