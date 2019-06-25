@@ -62,8 +62,6 @@ namespace package.patapon.core
                 var left = math.float2(1, 0) * (anchorPos.x * camSize.x);
                 var up   = math.float2(0, 1) * (anchorPos.y * camSize.y);
                 
-                Debug.Log($"{math.float3(position.Value.xy + left + up, -100)}");
-
                 TranslationFromEntity[targetCamera] = new Translation
                 {
                     Value = math.float3(position.Value.xy + left + up, -100)

@@ -24,6 +24,9 @@ namespace Patapon4TLB.Default
 	{
 		private void ForEach(ref Owner owner, ref RhythmAbilityState abilityState)
 		{
+			if (owner.Target == default)
+				return; // ????
+			
 			var engine         = EntityManager.GetComponentData<Relative<RhythmEngineDescription>>(owner.Target).Target;
 			var engineProcess  = EntityManager.GetComponentData<RhythmEngineProcess>(engine);
 			var currentCommand = EntityManager.GetComponentData<RhythmCurrentCommand>(engine);

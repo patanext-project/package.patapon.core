@@ -5,9 +5,11 @@ using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Physics;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace Patapon4TLB.Core.BasicUnitSnapshot
 {
@@ -28,7 +30,10 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 				typeof(Translation),
 				typeof(Rotation),
-				typeof(LocalToWorld),
+				//typeof(LocalToWorld),
+				
+				typeof(CurrentSimulatedPosition),
+				typeof(CurrentSimulatedRotation),
 
 				typeof(PhysicsCollider),
 				typeof(PhysicsDamping),
@@ -91,7 +96,8 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 	}
 
 	[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
-	[UpdateAfter(typeof(BasicUnitGhostSpawnSystem))]
+	[UpdateAfter(typeof(GhostSpawnSystemGroup))]
+	[UpdateAfter(typeof(BeforeSimulationInterpolationSystem))]
 	[UpdateBefore(typeof(ConvertGhostToOwnerSystem))]
 	[UpdateBefore(typeof(ConvertGhostToRelativeSystemGroup))]
 	public class BasicUnitUpdateSystem : JobComponentSystem
@@ -107,9 +113,9 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostRelative<RhythmEngineDescription>> RelativeRhythmEngineFromEntity;
 
 			public void Execute(Entity entity, int jobIndex, ref UnitDirection unitDirection, ref Translation translation, ref Velocity velocity)
-			{
+			{	
 				SnapshotDataFromEntity[entity].GetDataAtTick(Tick, out var snapshot);
-
+				
 				unitDirection.Value = (sbyte) snapshot.Direction;
 				translation.Value   = snapshot.Position.Get(BasicUnitSnapshotData.DeQuantization);
 				velocity.Value      = snapshot.Velocity.Get(BasicUnitSnapshotData.DeQuantization);

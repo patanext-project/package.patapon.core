@@ -125,7 +125,7 @@ namespace Patapon4TLB.UI.InGame
 		}
 	}
 
-	[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
+	/*[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
 	public class ClientSimulationTransformSystemGroup : ComponentSystemGroup
 	{
 		public override void SortSystemUpdateList()
@@ -144,7 +144,7 @@ namespace Patapon4TLB.UI.InGame
 			m_systemsToUpdate.Add(World.GetOrCreateSystem<CopyTransformToGameObjectSystem>());
 			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameWorldToLocalSystem>());
 		}
-	}
+	}*/
 
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	public class ClientPresentationTransformSystemGroup : ComponentSystemGroup

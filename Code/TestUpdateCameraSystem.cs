@@ -5,6 +5,7 @@ using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
+using Unity.Transforms;
 using UnityEngine;
 
 namespace Patapon4TLB.Core
@@ -13,15 +14,35 @@ namespace Patapon4TLB.Core
 	[UpdateBefore(typeof(ClientPresentationTransformSystemGroup))]
 	public class TestUpdateCameraSystem : ComponentSystem
 	{
+		public int OrthographicSize = 8;
+		
 		private void ForEachCameraState(ref ServerCameraState cameraState)
 		{
+			if (cameraState.Target == default)
+				return;
+
+			var translation = EntityManager.GetComponentData<Translation>(cameraState.Target);
+
+			translation.Value.x += World.GetExistingSystem<CameraInputSystem>().CurrentPanning * (OrthographicSize + 2.5f);
+			translation.Value.x += OrthographicSize * 0.25f;
+			
+			var previousTarget = EntityManager.GetComponentData<CameraTargetPosition>(m_CameraTarget).Value.x;
+			var result = math.lerp(previousTarget, translation.Value.x, Time.deltaTime * 2.5f);
+
+			EntityManager.SetComponentData(m_CameraTarget, new CameraTargetPosition
+			{
+				Value = new float3(result, 0, 0)
+			});
 		}
 
-		private Entity m_CameraTarget;
+		private EntityQueryBuilder.F_D<ServerCameraState> m_ForEach;
+		private Entity                                    m_CameraTarget;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
+
+			m_ForEach = ForEachCameraState;
 
 			m_CameraTarget = EntityManager.CreateEntity(typeof(CameraTargetData), typeof(CameraTargetAnchor), typeof(CameraTargetPosition));
 
@@ -32,24 +53,22 @@ namespace Patapon4TLB.Core
 		{
 			Entities.ForEach((ref CameraTargetAnchor anchor) =>
 			{
-				var prev = anchor.Value.y;
-				
 				if (Input.GetKeyDown(KeyCode.PageUp))
 					anchor.Value.y += 0.1f;
 				if (Input.GetKeyDown(KeyCode.PageDown))
 					anchor.Value.y -= 0.1f;
-				
-				if (prev != anchor.Value.y)
-					Debug.Log("New: " + anchor.Value.y);
 			});
-			
+
 			Entities.ForEach((Camera camera) =>
 			{
 				if (Input.GetKeyDown(KeyCode.KeypadPlus))
-					camera.orthographicSize += 1;
+					OrthographicSize += 1;
 				if (Input.GetKeyDown(KeyCode.KeypadMinus))
-					camera.orthographicSize -= 1;
+					OrthographicSize -= 1;
+				camera.orthographicSize = math.lerp(camera.orthographicSize, OrthographicSize, Time.deltaTime * 5);
 			});
+
+			Entities.ForEach(m_ForEach);
 
 			World.GetOrCreateSystem<AnchorOrthographicCameraSystem>().Update();
 		}

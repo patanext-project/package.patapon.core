@@ -186,6 +186,12 @@ namespace Patapon4TLB.GameModes.Basic
 				playerData.Unit = unit;
 				EntityManager.SetComponentData(playerEntity, playerData);
 
+				var cameraState = EntityManager.GetComponentData<ServerCameraState>(playerEntity);
+				cameraState.Data.Mode = CameraMode.Forced;
+				cameraState.Data.Target = unit;
+				
+				EntityManager.SetComponentData(playerEntity, cameraState);
+
 				Debug.Log($"Create entity with {unit} {playerData.RhythmEngine}");
 			}
 

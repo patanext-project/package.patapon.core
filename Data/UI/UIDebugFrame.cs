@@ -179,7 +179,7 @@ namespace Patapon4TLB.UI
 				var str = m_NativeString.ToString();
 				for (var txt = 0; txt != debugFrame.PingText.Length; txt++)
 				{
-					debugFrame.PingText[txt].text = m_NativeString.ToString();
+					debugFrame.PingText[txt].text = str;
 				}
 
 				l = StringFormatter.Write(ref m_Buffer, 0, "C: {0}\nS: {1}\nC cmd|sb: {2}  {4}\nS cmd|sb: {3}  {5}",
@@ -194,7 +194,7 @@ namespace Patapon4TLB.UI
 				str = m_NativeString.ToString();
 				for (var txt = 0; txt != debugFrame.CompareBeatText.Length; txt++)
 				{
-					debugFrame.CompareBeatText[txt].text = m_NativeString.ToString();
+					debugFrame.CompareBeatText[txt].text = str;
 				}
 			}
 

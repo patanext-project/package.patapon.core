@@ -7,8 +7,8 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 {
 	public struct BasicUnitSnapshotData : ISnapshotData<BasicUnitSnapshotData>
 	{
-		public const int Quantization = 1000;
-		public const float DeQuantization = 0.001f;
+		public const int Quantization = 10000;
+		public const float DeQuantization = 0.0001f;
 		
 		public uint Tick { get; set; }
 

@@ -82,8 +82,6 @@ namespace Patapon4TLB.Default
 				controllerState.ControlOverVelocity.x       = true;
 				controllerState.ControlOverVelocity.y       = ability.ActiveTime < 2.5f;
 				UnitControllerStateFromEntity[owner.Target] = controllerState;
-
-				Debug.Log($"{ability.ActiveTime}");
 			}
 		}
 

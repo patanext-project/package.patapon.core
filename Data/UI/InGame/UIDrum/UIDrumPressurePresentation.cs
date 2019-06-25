@@ -90,6 +90,8 @@ namespace Patapon4TLB.UI
 
 			m_Canvas = World.GetOrCreateSystem<UIClientCanvasSystem>().CreateCanvas(out _, "UIDrumCanvas");
 			m_Canvas.renderMode = RenderMode.WorldSpace;
+			m_Canvas.sortingOrder = 1;
+			m_Canvas.sortingLayerName = "UI";
 			m_Canvas.transform.localScale = new Vector3() * 0.05f;
 
 			m_CameraQuery = GetEntityQuery(typeof(GameCamera));
@@ -114,24 +116,29 @@ namespace Patapon4TLB.UI
 			var currentCameraState = GetCurrentCameraState(currentGamePlayer);
 
 			var isWorldSpace = currentCameraState.Target != default;
+			var canvasRect = m_Canvas.pixelRect;
 			if (isWorldSpace)
 			{
 				var translation = EntityManager.GetComponentData<Translation>(currentCameraState.Target);
-				m_Canvas.transform.position = new Vector3(translation.Value.x, translation.Value.y, cameraPosition.z + 10);
+				m_Canvas.renderMode         = RenderMode.WorldSpace;
+				m_Canvas.transform.position = new Vector3(translation.Value.x, translation.Value.y + 25 * 0.05f, cameraPosition.z + 10);
+				m_Canvas.transform.localScale = Vector3.one * 0.05f;
 
 				var rectTransform = m_Canvas.GetComponent<RectTransform>();
 				rectTransform.sizeDelta = new Vector2(100, 100);
+
+				canvasRect.width = 90;
+				canvasRect.height = 105;
 			}
 			else
 			{
 				m_Canvas.transform.position = Vector3.zero;
-				m_Canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+				m_Canvas.renderMode         = RenderMode.ScreenSpaceOverlay;
 			}
 
-			var canvasRect = m_Canvas.pixelRect;
-			
 			var internalSystem = World.GetExistingSystem<UIDrumPressureSystemClientInternal>();
 			var pixelRange = new float2(canvasRect.width, canvasRect.height);
+
 			foreach (var ev in internalSystem.Events)
 			{
 				var keyRange = new float2();
@@ -155,32 +162,24 @@ namespace Patapon4TLB.UI
 					keyRange.y += Random.Range(-0.025f, 0.025f);
 					keyRange.x =  Random.Range(-0.1f, 0.1f);
 				}
-
-				/*if (!isWorldSpace)
-				{
-					keyPos.x += canvasRect.width * 0.4f * Math.Sign(keyPos.x);
-					keyPos.y += canvasRect.height * 0.4f * Math.Sign(keyPos.y);
-				}*/
+				
 				keyRange += 0.5f;
 				
 				var width = pixelRange.x * 0.5f;
 				var height = pixelRange.y * 0.5f;
 				var keyPos = new float2(math.lerp(-width, width, keyRange.x), math.lerp(-height, height, keyRange.y));
-
-				Debug.Log(keyPos + ", " + keyRange + ", " + pixelRange);
 				
 				var beGameObject = DrumBackendPools[ev.Key].Dequeue();
-				var rectTransform = beGameObject.GetComponent<RectTransform>();
 				using (new SetTemporaryActiveWorld(World))
 				{
 					beGameObject.name = $"BackendPressure (Key: {ev.Key})";
 					beGameObject.SetActive(true);
 					beGameObject.transform.SetParent(m_Canvas.transform, false);
 					beGameObject.transform.localScale = m_Canvas.renderMode == RenderMode.WorldSpace
-						? Vector3.one * 0.5f
-						: 0.75f * (canvasRect.width / canvasRect.height) * Vector3.one;
-					beGameObject.transform.position = new Vector3(keyPos.x, keyPos.y, 0);
-					beGameObject.transform.rotation = Quaternion.Euler(0, 0, Random.Range(-12.5f, 12.5f));
+						? Vector3.one * 0.7f
+						: 0.005f * math.min(width, height) * Vector3.one;
+					beGameObject.transform.localPosition = new Vector3(keyPos.x, keyPos.y, 0);
+					beGameObject.transform.rotation      = Quaternion.Euler(0, 0, Random.Range(-12.5f, 12.5f));
 				}
 
 				var backend = beGameObject.GetComponent<UIDrumPressureBackend>();
@@ -201,8 +200,6 @@ namespace Patapon4TLB.UI
 					DrumVariantCount[ev.Key] = Random.Range(0, 2);
 					i++;
 				}
-
-				Debug.Log("KeyRand: " + backend.rand);
 			}
 
 			Entities.ForEach((UIDrumPressureBackend backend) =>

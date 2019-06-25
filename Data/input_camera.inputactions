@@ -1,0 +1,97 @@
+{
+    "name": "input_camera",
+    "maps": [
+        {
+            "name": "Camera",
+            "id": "8ec9141a-14f3-42ef-a5b7-8fff28c8575e",
+            "actions": [
+                {
+                    "name": "Panning",
+                    "id": "ccf50e57-3d73-45bc-9c91-60986feb1e87",
+                    "expectedControlLayout": "Axis",
+                    "continuous": true,
+                    "passThrough": false,
+                    "initialStateCheck": false,
+                    "processors": "",
+                    "interactions": "",
+                    "bindings": []
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "Keyboard",
+                    "id": "fedf140a-1f6d-49a1-9f3a-f78dcabfcccc",
+                    "path": "1DAxis",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Panning",
+                    "isComposite": true,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "negative",
+                    "id": "1cbfe029-3a27-4f8b-b526-99f8b2664516",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Panning",
+                    "isComposite": false,
+                    "isPartOfComposite": true,
+                    "modifiers": ""
+                },
+                {
+                    "name": "positive",
+                    "id": "66dc1fb8-0543-4bfa-9e0b-d2353b206961",
+                    "path": "<Keyboard>/w",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Panning",
+                    "isComposite": false,
+                    "isPartOfComposite": true,
+                    "modifiers": ""
+                },
+                {
+                    "name": "Gamepad",
+                    "id": "cc8712f1-9c69-471d-b547-31631f3f0f3c",
+                    "path": "1DAxis",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Panning",
+                    "isComposite": true,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "negative",
+                    "id": "1312cd43-4326-4fa9-a7f7-20c2f9b0f438",
+                    "path": "<Gamepad>/leftShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Panning",
+                    "isComposite": false,
+                    "isPartOfComposite": true,
+                    "modifiers": ""
+                },
+                {
+                    "name": "positive",
+                    "id": "d101d319-b1b4-4e19-98a4-79cb5268c97a",
+                    "path": "<Gamepad>/rightShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Panning",
+                    "isComposite": false,
+                    "isPartOfComposite": true,
+                    "modifiers": ""
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
