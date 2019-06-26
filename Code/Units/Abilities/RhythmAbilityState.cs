@@ -1,3 +1,4 @@
+using System;
 using package.patapon.core;
 using StormiumTeam.GameBase;
 using Unity.Entities;
@@ -24,18 +25,21 @@ namespace Patapon4TLB.Default
 	{
 		private void ForEach(ref Owner owner, ref RhythmAbilityState abilityState)
 		{
-			if (owner.Target == default)
+			if (owner.Target == default || !EntityManager.Exists(owner.Target))
 				return; // ????
-			
+
 			var engine         = EntityManager.GetComponentData<Relative<RhythmEngineDescription>>(owner.Target).Target;
+			if (!EntityManager.Exists(engine))
+				return;
+			
 			var engineProcess  = EntityManager.GetComponentData<RhythmEngineProcess>(engine);
 			var currentCommand = EntityManager.GetComponentData<RhythmCurrentCommand>(engine);
 			var commandState   = EntityManager.GetComponentData<GameCommandState>(engine);
-			var comboState = EntityManager.GetComponentData<GameComboState>(engine);
+			var comboState     = EntityManager.GetComponentData<GameComboState>(engine);
 
 			if (currentCommand.CommandTarget != abilityState.Command)
 			{
-				abilityState.IsActive = false;
+				abilityState.IsActive        = false;
 				abilityState.IsStillChaining = false;
 				return;
 			}

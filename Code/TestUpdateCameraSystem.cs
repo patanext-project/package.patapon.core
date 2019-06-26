@@ -15,7 +15,7 @@ namespace Patapon4TLB.Core
 	public class TestUpdateCameraSystem : ComponentSystem
 	{
 		public int OrthographicSize = 8;
-		
+
 		private void ForEachCameraState(ref ServerCameraState cameraState)
 		{
 			if (cameraState.Target == default)
@@ -25,9 +25,9 @@ namespace Patapon4TLB.Core
 
 			translation.Value.x += World.GetExistingSystem<CameraInputSystem>().CurrentPanning * (OrthographicSize + 2.5f);
 			translation.Value.x += OrthographicSize * 0.25f;
-			
+
 			var previousTarget = EntityManager.GetComponentData<CameraTargetPosition>(m_CameraTarget).Value.x;
-			var result = math.lerp(previousTarget, translation.Value.x, Time.deltaTime * 2.5f);
+			var result         = math.lerp(previousTarget, translation.Value.x, Time.deltaTime * 2.5f);
 
 			EntityManager.SetComponentData(m_CameraTarget, new CameraTargetPosition
 			{
@@ -68,7 +68,7 @@ namespace Patapon4TLB.Core
 				camera.orthographicSize = math.lerp(camera.orthographicSize, OrthographicSize, Time.deltaTime * 5);
 			});
 
-			Entities.ForEach(m_ForEach);
+			Entities.WithAll<GamePlayerLocalTag>().ForEach(m_ForEach);
 
 			World.GetOrCreateSystem<AnchorOrthographicCameraSystem>().Update();
 		}

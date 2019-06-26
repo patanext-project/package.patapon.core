@@ -1,5 +1,6 @@
 using package.StormiumTeam.GameBase;
 using Patapon4TLB.Default;
+using Patapon4TLB.UI.InGame;
 using Runtime.Systems;
 using StormiumTeam.GameBase;
 using Unity.Collections;
@@ -13,6 +14,11 @@ using UnityEngine;
 
 namespace Patapon4TLB.Core.BasicUnitSnapshot
 {
+	public struct BasicUnitSnapshotTarget : IComponentData
+	{
+		public float3 Position;
+	}
+	
 	public class BasicUnitGhostSpawnSystem : DefaultGhostSpawnSystem<BasicUnitSnapshotData>
 	{
 		protected override EntityArchetype GetGhostArchetype()
@@ -20,6 +26,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			return EntityManager.CreateArchetype
 			(
 				typeof(BasicUnitSnapshotData),
+				typeof(BasicUnitSnapshotTarget),
 				typeof(UnitDescription),
 
 				typeof(UnitBaseSettings),
@@ -31,9 +38,6 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				typeof(Translation),
 				typeof(Rotation),
 				//typeof(LocalToWorld),
-				
-				typeof(CurrentSimulatedPosition),
-				typeof(CurrentSimulatedRotation),
 
 				typeof(PhysicsCollider),
 				typeof(PhysicsDamping),
@@ -62,6 +66,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			return EntityManager.CreateArchetype
 			(
 				typeof(BasicUnitSnapshotData),
+				typeof(BasicUnitSnapshotTarget),
 				typeof(UnitDescription),
 
 				typeof(UnitBaseSettings),
@@ -102,9 +107,10 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 	[UpdateBefore(typeof(ConvertGhostToRelativeSystemGroup))]
 	public class BasicUnitUpdateSystem : JobComponentSystem
 	{
-		private struct Job : IJobForEachWithEntity<UnitDirection, Translation, Velocity>
+		private struct Job : IJobForEachWithEntity<UnitDirection, BasicUnitSnapshotTarget, Translation, Velocity>
 		{
-			public uint Tick;
+			public uint InterpolateTick;
+			public uint PredictTick;
 
 			[ReadOnly] public BufferFromEntity<BasicUnitSnapshotData> SnapshotDataFromEntity;
 
@@ -112,13 +118,17 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostRelative<TeamDescription>>         RelativeTeamFromEntity;
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostRelative<RhythmEngineDescription>> RelativeRhythmEngineFromEntity;
 
-			public void Execute(Entity entity, int jobIndex, ref UnitDirection unitDirection, ref Translation translation, ref Velocity velocity)
-			{	
-				SnapshotDataFromEntity[entity].GetDataAtTick(Tick, out var snapshot);
-				
+			public void Execute(Entity entity, int jobIndex, ref UnitDirection unitDirection, ref BasicUnitSnapshotTarget target, ref Translation translation, ref Velocity velocity)
+			{
+				SnapshotDataFromEntity[entity].GetDataAtTick(PredictTick, out var snapshot);
+
 				unitDirection.Value = (sbyte) snapshot.Direction;
-				translation.Value   = snapshot.Position.Get(BasicUnitSnapshotData.DeQuantization);
 				velocity.Value      = snapshot.Velocity.Get(BasicUnitSnapshotData.DeQuantization);
+
+				var targetPosition   = snapshot.Position.Get(BasicUnitSnapshotData.DeQuantization);
+
+				target.Position = targetPosition;
+
 
 				RelativePlayerFromEntity[entity] = new GhostRelative<PlayerDescription>
 				{
@@ -139,7 +149,8 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 		{
 			return new Job
 			{
-				Tick = NetworkTimeSystem.interpolateTargetTick,
+				InterpolateTick = NetworkTimeSystem.interpolateTargetTick,
+				PredictTick = NetworkTimeSystem.predictTargetTick,
 
 				SnapshotDataFromEntity = GetBufferFromEntity<BasicUnitSnapshotData>(true),
 
@@ -147,6 +158,22 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				RelativeTeamFromEntity         = GetComponentDataFromEntity<GhostRelative<TeamDescription>>(),
 				RelativeRhythmEngineFromEntity = GetComponentDataFromEntity<GhostRelative<RhythmEngineDescription>>(),
 			}.Schedule(this, inputDeps);
+		}
+	}
+	
+	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
+	[UpdateBefore(typeof(ClientPresentationTransformSystemGroup))]
+	public class BasicUnitUpdatePresentationSystem : ComponentSystem
+	{
+		protected override void OnUpdate()
+		{
+			Entities.ForEach((ref Translation translation, ref Velocity velocity, ref BasicUnitSnapshotTarget target) =>
+			{
+				var distance = math.distance(translation.Value, target.Position);
+				
+				translation.Value = math.lerp(translation.Value, target.Position, Time.deltaTime * (velocity.speed + distance + 1f));
+				translation.Value = Vector3.MoveTowards(translation.Value, target.Position, Time.deltaTime * math.max(distance, velocity.speed) * 0.9f);
+			});
 		}
 	}
 }

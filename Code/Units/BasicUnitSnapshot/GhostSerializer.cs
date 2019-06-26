@@ -17,7 +17,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			return 100;
 		}
 
-		public bool WantsPredictionDelta => false;
+		public bool WantsPredictionDelta => true;
 
 		[NativeDisableContainerSafetyRestriction]
 		public ComponentDataFromEntity<GhostSystemStateComponent> GhostStateFromEntity;

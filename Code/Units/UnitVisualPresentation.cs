@@ -13,6 +13,20 @@ namespace Patapon4TLB.Core
 
 	public class UnitVisualBackend : CustomAsyncAsset<UnitVisualPresentation>
 	{
+		protected override void Update()
+		{
+			if (DstEntityManager == null || DstEntityManager.IsCreated && DstEntityManager.Exists(DstEntity))
+			{
+				base.Update();
+				return;
+			}
+			
+			DisableNextUpdate                 = true;
+			ReturnToPoolOnDisable             = true;
+			ReturnPresentationToPoolNextFrame = true;
+			
+			base.Update();
+		}
 	}
 
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
@@ -24,15 +38,7 @@ namespace Patapon4TLB.Core
 			EntityManager.CompleteAllJobs();
 			
 			Entities.ForEach((Transform transform, UnitVisualBackend backend) =>
-			{
-				if (!EntityManager.Exists(backend.DstEntity))
-				{
-					backend.DisableNextUpdate = true;
-					backend.ReturnToPoolOnDisable = true;
-					backend.ReturnPresentationToPoolNextFrame = true;
-					return;
-				}
-				
+			{				
 				transform.position = EntityManager.GetComponentData<Translation>(backend.DstEntity).Value;
 			});
 		}
