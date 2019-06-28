@@ -1,6 +1,6 @@
 ﻿namespace package.patapon.core
 {
-    public enum EActivationZone
+    public enum EActivationType
     {
         /// <summary>
         /// Everytime the component will get updated

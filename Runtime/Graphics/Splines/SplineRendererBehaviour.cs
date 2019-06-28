@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using package.stormiumteam.shared;
+using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEditor;
@@ -18,14 +19,29 @@ namespace package.patapon.core
     {
         public float Tension;
         public int   Step;
-        public int   IsLooping;
+        public bool  IsLooping;
+        
+        public float BoundsOutline;
+        public EActivationType ActivationType;
     }
 
     [Serializable]
     public struct DSplineBoundsData : IComponentData
     {
-        public float2 Min;
-        public float2 Max;
+        public float3 Min;
+        public float3 Max;
+    }
+
+    [InternalBufferCapacity(6)]
+    public struct DSplinePoint : IBufferElementData
+    {
+        public float3 Position;
+    }
+    
+   
+    public struct DSplineResult : IBufferElementData
+    {
+        public float3 Position;
     }
 
     public struct DSplineValidTag : IComponentData
@@ -43,15 +59,13 @@ namespace package.patapon.core
         public float Tension = 0.5f;
         public bool  IsLooping;
 
-        public EActivationZone RefreshType;
+        public EActivationType RefreshType;
         public float           RefreshBoundsOutline = 1f;
 
         public Transform[]  Points;
         public LineRenderer LineRenderer;
 
-        private int m_CurrentPointsLength;
-        
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         private List<Vector3> m_EditorFillerArray;
         private Vector3[] m_EditorResultArray;
         #endif
@@ -72,8 +86,9 @@ namespace package.patapon.core
 
             em.AddComponentData(e, GetData());
             em.AddComponentData(e, new DSplineBoundsData());
-
-            m_CurrentPointsLength = Points.Length;
+            em.AddBuffer<DSplinePoint>(e);
+            var r = em.AddBuffer<DSplineResult>(e);
+            r.ResizeUninitialized(32); // go outside of the chunk memory
 
             if (LineRenderer == null)
             {
@@ -90,8 +105,6 @@ namespace package.patapon.core
             {
                 Debug.LogError("No GameObjectEntity found on " + gameObject.name);
             }
-            
-            //World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(goEntity.Value.Entity);
         }
 
         private void OnValidate()
@@ -99,15 +112,8 @@ namespace package.patapon.core
             var goEntity = GetComponent<GameObjectEntity>();
             if (!Application.isPlaying || goEntity?.EntityManager == null)
                 return;
-            if (Points.Length != m_CurrentPointsLength)
-            {
-                Debug.LogError("Can't add/remove points of a spline while the gameobject is active!");
-                return;
-            }
 
             goEntity.EntityManager.SetComponentData(goEntity.Entity, GetData());
-
-            //World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(goEntity.Entity);
         }
 
         private void Update()
@@ -116,29 +122,28 @@ namespace package.patapon.core
             var goEntity     = referencable.GetComponentFast<GameObjectEntity>();
 
             var em = goEntity.Value.EntityManager;
-            var e = goEntity.Value.Entity;
-            
+            var e  = goEntity.Value.Entity;
+
             var canBeProcessed = Points.Length > 0
                                  && LineRenderer != null;
 
-            var needToUpdate = false;
             if (canBeProcessed && !em.HasComponent<DSplineValidTag>(e))
             {
                 em.AddComponentData(e, new DSplineValidTag());
-                needToUpdate = true;
             }
             else if (!canBeProcessed && em.HasComponent<DSplineValidTag>(e))
             {
                 em.RemoveComponent<DSplineValidTag>(e);
-                needToUpdate = true;
             }
 
-            if (needToUpdate)
+            var pointBuffer = em.GetBuffer<DSplinePoint>(e);
+            pointBuffer.Clear();
+            for (var i = 0; i != Points.Length; i++)
             {
-                //World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(e); 
+                pointBuffer.Add(new DSplinePoint {Position = Points[i].localPosition});
             }
         }
-        
+
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
@@ -181,7 +186,7 @@ namespace package.patapon.core
                 LineRenderer.SetPositions(m_EditorResultArray);
             }
 
-            if (RefreshType == EActivationZone.Bounds)
+            if (RefreshType == EActivationType.Bounds)
             {
                 var boundsMin = new Vector3();
                 var boundsMax = new Vector3();
@@ -245,7 +250,7 @@ namespace package.patapon.core
             {
                 Step      = Step,
                 Tension   = Tension,
-                IsLooping = IsLooping ? 1 : 0
+                IsLooping = IsLooping
             };
         }
 

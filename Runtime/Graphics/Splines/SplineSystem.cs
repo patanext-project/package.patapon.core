@@ -1,399 +1,214 @@
-﻿namespace package.patapon.core
+﻿using System;
+using System.Collections.Generic;
+using package.stormiumteam.shared;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Entities;
+using Unity.Jobs;
+using Unity.Mathematics;
+using UnityEngine;
+using UnityEngine.Jobs;
+using UnityEngine.Profiling;
+using UnityEngine.Rendering;
+
+namespace package.patapon.core
 {
     // TODO: UPGRADE
-    /*[UpdateAfter(typeof(PreLateUpdate.DirectorUpdateAnimationEnd))]
-    //< Update after the 'LateUpdate', so all animations can be finished 
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
     public class SplineSystem : JobComponentSystem
     {
-        private          JobHandle           LastJobHandle;
-        private          EntityArchetype     m_EventArchetype;
-        private          int                 m_Events;
-        private          NativeArray<float3> m_FinalFillerArray;
+        private JobHandle           m_LastJobHandle;
 
-        // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
-        // Fields
-        // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
-        [Inject] private Group m_Group;
-
-        private NativeArray<DSplineBoundsData> m_JobBoundsDatas;
-        private NativeArray<float>             m_JobBoundsOutline;
-        private NativeArray<DSplineData>       m_JobDatas;
-        private NativeArray<int>               m_jobFormulaAddLength;
-
-        private TransformAccessArray         m_OrderedPoints;
-        private int                          m_PointsLength;
-        private NativeArray<EActivationZone> m_refreshTypes;
+        private Dictionary<Camera, NativeArray<bool>> m_ValidSplinePerCamera;
+        private FastDictionary<int, Vector3[]> ArrayPoolBySize;
+        
+        private EntityQuery m_SplineQuery;
 
         // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
         // Methods
         // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
-
-        // TODO: Use Reactive Systems instead (but the curren method seems more performant, need to be decided)
-        public void SendUpdateEvent(Entity entity)
-        {
-            m_Events++;
-        }
-
         protected override void OnCreate()
         {
-            // TODO: Use NativeEvent from the shared package, much more future proof
-            Camera.onPreCull   += OnCameraPreCull;
-            m_FinalFillerArray =  new NativeArray<float3>(0, Allocator.Persistent);
-
-            m_JobBoundsDatas      = new NativeArray<DSplineBoundsData>(m_Group.Length, Allocator.Persistent);
-            m_JobBoundsOutline    = new NativeArray<float>(m_Group.Length, Allocator.Persistent);
-            m_JobDatas            = new NativeArray<DSplineData>(m_Group.Length, Allocator.Persistent);
-            m_jobFormulaAddLength = new NativeArray<int>(m_Group.Length, Allocator.Persistent);
-            m_refreshTypes        = new NativeArray<EActivationZone>(m_Group.Length, Allocator.Persistent);
-
-            m_OrderedPoints = new TransformAccessArray(0);
-
-            //m_EventArchetype = EntityManager.CreateArchetype(typeof(InitEvent));
-
-            SendUpdateEvent(Entity.Null);
+            m_SplineQuery = GetEntityQuery
+            (
+                typeof(DSplineValidTag),
+                typeof(DSplinePoint), typeof(DSplineData),
+                typeof(DSplineBoundsData),
+                typeof(DSplineResult)
+            );
+            m_ValidSplinePerCamera = new Dictionary<Camera, NativeArray<bool>>();
+            ArrayPoolBySize = new FastDictionary<int, Vector3[]>();
+            
+            RenderPipelineManager.beginFrameRendering += OnBeginFrameRendering;
+            RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
         }
 
         protected override void OnDestroy()
         {
-            LastJobHandle.Complete();
+            m_LastJobHandle.Complete();
 
-            Camera.onPreCull -= OnCameraPreCull;
-            m_FinalFillerArray.Dispose();
-            m_JobBoundsDatas.Dispose();
-            m_JobBoundsOutline.Dispose();
-            m_JobDatas.Dispose();
-            m_jobFormulaAddLength.Dispose();
-            m_refreshTypes.Dispose();
-            m_OrderedPoints.Dispose();
+            foreach (var kvp in m_ValidSplinePerCamera)
+            {
+                kvp.Value.Dispose();
+            }
+
+            RenderPipelineManager.beginFrameRendering -= OnBeginFrameRendering;
+            RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
         }
 
-        private void OnCameraPreCull(Camera cam)
+        private void OnBeginFrameRendering(ScriptableRenderContext ctx, Camera[] cameras)
         {
-            var length = m_Group.Length;
-            
+            foreach (var previous in m_ValidSplinePerCamera)
+            {
+                previous.Value.Dispose();
+            }
+            m_ValidSplinePerCamera.Clear();
+
+            for (var cam = 0; cam != cameras.Length; cam++)
+            {
+                m_ValidSplinePerCamera[cameras[cam]] = new NativeArray<bool>(m_SplineQuery.CalculateLength(), Allocator.TempJob);
+
+                var bounds = new Bounds(cameras[cam].transform.position, cameras[cam].GetExtents()).Flat2D();
+                m_LastJobHandle = new JobIntersection
+                {
+                    CameraBounds = bounds,
+                    ValidSplines = m_ValidSplinePerCamera[cameras[cam]]
+                }.Schedule(m_SplineQuery, m_LastJobHandle);
+            }
+        }
+
+        private unsafe void OnBeginCameraRendering(ScriptableRenderContext ctx, Camera cam)
+        {
             //< -------- -------- -------- -------- -------- -------- -------- ------- //
             // Finish the current job
             //> -------- -------- -------- -------- -------- -------- -------- ------- //
-            var cameraBounds = new NativeArray<Bounds>(1, Allocator.TempJob);
-            cameraBounds[0] = new Bounds(cam.transform.position, cam.GetExtents()).Flat2D();
-            var resultsInterestBounds = new NativeArray<byte>(length, Allocator.TempJob);
-            
-            Profiler.BeginSample("Job");
-            LastJobHandle.Complete();
-            new JobCheckInterestects
-            {
-                BoundsDatas   = m_JobBoundsDatas,
-                CameraBounds  = cameraBounds,
-                BoundsOutline = m_JobBoundsOutline,
-                Results       = resultsInterestBounds
-            }.Run(length);
-            Profiler.EndSample();
+            m_LastJobHandle.Complete();
 
-            var array = new Vector3[0];
-            
-            UpdateInjectedEntityQuerys();
+            var previousCount = -1;
+            var array         = default(Vector3[]);
+            var validSplines  = m_ValidSplinePerCamera[cam];
+            var entities      = m_SplineQuery.ToEntityArray(Allocator.TempJob);
 
             Profiler.BeginSample("Loop");
-            var currentFillerArrayLength = 0;
-            for (var i = 0; i < length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
-                var fillArrayAddLength = m_jobFormulaAddLength[i];
-                if (m_refreshTypes[i] == EActivationZone.Bounds
-                    && resultsInterestBounds[i] == 0)
+                var spline = EntityManager.GetComponentData<DSplineData>(entities[i]);
+                if (spline.ActivationType == EActivationType.Bounds && !validSplines[i])
                 {
                     // ignore spline...
-                    currentFillerArrayLength += fillArrayAddLength;
                     continue;
                 }
 
-                var data     = m_Group.SplineData[i];
-                var renderer = m_Group.SplineRenderers[i];
+                var result   = EntityManager.GetBuffer<DSplineResult>(entities[i]);
+                var renderer = EntityManager.GetComponentObject<SplineRendererBehaviour>(entities[i]);
 
-                if (renderer.CameraRenderCount > 0)
+                var resultCount = result.Length;
+                if (renderer.LastLineRendererPositionCount != resultCount)
                 {
-                    currentFillerArrayLength += fillArrayAddLength;
-                    continue;
+                    renderer.LineRenderer.positionCount    = resultCount;
+                    renderer.LastLineRendererPositionCount = resultCount;
                 }
 
-                renderer.CameraRenderCount++;
-
-                var maxFillerArrayIndexes = currentFillerArrayLength + fillArrayAddLength;
-                var count                 = maxFillerArrayIndexes - currentFillerArrayLength;
-
-                if (renderer.LastLineRendererPositionCount != count)
+                if (previousCount != resultCount)
                 {
-                    renderer.LineRenderer.positionCount    = count;
-                    renderer.LastLineRendererPositionCount = count;
+                    previousCount = resultCount;
+                    if (!ArrayPoolBySize.RefFastTryGet(resultCount, ref array))
+                    {
+                        ArrayPoolBySize[resultCount] = new Vector3[resultCount];
+                    }
                 }
 
-                // TODO: Get the array from a pool
-                if (array.Length != count) array = new Vector3[count];
-
-                SetArrayFromNative(array, m_FinalFillerArray, currentFillerArrayLength, count);
+                fixed (void* buffer = array)
+                {
+                    UnsafeUtility.MemCpy(buffer, result.GetUnsafePtr(), resultCount * sizeof(float3));
+                }
 
                 renderer.LineRenderer.SetPositions(array);
-
-                currentFillerArrayLength += fillArrayAddLength;
             }
 
             Profiler.EndSample();
 
-            resultsInterestBounds.Dispose();
-            cameraBounds.Dispose();
-        }
-
-        // based on this gist: https://gist.github.com/LotteMakesStuff/c2f9b764b15f74d14c00ceb4214356b4
-        // modified to support start offset and custom size.
-        private unsafe void SetArrayFromNative(Vector3[] managedBuffer, NativeArray<float3> unmanagedBuffer, int start, long size)
-        {
-            fixed (Vector3* vertexArrayPointer = managedBuffer)
-            {
-                var buffer = NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(unmanagedBuffer);
-                var ptr    = new IntPtr(buffer) + start * UnsafeUtility.SizeOf<float3>();
-
-                UnsafeUtility.MemCpy // wow, this is so fast
-                (
-                    vertexArrayPointer,
-                    ptr.ToPointer(),
-                    size * UnsafeUtility.SizeOf<float3>()
-                );
-            }
+            entities.Dispose();
         }
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            //< -------- -------- -------- -------- -------- -------- -------- ------- //
-            // Check for any changes
-            //> -------- -------- -------- -------- -------- -------- -------- ------- //
-            var hasChange = m_Events > 0;
-            if (hasChange || Input.GetKeyDown(KeyCode.A))
+            m_LastJobHandle = new JobGetResult
             {
-                m_OrderedPoints.Dispose();
-                m_OrderedPoints = new TransformAccessArray(0);
+                PointsFromEntity = GetBufferFromEntity<DSplinePoint>(true),
+                ResultFromEntity = GetBufferFromEntity<DSplineResult>()
+            }.Schedule(m_SplineQuery, inputDeps);
 
-                m_PointsLength = 0;
-                for (int i = 0, total = 0, totalLength = 0;
-                    i != m_Group.Length;
-                    ++i)
-                {
-                    var renderer = m_Group.SplineRenderers[i];
-                    var length   = renderer.Points.Length;
-                    totalLength += length;
-
-                    for (var j = 0;
-                        j != length;
-                        ++j, ++total)
-                    {
-                        if (m_OrderedPoints.length <= totalLength)
-                            m_OrderedPoints.Add(renderer.Points[j]);
-                        else
-                            m_OrderedPoints[total] = renderer.Points[j];
-
-                        ++m_PointsLength;
-                    }
-                }
-            }
-
-            m_Events = 0;
-
-            if (m_Group.Length != m_JobBoundsDatas.Length)
-            {
-                m_JobBoundsDatas.Dispose();
-                m_JobDatas.Dispose();
-                m_JobBoundsOutline.Dispose();
-                m_jobFormulaAddLength.Dispose();
-                m_refreshTypes.Dispose();
-                m_JobBoundsDatas      = new NativeArray<DSplineBoundsData>(m_Group.Length, Allocator.Persistent);
-                m_JobDatas            = new NativeArray<DSplineData>(m_Group.Length, Allocator.Persistent);
-                m_JobBoundsOutline    = new NativeArray<float>(m_Group.Length, Allocator.Persistent);
-                m_jobFormulaAddLength = new NativeArray<int>(m_Group.Length, Allocator.Persistent);
-                m_refreshTypes        = new NativeArray<EActivationZone>(m_Group.Length, Allocator.Persistent);
-            }
-
-            //< -------- -------- -------- -------- -------- -------- -------- ------- //
-            // Create variables and jobs
-            //> -------- -------- -------- -------- -------- -------- -------- ------- //
-            // Create variables
-            int fillerArrayLength = 0,
-                currentCount      = 0,
-                transformCount    = 0;
-            // Create the job that will convert the UTransforms positions into the right components. 
-            var localPointsToConvert = new NativeArray<float3>(m_PointsLength, Allocator.TempJob);
-            var worldPointsToConvert = new NativeArray<float3>(m_PointsLength, Allocator.TempJob);
-            var convertPointsJob = new JobConvertPoints
-            {
-                Result      = localPointsToConvert,
-                WorldResult = worldPointsToConvert
-            };
-            // ...
-            // Schedule the job
-            inputDeps = convertPointsJob.Schedule(m_OrderedPoints, inputDeps);
-
-            var pointsIndexes           = new NativeArray<int>(m_Group.Length, Allocator.TempJob);
-            var finalFillerArrayIndexes = new NativeArray<int>(m_Group.Length, Allocator.TempJob);
-            for (var i = 0; i != m_Group.Length; i++)
-            {
-                var data       = m_Group.SplineData[i];
-                var boundsData = m_Group.SplineBoundsData[i];
-                var renderer   = m_Group.SplineRenderers[i];
-
-                renderer.CameraRenderCount = 0; //< Reset camera renders
-
-                var fillArrayAddLength =
-                    CGraphicalCatmullromSplineUtility.GetFormula(data.Step, renderer.Points.Length);
-
-                pointsIndexes[i]           =  currentCount;
-                finalFillerArrayIndexes[i] =  fillerArrayLength;
-                currentCount               += renderer.Points.Length;
-                fillerArrayLength          += fillArrayAddLength;
-
-                m_JobDatas[i]            = data;
-                m_JobBoundsDatas[i]      = boundsData;
-                m_JobBoundsOutline[i]    = renderer.RefreshBoundsOutline;
-                m_jobFormulaAddLength[i] = fillArrayAddLength;
-                m_refreshTypes[i]        = renderer.RefreshType;
-            }
-
-            if (m_FinalFillerArray.Length != fillerArrayLength)
-            {
-                m_FinalFillerArray.Dispose();
-                m_FinalFillerArray = new NativeArray<float3>(fillerArrayLength, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-            }
-
-            var fillArrayJob = new JobFillArray();
-            fillArrayJob.Datas                   = m_JobDatas;
-            fillArrayJob.BoundsDatas             = m_JobBoundsDatas;
-            fillArrayJob.Points                  = localPointsToConvert;
-            fillArrayJob.WorldPoints             = worldPointsToConvert;
-            fillArrayJob.PointsIndexes           = pointsIndexes;
-            fillArrayJob.FinalFillerArray        = m_FinalFillerArray;
-            fillArrayJob.FinalFillerArrayIndexes = finalFillerArrayIndexes;
-            fillArrayJob.MaxLength               = fillerArrayLength;
-
-            inputDeps = LastJobHandle = fillArrayJob.Schedule(inputDeps);
-
-            return inputDeps;
+            return m_LastJobHandle;
         }
 
-        // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
-        // Groups
-        // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
-        private struct Group
-        {
-            [ReadOnly] public ComponentDataArray<DSplineData>       SplineData;
-            [ReadOnly] public ComponentDataArray<DSplineBoundsData> SplineBoundsData;
-
-            [ReadOnly] public ComponentArray<SplineRendererBehaviour> SplineRenderers;
-            // We only want valid spline
-            public ComponentDataArray<DSplineValidTag> Valided;
-
-            //[ReadOnly] public FixedArrayArray<DSplinePositionData>     Positions; // Useless?
-            public          EntityArray Entities;
-            public readonly int         Length;
-        }
-
-        // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
-        // Jobs
-        // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
         [BurstCompile]
-        private struct JobConvertPoints : IJobParallelForTransform
+        [RequireComponentTag(typeof(DSplineValidTag))]
+        private struct JobGetResult : IJobForEachWithEntity<DSplineData, DSplineBoundsData>
         {
-            [WriteOnly] public NativeArray<float3> Result;
-            [WriteOnly] public NativeArray<float3> WorldResult;
+            [ReadOnly]
+            public BufferFromEntity<DSplinePoint> PointsFromEntity;
 
-            public void Execute(int index, TransformAccess transform)
+            [NativeDisableParallelForRestriction]
+            public BufferFromEntity<DSplineResult> ResultFromEntity;
+
+            public void Execute(Entity entity, int index, ref DSplineData spline, ref DSplineBoundsData bounds)
             {
-                Result[index]      = transform.localPosition;
-                WorldResult[index] = transform.position;
-            }
-        }
-
-        //[BurstCompile]
-        private struct JobFillArray : IJob
-        {
-            [ReadOnly]                             public NativeArray<DSplineData>       Datas;
-            [WriteOnly]                            public NativeArray<DSplineBoundsData> BoundsDatas;
-            [ReadOnly] [DeallocateOnJobCompletion] public NativeArray<float3>            WorldPoints;
-            [ReadOnly] [DeallocateOnJobCompletion] public NativeArray<float3>            Points;
-            [ReadOnly] [DeallocateOnJobCompletion] public NativeArray<int>               PointsIndexes;
-            [WriteOnly]                            public NativeArray<float3>            FinalFillerArray;
-
-            [ReadOnly] [DeallocateOnJobCompletion]
-            public NativeArray<int> FinalFillerArrayIndexes;
-
-            public int MaxLength;
-
-            // Unity jobs
-            public void Execute()
-            {
-                for (var index = 0; index != Datas.Length; index++)
+                var points = PointsFromEntity[entity];
+                for (var p = 0; p != points.Length; p++)
                 {
-                    var data       = Datas[index];
-                    var boundsData = new DSplineBoundsData();
-
-                    var currentPointsIndex      = PointsIndexes[index];
-                    var currentFillerArrayIndex = FinalFillerArrayIndexes[index];
-                    var sliceValue              = data.Step;
-                    var tensionValue            = data.Tension;
-                    var isLoopingValue          = data.IsLooping == 1;
-
-                    var maxPointsIndexes = PointsIndexes.Length > index + 1 ? PointsIndexes[index + 1] : Points.Length;
-                    var maxFillerArrayIndexes = FinalFillerArrayIndexes.Length > index + 1
-                        ? FinalFillerArrayIndexes[index + 1]
-                        : MaxLength;
-
-                    CGraphicalCatmullromSplineUtility.CalculateCatmullromSpline(Points, currentPointsIndex,
-                        maxPointsIndexes,
-                        FinalFillerArray, currentFillerArrayIndex, maxFillerArrayIndexes,
-                        sliceValue,
-                        tensionValue,
-                        isLoopingValue);
-
-                    for (var pointIndex = currentPointsIndex; pointIndex != maxPointsIndexes; pointIndex++)
+                    var pointPosition = points[p].Position;
+                    if (p == 0)
                     {
-                        var point = WorldPoints[pointIndex];
-
-                        if (pointIndex == currentPointsIndex)
-                        {
-                            boundsData.Min = point.xy;
-                            boundsData.Max = point.xy;
-                        }
-
-                        var min = boundsData.Min;
-                        var max = boundsData.Max;
-                        boundsData.Min = math.min(point.xy, min);
-                        boundsData.Max = math.max(point.xy, max);
+                        bounds.Min = pointPosition;
+                        bounds.Max = pointPosition;
                     }
 
-                    BoundsDatas[index]                          = boundsData;
-                    FinalFillerArray[currentFillerArrayIndex]   = Points[currentPointsIndex];
-                    FinalFillerArray[maxFillerArrayIndexes - 1] = Points[maxPointsIndexes - 1];
+                    bounds.Min = math.min(pointPosition, bounds.Min);
+                    bounds.Max = math.max(pointPosition, bounds.Max);
                 }
+
+                var predictedLength = CGraphicalCatmullromSplineUtility.GetResultLength(spline.Step, points.Length);
+                var result          = ResultFromEntity[entity];
+                result.Reserve(predictedLength);
+                result.Clear();
+
+                result.Add(new DSplineResult{Position = points[0].Position});
+                CGraphicalCatmullromSplineUtility.CalculateCatmullromSpline
+                (
+                    // points
+                    points.Reinterpret<float3>(), 0, points.Length,
+                    // result
+                    result.Reinterpret<float3>(),
+                    // settings
+                    spline.Step, spline.Tension, spline.IsLooping
+                );
             }
         }
 
         [BurstCompile]
-        private struct JobCheckInterestects : IJobParallelFor
+        [RequireComponentTag(typeof(DSplineValidTag))]
+        private struct JobIntersection : IJobForEachWithEntity<DSplineData, DSplineBoundsData>
         {
-            [ReadOnly]  public NativeArray<DSplineBoundsData> BoundsDatas;
-            [ReadOnly]  public NativeArray<Bounds>            CameraBounds;
-            [ReadOnly]  public NativeArray<float>             BoundsOutline;
-            [WriteOnly] public NativeArray<byte>              Results;
+            [ReadOnly]
+            public Bounds CameraBounds;
 
-            public void Execute(int index)
+            [WriteOnly]
+            public NativeArray<bool> ValidSplines;
+
+            public void Execute(Entity entity, int index, ref DSplineData spline, ref DSplineBoundsData bounds)
             {
-                var cb = CameraBounds[0];
-                var bd = BoundsDatas[index];
-                var bo = BoundsOutline[index];
+                var cb = CameraBounds;
 
-                bd.Min -= bo;
-                bd.Max += bo;
+                bounds.Min -= spline.BoundsOutline;
+                bounds.Max += spline.BoundsOutline;
 
-                var boolean = cb.min.x <= bd.Max.x && cb.max.x >= bd.Min.x
-                                                   && cb.min.y <= bd.Max.y && cb.max.y >= bd.Min.y;
+                var boolean = cb.min.x <= bounds.Max.x && cb.max.x >= bounds.Min.x
+                                                   && cb.min.y <= bounds.Max.y && cb.max.y >= bounds.Min.y;
 
-                Results[index] = (byte) (boolean ? 1 : 0);
+                ValidSplines[index] = boolean;
             }
         }
-    }*/
+    }
 }
