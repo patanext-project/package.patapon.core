@@ -14,8 +14,28 @@ using UnityEngine.Rendering;
 
 namespace package.patapon.core
 {
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
+    public class UpdateSplinePointsSystem : ComponentSystem
+    {
+        protected override void OnUpdate()
+        {
+            Entities.WithAll<DSplineValidTag>().ForEach((SplineRendererBehaviour renderer, DynamicBuffer<DSplinePoint> points) =>
+            {
+                var transforms = renderer.points;
+                var length     = transforms.Length;
+
+                points.ResizeUninitialized(length);
+                for (var i = 0; i != length; i++)
+                {
+                    points[i] = new DSplinePoint {Position = transforms[i].localPosition};
+                }
+            });
+        }
+    }
+    
     // TODO: UPGRADE
     [UpdateInGroup(typeof(PresentationSystemGroup))]
+    [UpdateAfter(typeof(UpdateSplinePointsSystem))]
     public class SplineSystem : JobComponentSystem
     {
         private JobHandle           m_LastJobHandle;

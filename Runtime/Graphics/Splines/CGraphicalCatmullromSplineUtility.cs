@@ -27,7 +27,7 @@ namespace package.patapon.core
             // will be generated again in the step for loop when interpolating
             // from last point back to the first point
             var last = nodesLength - 1;
-            for (var current = 0; loop || current < last; ++current)
+            for (var current = 0; current < last; ++current)
             {
                 // wrap around when looping
                 if (loop && current > last)

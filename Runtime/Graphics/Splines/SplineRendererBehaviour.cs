@@ -52,6 +52,8 @@ namespace package.patapon.core
     [RequireComponent(typeof(GameObjectEntity))]
     public class SplineRendererBehaviour : MonoBehaviour
     {
+        private GameObjectEntity m_GameObjectEntity;
+        
         // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
         // Fields
         // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
@@ -62,7 +64,11 @@ namespace package.patapon.core
         public EActivationType RefreshType;
         public float           RefreshBoundsOutline = 1f;
 
-        public Transform[]  Points;
+        [SerializeField]
+        internal Transform[]  points;
+
+        private bool m_IsDirty;
+        
         public LineRenderer LineRenderer;
 
 #if UNITY_EDITOR
@@ -83,7 +89,9 @@ namespace package.patapon.core
 
             var e        = goEntity.Entity;
             var em       = goEntity.EntityManager;
-
+            if (!em.HasComponent(e, typeof(SplineRendererBehaviour)))
+                em.AddComponentObject(e, this);
+                
             em.AddComponentData(e, GetData());
             em.AddComponentData(e, new DSplineBoundsData());
             em.AddBuffer<DSplinePoint>(e);
@@ -95,6 +103,9 @@ namespace package.patapon.core
                 Debug.LogWarning("LineRender == null");
                 LineRenderer = GetComponentInChildren<LineRenderer>();
             }
+
+            m_GameObjectEntity = goEntity;
+            MarkDirty();
         }
 
         private void OnEnable()
@@ -105,6 +116,9 @@ namespace package.patapon.core
             {
                 Debug.LogError("No GameObjectEntity found on " + gameObject.name);
             }
+
+            m_GameObjectEntity = goEntity;
+            MarkDirty();
         }
 
         private void OnValidate()
@@ -114,17 +128,18 @@ namespace package.patapon.core
                 return;
 
             goEntity.EntityManager.SetComponentData(goEntity.Entity, GetData());
+            MarkDirty();
         }
 
         private void Update()
         {
-            var referencable = ReferencableGameObject.GetComponent<ReferencableGameObject>(gameObject);
-            var goEntity     = referencable.GetComponentFast<GameObjectEntity>();
+            if (!m_IsDirty)
+                return;
 
-            var em = goEntity.Value.EntityManager;
-            var e  = goEntity.Value.Entity;
+            var em = m_GameObjectEntity.EntityManager;
+            var e  = m_GameObjectEntity.Entity;
 
-            var canBeProcessed = Points.Length > 0
+            var canBeProcessed = points.Length > 0
                                  && LineRenderer != null;
 
             if (canBeProcessed && !em.HasComponent<DSplineValidTag>(e))
@@ -135,13 +150,15 @@ namespace package.patapon.core
             {
                 em.RemoveComponent<DSplineValidTag>(e);
             }
+            
+            Debug.Log(canBeProcessed);
 
-            var pointBuffer = em.GetBuffer<DSplinePoint>(e);
-            pointBuffer.Clear();
-            for (var i = 0; i != Points.Length; i++)
-            {
-                pointBuffer.Add(new DSplinePoint {Position = Points[i].localPosition});
-            }
+            m_IsDirty = false;
+        }
+
+        public void MarkDirty()
+        {
+            m_IsDirty = true;
         }
 
 #if UNITY_EDITOR
@@ -156,20 +173,20 @@ namespace package.patapon.core
                 && LineRenderer != null)
             {
                 // Render spline
-                m_EditorFillerArray = m_EditorFillerArray ?? new List<Vector3>(Points.Length * Step);
+                m_EditorFillerArray = m_EditorFillerArray ?? new List<Vector3>(points.Length * Step);
                 m_EditorFillerArray.Clear();
                 
                 CGraphicalCatmullromSplineUtility.CalculateCatmullromSpline
                 (
-                    Points, 0, Points.Length,
+                    points, 0, points.Length,
                     m_EditorFillerArray, 0,
                     Step, Tension, IsLooping
                 );
 
-                if (Points.Length > 0 && m_EditorFillerArray.Count > 0)
+                if (points.Length > 0 && m_EditorFillerArray.Count > 0)
                 {
-                    m_EditorFillerArray[0]                             = Points[0].localPosition;
-                    m_EditorFillerArray[m_EditorFillerArray.Count - 1] = Points[Points.Length - 1].localPosition;
+                    m_EditorFillerArray[0]                             = points[0].localPosition;
+                    m_EditorFillerArray[m_EditorFillerArray.Count - 1] = points[points.Length - 1].localPosition;
                 }
 
                 if (m_EditorResultArray == null || m_EditorResultArray.Length != m_EditorFillerArray.Count)
@@ -190,9 +207,9 @@ namespace package.patapon.core
             {
                 var boundsMin = new Vector3();
                 var boundsMax = new Vector3();
-                for (var i = 0; i != Points.Length; i++)
+                for (var i = 0; i != points.Length; i++)
                 {
-                    var point = (float3) Points[i].transform.position;
+                    var point = (float3) points[i].transform.position;
 
                     if (i == 0)
                     {
@@ -256,12 +273,21 @@ namespace package.patapon.core
 
         public Vector3 GetPoint(int i)
         {
-            return Points[i].position;
+            return points[i].position;
         }
 
         public void SetPoint(int i, Vector3 value)
         {
-            Points[i].position = value;
+            points[i].position = value;
+
+            MarkDirty();
+        }
+
+        public void SetPointTransforms(params Transform[] transforms)
+        {
+            points = transforms;
+            
+            MarkDirty();
         }
     }
 }
