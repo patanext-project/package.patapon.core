@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace Patapon4TLB.UI
 {
-	public class UIStatusBackend : CustomAsyncAsset<UIStatusPresentation>
+	public class UIStatusBackend : RuntimeAssetBackend<UIStatusPresentation>
 	{
 		public Entity entity;
 		public int    priority;
@@ -22,7 +22,7 @@ namespace Patapon4TLB.UI
 		}
 	}
 
-	public class UIStatusPresentation : CustomAsyncAssetPresentation<UIStatusPresentation>
+	public class UIStatusPresentation : RuntimeAssetPresentation<UIStatusPresentation>
 	{
 		public Image GaugeBackground;
 		public Image RenderBackground;

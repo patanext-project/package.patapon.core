@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using package.stormiumteam.shared;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.NetCode;
 using UnityEditor;
 using UnityEngine;
 
@@ -85,10 +87,24 @@ namespace package.patapon.core
         private void Awake()
         {
             var referencable = ReferencableGameObject.GetComponent<ReferencableGameObject>(gameObject);
-            var goEntity = referencable.GetOrAddComponent<GameObjectEntity>();
+            var goEntity     = referencable.GetOrAddComponent<GameObjectEntity>();
 
-            var e        = goEntity.Entity;
-            var em       = goEntity.EntityManager;
+            m_GameObjectEntity = goEntity;
+            MarkDirty();
+        }
+
+        private void OnEnable()
+        {
+            var referencable = ReferencableGameObject.GetComponent<ReferencableGameObject>(gameObject);
+            var goEntity     = referencable.GetComponentFast<GameObjectEntity>();
+            if (!goEntity.HasValue)
+            {
+                Debug.LogError("No GameObjectEntity found on " + gameObject.name);
+            }
+            
+            
+            var e  = goEntity.Value.Entity;
+            var em = goEntity.Value.EntityManager;
             if (!em.HasComponent(e, typeof(SplineRendererBehaviour)))
                 em.AddComponentObject(e, this);
                 
@@ -106,19 +122,15 @@ namespace package.patapon.core
 
             m_GameObjectEntity = goEntity;
             MarkDirty();
-        }
-
-        private void OnEnable()
-        {
-            var referencable = ReferencableGameObject.GetComponent<ReferencableGameObject>(gameObject);
-            var goEntity     = referencable.GetComponentFast<GameObjectEntity>();
-            if (!goEntity.HasValue)
+            
+            // in case we are created in the client worlds...
+            var world = m_GameObjectEntity.EntityManager.World;
+            if (ClientServerBootstrap.clientWorld.Contains(world))
             {
-                Debug.LogError("No GameObjectEntity found on " + gameObject.name);
+                var presentationGroup = world.GetExistingSystem<ClientPresentationSystemGroup>();
+                presentationGroup.AddSystemToUpdateList(world.GetOrCreateSystem<UpdateSplinePointsSystem>());
+                presentationGroup.AddSystemToUpdateList(world.GetOrCreateSystem<SplineSystem>());
             }
-
-            m_GameObjectEntity = goEntity;
-            MarkDirty();
         }
 
         private void OnValidate()
@@ -150,8 +162,6 @@ namespace package.patapon.core
             {
                 em.RemoveComponent<DSplineValidTag>(e);
             }
-            
-            Debug.Log(canBeProcessed);
 
             m_IsDirty = false;
         }
@@ -251,11 +261,6 @@ namespace package.patapon.core
             {
                 Debug.LogError("No GameObjectEntity found on " + gameObject.name);
             }
-
-            if (World.Active == null)
-                return;
-            
-            //World.Active.GetExistingSystem<SplineSystem>().SendUpdateEvent(goEntity.Value.Entity);
         }
 
         // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.

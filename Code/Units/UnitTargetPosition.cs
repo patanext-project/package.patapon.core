@@ -11,4 +11,13 @@ namespace Patapon4TLB.Core
 	{
 		public float3 Value;
 	}
+
+	/// <summary>
+	/// An unit that can control the target position.
+	/// It may be a kacheek, simple unit, hero or hatapon controlling it.
+	/// </summary>
+	public struct UnitControlTargetTag : IComponentData
+	{
+		
+	}
 }

@@ -16,7 +16,10 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 {
 	public struct BasicUnitSnapshotTarget : IComponentData
 	{
+		public uint LastSnapshotTick;
+		public bool Grounded;
 		public float3 Position;
+		public int NearPositionCount;
 	}
 	
 	public class BasicUnitGhostSpawnSystem : DefaultGhostSpawnSystem<BasicUnitSnapshotData>
@@ -107,7 +110,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 	[UpdateBefore(typeof(ConvertGhostToRelativeSystemGroup))]
 	public class BasicUnitUpdateSystem : JobComponentSystem
 	{
-		private struct Job : IJobForEachWithEntity<UnitDirection, BasicUnitSnapshotTarget, Translation, Velocity>
+		private struct Job : IJobForEachWithEntity<UnitDirection, BasicUnitSnapshotTarget, UnitTargetPosition, Translation, Velocity>
 		{
 			public uint InterpolateTick;
 			public uint PredictTick;
@@ -118,16 +121,27 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostRelative<TeamDescription>>         RelativeTeamFromEntity;
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostRelative<RhythmEngineDescription>> RelativeRhythmEngineFromEntity;
 
-			public void Execute(Entity entity, int jobIndex, ref UnitDirection unitDirection, ref BasicUnitSnapshotTarget target, ref Translation translation, ref Velocity velocity)
+			public void Execute(Entity entity, int jobIndex, ref UnitDirection unitDirection, ref BasicUnitSnapshotTarget target, ref UnitTargetPosition unitTargetPosition, ref Translation translation, ref Velocity velocity)
 			{
 				SnapshotDataFromEntity[entity].GetDataAtTick(PredictTick, out var snapshot);
 
-				unitDirection.Value = (sbyte) snapshot.Direction;
-				velocity.Value      = snapshot.Velocity.Get(BasicUnitSnapshotData.DeQuantization);
+				unitTargetPosition.Value = snapshot.TargetPosition.Get(BasicUnitSnapshotData.DeQuantization);
+				unitDirection.Value      = (sbyte) snapshot.Direction;
+				velocity.Value           = snapshot.Velocity.Get(BasicUnitSnapshotData.DeQuantization);
 
-				var targetPosition   = snapshot.Position.Get(BasicUnitSnapshotData.DeQuantization);
+				var targetPosition = snapshot.Position.Get(BasicUnitSnapshotData.DeQuantization);
+				if (math.distance(target.Position, targetPosition) < 0.025f && target.LastSnapshotTick != snapshot.Tick)
+				{
+					target.NearPositionCount++;
+				}
+				else
+				{
+					target.NearPositionCount = 0;
+				}
 
-				target.Position = targetPosition;
+				target.LastSnapshotTick = snapshot.Tick;
+				target.Position         = targetPosition;
+				target.Grounded         = snapshot.GroundFlags == 1;
 
 
 				RelativePlayerFromEntity[entity] = new GhostRelative<PlayerDescription>
@@ -170,9 +184,15 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			Entities.ForEach((ref Translation translation, ref Velocity velocity, ref BasicUnitSnapshotTarget target) =>
 			{
 				var distance = math.distance(translation.Value, target.Position);
+
+				var factor = target.NearPositionCount + 1;
 				
 				translation.Value = math.lerp(translation.Value, target.Position, Time.deltaTime * (velocity.speed + distance + 1f));
-				translation.Value = Vector3.MoveTowards(translation.Value, target.Position, Time.deltaTime * math.max(distance, velocity.speed) * 0.9f);
+				translation.Value = Vector3.MoveTowards(translation.Value, target.Position,  math.max(distance * 0.1f, velocity.speed * Time.deltaTime) * 0.9f * factor);
+				if (target.Grounded)
+				{
+					translation.Value.y = 0;
+				}
 			});
 		}
 	}

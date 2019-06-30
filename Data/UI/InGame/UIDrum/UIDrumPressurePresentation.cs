@@ -17,7 +17,7 @@ using Random = UnityEngine.Random;
 
 namespace Patapon4TLB.UI
 {
-	public class UIDrumPressurePresentation : CustomAsyncAssetPresentation<UIDrumPressurePresentation>
+	public class UIDrumPressurePresentation : RuntimeAssetPresentation<UIDrumPressurePresentation>
 	{
 		public Animator animator;
 
@@ -32,7 +32,7 @@ namespace Patapon4TLB.UI
 		}
 	}
 
-	public class UIDrumPressureBackend : CustomAsyncAsset<UIDrumPressurePresentation>
+	public class UIDrumPressureBackend : RuntimeAssetBackend<UIDrumPressurePresentation>
 	{
 		public int   key, rand;
 		public float endTime;
@@ -90,7 +90,7 @@ namespace Patapon4TLB.UI
 
 			m_Canvas = World.GetOrCreateSystem<UIClientCanvasSystem>().CreateCanvas(out _, "UIDrumCanvas");
 			m_Canvas.renderMode = RenderMode.WorldSpace;
-			m_Canvas.sortingOrder = 1;
+			m_Canvas.sortingOrder = (int) UICanvasOrder.Drums;
 			m_Canvas.sortingLayerName = "UI";
 			m_Canvas.transform.localScale = new Vector3() * 0.05f;
 

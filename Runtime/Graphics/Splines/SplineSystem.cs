@@ -135,7 +135,7 @@ namespace package.patapon.core
                     previousCount = resultCount;
                     if (!ArrayPoolBySize.RefFastTryGet(resultCount, ref array))
                     {
-                        ArrayPoolBySize[resultCount] = new Vector3[resultCount];
+                        ArrayPoolBySize[resultCount] = array = new Vector3[resultCount];
                     }
                 }
 

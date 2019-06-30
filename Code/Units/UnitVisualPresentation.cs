@@ -6,12 +6,18 @@ using UnityEngine;
 
 namespace Patapon4TLB.Core
 {
-	public class UnitVisualPresentation : CustomAsyncAssetPresentation<UnitVisualPresentation>
+	public class UnitVisualPresentation : RuntimeAssetPresentation<UnitVisualPresentation>
 	{
+		public Animator Animator;
 
+		public void Update()
+		{
+			if (Input.GetKeyDown(KeyCode.Keypad4))
+				Animator.SetTrigger("Pata");
+		}
 	}
 
-	public class UnitVisualBackend : CustomAsyncAsset<UnitVisualPresentation>
+	public class UnitVisualBackend : RuntimeAssetBackend<UnitVisualPresentation>
 	{
 		protected override void Update()
 		{

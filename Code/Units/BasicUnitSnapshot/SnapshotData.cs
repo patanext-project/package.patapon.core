@@ -7,16 +7,19 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 {
 	public struct BasicUnitSnapshotData : ISnapshotData<BasicUnitSnapshotData>
 	{
-		public const int Quantization = 10000;
+		public const int   Quantization   = 10000;
 		public const float DeQuantization = 0.0001f;
-		
+
 		public uint Tick { get; set; }
+
+		public byte GroundFlags;
 
 		public uint PlayerGhostId;
 		public uint TeamGhostId;
 		public uint RhythmEngineGhostId;
 
 		public int             Direction;
+		public QuantizedFloat3 TargetPosition;
 		public QuantizedFloat3 Position;
 		public QuantizedFloat3 Velocity;
 
@@ -27,6 +30,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			for (var i = 0; i < dimension; i++)
 			{
 				Position[i] = predict.PredictInt(Position[i], baseline1.Position[i], baseline2.Position[i]);
+				TargetPosition[i] = predict.PredictInt(TargetPosition[i], baseline1.TargetPosition[i], baseline2.TargetPosition[i]);
 			}
 		}
 
@@ -36,6 +40,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			writer.WritePackedUIntDelta(PlayerGhostId, baseline.PlayerGhostId, compressionModel);
 			writer.WritePackedUIntDelta(TeamGhostId, baseline.TeamGhostId, compressionModel);
 			writer.WritePackedUIntDelta(RhythmEngineGhostId, baseline.RhythmEngineGhostId, compressionModel);
+			writer.WritePackedUIntDelta(GroundFlags, baseline.GroundFlags, compressionModel);
 			writer.WritePackedInt(Direction, compressionModel);
 
 			// Position and velocity
@@ -44,32 +49,35 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			{
 				writer.WritePackedIntDelta(Position[i], baseline.Position[i], compressionModel);
 				writer.WritePackedIntDelta(Velocity[i], baseline.Velocity[i], compressionModel);
+				writer.WritePackedIntDelta(TargetPosition[i], baseline.TargetPosition[i], compressionModel);
 			}
 		}
 
 		public void Deserialize(uint tick, ref BasicUnitSnapshotData baseline, DataStreamReader reader, ref DataStreamReader.Context ctx, NetworkCompressionModel compressionModel)
 		{
 			Tick = tick;
-			
+
 			// 4
-			PlayerGhostId        = reader.ReadPackedUIntDelta(ref ctx, baseline.PlayerGhostId, compressionModel);
+			PlayerGhostId       = reader.ReadPackedUIntDelta(ref ctx, baseline.PlayerGhostId, compressionModel);
 			TeamGhostId         = reader.ReadPackedUIntDelta(ref ctx, baseline.TeamGhostId, compressionModel);
 			RhythmEngineGhostId = reader.ReadPackedUIntDelta(ref ctx, baseline.RhythmEngineGhostId, compressionModel);
+			GroundFlags         = (byte) reader.ReadPackedUIntDelta(ref ctx, baseline.GroundFlags, compressionModel);
 			Direction           = reader.ReadPackedInt(ref ctx, compressionModel);
 
 			// Position and velocity
 			var dimension = Direction == 0 ? 3 : 2;
 			for (var i = 0; i < dimension; i++)
 			{
-				Position[i] = reader.ReadPackedIntDelta(ref ctx, baseline.Position[i], compressionModel);
-				Velocity[i] = reader.ReadPackedIntDelta(ref ctx, baseline.Velocity[i], compressionModel);
+				Position[i]       = reader.ReadPackedIntDelta(ref ctx, baseline.Position[i], compressionModel);
+				Velocity[i]       = reader.ReadPackedIntDelta(ref ctx, baseline.Velocity[i], compressionModel);
+				TargetPosition[i] = reader.ReadPackedIntDelta(ref ctx, baseline.TargetPosition[i], compressionModel);
 			}
 		}
 
 		public void Interpolate(ref BasicUnitSnapshotData target, float factor)
 		{
 			PlayerGhostId = target.PlayerGhostId;
-			Direction    = target.Direction;
+			Direction     = target.Direction;
 
 			Position.Result = (int3) math.lerp(Position.Result, target.Position.Result, factor);
 			Velocity.Result = (int3) math.lerp(Velocity.Result, target.Velocity.Result, factor);
