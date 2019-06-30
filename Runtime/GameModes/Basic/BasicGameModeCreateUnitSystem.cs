@@ -75,7 +75,7 @@ namespace Patapon4TLB.GameModes.Basic
 					MovementAttackSpeed = 2.25f,
 					BaseWalkSpeed       = 2f,
 					FeverWalkSpeed      = 2.2f,
-					Weight              = 5
+					Weight              = 6
 				});
 				EntityManager.SetComponentData(unit, UnitDirection.Right);
 				EntityManager.SetComponentData(unit, new UnitRhythmState());
@@ -200,10 +200,10 @@ namespace Patapon4TLB.GameModes.Basic
 				Debug.DrawRay(translation.Value, Vector3.up, Color.blue);
 				Debug.DrawRay(target.Value, Vector3.up, Color.red);
 
-				if (Input.GetKeyDown(KeyCode.RightArrow))
-					target.Value.x += 1;
-				else if (Input.GetKeyDown(KeyCode.LeftArrow))
-					target.Value.x -= 1;
+				if (Input.GetKey(KeyCode.RightArrow))
+					target.Value.x += 0.1f;
+				else if (Input.GetKey(KeyCode.LeftArrow))
+					target.Value.x -= 0.1f;
 			});
 		}
 	}

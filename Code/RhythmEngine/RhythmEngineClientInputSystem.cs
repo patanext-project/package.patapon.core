@@ -42,19 +42,20 @@ namespace Patapon4TLB.Default
 				var pressureData    = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.TimeTick);
 				var cmdChainEndFlow = RhythmEngineProcess.CalculateFlowBeat(predictedCommand.State.ChainEndTime, settings.BeatInterval);
 				var cmdEndFlow      = RhythmEngineProcess.CalculateFlowBeat(predictedCommand.State.EndTime, settings.BeatInterval);
-				var failFlag2 = pressureData.RenderBeat > cmdChainEndFlow
-				                && cmdChainEndFlow > flowBeat
+				// check for one beat space between inputs (should we just check for predicted commands? 'maybe' we would have a command with one beat space)
+				var failFlag1 = commandSequence.Length > 0 && pressureData.RenderBeat > commandSequence[commandSequence.Length - 1].Data.RenderBeat + 1;
+				// check for inputs that were done after the current command chain
+				var failFlag2 = pressureData.RenderBeat >= cmdChainEndFlow
 				                && cmdChainEndFlow > 0;
+				
+				Debug.Log($"{pressureData.RenderBeat} {cmdChainEndFlow} {flowBeat}");
 
 				if (state.IsRecovery(flowBeat))
 				{
 					predictedCommand.State.ChainEndTime = -1;
 				}
-				else if (cmdEndFlow > flowBeat || failFlag2)
+				else if (cmdEndFlow > flowBeat || failFlag1 || failFlag2)
 				{
-					Debug.Log($"{cmdEndFlow > flowBeat}: {cmdEndFlow}, {flowBeat}");
-					Debug.Log($"{failFlag2}: {pressureData.RenderBeat} > {cmdChainEndFlow} && {cmdChainEndFlow} > {flowBeat}");
-
 					pressureEvent.ShouldStartRecovery             = true;
 					state.NextBeatRecovery                        = flowBeat + 1;
 					predictedCommand.State.ChainEndTime = -1;
