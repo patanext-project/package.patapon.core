@@ -35,13 +35,12 @@ namespace Patapon4TLB.Core
 				{
 					if (groundState.Value)
 					{
-						// We should instead have another system to damp the velocity... (along with settings + taking in account weight)
-						var acceleration = math.clamp(math.rcp(unitSettings.Weight), 0, 1) * 10;
-						acceleration = math.min(acceleration, 1) * 6f;
-
+						var speed = math.lerp(math.abs(velocity.Value.x), unitSettings.MovementAttackSpeed, math.rcp(unitSettings.Weight) * 30 * DeltaTime);
+						
 						// Instead of just assigning the translation value here, we calculate the velocity between the new position and the previous position.
-						var newPosX = MoveTowards(translation.Value.x, target.x, unitSettings.BaseWalkSpeed);
-						velocity.Value.x = math.lerp(velocity.Value.x, newPosX - translation.Value.x, acceleration * DeltaTime);
+						var newPosX = MoveTowards(translation.Value.x, target.x, speed * DeltaTime);
+
+						velocity.Value.x = (newPosX - translation.Value.x) / DeltaTime;
 					}
 					else
 					{

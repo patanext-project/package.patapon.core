@@ -14,6 +14,8 @@ namespace Patapon4TLB.Core
 		{
 			if (Input.GetKeyDown(KeyCode.Keypad4))
 				Animator.SetTrigger("Pata");
+			if (Input.GetKeyDown(KeyCode.Keypad6))
+				Animator.SetTrigger("Pon");
 		}
 	}
 
