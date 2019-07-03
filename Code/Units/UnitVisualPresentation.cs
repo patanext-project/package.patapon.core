@@ -16,6 +16,8 @@ namespace Patapon4TLB.Core
 				Animator.SetTrigger("Pata");
 			if (Input.GetKeyDown(KeyCode.Keypad6))
 				Animator.SetTrigger("Pon");
+			if (Input.GetKeyDown(KeyCode.Keypad8))
+				Animator.SetTrigger("Chaka");
 		}
 	}
 
@@ -29,11 +31,7 @@ namespace Patapon4TLB.Core
 				return;
 			}
 			
-			DisableNextUpdate                 = true;
-			ReturnToPoolOnDisable             = true;
-			ReturnPresentationToPoolNextFrame = true;
-			
-			base.Update();
+			Return(true, true);
 		}
 	}
 

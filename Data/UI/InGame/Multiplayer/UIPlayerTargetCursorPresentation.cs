@@ -29,7 +29,7 @@ namespace Patapon4TLB.UI.InGame
 				backend.transform.position = new Vector3
 				(
 					targetPosition.Value.x,
-					-0.33f,
+					-0.3f,
 					0
 				);
 			});
