@@ -53,8 +53,6 @@ namespace Patapon4TLB.Default
 				var failFlag2 = pressureData.RenderBeat >= cmdChainEndFlow
 				                && cmdChainEndFlow > 0;
 				
-				Debug.Log($"{pressureData.RenderBeat} {cmdChainEndFlow} {flowBeat}");
-
 				if (state.IsRecovery(flowBeat))
 				{
 					predictedCommand.State.ChainEndTime = -1;
@@ -67,8 +65,6 @@ namespace Patapon4TLB.Default
 				}
 				else
 				{
-					Debug.Log($"Pressure --> beat={pressureData.RenderBeat}, time={pressureData.Time}");
-
 					commandSequence.Add(new RhythmEngineCurrentCommand
 					{
 						Data = pressureData

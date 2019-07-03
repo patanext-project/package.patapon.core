@@ -18,6 +18,8 @@ namespace Patapon4TLB.Core
 				Animator.SetTrigger("Pon");
 			if (Input.GetKeyDown(KeyCode.Keypad8))
 				Animator.SetTrigger("Chaka");
+			if (Input.GetKeyDown(KeyCode.Keypad2))
+				Animator.SetTrigger("Don");
 		}
 	}
 

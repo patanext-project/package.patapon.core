@@ -165,8 +165,6 @@ namespace Patapon4TLB.Default
 
 				state.IsNewPressure = false;
 
-
-				var lastCommand = currCommandArray[currCommandArray.Length - 1].Data;
 				var targetBeat  = process.GetFlowBeat(settings.BeatInterval) + 1;
 
 				rhythmCurrentCommand.ActiveAtTime  = targetBeat * settings.BeatInterval;

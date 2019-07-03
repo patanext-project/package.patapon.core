@@ -45,16 +45,17 @@ namespace Patapon4TLB.Core
 			}
 
 			PanAction = actionMap.GetAction("Panning");
-			AddActionEvents(PanAction);
+			AddActionEvents(PanAction, OnEvent);
+		}
+
+		private void OnEvent(InputAction.CallbackContext ctx)
+		{
+			CurrentPanning = ctx.ReadValue<float>();
 		}
 
 		protected override void OnUpdate()
 		{
-			foreach (var ev in InputEvents)
-			{
-				CurrentPanning = ev.ReadValue<float>();
-			}
-			InputEvents.Clear();
+			
 		}
 	}
 }

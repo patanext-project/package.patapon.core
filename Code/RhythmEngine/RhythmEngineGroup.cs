@@ -6,28 +6,6 @@ using UnityEngine;
 
 namespace Patapon4TLB.Default
 {
-	/*[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-	public class RhythmEngineGroupServer : ComponentSystemGroup
-	{
-		protected override void OnCreateManager()
-		{
-			base.OnCreateManager();
-			
-			AddSystemToUpdateList(World.GetOrCreateSystem<RhythmEngineGroup>());
-		}
-	}
-	
-	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
-	public class RhythmEngineGroupClient : ComponentSystemGroup
-	{
-		protected override void OnCreateManager()
-		{
-			base.OnCreateManager();
-			
-			AddSystemToUpdateList(World.GetOrCreateSystem<RhythmEngineGroup>());
-		}
-	}*/
-	
 	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
 	public class RhythmEngineGroup : ComponentSystemGroup
 	{
@@ -57,13 +35,6 @@ namespace Patapon4TLB.Default
 			}
 
 			SortSystemUpdateList();
-
-			// do some tests
-
-			var f1 = FlowRhythmEngine.GetRhythmBeat(33359, 500);
-			var f2 = FlowRhythmEngine.GetRhythmBeat(33620, 500);
-			Debug.Assert(f1.original == 66 && f1.correct == 67, "f1.original == 66 && f1.correct == 67");
-			Debug.Assert(f2.original == 67 && f2.correct == 67, "f2.original == 67 && f2.correct == 67");
 		}
 
 		protected override void OnUpdate()
