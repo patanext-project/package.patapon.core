@@ -111,7 +111,7 @@ namespace Patapon4TLB.Default
 					if (isNew)
 					{
 						previousPrediction.ChainEndTime = (rhythm.CustomEndTime == 0 || rhythm.CustomEndTime == -1)
-							? (rhythmActiveAtFlowBeat + beatLength * 2) * settings.BeatInterval
+							? (rhythmActiveAtFlowBeat + beatLength + 4) * settings.BeatInterval
 							: rhythm.CustomEndTime;
 
 						var predictedCombo = PredictedComboFromEntity[entity];
@@ -135,7 +135,7 @@ namespace Patapon4TLB.Default
 						commandState.StartTime = rhythm.ActiveAtTime;
 						commandState.EndTime   = rhythm.CustomEndTime == -1 ? madOp : rhythm.CustomEndTime;
 						commandState.ChainEndTime = rhythm.CustomEndTime == -1 
-							? (rhythmActiveAtFlowBeat + beatLength * 2) * settings.BeatInterval
+							? (rhythmActiveAtFlowBeat + beatLength + 4) * settings.BeatInterval
 							: rhythm.CustomEndTime;
 
 						comboState.Update(rhythm, false);
