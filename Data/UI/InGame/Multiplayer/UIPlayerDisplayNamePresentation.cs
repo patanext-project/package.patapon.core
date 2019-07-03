@@ -12,11 +12,24 @@ namespace Patapon4TLB.UI.InGame
 	public class UIPlayerDisplayNamePresentation : RuntimeAssetPresentation<UIPlayerDisplayNamePresentation>
 	{
 		public TextMeshProUGUI NameLabel;
+		public Color ControlledColor;
+		public Color NormalColor;
 	}
 
 	public class UIPlayerDisplayNameBackend : RuntimeAssetBackend<UIPlayerDisplayNamePresentation>
 	{
 		public NativeString64 PreviousName;
+		
+		protected override void Update()
+		{
+			if (DstEntityManager == null || DstEntityManager.IsCreated && DstEntityManager.Exists(DstEntity))
+			{
+				base.Update();
+				return;
+			}
+			
+			Return(true, true);
+		}
 	}
 	
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
@@ -40,9 +53,14 @@ namespace Patapon4TLB.UI.InGame
 				if (presentation == null)
 					return;
 
+				presentation.NameLabel.color = presentation.NormalColor;
+
 				var playerRelative = EntityManager.GetComponentData<Relative<PlayerDescription>>(backend.DstEntity).Target;
 				if (playerRelative == default || !EntityManager.HasComponent<PlayerName>(playerRelative))
 					return;
+
+				if (EntityManager.HasComponent<GamePlayerLocalTag>(playerRelative))
+					presentation.NameLabel.color = presentation.ControlledColor;
 
 				var nativeStr = EntityManager.GetComponentData<PlayerName>(playerRelative).Value;
 				if (backend.PreviousName.Equals(nativeStr))

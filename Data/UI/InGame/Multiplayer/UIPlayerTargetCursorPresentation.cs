@@ -8,12 +8,48 @@ namespace Patapon4TLB.UI.InGame
 {
 	public class UIPlayerTargetCursorPresentation : RuntimeAssetPresentation<UIPlayerTargetCursorPresentation>
 	{
+		private bool[] m_ActiveStates;
+
 		public GameObject Controlled;
 		public GameObject NotOwned;
+
+		private void OnEnable()
+		{
+			m_ActiveStates = new bool[2];
+			Controlled.SetActive(false);
+			NotOwned.SetActive(false);
+		}
+
+		public void SetActive(int index, bool state)
+		{
+			if (m_ActiveStates[index] == state)
+				return;
+
+			m_ActiveStates[index] = state;
+			switch (index)
+			{
+				case 0:
+					Controlled.SetActive(state);
+					break;
+				case 1:
+					NotOwned.SetActive(state);
+					break;
+			}
+		}
 	}
 
 	public class UIPlayerTargetCursorBackend : RuntimeAssetBackend<UIPlayerTargetCursorPresentation>
 	{
+		protected override void Update()
+		{
+			if (DstEntityManager == null || DstEntityManager.IsCreated && DstEntityManager.Exists(DstEntity))
+			{
+				base.Update();
+				return;
+			}
+			
+			Return(true, true);
+		}
 	}
 
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
@@ -32,6 +68,23 @@ namespace Patapon4TLB.UI.InGame
 					-0.3f,
 					0
 				);
+
+				var presentation = backend.Presentation;
+				if (presentation == null)
+					return;
+
+				var playerRelative = EntityManager.GetComponentData<Relative<PlayerDescription>>(backend.DstEntity).Target;
+				if (playerRelative == default)
+				{
+					presentation.SetActive(0, false);
+					presentation.SetActive(1, false);
+					return;
+				}
+
+				var isLocal = EntityManager.HasComponent<GamePlayerLocalTag>(playerRelative);
+
+				presentation.SetActive(0, isLocal);
+				presentation.SetActive(1, !isLocal);
 			});
 		}
 	}

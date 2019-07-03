@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using package.patapon.core;
 using P4.Core;
+using P4.Core.Code.Networking;
 using Patapon4TLB.Default.Snapshot;
 using StormiumTeam.GameBase;
 using StormiumTeam.ThirdParty;
@@ -25,6 +26,8 @@ namespace Patapon4TLB.UI
 
 		public TMP_InputField AddressField,  PortField;
 		public Button         ConnectButton, HostButton, DisconnectButton;
+
+		public TMP_InputField UsernameField;
 
 		private bool m_WantToConnect, m_WantToDisconnect, m_WantToHost;
 
@@ -110,7 +113,9 @@ namespace Patapon4TLB.UI
 
 				debugFrame.HostButton.interactable    = debugFrame.PortField.text.Length > 0;
 				debugFrame.ConnectButton.interactable = debugFrame.PortField.text.Length > 0 && debugFrame.AddressField.text.Length > 0;
-
+				
+				
+				
 				if (debugFrame.m_WantToDisconnect)
 				{
 					ClientServerBootstrap.StopClientWorlds(World);
@@ -130,6 +135,8 @@ namespace Patapon4TLB.UI
 						foreach (var world in ClientServerBootstrap.clientWorld)
 						{
 							var ent = world.GetExistingSystem<NetworkStreamReceiveSystem>().Connect(ep);
+							
+							world.GetExistingSystem<TestSetPlayerName>().Name = debugFrame.UsernameField.text;
 						}
 					}
 				}
@@ -157,6 +164,16 @@ namespace Patapon4TLB.UI
 							var ep = NetworkEndPoint.LoopbackIpv4;
 							ep.Port = port;
 							var ent = world.GetExistingSystem<NetworkStreamReceiveSystem>().Connect(ep);
+
+							var setPlayerNameSystem = world.GetExistingSystem<TestSetPlayerName>();
+							if (setPlayerNameSystem != null)
+							{
+								setPlayerNameSystem.Name = debugFrame.UsernameField.text;
+							}
+							else
+							{
+								Debug.LogError("????????????? " + world);
+							}
 						}
 					}
 				}

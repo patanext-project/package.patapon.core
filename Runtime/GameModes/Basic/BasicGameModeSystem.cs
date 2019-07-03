@@ -4,6 +4,7 @@ using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
+using UnityEngine;
 
 namespace Patapon4TLB.GameModes.Basic
 {
@@ -55,6 +56,8 @@ namespace Patapon4TLB.GameModes.Basic
 				// ReSharper disable AccessToDisposedClosure
 				ecb.AddComponent(e, new BasicGameModePlayer());
 				NewPlayers.Add(e);
+				
+				Debug.Log("--------- New Player: " + e);
 				// ReSharper restore AccessToDisposedClosure
 			});
 			ecb.Playback(EntityManager);

@@ -24,6 +24,8 @@ namespace Patapon4TLB.GameModes.Basic
 		protected override void OnCreate()
 		{
 			base.OnCreate();
+			
+			Debug.Log("------------------- Create UnitSystem");
 
 			m_UnitArchetype = EntityManager.CreateArchetype
 			(
@@ -192,7 +194,7 @@ namespace Patapon4TLB.GameModes.Basic
 				
 				EntityManager.SetComponentData(playerEntity, cameraState);
 
-				Debug.Log($"Create entity with {unit} {playerData.RhythmEngine}");
+				Debug.Log($"------------------ Create entity with {unit} {playerData.RhythmEngine}");
 			}
 
 			Entities.ForEach((ref Translation translation, ref UnitTargetPosition target) =>

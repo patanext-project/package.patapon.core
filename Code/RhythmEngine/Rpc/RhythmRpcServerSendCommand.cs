@@ -37,6 +37,8 @@ namespace Patapon4TLB.Default
 		public int ChainId;
 		public int TypeId;
 
+		public NetworkCompressionModel CompressionModel;
+
 		public void Execute(Entity connection, EntityCommandBuffer.Concurrent commandBuffer, int jobIndex)
 		{
 			if (!IsValid || !ResultBuffer.IsCreated)
@@ -60,49 +62,56 @@ namespace Patapon4TLB.Default
 
 		public void Serialize(DataStreamWriter writer)
 		{
-			writer.Write(ChainId);
-			writer.Write(TypeId);
-			writer.Write(ResultBuffer.Length);
-			for (var i = 0; i != ResultBuffer.Length; i++)
+			using (CompressionModel = new NetworkCompressionModel(Allocator.Temp))
 			{
-				writer.Write(ResultBuffer[i].Key);
-				writer.Write(ResultBuffer[i].BeatRange.start);
-				writer.Write(ResultBuffer[i].BeatRange.length);
-			}
+				writer.WritePackedInt(ChainId, CompressionModel);
+				writer.WritePackedInt(TypeId, CompressionModel);
+				writer.WritePackedInt(ResultBuffer.Length, CompressionModel);
+				for (var i = 0; i != ResultBuffer.Length; i++)
+				{
+					writer.WritePackedInt(ResultBuffer[i].Key, CompressionModel);
+					writer.WritePackedInt(ResultBuffer[i].BeatRange.start, CompressionModel);
+					writer.WritePackedInt(ResultBuffer[i].BeatRange.length, CompressionModel);
+				}
 
-			writer.Write(CommandData.Identifier.Length);
-			for (var c = 0; c != CommandData.Identifier.Length; c++)
-			{
-				writer.Write((uint) CommandData.Identifier[c]);
-			}
+				writer.WritePackedInt(CommandData.Identifier.Length, CompressionModel);
+				for (var c = 0; c != CommandData.Identifier.Length; c++)
+				{
+					writer.WritePackedUInt(CommandData.Identifier[c], CompressionModel);
+				}
 
-			writer.Write(CommandData.BeatLength);
+				writer.WritePackedInt(CommandData.BeatLength, CompressionModel);
+			}
+			writer.Flush();
 		}
 
 		public void Deserialize(DataStreamReader reader, ref DataStreamReader.Context ctx)
 		{
-			IsValid = true;
-			ChainId = reader.ReadInt(ref ctx);
-			TypeId  = reader.ReadInt(ref ctx);
-
-			ResultBuffer = new NativeArray<RhythmCommandSequence>(reader.ReadInt(ref ctx), Allocator.Temp);
-			for (var i = 0; i != ResultBuffer.Length; i++)
+			using (CompressionModel = new NetworkCompressionModel(Allocator.Temp))
 			{
-				ResultBuffer[i] = new RhythmCommandSequence
+				IsValid = true;
+				ChainId = reader.ReadPackedInt(ref ctx, CompressionModel);
+				TypeId  = reader.ReadPackedInt(ref ctx, CompressionModel);
+
+				ResultBuffer = new NativeArray<RhythmCommandSequence>(reader.ReadPackedInt(ref ctx, CompressionModel), Allocator.Temp);
+				for (var i = 0; i != ResultBuffer.Length; i++)
 				{
-					Key       = reader.ReadInt(ref ctx),
-					BeatRange = new RangeInt(reader.ReadInt(ref ctx), reader.ReadInt(ref ctx))
-				};
-			}
+					ResultBuffer[i] = new RhythmCommandSequence
+					{
+						Key       = reader.ReadPackedInt(ref ctx, CompressionModel),
+						BeatRange = new RangeInt(reader.ReadPackedInt(ref ctx, CompressionModel), reader.ReadPackedInt(ref ctx, CompressionModel))
+					};
+				}
 
-			var idLength     = reader.ReadInt(ref ctx);
-			var nativeString = new NativeString64 {Length = idLength};
-			for (var c = 0; c != idLength; c++)
-			{
-				nativeString[c] = (char) reader.ReadUInt(ref ctx);
-			}
+				var idLength     = reader.ReadPackedInt(ref ctx, CompressionModel);
+				var nativeString = new NativeString64 {Length = idLength};
+				for (var c = 0; c != idLength; c++)
+				{
+					nativeString[c] = (char) reader.ReadPackedUInt(ref ctx, CompressionModel);
+				}
 
-			CommandData = new RhythmCommandData {Identifier = nativeString, BeatLength = reader.ReadInt(ref ctx)};
+				CommandData = new RhythmCommandData {Identifier = nativeString, BeatLength = reader.ReadPackedInt(ref ctx, CompressionModel)};
+			}
 		}
 	}
 
