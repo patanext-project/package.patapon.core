@@ -53,11 +53,13 @@ namespace Patapon4TLB.Default
 				var failFlag2 = pressureData.RenderBeat >= cmdChainEndFlow
 				                && cmdChainEndFlow > 0;
 				
+				Debug.Log($"{pressureData.Time} ----> {pressureData.GetAbsoluteScore()}");
+				
 				if (state.IsRecovery(flowBeat))
 				{
 					predictedCommand.State.ChainEndTime = -1;
 				}
-				else if (cmdEndFlow > flowBeat || failFlag1 || failFlag2 || failFlag3)
+				else if (cmdEndFlow > flowBeat || failFlag1 || failFlag2 || failFlag3 || pressureData.GetAbsoluteScore() > 0.75f)
 				{
 					pressureEvent.ShouldStartRecovery             = true;
 					state.NextBeatRecovery                        = flowBeat + 1;

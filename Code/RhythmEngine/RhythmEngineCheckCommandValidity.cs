@@ -165,12 +165,12 @@ namespace Patapon4TLB.Default
 
 				state.IsNewPressure = false;
 
-				var targetBeat  = process.GetFlowBeat(settings.BeatInterval) + 1;
+				var targetBeat  = process.GetActivationBeat(settings.BeatInterval) + 1;
 
 				rhythmCurrentCommand.ActiveAtTime  = targetBeat * settings.BeatInterval;
 				rhythmCurrentCommand.CommandTarget = result;
 				
-				Debug.Log("Target time: " + rhythmCurrentCommand.ActiveAtTime);
+				Debug.Log($"Target time: {rhythmCurrentCommand.ActiveAtTime}, IsServer: {IsServer}, CurrTime: {process.TimeTick}, TargetBEat: {targetBeat}");
 				
 				state.VerifyCommand        = false;
 				state.ApplyCommandNextBeat = true;

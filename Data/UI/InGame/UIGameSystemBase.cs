@@ -8,7 +8,7 @@ namespace Patapon4TLB.UI.InGame
 {
 	public abstract class UIGameSystemBase : GameBaseSystem
 	{
-		protected List<IAsyncOperation> AsyncOperations;
+		protected List<AsyncOperationHandle> AsyncOperations;
 		
 		public Entity GetRhythmEngineFromTarget(Entity entity)
 		{

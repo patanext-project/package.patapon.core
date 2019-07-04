@@ -12,6 +12,7 @@ namespace Patapon4TLB.Default
 	public struct MarchWithTargetAbility : IComponentData
 	{
 		public float AccelerationFactor;
+		public float Time;
 	}
 
 	[UpdateInGroup(typeof(ActionSystemGroup))]
@@ -29,10 +30,13 @@ namespace Patapon4TLB.Default
 			[NativeDisableParallelForRestriction]
 			public ComponentDataFromEntity<UnitTargetPosition> UnitTargetPositionFromEntity;
 
-			public void Execute(Entity entity, int _, [ReadOnly] ref Owner owner, [ReadOnly] ref RhythmAbilityState state, [ReadOnly] ref MarchWithTargetAbility marchAbility)
+			public void Execute(Entity entity, int _, [ReadOnly] ref Owner owner, [ReadOnly] ref RhythmAbilityState state, ref MarchWithTargetAbility marchAbility)
 			{
 				if (!state.IsActive)
+				{
+					marchAbility.Time = 0f;
 					return;
+				}
 
 				var unitSettings   = UnitSettingsFromEntity[owner.Target];
 				var unitDirection  = UnitDirectionFromEntity[owner.Target];
@@ -44,9 +48,11 @@ namespace Patapon4TLB.Default
 
 				var combo = UnitStateFromEntity[owner.Target].Combo;
 
-				// to not make tanks op, we need to get the weight from entity and use it as an acceleration factor
+				// a different acceleration (not using the unit weight)
 				var acceleration = marchAbility.AccelerationFactor;
 				acceleration = math.min(acceleration * DeltaTime, 1);
+
+				marchAbility.Time += DeltaTime;
 
 				var walkSpeed = unitSettings.BaseWalkSpeed;
 				if (combo.IsFever)
@@ -54,7 +60,7 @@ namespace Patapon4TLB.Default
 					walkSpeed = unitSettings.FeverWalkSpeed;
 				}
 
-				targetPosition.Value.x += walkSpeed * unitDirection.Value * acceleration;
+				targetPosition.Value.x += walkSpeed * unitDirection.Value * (marchAbility.Time > 0.5f ? 1 : math.lerp(4, 1, marchAbility.Time + 0.5f)) * acceleration;
 
 				UnitTargetPositionFromEntity[owner.Target] = targetPosition;
 			}

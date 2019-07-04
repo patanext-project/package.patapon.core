@@ -11,7 +11,7 @@ namespace Patapon4TLB.UI.InGame
 {
 	public class UIPlayerDisplayNamePresentation : RuntimeAssetPresentation<UIPlayerDisplayNamePresentation>
 	{
-		public TextMeshProUGUI NameLabel;
+		public TextMeshProUGUI[] NameLabels;
 		public Color ControlledColor;
 		public Color NormalColor;
 	}
@@ -36,8 +36,11 @@ namespace Patapon4TLB.UI.InGame
 	[UpdateAfter(typeof(GenerateUIPlayerDisplayNameSystem))]
 	public class UIPlayerDisplayNameSystem : UIGameSystemBase
 	{
+		private int m_Counter = 0;
+
 		protected override void OnUpdate()
 		{
+			m_Counter = 1;
 			Entities.ForEach((UIPlayerDisplayNameBackend backend) =>
 			{
 				var targetPosition = EntityManager.GetComponentData<Translation>(backend.DstEntity);
@@ -53,20 +56,26 @@ namespace Patapon4TLB.UI.InGame
 				if (presentation == null)
 					return;
 
-				presentation.NameLabel.color = presentation.NormalColor;
+				foreach (var label in presentation.NameLabels)
+					label.color = presentation.NormalColor;
 
 				var playerRelative = EntityManager.GetComponentData<Relative<PlayerDescription>>(backend.DstEntity).Target;
 				if (playerRelative == default || !EntityManager.HasComponent<PlayerName>(playerRelative))
 					return;
 
 				if (EntityManager.HasComponent<GamePlayerLocalTag>(playerRelative))
-					presentation.NameLabel.color = presentation.ControlledColor;
+				{
+					foreach (var label in presentation.NameLabels)
+						label.color = presentation.ControlledColor;
+				}
 
 				var nativeStr = EntityManager.GetComponentData<PlayerName>(playerRelative).Value;
 				if (backend.PreviousName.Equals(nativeStr))
 					return;
 
-				presentation.NameLabel.text = nativeStr.ToString();
+				var txt = $"{m_Counter++.ToString()}.{nativeStr.ToString()}";
+				foreach (var label in presentation.NameLabels)
+					label.text = txt;
 			});
 		}
 	}

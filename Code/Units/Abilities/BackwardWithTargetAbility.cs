@@ -12,6 +12,7 @@ namespace Patapon4TLB.Default
 	public struct BackwardWithTargetAbility : IComponentData
 	{
 		public float AccelerationFactor;
+		public float Time;
 	}
 
 	[UpdateInGroup(typeof(ActionSystemGroup))]
@@ -29,10 +30,13 @@ namespace Patapon4TLB.Default
 			[NativeDisableParallelForRestriction]
 			public ComponentDataFromEntity<UnitTargetPosition> UnitTargetPositionFromEntity;
 
-			public void Execute(Entity entity, int _, [ReadOnly] ref Owner owner, [ReadOnly] ref RhythmAbilityState state, [ReadOnly] ref BackwardWithTargetAbility BackwardAbility)
+			public void Execute(Entity entity, int _, [ReadOnly] ref Owner owner, [ReadOnly] ref RhythmAbilityState state, ref BackwardWithTargetAbility BackwardAbility)
 			{
 				if (!state.IsActive)
+				{
+					BackwardAbility.Time = 0;
 					return;
+				}
 
 				var unitSettings   = UnitSettingsFromEntity[owner.Target];
 				var unitDirection  = UnitDirectionFromEntity[owner.Target];
@@ -53,10 +57,12 @@ namespace Patapon4TLB.Default
 				{
 					walkSpeed = unitSettings.FeverWalkSpeed;
 				}
+				
+				BackwardAbility.Time += DeltaTime;
 
 				walkSpeed *= -0.5f;
 
-				targetPosition.Value.x += walkSpeed * unitDirection.Value * acceleration;
+				targetPosition.Value.x += walkSpeed * unitDirection.Value * (BackwardAbility.Time > 0.5f ? 1 : math.lerp(4, 1, BackwardAbility.Time + 0.5f)) * acceleration;
 
 				UnitTargetPositionFromEntity[owner.Target] = targetPosition;
 			}

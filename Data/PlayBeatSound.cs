@@ -58,7 +58,7 @@ namespace Patapon4TLB.Default.Test
 			var commandIsRunning = gameCommandState.IsGamePlayActive(process.TimeTick)
 			                  || predictedCommand.State.IsGamePlayActive(process.TimeTick);
 			
-			var shouldFail = (commandIsRunning && !inputActive) || state.IsRecovery(currFlowBeat);
+			var shouldFail = (commandIsRunning && !inputActive) || state.IsRecovery(currFlowBeat) || absRealScore > 0.75f;
 			if (shouldFail)
 			{
 				Debug.Log($"Yes FAIL! c:{commandIsRunning} r:{state.IsRecovery(currFlowBeat)}");
@@ -156,14 +156,14 @@ namespace Patapon4TLB.Default.Test
 
 					Addressables.LoadAsset<AudioClip>($"int:RhythmEngine/Sounds/drum_{key}_{rank}.ogg").Completed += op =>
 					{
-						Debug.Assert(op.IsValid, "op.IsValid");
+						Debug.Assert(op.IsValid(), "op.IsValid");
 
 						m_AudioOnPressureDrum[key][rank] = op.Result;
 					};
 
 					Addressables.LoadAsset<AudioClip>($"int:RhythmEngine/Sounds/voice_{key}_{rank}.wav").Completed += op =>
 					{
-						Debug.Assert(op.IsValid, "op.IsValid");
+						Debug.Assert(op.IsValid(), "op.IsValid");
 
 						m_AudioOnPressureVoice[key][rank] = op.Result;
 					};
