@@ -142,12 +142,12 @@ namespace Patapon4TLB.Default
 					var lastCmdTime  = currentCommand[currentCommand.Length - 1].Time;
 					var currFlowBeat = process.GetFlowBeat(settings.BeatInterval);
 					var offset       = currFlowBeat - (currentCommand[0].RenderBeat + (settings.MaxBeats - 1));
-					if (math.abs(offset) >= 1)
+					if (math.abs(offset) > 1)
 					{
 						for (var com = 0; com != currentCommand.Length; com++)
 						{
 							var tmp = currentCommand[com];
-							tmp.RenderBeat      -= offset;
+							tmp.RenderBeat      += offset;
 							currentCommand[com] =  tmp;
 						}
 					} // todo: it's a bit buggy right now (client is not well synchronized from server)

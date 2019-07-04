@@ -165,7 +165,17 @@ namespace Patapon4TLB.Default
 
 				state.IsNewPressure = false;
 
-				var targetBeat  = process.GetActivationBeat(settings.BeatInterval) + 1;
+				var targetBeat  = process.GetFlowBeat(settings.BeatInterval) + 1;
+				if (IsServer)
+				{
+					var clientPressureBeat = RhythmEngineProcess.CalculateFlowBeat(currCommandArray[currCommandArray.Length - 1].Data.Time, settings.BeatInterval) + 1;
+					if (clientPressureBeat < targetBeat
+					    && clientPressureBeat <= process.GetActivationBeat(settings.BeatInterval) + 1)
+					{
+						targetBeat = clientPressureBeat;
+						Debug.Log("Modification...");
+					}
+				}
 
 				rhythmCurrentCommand.ActiveAtTime  = targetBeat * settings.BeatInterval;
 				rhythmCurrentCommand.CommandTarget = result;
