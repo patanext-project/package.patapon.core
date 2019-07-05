@@ -31,6 +31,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				var backend = gameObject.AddComponent<UnitVisualBackend>();
 				backend.SetRootPool(pool);
 
+				gameObject.AddComponent<UnitVisualAnimation>();
 				gameObject.AddComponent<GameObjectEntity>();
 
 				return gameObject;
