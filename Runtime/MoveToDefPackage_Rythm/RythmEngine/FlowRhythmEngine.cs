@@ -188,6 +188,8 @@ namespace package.patapon.core
 
     public struct RhythmPressureData : IComponentData
     {
+        public const float Error = 0.9f;
+        
         /// <summary>
         /// Our custom Rhythm Key (Pata 1, Pon 2, Don 3, Chaka 4) 
         /// </summary>

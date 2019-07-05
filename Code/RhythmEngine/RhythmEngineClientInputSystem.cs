@@ -59,7 +59,7 @@ namespace Patapon4TLB.Default
 				{
 					predictedCommand.State.ChainEndTime = -1;
 				}
-				else if (cmdEndFlow > flowBeat || failFlag1 || failFlag2 || failFlag3 || pressureData.GetAbsoluteScore() > 0.75f)
+				else if (cmdEndFlow > flowBeat || failFlag1 || failFlag2 || failFlag3 || pressureData.GetAbsoluteScore() > RhythmPressureData.Error)
 				{
 					pressureEvent.ShouldStartRecovery             = true;
 					state.NextBeatRecovery                        = flowBeat + 1;

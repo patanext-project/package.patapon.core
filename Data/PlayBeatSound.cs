@@ -58,7 +58,7 @@ namespace Patapon4TLB.Default.Test
 			var commandIsRunning = gameCommandState.IsGamePlayActive(process.TimeTick)
 			                  || predictedCommand.State.IsGamePlayActive(process.TimeTick);
 			
-			var shouldFail = (commandIsRunning && !inputActive) || state.IsRecovery(currFlowBeat) || absRealScore > 0.75f;
+			var shouldFail = (commandIsRunning && !inputActive) || state.IsRecovery(currFlowBeat) || absRealScore > RhythmPressureData.Error;
 			if (shouldFail)
 			{
 				Debug.Log($"Yes FAIL! c:{commandIsRunning} r:{state.IsRecovery(currFlowBeat)}");
