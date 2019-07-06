@@ -5,6 +5,7 @@ using Patapon4TLB.Core;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Animations;
@@ -17,6 +18,64 @@ namespace Patapon4TLB.Default
 	{
 		private class SystemPlayable : PlayableBehaviour
 		{
+			public struct AnimTransition
+			{
+				public float Key0;
+				public float Key1;
+				public float Key2;
+				public float Key3;
+				
+				public AnimTransition(AnimationClip clip, float pg1, float pg2, float pg3)
+				{
+					Key0 = clip.length * pg1;
+					Key1 = clip.length * pg1;
+					Key2 = clip.length * pg2;
+					Key3 = clip.length * pg3;
+				}
+
+				public AnimTransition(AnimationClip clip, float pg0, float pg1, float pg2, float pg3)
+				{
+					Key0 = clip.length * pg0;
+					Key1 = clip.length * pg1;
+					Key2 = clip.length * pg2;
+					Key3 = clip.length * pg3;
+				}
+
+				public AnimTransition(AnimTransition left, AnimationClip clip, float pg2, float pg3)
+				{
+					Key0 = left.Key2;
+					Key1 = left.Key3;
+					Key2 = clip.length * pg2 + Key0;
+					Key3 = clip.length * pg3 + Key0;
+				}
+
+				public void Begin(float key0, float key1)
+				{
+					Key0 = key0;
+					Key1 = key1;
+				}
+
+				public void End(float key2, float key3)
+				{
+					Key2 = key2;
+					Key3 = key3;
+				}
+
+				public float Evaluate(float time, float offset = 0)
+				{
+					time -= offset;
+					if (time > Key3)
+						return 0;
+					if (time <= Key0)
+						return 0;
+					if (time <= Key1)
+						return math.unlerp(Key0, Key1, time);
+					if (time >= Key2 && time <= Key3)
+						return math.unlerp(Key3, Key2, time);
+					return 1;
+				}
+			}
+
 			public Playable               Self;
 			public AnimationMixerPlayable Mixer;
 			public AnimationMixerPlayable Root;
@@ -24,7 +83,13 @@ namespace Patapon4TLB.Default
 			public double StartTime;
 			public float  Weight;
 
-			public AnimationCurve Curve;
+			/*public AnimationCurve StartCurve;
+			public AnimationCurve UpCurve;
+			public AnimationCurve AirCurve;
+			public AnimationCurve DownCurve;*/
+			public AnimTransition StartTransition;
+			public AnimTransition UpTransition;
+			public AnimTransition AirTransition;
 
 			public void Initialize(Playable self, int index, PlayableGraph graph, AnimationMixerPlayable rootMixer, IReadOnlyList<AnimationClip> clips)
 			{
@@ -42,22 +107,41 @@ namespace Patapon4TLB.Default
 
 				rootMixer.AddInput(self, 0, 1);
 				self.AddInput(Mixer, 0, 1);
-				
-				//Curve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(0.125f, 1), new Keyframe(0.25f, 1), new Keyframe(0.5f, 0));
+
+				//StartCurve = new AnimationCurve(new Keyframe(0, 1), new Keyframe(0.25f, 1), new Keyframe(0.4f, 0));
+				//UpCurve = new AnimationCurve(new Keyframe(0.25f, 0), new Keyframe(0.4f, 1), new Keyframe(0.75f, 1), new Keyframe(1f, 0));
+				//AirCurve = new AnimationCurve(new Keyframe(0.75f, 0), new Keyframe(1f, 1), new Keyframe(3f, 1), new Keyframe(4f, 0));
+				StartTransition = new AnimTransition(clips[0], 0, 0, 0.75f, 1f);
+				UpTransition    = new AnimTransition(StartTransition, clips[1], 0.75f, 1f);
+				AirTransition   = new AnimTransition(UpTransition, clips[2], 2f, 2.5f);
+
+				for (var i = 0.0f; i < 1.25f; i += 0.05f)
+				{
+					Debug.Log($"t={i:F2} --> {StartTransition.Evaluate(i):F2}; {UpTransition.Evaluate(i):F2}; {AirTransition.Evaluate(i):F2}");
+				}
 			}
 
 			public override void PrepareFrame(Playable playable, FrameData info)
 			{
-				var global = 1 - VisualAnimation.GetWeightFixed(Root.GetTime(), StartTime, StartTime + 2);
+				var global = (float) (Root.GetTime() - StartTime);
 
-				/*Mixer.SetInputWeight(0, Curve.Evaluate(global));
-				Mixer.SetInputWeight(1, Curve.Evaluate(global));
-				Mixer.SetInputWeight(2, Curve.Evaluate(global));*/
-				Mixer.SetInputWeight(0, global < 0.2f ? 1 : 0);
-				Mixer.SetInputWeight(1, global >= 0.2f && global < 0.5f ? 1 : 0);
-				Mixer.SetInputWeight(2, global >= 0.5f ? 1 : 0);
+				/*Mixer.SetInputWeight(0, Evaluate(global, StartCurve));
+				Mixer.SetInputWeight(1, Evaluate(global, UpCurve));
+				Mixer.SetInputWeight(2, Evaluate(global, AirCurve));*/
+				Mixer.SetInputWeight(0, StartTransition.Evaluate(global));
+				Mixer.SetInputWeight(1, UpTransition.Evaluate(global));
+				Mixer.SetInputWeight(2, AirTransition.Evaluate(global));
 
 				Root.SetInputWeight(VisualAnimation.GetIndexFrom(Root, Self), Weight);
+			}
+
+			private float Evaluate(float time, AnimationCurve curve)
+			{
+				if (time > curve.keys[curve.keys.Length - 1].time)
+					return 0;
+				if (time < curve.keys[0].time)
+					return 0;
+				return curve.Evaluate(time);
 			}
 		}
 
