@@ -47,8 +47,8 @@ namespace Patapon4TLB.Default
 				self.AddInput(Mixer, 0, 1);
 
 				StartTransition = new Transition(clips[0], 0.75f, 1f);
-				UpTransition    = new Transition(StartTransition, clips[1], 0.75f, 1f);
-				AirTransition   = new Transition(UpTransition, clips[2], 2f, 2.5f);
+				UpTransition    = new Transition(StartTransition, 0.4f, 0.5f);
+				AirTransition   = new Transition(UpTransition, 1.8f, 2f);
 			}
 
 			public override void PrepareFrame(Playable playable, FrameData info)
@@ -91,7 +91,7 @@ namespace Patapon4TLB.Default
 			GetModule(out m_AsyncOperationModule);
 			GetModule(out m_AbilityModule);
 
-			m_SystemType = GetType();
+			m_SystemType                     = GetType();
 			m_ForEachUpdateAnimationDelegate = ForEachUpdateAnimation;
 
 			const int arrayLength = 3;
@@ -137,7 +137,7 @@ namespace Patapon4TLB.Default
 
 			if (m_AnimationClips == null)
 				return;
-			
+
 			Entities.ForEach(m_ForEachUpdateAnimationDelegate);
 		}
 
@@ -157,13 +157,8 @@ namespace Patapon4TLB.Default
 
 		}
 
-		private float nextJump = 0;
-
 		private void ForEachUpdateAnimation(UnitVisualBackend backend, UnitVisualAnimation animation)
 		{
-			if (Input.GetKeyDown(KeyCode.J))
-				nextJump = Time.time + 0.25f;
-			
 			if (animation.CurrAnimation == new TargetAnimation(m_SystemType) && animation.RootTime > animation.CurrAnimation.StopAt)
 			{
 				animation.SetTargetAnimation(TargetAnimation.Null);
@@ -171,23 +166,23 @@ namespace Patapon4TLB.Default
 				animation.GetSystemData<SystemData>(m_SystemType).Behaviour.Weight = 0;
 			}
 
-			if (nextJump < 0 || Time.time < nextJump)
+			if (!Input.GetKeyDown(KeyCode.J))
 				return;
 
-			nextJump = -1;
-
+			Debug.Break();
+			
 			if (!animation.ContainsSystem(m_SystemType))
 			{
 				animation.InsertSystem<SystemData>(m_SystemType, AddAnimation, RemoveAnimation);
 			}
 
 			ref var data   = ref animation.GetSystemData<SystemData>(m_SystemType);
-			var     stopAt = animation.RootTime + 2;
+			var     stopAt = animation.RootTime + 3.5f;
 			animation.SetTargetAnimation(new TargetAnimation(m_SystemType, false, false, stopAt: stopAt));
 
 			data.Behaviour.StartTime = animation.RootTime;
 			data.Behaviour.Mixer.SetTime(0);
-			data.Behaviour.Weight    = 1;
+			data.Behaviour.Weight = 1;
 		}
 	}
 }

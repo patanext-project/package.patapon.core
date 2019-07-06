@@ -32,6 +32,14 @@ namespace package.patapon.core.Animation
 			Key3 = clip.length * pg3;
 		}
 
+		public Transition(Transition left, float pg2, float pg3)
+		{
+			Key0 = left.Key2;
+			Key1 = left.Key3;
+			Key2 = pg2 + Key0;
+			Key3 = pg3 + Key0;
+		}
+		
 		public Transition(Transition left, AnimationClip clip, float pg2, float pg3)
 		{
 			Key0 = left.Key2;

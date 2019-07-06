@@ -162,7 +162,7 @@ namespace Patapon4TLB.Default
 			if (pressureEvent.Key < 0)
 				return inputDeps;
 
-			var rpcQueue = World.GetExistingSystem<P4ExperimentRpcSystem>().GetRpcQueue<RhythmRpcPressureFromClient>();
+			var rpcQueue = World.GetExistingSystem<RpcQueueSystem<RhythmRpcPressureFromClient>>().GetRpcQueue();
 			var pressureEventSingleArray = new NativeArray<RhythmRpcPressureFromClient>(1, Allocator.TempJob, NativeArrayOptions.UninitializedMemory)
 			{
 				[0] = pressureEvent
