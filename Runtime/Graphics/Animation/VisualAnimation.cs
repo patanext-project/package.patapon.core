@@ -9,6 +9,64 @@ using UnityEngine.Playables;
 
 namespace package.patapon.core.Animation
 {
+	public struct Transition
+	{
+		public float Key0;
+		public float Key1;
+		public float Key2;
+		public float Key3;
+
+		public Transition(AnimationClip clip, float pg1, float pg2, float pg3)
+		{
+			Key0 = clip.length * pg1;
+			Key1 = clip.length * pg1;
+			Key2 = clip.length * pg2;
+			Key3 = clip.length * pg3;
+		}
+
+		public Transition(AnimationClip clip, float pg0, float pg1, float pg2, float pg3)
+		{
+			Key0 = clip.length * pg0;
+			Key1 = clip.length * pg1;
+			Key2 = clip.length * pg2;
+			Key3 = clip.length * pg3;
+		}
+
+		public Transition(Transition left, AnimationClip clip, float pg2, float pg3)
+		{
+			Key0 = left.Key2;
+			Key1 = left.Key3;
+			Key2 = clip.length * pg2 + Key0;
+			Key3 = clip.length * pg3 + Key0;
+		}
+
+		public void Begin(float key0, float key1)
+		{
+			Key0 = key0;
+			Key1 = key1;
+		}
+
+		public void End(float key2, float key3)
+		{
+			Key2 = key2;
+			Key3 = key3;
+		}
+
+		public float Evaluate(float time, float offset = 0)
+		{
+			time -= offset;
+			if (time > Key3)
+				return 0;
+			if (time <= Key0)
+				return 0;
+			if (time <= Key1)
+				return math.unlerp(Key0, Key1, time);
+			if (time >= Key2 && time <= Key3)
+				return math.unlerp(Key3, Key2, time);
+			return 1;
+		}
+	}
+
 	public class VisualAnimationPlayable : PlayableBehaviour
 	{
 		private PlayableGraph graph => Playable.GetGraph();
