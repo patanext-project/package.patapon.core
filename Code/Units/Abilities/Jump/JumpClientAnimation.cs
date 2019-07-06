@@ -46,7 +46,7 @@ namespace Patapon4TLB.Default
 				rootMixer.AddInput(self, 0, 1);
 				self.AddInput(Mixer, 0, 1);
 
-				StartTransition = new Transition(clips[0], 0, 0, 0.75f, 1f);
+				StartTransition = new Transition(clips[0], 0.75f, 1f);
 				UpTransition    = new Transition(StartTransition, clips[1], 0.75f, 1f);
 				AirTransition   = new Transition(UpTransition, clips[2], 2f, 2.5f);
 			}

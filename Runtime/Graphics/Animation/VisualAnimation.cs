@@ -16,10 +16,10 @@ namespace package.patapon.core.Animation
 		public float Key2;
 		public float Key3;
 
-		public Transition(AnimationClip clip, float pg1, float pg2, float pg3)
+		public Transition(AnimationClip clip, float pg2, float pg3)
 		{
-			Key0 = clip.length * pg1;
-			Key1 = clip.length * pg1;
+			Key0 = 0;
+			Key1 = 0;
 			Key2 = clip.length * pg2;
 			Key3 = clip.length * pg3;
 		}
