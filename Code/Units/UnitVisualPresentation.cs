@@ -14,6 +14,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
+using UnityEngine.Profiling;
 
 namespace Patapon4TLB.Core
 {
@@ -101,7 +102,7 @@ namespace Patapon4TLB.Core
 
 	public class UnitVisualAnimation : VisualAnimation
 	{
-		public double RootTime => rootMixer.GetTime();
+		public double                 RootTime     => rootMixer.GetTime();
 		public UnitVisualBackend      Backend      { get; private set; }
 		public UnitVisualPresentation Presentation { get; private set; }
 
@@ -216,16 +217,17 @@ namespace Patapon4TLB.Core
 		private struct SystemData
 		{
 			public ScriptPlayable<SystemPlayable> Playable;
+			public SystemPlayable                 Behaviour;
 
 			public AnimationMixerPlayable Mixer
 			{
-				get => Playable.GetBehaviour().Mixer;
+				get => Behaviour.Mixer;
 			}
 
 			public int CurrentKey
 			{
-				get => Playable.GetBehaviour().CurrentKey;
-				set => Playable.GetBehaviour().CurrentKey = value;
+				get => Behaviour.CurrentKey;
+				set => Behaviour.CurrentKey = value;
 			}
 		}
 
@@ -238,6 +240,7 @@ namespace Patapon4TLB.Core
 		private NativeArray<PressureEvent> m_PressureEvents;
 
 		private AnimationClip[] m_AnimationClips = new AnimationClip[0];
+		private Type            m_SystemType;
 
 		protected override void OnCreate()
 		{
@@ -246,6 +249,8 @@ namespace Patapon4TLB.Core
 			m_PressureEventQuery             = GetEntityQuery(typeof(PressureEvent));
 			m_ForEachPersistentDelegate      = ForEachPersistent;
 			m_ForEachUpdateAnimationDelegate = ForEachUpdateAnimation;
+
+			m_SystemType = GetType();
 
 			m_AnimationClips                                                                      =  new AnimationClip[4];
 			Addressables.LoadAssetAsync<AnimationClip>(string.Format(AddrKey, "Pata")).Completed  += op => m_AnimationClips[0] = op.Result;
@@ -258,8 +263,8 @@ namespace Patapon4TLB.Core
 		{
 			using (m_PressureEvents = m_PressureEventQuery.ToComponentDataArray<PressureEvent>(Allocator.TempJob))
 			{
-				Entities.WithAll<UnitVisualBackend>().ForEach(m_ForEachPersistentDelegate);
 				Entities.WithAll<UnitVisualBackend>().ForEach(m_ForEachUpdateAnimationDelegate);
+				Entities.WithAll<UnitVisualBackend>().ForEach(m_ForEachPersistentDelegate);
 			}
 		}
 
@@ -270,7 +275,8 @@ namespace Patapon4TLB.Core
 
 			behavior.Initialize(data.Graph, playable, data.Index, data.Behavior.RootMixer, m_AnimationClips);
 
-			systemData.Playable = playable;
+			systemData.Playable  = playable;
+			systemData.Behaviour = behavior;
 		}
 
 		private void RemoveAnimationData(VisualAnimation.ManageData data, SystemData systemData)
@@ -280,15 +286,15 @@ namespace Patapon4TLB.Core
 
 		private void ForEachPersistent(UnitVisualBackend backend, UnitVisualAnimation animation)
 		{
-			if (!animation.ContainsSystem(GetType()))
+			if (!animation.ContainsSystem(m_SystemType))
 				return;
 
 			var currAnim = animation.CurrAnimation;
 
-			ref var data = ref animation.GetSystemData<SystemData>(GetType());
-			if (currAnim.Type != GetType() && !currAnim.CanBlend(animation.RootTime))
+			ref var data = ref animation.GetSystemData<SystemData>(m_SystemType);
+			if (currAnim.Type != m_SystemType && !currAnim.CanBlend(animation.RootTime))
 			{
-				data.Playable.GetBehaviour().TransitionEnd = -1;
+				data.Behaviour.TransitionEnd = -1;
 			}
 		}
 
@@ -314,20 +320,20 @@ namespace Patapon4TLB.Core
 					return; // no events found
 			}
 
-			if (!animation.ContainsSystem(GetType()))
+			if (!animation.ContainsSystem(m_SystemType))
 			{
-				animation.InsertSystem<SystemData>(GetType(), AddAnimationData, RemoveAnimationData);
+				animation.InsertSystem<SystemData>(m_SystemType, AddAnimationData, RemoveAnimationData);
 			}
 
-			ref var data = ref animation.GetSystemData<SystemData>(GetType());
+			ref var data = ref animation.GetSystemData<SystemData>(m_SystemType);
 
 			var transitionStart = m_AnimationClips[lastPressure.Key - 1].length * 0.75f + animation.RootTime;
 			var transitionEnd   = m_AnimationClips[lastPressure.Key - 1].length + animation.RootTime;
 
-			animation.SetTargetAnimation(new TargetAnimation(GetType(), allowTransition: true, transitionStart: transitionStart, transitionEnd: transitionEnd));
+			animation.SetTargetAnimation(new TargetAnimation(m_SystemType, allowTransition: true, transitionStart: transitionStart, transitionEnd: transitionEnd));
 			data.CurrentKey                              = lastPressure.Key;
-			data.Playable.GetBehaviour().TransitionStart = transitionStart;
-			data.Playable.GetBehaviour().TransitionEnd   = transitionEnd;
+			data.Behaviour.TransitionStart = transitionStart;
+			data.Behaviour.TransitionEnd   = transitionEnd;
 
 			data.Mixer.SetTime(0);
 			data.Playable.Play();
