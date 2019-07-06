@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Patapon4TLB.Core;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -134,6 +135,17 @@ namespace package.patapon.core.Animation
 			}
 
 			return -1;
+		}
+
+		public static float GetWeightFixed(double time, double start, double end)
+		{
+			if (start < 0 || end < 0)
+				return 0;
+			if (time > end)
+				return 0;
+			if (time < start)
+				return 1;
+			return (float) (1 - math.unlerp(start, end, time));
 		}
 	}
 }

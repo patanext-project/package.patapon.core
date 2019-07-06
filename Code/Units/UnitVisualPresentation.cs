@@ -198,33 +198,18 @@ namespace Patapon4TLB.Core
 				rootMixer.AddInput(self, 0, 0);
 				self.AddInput(Mixer, 0, 1);
 			}
-			
-			public override void PrepareData(Playable playable, FrameData info)
-			{
-			}
 
 			public override void PrepareFrame(Playable playable, FrameData info)
 			{
 				var inputCount = Mixer.GetInputCount();
-				var e          = GetWeightFixed(Root.GetTime());
-				
+				var e          = VisualAnimation.GetWeightFixed(Root.GetTime(), TransitionStart, TransitionEnd);
+
 				for (var i = 0; i != inputCount; i++)
 				{
 					Mixer.SetInputWeight(i, i == CurrentKey - 1 ? 1 : 0);
 				}
 
 				Root.SetInputWeight(VisualAnimation.GetIndexFrom(Root, Self), e);
-			}
-
-			private float GetWeightFixed(double time)
-			{
-				if (TransitionStart < 0 || TransitionEnd < 0)
-					return 0;
-				if (time > TransitionEnd)
-					return 0;
-				if (time < TransitionStart)
-					return 1;
-				return (float) (1 - math.unlerp(TransitionStart, TransitionEnd, time));
 			}
 		}
 

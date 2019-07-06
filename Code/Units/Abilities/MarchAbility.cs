@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using package.patapon.core;
 using package.patapon.core.Animation;
 using package.StormiumTeam.GameBase;
@@ -106,15 +107,15 @@ namespace Patapon4TLB.Default
 			public int   TargetAnimation;
 			public float Weight;
 
-			public void Initialize(Playable self, int index, PlayableGraph graph, AnimationMixerPlayable rootMixer, AnimationClip[] clips)
+			public void Initialize(Playable self, int index, PlayableGraph graph, AnimationMixerPlayable rootMixer, IReadOnlyList<AnimationClip> clips)
 			{
 				Self = self;
 				Root = rootMixer;
 				
-				Mixer = AnimationMixerPlayable.Create(graph, clips.Length, true);
+				Mixer = AnimationMixerPlayable.Create(graph, clips.Count, true);
 				Mixer.SetPropagateSetTime(true);
 
-				for (var i = 0; i != clips.Length; i++)
+				for (var i = 0; i != clips.Count; i++)
 				{
 					var clipPlayable = AnimationClipPlayable.Create(graph, clips[i]);
 
