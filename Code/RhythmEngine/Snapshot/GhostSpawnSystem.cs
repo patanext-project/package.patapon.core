@@ -18,7 +18,6 @@ namespace Patapon4TLB.Default.Snapshot
 			return EntityManager.CreateArchetype
 			(
 				ComponentType.ReadWrite<RhythmEngineSettings>(),
-				ComponentType.ReadWrite<GhostOwner>(),
 				ComponentType.ReadWrite<Owner>(),
 				ComponentType.ReadWrite<RhythmEngineSnapshotData>(),
 				ComponentType.ReadWrite<RhythmEngineState>(),
@@ -53,7 +52,7 @@ namespace Patapon4TLB.Default.Snapshot
 	[UpdateBefore(typeof(ConvertGhostToOwnerSystem))]
 	public class RhythmEngineGhostSyncSnapshot : JobComponentSystem
 	{
-		private struct SyncJob : IJobForEachWithEntity<GhostOwner, RhythmEngineState, RhythmEngineSettings, RhythmEngineProcess, GameCommandState, RhythmPredictedProcess>
+		private struct SyncJob : IJobForEachWithEntity<Owner, RhythmEngineState, RhythmEngineSettings, RhythmEngineProcess, GameCommandState, RhythmPredictedProcess>
 		{
 			[ReadOnly] public BufferFromEntity<RhythmEngineSnapshotData> SnapshotFromEntity;
 			public            uint                                       TargetTick;
@@ -61,19 +60,23 @@ namespace Patapon4TLB.Default.Snapshot
 			public uint ServerTime;
 
 			[ReadOnly] public ComponentDataFromEntity<RhythmEngineSimulateTag> SimulateTagFromEntity;
+			[ReadOnly] public NativeHashMap<int, Entity>                       CommandIdToEntity;
+			[ReadOnly] public NativeHashMap<int, Entity>                       GhostEntityMap;
 
+			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<RhythmCurrentCommand>     RhythmCurrentCommand;
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GameComboState>           ComboStateFromEntity;
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GameComboPredictedClient> PredictedComboFromEntity;
 
 			public void Execute(Entity entity, int _,
 			                    // components
-			                    ref GhostOwner owner, ref RhythmEngineState state, ref RhythmEngineSettings settings, ref RhythmEngineProcess process, ref GameCommandState commandState,
+			                    ref Owner owner, ref RhythmEngineState state, ref RhythmEngineSettings settings, ref RhythmEngineProcess process, ref GameCommandState commandState,
 			                    // prediction
 			                    ref RhythmPredictedProcess predictedProcess)
 			{
 				SnapshotFromEntity[entity].GetDataAtTick(TargetTick, out var snapshotData);
 
-				owner.GhostId                = snapshotData.OwnerGhostId;
+				GhostEntityMap.TryGetValue(snapshotData.OwnerGhostId, out owner.Target);
+
 				settings.MaxBeats            = (int) snapshotData.MaxBeats;
 				settings.BeatInterval        = (int) snapshotData.BeatInterval;
 				settings.UseClientSimulation = snapshotData.UseClientSimulation;
@@ -88,6 +91,14 @@ namespace Patapon4TLB.Default.Snapshot
 				if (!SimulateTagFromEntity.Exists(entity))
 				{
 					process.TimeTick = snapshotData.StartTime > 0 ? (int) (ServerTime - snapshotData.StartTime) : 0;
+
+					CommandIdToEntity.TryGetValue(snapshotData.CommandTypeId, out var commandTarget);
+					RhythmCurrentCommand[entity] = new RhythmCurrentCommand
+					{
+						ActiveAtTime  = snapshotData.CommandStartBeat,
+						CustomEndTime = snapshotData.CommandEndBeat,
+						CommandTarget = commandTarget
+					};
 				}
 
 				predictedProcess.Time = snapshotData.StartTime > 0 ? (ServerTime - snapshotData.StartTime) * 0.001f : 0;
@@ -143,6 +154,8 @@ namespace Patapon4TLB.Default.Snapshot
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
+			var convertGhostMapSystem = World.GetExistingSystem<ConvertGhostEntityMap>();
+
 			inputDeps = new SyncJob()
 			{
 				SnapshotFromEntity       = GetBufferFromEntity<RhythmEngineSnapshotData>(),
@@ -150,9 +163,13 @@ namespace Patapon4TLB.Default.Snapshot
 				SimulateTagFromEntity    = GetComponentDataFromEntity<RhythmEngineSimulateTag>(),
 				ComboStateFromEntity     = GetComponentDataFromEntity<GameComboState>(),
 				PredictedComboFromEntity = GetComponentDataFromEntity<GameComboPredictedClient>(),
+				RhythmCurrentCommand     = GetComponentDataFromEntity<RhythmCurrentCommand>(),
+
+				CommandIdToEntity = World.GetExistingSystem<RhythmCommandManager>().CommandIdToEntity,
+				GhostEntityMap    = convertGhostMapSystem.HashMap,
 
 				TargetTick = NetworkTimeSystem.predictTargetTick
-			}.Schedule(this, inputDeps);
+			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, convertGhostMapSystem.dependency));
 
 			var localPlayerLength = m_LocalPlayerQuery.CalculateLength();
 			if (localPlayerLength == 1)

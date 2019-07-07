@@ -112,10 +112,11 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			public uint PredictTick;
 
 			[ReadOnly] public BufferFromEntity<BasicUnitSnapshotData> SnapshotDataFromEntity;
+			[ReadOnly] public NativeHashMap<int, Entity>              GhostEntityMap;
 
-			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostRelative<PlayerDescription>>       RelativePlayerFromEntity;
-			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostRelative<TeamDescription>>         RelativeTeamFromEntity;
-			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GhostRelative<RhythmEngineDescription>> RelativeRhythmEngineFromEntity;
+			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Relative<PlayerDescription>>       RelativePlayerFromEntity;
+			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Relative<TeamDescription>>         RelativeTeamFromEntity;
+			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Relative<RhythmEngineDescription>> RelativeRhythmEngineFromEntity;
 
 			public void Execute(Entity entity, int jobIndex, ref UnitDirection unitDirection, ref BasicUnitSnapshotTarget target, ref UnitTargetPosition unitTargetPosition, ref Translation translation, ref Velocity velocity)
 			{
@@ -139,38 +140,35 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				target.Position         = targetPosition;
 				target.Grounded         = snapshot.GroundFlags == 1;
 
+				GhostEntityMap.TryGetValue((int) snapshot.PlayerGhostId, out var relativePlayer);
+				GhostEntityMap.TryGetValue((int) snapshot.TeamGhostId, out var relativeTeam);
+				GhostEntityMap.TryGetValue((int) snapshot.RhythmEngineGhostId, out var relativeRhythmEngine);
 
-				RelativePlayerFromEntity[entity] = new GhostRelative<PlayerDescription>
-				{
-					GhostId = (int) snapshot.PlayerGhostId
-				};
-				RelativeTeamFromEntity[entity] = new GhostRelative<TeamDescription>
-				{
-					GhostId = (int) snapshot.TeamGhostId
-				};
-				RelativeRhythmEngineFromEntity[entity] = new GhostRelative<RhythmEngineDescription>
-				{
-					GhostId = (int) snapshot.RhythmEngineGhostId
-				};
+				RelativePlayerFromEntity[entity]       = new Relative<PlayerDescription> {Target       = relativePlayer};
+				RelativeTeamFromEntity[entity]         = new Relative<TeamDescription> {Target         = relativeTeam};
+				RelativeRhythmEngineFromEntity[entity] = new Relative<RhythmEngineDescription> {Target = relativeRhythmEngine};
 			}
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
+			var convertGhostMapSystem = World.GetExistingSystem<ConvertGhostEntityMap>();
+
 			return new Job
 			{
 				InterpolateTick = NetworkTimeSystem.interpolateTargetTick,
-				PredictTick = NetworkTimeSystem.predictTargetTick,
+				PredictTick     = NetworkTimeSystem.predictTargetTick,
 
 				SnapshotDataFromEntity = GetBufferFromEntity<BasicUnitSnapshotData>(true),
+				GhostEntityMap         = convertGhostMapSystem.HashMap,
 
-				RelativePlayerFromEntity       = GetComponentDataFromEntity<GhostRelative<PlayerDescription>>(),
-				RelativeTeamFromEntity         = GetComponentDataFromEntity<GhostRelative<TeamDescription>>(),
-				RelativeRhythmEngineFromEntity = GetComponentDataFromEntity<GhostRelative<RhythmEngineDescription>>(),
-			}.Schedule(this, inputDeps);
+				RelativePlayerFromEntity       = GetComponentDataFromEntity<Relative<PlayerDescription>>(),
+				RelativeTeamFromEntity         = GetComponentDataFromEntity<Relative<TeamDescription>>(),
+				RelativeRhythmEngineFromEntity = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(),
+			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, convertGhostMapSystem.dependency));
 		}
 	}
-	
+
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	[UpdateBefore(typeof(ClientPresentationTransformSystemGroup))]
 	public class BasicUnitUpdatePresentationSystem : ComponentSystem

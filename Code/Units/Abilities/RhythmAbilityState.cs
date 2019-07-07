@@ -13,11 +13,43 @@ namespace Patapon4TLB.Default
 	public struct RhythmAbilityState : IComponentData
 	{
 		internal int PreviousActiveStartTime;
-		
+
 		public Entity Command;
 		public bool   IsActive;
 		public int    ActiveId;
 		public bool   IsStillChaining;
+
+		public void CalculateWithValidCommand(GameCommandState commandState, GameComboState combo, RhythmEngineProcess process)
+		{
+			Calculate(new RhythmCurrentCommand {CommandTarget = Command}, commandState, combo, process);
+		}
+
+		public void Calculate(RhythmCurrentCommand currCommand, GameCommandState commandState, GameComboState combo, RhythmEngineProcess process)
+		{
+			if (currCommand.CommandTarget != Command)
+			{
+				IsActive        = false;
+				IsStillChaining = false;
+				return;
+			}
+
+			if (commandState.IsGamePlayActive(process.TimeTick))
+			{
+				IsActive = currCommand.CommandTarget == Command;
+			}
+			else
+			{
+				IsActive = false;
+			}
+
+			if (IsActive && PreviousActiveStartTime != commandState.StartTime)
+			{
+				PreviousActiveStartTime = commandState.StartTime;
+				ActiveId++;
+			}
+
+			IsStillChaining = commandState.StartTime <= process.TimeTick && combo.Chain > 0;
+		}
 	}
 
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
@@ -28,38 +60,16 @@ namespace Patapon4TLB.Default
 			if (owner.Target == default || !EntityManager.Exists(owner.Target))
 				return; // ????
 
-			var engine         = EntityManager.GetComponentData<Relative<RhythmEngineDescription>>(owner.Target).Target;
+			var engine = EntityManager.GetComponentData<Relative<RhythmEngineDescription>>(owner.Target).Target;
 			if (!EntityManager.Exists(engine))
 				return;
-			
+
 			var engineProcess  = EntityManager.GetComponentData<RhythmEngineProcess>(engine);
 			var currentCommand = EntityManager.GetComponentData<RhythmCurrentCommand>(engine);
 			var commandState   = EntityManager.GetComponentData<GameCommandState>(engine);
 			var comboState     = EntityManager.GetComponentData<GameComboState>(engine);
 
-			if (currentCommand.CommandTarget != abilityState.Command)
-			{
-				abilityState.IsActive        = false;
-				abilityState.IsStillChaining = false;
-				return;
-			}
-
-			if (commandState.IsGamePlayActive(engineProcess.TimeTick))
-			{
-				abilityState.IsActive = EntityManager.GetComponentData<RhythmCurrentCommand>(engine).CommandTarget == abilityState.Command;
-			}
-			else
-			{
-				abilityState.IsActive = false;
-			}
-
-			if (abilityState.IsActive && abilityState.PreviousActiveStartTime != commandState.StartTime)
-			{
-				abilityState.PreviousActiveStartTime = commandState.StartTime;
-				abilityState.ActiveId++;
-			}
-
-			abilityState.IsStillChaining = commandState.StartTime <= engineProcess.TimeTick && comboState.Chain > 0;
+			abilityState.Calculate(currentCommand, commandState, comboState, engineProcess);
 		}
 
 		private EntityQueryBuilder.F_DD<Owner, RhythmAbilityState> m_ForEachDelegate;

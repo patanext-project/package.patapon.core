@@ -62,7 +62,7 @@ namespace Patapon4TLB.Default
 				var dist = math.distance(targetPosition.Value.x, TranslationFromEntity[owner.Target].Value.x);
 				if (dist < 2f)
 				{
-					walkSpeed *= dist * 0.5f;
+					walkSpeed *= math.clamp(dist * 0.5f, 0.5f, 1.0f);
 				}
 
 				var direction = System.Math.Sign(targetPosition.Value.x - TranslationFromEntity[owner.Target].Value.x);

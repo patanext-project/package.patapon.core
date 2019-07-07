@@ -12,6 +12,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Networking.Transport;
+using UnityEngine;
 
 namespace Patapon4TLB.Default
 {
@@ -20,6 +21,8 @@ namespace Patapon4TLB.Default
 		public uint Tick { get; set; }
 
 		public bool IsActive;
+		public bool ClientPredictState;
+
 		public int  CommandId;
 		public uint OwnerGhostId;
 
@@ -32,6 +35,7 @@ namespace Patapon4TLB.Default
 		{
 			byte mask = 0, pos = 0;
 			MainBit.SetBitAt(ref mask, pos++, IsActive);
+			MainBit.SetBitAt(ref mask, pos++, ClientPredictState);
 
 			writer.WritePackedUInt(mask, compressionModel);
 			writer.WritePackedIntDelta(CommandId, baseline.CommandId, compressionModel);
@@ -45,7 +49,8 @@ namespace Patapon4TLB.Default
 			byte pos  = 0;
 			var  mask = (byte) reader.ReadPackedUInt(ref ctx, compressionModel);
 			{
-				IsActive = MainBit.GetBitAt(mask, pos++) == 1;
+				IsActive           = MainBit.GetBitAt(mask, pos++) == 1;
+				ClientPredictState = MainBit.GetBitAt(mask, pos++) == 1;
 			}
 			CommandId    = reader.ReadPackedIntDelta(ref ctx, baseline.CommandId, compressionModel);
 			OwnerGhostId = reader.ReadPackedUIntDelta(ref ctx, baseline.OwnerGhostId, compressionModel);
@@ -53,7 +58,9 @@ namespace Patapon4TLB.Default
 
 		public void Interpolate(ref MarchAbilitySnapshotData target, float factor)
 		{
-			IsActive     = target.IsActive;
+			IsActive           = target.IsActive;
+			ClientPredictState = target.ClientPredictState;
+
 			CommandId    = target.CommandId;
 			OwnerGhostId = target.OwnerGhostId;
 		}
@@ -105,6 +112,8 @@ namespace Patapon4TLB.Default
 		{
 			snapshot.Tick = tick;
 
+			snapshot.ClientPredictState = true; // how should we manage that? it should be the default value, right?
+
 			var rhythmAbilityState = chunk.GetNativeArray(GhostRhythmAbilityStateType.Archetype)[ent];
 			snapshot.IsActive  = rhythmAbilityState.IsActive;
 			snapshot.CommandId = rhythmAbilityState.Command == default ? 0 : CommandIdFromEntity[rhythmAbilityState.Command].Value;
@@ -130,7 +139,6 @@ namespace Patapon4TLB.Default
 			return EntityManager.CreateArchetype(baseArchetype.Union(new ComponentType[]
 			{
 				typeof(MarchAbilitySnapshotData),
-				typeof(GhostOwner),
 
 				typeof(ReplicatedEntityComponent)
 			}).ToArray());
@@ -145,31 +153,71 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(UpdateGhostSystemGroup))]
 	public class MarchAbilityGhostUpdateSystem : JobComponentSystem
 	{
-		private struct Job : IJobForEachWithEntity<RhythmAbilityState, MarchAbility, GhostOwner>
+		private struct Job : IJobForEachWithEntity<RhythmAbilityState, MarchAbility, Owner>
 		{
+			[ReadOnly, DeallocateOnJobCompletion] public NativeArray<SynchronizedSimulationTime> ServerTime;
+
 			[ReadOnly] public uint                                       TargetTick;
 			[ReadOnly] public BufferFromEntity<MarchAbilitySnapshotData> SnapshotDataFromEntity;
 			[ReadOnly] public NativeHashMap<int, Entity>                 CommandIdToEntity;
 
-			public void Execute(Entity entity, int index, ref RhythmAbilityState state, ref MarchAbility marchAbility, ref GhostOwner owner)
+			[ReadOnly]
+			public NativeHashMap<int, Entity> GhostEntityMap;
+
+			[ReadOnly] public ComponentDataFromEntity<Relative<RhythmEngineDescription>> RelativeRhythmEngineFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<RhythmCurrentCommand>              CurrentCommandFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<GameCommandState>                  CommandStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<GameComboState>                    ComboStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<RhythmEngineProcess>               EngineProcessFromEntity;
+
+			public void Execute(Entity entity, int index, ref RhythmAbilityState state, ref MarchAbility marchAbility, ref Owner owner)
 			{
 				SnapshotDataFromEntity[entity].GetDataAtTick(TargetTick, out var snapshot);
 
-				state.IsActive = snapshot.IsActive;
-				state.Command  = snapshot.CommandId == 0 ? default : CommandIdToEntity[snapshot.CommandId];
-				owner.GhostId  = (int) snapshot.OwnerGhostId;
+				GhostEntityMap.TryGetValue((int) snapshot.OwnerGhostId, out owner.Target);
+				CommandIdToEntity.TryGetValue(snapshot.CommandId, out state.Command);
+
+				var predict = snapshot.ClientPredictState && RelativeRhythmEngineFromEntity.Exists(owner.Target);
+				if (predict)
+				{
+					var rhythmEngine = RelativeRhythmEngineFromEntity[owner.Target].Target;
+					if (rhythmEngine == default)
+						return;
+
+					state.Calculate(CurrentCommandFromEntity[rhythmEngine], CommandStateFromEntity[rhythmEngine], ComboStateFromEntity[rhythmEngine],
+						EngineProcessFromEntity[rhythmEngine]);
+				}
+				else
+				{
+					state.IsActive = snapshot.IsActive;
+				}
 			}
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			return new Job
-			{
-				TargetTick             = NetworkTimeSystem.interpolateTargetTick,
-				SnapshotDataFromEntity = GetBufferFromEntity<MarchAbilitySnapshotData>(),
+			var convertMap = World.GetExistingSystem<ConvertGhostEntityMap>();
+			var timeArray  = new NativeArray<SynchronizedSimulationTime>(1, Allocator.TempJob);
 
-				CommandIdToEntity = World.GetExistingSystem<RhythmCommandManager>().CommandIdToEntity
-			}.Schedule(this, inputDeps);
+			inputDeps = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Schedule(timeArray, inputDeps);
+			inputDeps = new Job
+			{
+				TargetTick = NetworkTimeSystem.interpolateTargetTick,
+				ServerTime = timeArray,
+
+				SnapshotDataFromEntity = GetBufferFromEntity<MarchAbilitySnapshotData>(true),
+				CommandIdToEntity      = World.GetExistingSystem<RhythmCommandManager>().CommandIdToEntity,
+
+				RelativeRhythmEngineFromEntity = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(true),
+				CurrentCommandFromEntity       = GetComponentDataFromEntity<RhythmCurrentCommand>(true),
+				CommandStateFromEntity         = GetComponentDataFromEntity<GameCommandState>(true),
+				ComboStateFromEntity           = GetComponentDataFromEntity<GameComboState>(true),
+				EngineProcessFromEntity        = GetComponentDataFromEntity<RhythmEngineProcess>(true),
+
+				GhostEntityMap = convertMap.HashMap
+			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, convertMap.dependency));
+
+			return inputDeps;
 		}
 	}
 }
