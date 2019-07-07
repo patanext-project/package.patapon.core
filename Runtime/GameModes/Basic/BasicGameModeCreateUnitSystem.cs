@@ -133,6 +133,7 @@ namespace Patapon4TLB.GameModes.Basic
 						AccelerationFactor = 1,
 						Owner              = unit
 					}, createList);
+					EntityManager.AddComponent(createList[0], typeof(GhostComponent));
 				}
 
 				using (var createList = new NativeList<Entity>(1, Allocator.TempJob))

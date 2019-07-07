@@ -103,11 +103,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 		}
 	}
 
-	[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
-	[UpdateAfter(typeof(GhostSpawnSystemGroup))]
-	[UpdateAfter(typeof(BeforeSimulationInterpolationSystem))]
-	[UpdateBefore(typeof(ConvertGhostToOwnerSystem))]
-	[UpdateBefore(typeof(ConvertGhostToRelativeSystemGroup))]
+	[UpdateInGroup(typeof(UpdateGhostSystemGroup))]
 	public class BasicUnitUpdateSystem : JobComponentSystem
 	{
 		private struct Job : IJobForEachWithEntity<UnitDirection, BasicUnitSnapshotTarget, UnitTargetPosition, Translation, Velocity>
