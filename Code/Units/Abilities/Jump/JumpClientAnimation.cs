@@ -42,11 +42,15 @@ namespace Patapon4TLB.Default
 			public double StartTime;
 			public Phase  Phase;
 
+			private Phase m_PreviousPhase;
+			
 			public float Weight;
 
 			public Transition StartTransition;
 			public Transition JumpTransition;
-			public Transition IdleAirTransition;
+			
+			public Transition IdleAirTransition1;
+			public Transition IdleAirTransition2;
 
 			public void Initialize(Playable self, int index, PlayableGraph graph, AnimationMixerPlayable rootMixer, IReadOnlyList<AnimationClip> clips)
 			{
@@ -67,12 +71,23 @@ namespace Patapon4TLB.Default
 
 				StartTransition   = new Transition(clips[0], 0.75f, 1f);
 				JumpTransition    = new Transition(StartTransition, 0.4f, 0.5f);
-				IdleAirTransition = new Transition(JumpTransition, 1.8f, 2f);
 			}
 
 			public override void PrepareFrame(Playable playable, FrameData info)
 			{
 				var global = (float) (Root.GetTime() - StartTime);
+
+				if (m_PreviousPhase != Phase)
+				{
+					if (m_PreviousPhase == Phase.Jumping && Phase == Phase.Idle)
+					{
+						IdleAirTransition1.End(global, global + 0.1f);
+						IdleAirTransition2.Begin(global, global + 0.1f);
+						IdleAirTransition2.End(global + 0.1f, global + 0.1f);
+					}
+
+					m_PreviousPhase = Phase;
+				}
 
 				Mixer.SetInputWeight(0, 0);
 				Mixer.SetInputWeight(1, 0);
@@ -85,10 +100,11 @@ namespace Patapon4TLB.Default
 						Mixer.SetInputWeight(1, JumpTransition.Evaluate(global, 0, 1));
 						break;
 					case Phase.Idle:
-						Mixer.SetInputWeight(2, 1);
+						Mixer.SetInputWeight(1, IdleAirTransition1.Evaluate(global));
+						Mixer.SetInputWeight(2, IdleAirTransition2.Evaluate(global, 0, 1));
 						break;
 				}
-
+				
 				if (VisualData.CurrAnimation.Type != typeof(JumpAbilityClientAnimationSystem))
 				{
 					Weight = 0;
