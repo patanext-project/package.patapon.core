@@ -18,8 +18,9 @@ namespace Patapon4TLB.Default.Snapshot
 		public int OwnerGhostId;
 		public int StartTime;     // in ms
 		public int CommandTypeId; // CommandState.IsActive will be set if ghostId is null or not
-		public int CommandStartBeat;
-		public int CommandEndBeat;
+		public int CommandStartTime;
+		public int CommandEndTime;
+		public int CommandChainEndTime;
 		public int Recovery;
 
 		public int  ComboScore;
@@ -46,12 +47,13 @@ namespace Patapon4TLB.Default.Snapshot
 			writer.WritePackedUIntDelta(MaxBeats, baseline.MaxBeats, compressionModel);
 			writer.WritePackedUIntDelta(BeatInterval, baseline.BeatInterval, compressionModel);
 
-			// 6
+			// 7
 			writer.WritePackedIntDelta(OwnerGhostId, baseline.OwnerGhostId, compressionModel);
 			writer.WritePackedIntDelta(StartTime, baseline.StartTime, compressionModel);
 			writer.WritePackedIntDelta(CommandTypeId, baseline.CommandTypeId, compressionModel);
-			writer.WritePackedIntDelta(CommandStartBeat, baseline.CommandStartBeat, compressionModel);
-			writer.WritePackedIntDelta(CommandEndBeat, baseline.CommandEndBeat, compressionModel);
+			writer.WritePackedIntDelta(CommandStartTime, baseline.CommandStartTime, compressionModel);
+			writer.WritePackedIntDelta(CommandEndTime, baseline.CommandEndTime, compressionModel);
+			writer.WritePackedIntDelta(CommandChainEndTime, baseline.CommandChainEndTime, compressionModel);
 			writer.WritePackedIntDelta(Recovery, baseline.Recovery, compressionModel);
 
 			// 5
@@ -72,13 +74,14 @@ namespace Patapon4TLB.Default.Snapshot
 			MaxBeats     = reader.ReadPackedUIntDelta(ref ctx, baseline.MaxBeats, compressionModel);
 			BeatInterval = reader.ReadPackedUIntDelta(ref ctx, baseline.BeatInterval, compressionModel);
 
-			// 6
-			OwnerGhostId     = reader.ReadPackedIntDelta(ref ctx, baseline.OwnerGhostId, compressionModel);
-			StartTime        = reader.ReadPackedIntDelta(ref ctx, baseline.StartTime, compressionModel);
-			CommandTypeId    = reader.ReadPackedIntDelta(ref ctx, baseline.CommandTypeId, compressionModel);
-			CommandStartBeat = reader.ReadPackedIntDelta(ref ctx, baseline.CommandStartBeat, compressionModel);
-			CommandEndBeat   = reader.ReadPackedIntDelta(ref ctx, baseline.CommandEndBeat, compressionModel);
-			Recovery         = reader.ReadPackedIntDelta(ref ctx, baseline.Recovery, compressionModel);
+			// 7
+			OwnerGhostId        = reader.ReadPackedIntDelta(ref ctx, baseline.OwnerGhostId, compressionModel);
+			StartTime           = reader.ReadPackedIntDelta(ref ctx, baseline.StartTime, compressionModel);
+			CommandTypeId       = reader.ReadPackedIntDelta(ref ctx, baseline.CommandTypeId, compressionModel);
+			CommandStartTime    = reader.ReadPackedIntDelta(ref ctx, baseline.CommandStartTime, compressionModel);
+			CommandEndTime      = reader.ReadPackedIntDelta(ref ctx, baseline.CommandEndTime, compressionModel);
+			CommandChainEndTime = reader.ReadPackedIntDelta(ref ctx, baseline.CommandChainEndTime, compressionModel);
+			Recovery            = reader.ReadPackedIntDelta(ref ctx, baseline.Recovery, compressionModel);
 
 			// 5
 			ComboScore         = reader.ReadPackedIntDelta(ref ctx, baseline.ComboScore, compressionModel);
@@ -100,12 +103,13 @@ namespace Patapon4TLB.Default.Snapshot
 			MaxBeats     = target.MaxBeats;
 			BeatInterval = target.BeatInterval;
 
-			OwnerGhostId     = target.OwnerGhostId;
-			StartTime        = target.StartTime;
-			CommandTypeId    = target.CommandTypeId;
-			CommandStartBeat = target.CommandStartBeat;
-			CommandEndBeat   = target.CommandEndBeat;
-			Recovery         = target.Recovery;
+			OwnerGhostId        = target.OwnerGhostId;
+			StartTime           = target.StartTime;
+			CommandTypeId       = target.CommandTypeId;
+			CommandStartTime    = target.CommandStartTime;
+			CommandEndTime      = target.CommandEndTime;
+			CommandChainEndTime = target.CommandChainEndTime;
+			Recovery            = target.Recovery;
 
 			ComboIsFever       = target.ComboIsFever;
 			ComboScore         = target.ComboScore;

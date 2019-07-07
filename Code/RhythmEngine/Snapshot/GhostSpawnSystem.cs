@@ -84,19 +84,20 @@ namespace Patapon4TLB.Default.Snapshot
 				state.IsPaused         = snapshotData.IsPaused;
 				state.NextBeatRecovery = math.max(state.NextBeatRecovery, snapshotData.Recovery);
 
-				commandState.StartTime = snapshotData.CommandStartBeat;
-				commandState.EndTime   = snapshotData.CommandEndBeat;
+				commandState.StartTime = snapshotData.CommandStartTime;
+				commandState.EndTime   = snapshotData.CommandEndTime;
+				commandState.ChainEndTime = snapshotData.CommandChainEndTime;
 
 				process.StartTime = snapshotData.StartTime;
 				if (!SimulateTagFromEntity.Exists(entity))
 				{
-					process.TimeTick = snapshotData.StartTime > 0 ? (int) (ServerTime - snapshotData.StartTime) : 0;
+					process.TimeTick = (int)(ServerTime - snapshotData.StartTime);
 
 					CommandIdToEntity.TryGetValue(snapshotData.CommandTypeId, out var commandTarget);
 					RhythmCurrentCommand[entity] = new RhythmCurrentCommand
 					{
-						ActiveAtTime  = snapshotData.CommandStartBeat,
-						CustomEndTime = snapshotData.CommandEndBeat,
+						ActiveAtTime  = snapshotData.CommandStartTime,
+						CustomEndTime = snapshotData.CommandEndTime,
 						CommandTarget = commandTarget
 					};
 				}

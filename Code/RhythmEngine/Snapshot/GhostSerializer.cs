@@ -87,8 +87,9 @@ namespace Patapon4TLB.Default.Snapshot
 			var currentCommand = chunk.GetNativeArray(GhostCurrentCommandType.Archetype)[ent];
 			var commandState   = chunk.GetNativeArray(GhostCommandStateType.Archetype)[ent];
 			snapshot.CommandTypeId    = currentCommand.CommandTarget == default ? 0 : CommandDataFromEntity[currentCommand.CommandTarget].Value;
-			snapshot.CommandStartBeat = commandState.StartTime;
-			snapshot.CommandEndBeat   = commandState.EndTime;
+			snapshot.CommandStartTime = commandState.StartTime;
+			snapshot.CommandEndTime   = commandState.EndTime;
+			snapshot.CommandChainEndTime = commandState.ChainEndTime;
 
 			var comboState = chunk.GetNativeArray(GhostComboStateType.Archetype)[ent];
 			snapshot.ComboIsFever       = comboState.IsFever;
