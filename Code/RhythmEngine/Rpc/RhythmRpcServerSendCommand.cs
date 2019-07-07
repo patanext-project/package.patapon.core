@@ -115,6 +115,43 @@ namespace Patapon4TLB.Default
 		}
 	}
 
+	[DisableAutoCreation]
+	public class RhythmCommandManager : ComponentSystem
+	{
+		public NativeHashMap<int, Entity> CommandIdToEntity;
+		public NativeHashMap<Entity, int> EntityToCommandId;
+
+		protected override void OnCreate()
+		{
+			CommandIdToEntity = new NativeHashMap<int, Entity>(8, Allocator.Persistent);
+			EntityToCommandId = new NativeHashMap<Entity, int>(8, Allocator.Persistent);
+		}
+
+		protected override void OnUpdate()
+		{
+
+		}
+
+		protected override void OnDestroy()
+		{
+			CommandIdToEntity.Dispose();
+			EntityToCommandId.Dispose();
+		}
+
+		public void UpdateCommands(NativeArray<Entity> entities)
+		{
+			CommandIdToEntity.Clear();
+			EntityToCommandId.Clear();
+			foreach (var entity in entities)
+			{
+				var commandId = EntityManager.GetComponentData<RhythmCommandId>(entity).Value;
+
+				CommandIdToEntity.TryAdd(commandId, entity);
+				EntityToCommandId.TryAdd(entity, commandId);
+			}
+		}
+	}
+
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 	public class RhythmRpcServerSendCommandSystem : ComponentSystem
 	{
@@ -126,11 +163,13 @@ namespace Patapon4TLB.Default
 		private int m_LastChainId;
 
 		private List<RhythmRpcServerSendCommandChain> m_RpcGroup;
+		private RhythmCommandManager m_CommandManager;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
+			m_CommandManager = World.GetOrCreateSystem<RhythmCommandManager>();
 			m_Commands       = GetEntityQuery(typeof(RhythmCommandId), typeof(RhythmCommandData), typeof(RhythmCommandSequenceContainer));
 			m_Connections    = GetEntityQuery(typeof(NetworkStreamInGame), ComponentType.Exclude<NetworkStreamDisconnected>());
 			m_NewConnections = GetEntityQuery(typeof(CreateGamePlayer));
@@ -195,6 +234,9 @@ namespace Patapon4TLB.Default
 					m_RpcGroup.Add(rpc);
 					SendToConnections(connections, rpc);
 				}
+				
+				// Update Rhythm Command Manager
+				m_CommandManager.UpdateCommands(commands);
 
 				commands.Dispose();
 				connections.Dispose();
@@ -218,12 +260,15 @@ namespace Patapon4TLB.Default
 		private EntityQuery m_CommandRequest;
 		private EntityQuery m_CurrentCommands;
 
+		private RhythmCommandManager m_CommandManager;
+		
 		private int m_LastChainId;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
+			m_CommandManager = World.GetOrCreateSystem<RhythmCommandManager>();
 			m_CommandRequest  = GetEntityQuery(typeof(RequestCreateCommand));
 			m_CurrentCommands = GetEntityQuery(typeof(RhythmCommandId), typeof(RhythmCommandData), typeof(RhythmCommandSequenceContainer), typeof(CommandChainGroup));
 			m_LastChainId     = -1;
@@ -265,16 +310,9 @@ namespace Patapon4TLB.Default
 			}
 
 			var builder = World.GetOrCreateSystem<RhythmCommandBuilder>();
+			var cmdEntityArray = new NativeArray<Entity>(validEntities.Length, Allocator.Temp);
 			for (var ent = 0; ent != validEntities.Length; ent++)
 			{
-				/*var cmdEntity = EntityManager.CreateEntity(
-					typeof(FlowCommandId),
-					typeof(FlowCommandData),
-					typeof(FlowCommandSequenceContainer),
-					typeof(FlowClientCheckCommandTag),
-					typeof(CommandChainGroup)
-				);*/
-
 				var requestData = EntityManager.GetComponentData<RequestCreateCommand>(validEntities[ent]);
 				var requestBuffer = EntityManager.GetBuffer<RhythmCommandSequenceContainer>(validEntities[ent])
 				                                 .Reinterpret<RhythmCommandSequence>()
@@ -291,9 +329,15 @@ namespace Patapon4TLB.Default
 
 				var cmdBuffer = EntityManager.GetBuffer<RhythmCommandSequenceContainer>(cmdEntity);
 				cmdBuffer.CopyFrom(EntityManager.GetBuffer<RhythmCommandSequenceContainer>(validEntities[ent]));
+
+				cmdEntityArray[ent] = cmdEntity;
 			}
+			
+			// Update Rhythm Command Manager
+			m_CommandManager.UpdateCommands(cmdEntityArray);
 
 			validEntities.Dispose();
+			cmdEntityArray.Dispose();
 
 			EntityManager.DestroyEntity(m_CommandRequest);
 		}

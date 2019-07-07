@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using package.patapon.core;
 using package.stormiumteam.shared;
 using Runtime.Systems;
 using StormiumTeam.GameBase;
@@ -19,6 +20,7 @@ namespace Patapon4TLB.Default
 		public uint Tick { get; set; }
 
 		public bool IsActive;
+		public int  CommandId;
 		public uint OwnerGhostId;
 
 		public void PredictDelta(uint tick, ref MarchAbilitySnapshotData baseline1, ref MarchAbilitySnapshotData baseline2)
@@ -32,6 +34,7 @@ namespace Patapon4TLB.Default
 			MainBit.SetBitAt(ref mask, pos++, IsActive);
 
 			writer.WritePackedUInt(mask, compressionModel);
+			writer.WritePackedIntDelta(CommandId, baseline.CommandId, compressionModel);
 			writer.WritePackedUIntDelta(OwnerGhostId, baseline.OwnerGhostId, compressionModel);
 		}
 
@@ -44,12 +47,15 @@ namespace Patapon4TLB.Default
 			{
 				IsActive = MainBit.GetBitAt(mask, pos++) == 1;
 			}
+			CommandId    = reader.ReadPackedIntDelta(ref ctx, baseline.CommandId, compressionModel);
 			OwnerGhostId = reader.ReadPackedUIntDelta(ref ctx, baseline.OwnerGhostId, compressionModel);
 		}
 
 		public void Interpolate(ref MarchAbilitySnapshotData target, float factor)
 		{
-			IsActive = target.IsActive;
+			IsActive     = target.IsActive;
+			CommandId    = target.CommandId;
+			OwnerGhostId = target.OwnerGhostId;
 		}
 	}
 
@@ -67,12 +73,16 @@ namespace Patapon4TLB.Default
 		[NativeDisableContainerSafetyRestriction]
 		public ComponentDataFromEntity<GhostSystemStateComponent> GhostStateFromEntity;
 
+		[NativeDisableContainerSafetyRestriction]
+		public ComponentDataFromEntity<RhythmCommandId> CommandIdFromEntity;
+
 		public void BeginSerialize(ComponentSystemBase system)
 		{
 			system.GetGhostComponentType(out GhostRhythmAbilityStateType);
 			system.GetGhostComponentType(out GhostOwnerType);
 
 			GhostStateFromEntity = system.GetComponentDataFromEntity<GhostSystemStateComponent>();
+			CommandIdFromEntity  = system.GetComponentDataFromEntity<RhythmCommandId>();
 		}
 
 		public GhostComponentType<RhythmAbilityState> GhostRhythmAbilityStateType;
@@ -96,7 +106,8 @@ namespace Patapon4TLB.Default
 			snapshot.Tick = tick;
 
 			var rhythmAbilityState = chunk.GetNativeArray(GhostRhythmAbilityStateType.Archetype)[ent];
-			snapshot.IsActive = rhythmAbilityState.IsActive;
+			snapshot.IsActive  = rhythmAbilityState.IsActive;
+			snapshot.CommandId = rhythmAbilityState.Command == default ? 0 : CommandIdFromEntity[rhythmAbilityState.Command].Value;
 
 			var owner = chunk.GetNativeArray(GhostOwnerType.Archetype)[ent];
 			snapshot.OwnerGhostId = GetGhostId(owner.Target);
@@ -138,12 +149,14 @@ namespace Patapon4TLB.Default
 		{
 			[ReadOnly] public uint                                       TargetTick;
 			[ReadOnly] public BufferFromEntity<MarchAbilitySnapshotData> SnapshotDataFromEntity;
+			[ReadOnly] public NativeHashMap<int, Entity>                 CommandIdToEntity;
 
 			public void Execute(Entity entity, int index, ref RhythmAbilityState state, ref MarchAbility marchAbility, ref GhostOwner owner)
 			{
 				SnapshotDataFromEntity[entity].GetDataAtTick(TargetTick, out var snapshot);
 
 				state.IsActive = snapshot.IsActive;
+				state.Command  = snapshot.CommandId == 0 ? default : CommandIdToEntity[snapshot.CommandId];
 				owner.GhostId  = (int) snapshot.OwnerGhostId;
 			}
 		}
@@ -153,7 +166,9 @@ namespace Patapon4TLB.Default
 			return new Job
 			{
 				TargetTick             = NetworkTimeSystem.interpolateTargetTick,
-				SnapshotDataFromEntity = GetBufferFromEntity<MarchAbilitySnapshotData>()
+				SnapshotDataFromEntity = GetBufferFromEntity<MarchAbilitySnapshotData>(),
+
+				CommandIdToEntity = World.GetExistingSystem<RhythmCommandManager>().CommandIdToEntity
 			}.Schedule(this, inputDeps);
 		}
 	}
