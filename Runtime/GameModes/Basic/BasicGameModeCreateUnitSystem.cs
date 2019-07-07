@@ -184,6 +184,7 @@ namespace Patapon4TLB.GameModes.Basic
 						AccelerationFactor = 1,
 						Owner              = unit
 					}, createList);
+					EntityManager.AddComponent(createList[0], typeof(GhostComponent));
 				}
 
 				playerData.Unit = unit;

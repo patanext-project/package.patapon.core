@@ -89,6 +89,7 @@ namespace Patapon4TLB.Default
 		public void BeginSerialize(ComponentSystemBase system)
 		{
 			system.GetGhostComponentType(out GhostRhythmAbilityStateType);
+			system.GetGhostComponentType(out GhostJumpAbilityType);
 			system.GetGhostComponentType(out GhostOwnerType);
 
 			GhostStateFromEntity = system.GetComponentDataFromEntity<GhostSystemStateComponent>();
@@ -96,6 +97,7 @@ namespace Patapon4TLB.Default
 		}
 
 		public GhostComponentType<RhythmAbilityState> GhostRhythmAbilityStateType;
+		public GhostComponentType<JumpAbility>        GhostJumpAbilityType;
 		public GhostComponentType<Owner>              GhostOwnerType;
 
 		public bool CanSerialize(EntityArchetype arch)
@@ -105,10 +107,11 @@ namespace Patapon4TLB.Default
 			for (var i = 0; i != comps.Length; i++)
 			{
 				if (comps[i] == GhostRhythmAbilityStateType) matches++;
+				if (comps[i] == GhostJumpAbilityType) matches++;
 				if (comps[i] == GhostOwnerType) matches++;
 			}
 
-			return matches == 2;
+			return matches == 3;
 		}
 
 		public void CopyToSnapshot(ArchetypeChunk chunk, int ent, uint tick, ref JumpAbilitySnapshotData snapshot)
@@ -143,7 +146,6 @@ namespace Patapon4TLB.Default
 			return EntityManager.CreateArchetype(baseArchetype.Union(new ComponentType[]
 			{
 				typeof(JumpAbilitySnapshotData),
-				typeof(GhostOwner),
 
 				typeof(ReplicatedEntityComponent)
 			}).ToArray());
@@ -158,31 +160,61 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(UpdateGhostSystemGroup))]
 	public class JumpAbilityGhostUpdateSystem : JobComponentSystem
 	{
-		private struct Job : IJobForEachWithEntity<RhythmAbilityState, JumpAbility, GhostOwner>
+		private struct Job : IJobForEachWithEntity<RhythmAbilityState, JumpAbility, Owner>
 		{
 			[ReadOnly] public uint                                      TargetTick;
 			[ReadOnly] public BufferFromEntity<JumpAbilitySnapshotData> SnapshotDataFromEntity;
 			[ReadOnly] public NativeHashMap<int, Entity>                CommandIdToEntity;
+			[ReadOnly] public NativeHashMap<int, Entity>                GhostEntityMap;
 
-			public void Execute(Entity entity, int index, ref RhythmAbilityState state, ref JumpAbility jumpAbility, ref GhostOwner owner)
+			public RhythmEngineDataGroup RhythmEngineDataGroup;
+
+			[ReadOnly] public ComponentDataFromEntity<Relative<RhythmEngineDescription>> RelativeRhythmEngineFromEntity;
+
+			public void Execute(Entity entity, int index, ref RhythmAbilityState state, ref JumpAbility jumpAbility, ref Owner owner)
 			{
 				SnapshotDataFromEntity[entity].GetDataAtTick(TargetTick, out var snapshot);
 
+				var predict = snapshot.ClientPredictState && RelativeRhythmEngineFromEntity.Exists(owner.Target);
+				if (predict)
+				{
+					var rhythmEngine = RelativeRhythmEngineFromEntity[owner.Target].Target;
+					if (rhythmEngine == default)
+						predict = false;
+					else
+					{
+						var result = RhythmEngineDataGroup.GetResult(rhythmEngine);
+
+						state.Calculate(result.CurrentCommand, result.CommandState, result.ComboState, result.EngineProcess);
+					}
+				}
+
+				if (!predict)
+				{
+					state.IsActive        = snapshot.IsActive;
+					state.IsStillChaining = snapshot.IsStillChaining;
+				}
+
 				state.IsActive = snapshot.IsActive;
 				state.Command  = snapshot.CommandId == 0 ? default : CommandIdToEntity[snapshot.CommandId];
-				owner.GhostId  = (int) snapshot.OwnerGhostId;
 			}
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
+			var convertGhostMapSystem = World.GetExistingSystem<ConvertGhostEntityMap>();
+
 			return new Job
 			{
 				TargetTick             = NetworkTimeSystem.interpolateTargetTick,
 				SnapshotDataFromEntity = GetBufferFromEntity<JumpAbilitySnapshotData>(),
 
-				CommandIdToEntity = World.GetExistingSystem<RhythmCommandManager>().CommandIdToEntity
-			}.Schedule(this, inputDeps);
+				CommandIdToEntity = World.GetExistingSystem<RhythmCommandManager>().CommandIdToEntity,
+				GhostEntityMap    = convertGhostMapSystem.HashMap,
+
+				RhythmEngineDataGroup          = new RhythmEngineDataGroup(this),
+				RelativeRhythmEngineFromEntity = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(true)
+			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, convertGhostMapSystem.dependency));
 		}
 	}
 }

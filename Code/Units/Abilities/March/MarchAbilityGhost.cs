@@ -86,6 +86,7 @@ namespace Patapon4TLB.Default
 		public void BeginSerialize(ComponentSystemBase system)
 		{
 			system.GetGhostComponentType(out GhostRhythmAbilityStateType);
+			system.GetGhostComponentType(out GhostMarchAbilityType);
 			system.GetGhostComponentType(out GhostOwnerType);
 
 			GhostStateFromEntity = system.GetComponentDataFromEntity<GhostSystemStateComponent>();
@@ -93,6 +94,7 @@ namespace Patapon4TLB.Default
 		}
 
 		public GhostComponentType<RhythmAbilityState> GhostRhythmAbilityStateType;
+		public GhostComponentType<MarchAbility>       GhostMarchAbilityType;
 		public GhostComponentType<Owner>              GhostOwnerType;
 
 		public bool CanSerialize(EntityArchetype arch)
@@ -102,10 +104,11 @@ namespace Patapon4TLB.Default
 			for (var i = 0; i != comps.Length; i++)
 			{
 				if (comps[i] == GhostRhythmAbilityStateType) matches++;
+				if (comps[i] == GhostMarchAbilityType) matches++;
 				if (comps[i] == GhostOwnerType) matches++;
 			}
 
-			return matches == 2;
+			return matches == 3;
 		}
 
 		public void CopyToSnapshot(ArchetypeChunk chunk, int ent, uint tick, ref MarchAbilitySnapshotData snapshot)
@@ -164,11 +167,9 @@ namespace Patapon4TLB.Default
 			[ReadOnly]
 			public NativeHashMap<int, Entity> GhostEntityMap;
 
+			public RhythmEngineDataGroup RhythmEngineDataGroup;
+
 			[ReadOnly] public ComponentDataFromEntity<Relative<RhythmEngineDescription>> RelativeRhythmEngineFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<RhythmCurrentCommand>              CurrentCommandFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<GameCommandState>                  CommandStateFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<GameComboState>                    ComboStateFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<RhythmEngineProcess>               EngineProcessFromEntity;
 
 			public void Execute(Entity entity, int index, ref RhythmAbilityState state, ref MarchAbility marchAbility, ref Owner owner)
 			{
@@ -182,12 +183,16 @@ namespace Patapon4TLB.Default
 				{
 					var rhythmEngine = RelativeRhythmEngineFromEntity[owner.Target].Target;
 					if (rhythmEngine == default)
-						return;
+						predict = false;
+					else
+					{
+						var result = RhythmEngineDataGroup.GetResult(rhythmEngine);
 
-					state.Calculate(CurrentCommandFromEntity[rhythmEngine], CommandStateFromEntity[rhythmEngine], ComboStateFromEntity[rhythmEngine],
-						EngineProcessFromEntity[rhythmEngine]);
+						state.Calculate(result.CurrentCommand, result.CommandState, result.ComboState, result.EngineProcess);
+					}
 				}
-				else
+
+				if (!predict)
 				{
 					state.IsActive = snapshot.IsActive;
 				}
@@ -209,10 +214,7 @@ namespace Patapon4TLB.Default
 				CommandIdToEntity      = World.GetExistingSystem<RhythmCommandManager>().CommandIdToEntity,
 
 				RelativeRhythmEngineFromEntity = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(true),
-				CurrentCommandFromEntity       = GetComponentDataFromEntity<RhythmCurrentCommand>(true),
-				CommandStateFromEntity         = GetComponentDataFromEntity<GameCommandState>(true),
-				ComboStateFromEntity           = GetComponentDataFromEntity<GameComboState>(true),
-				EngineProcessFromEntity        = GetComponentDataFromEntity<RhythmEngineProcess>(true),
+				RhythmEngineDataGroup          = new RhythmEngineDataGroup(this),
 
 				GhostEntityMap = convertMap.HashMap
 			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, convertMap.dependency));
