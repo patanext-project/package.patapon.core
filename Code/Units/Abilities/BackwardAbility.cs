@@ -58,6 +58,13 @@ namespace Patapon4TLB.Default
 					walkSpeed = unitSettings.FeverWalkSpeed;
 				}
 
+				// if we're near, let's slow down
+				var dist = math.distance(targetPosition.Value.x, TranslationFromEntity[owner.Target].Value.x);
+				if (dist < 2f)
+				{
+					walkSpeed *= dist * 0.5f;
+				}
+
 				var direction = System.Math.Sign(targetPosition.Value.x - TranslationFromEntity[owner.Target].Value.x);
 
 				velocity.Value.x                 = math.lerp(velocity.Value.x, walkSpeed * direction, acceleration);
