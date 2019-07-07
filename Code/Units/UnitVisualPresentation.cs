@@ -28,6 +28,11 @@ namespace Patapon4TLB.Core
 		public readonly Type Type;
 
 		/// <summary>
+		/// The previous system type before the new animation (used for transition)
+		/// </summary>
+		public readonly Type PreviousType;
+		
+		/// <summary>
 		/// Can other animations override this one?
 		/// (There can be some exceptions where some animations can override on some conditions or if it's urgent)
 		/// </summary>
@@ -44,9 +49,10 @@ namespace Patapon4TLB.Core
 		public readonly double TransitionEnd;
 		public readonly double StopAt;
 
-		public TargetAnimation(Type type, bool allowOverride = true, bool allowTransition = true, float weight = 0, double transitionStart = -1, double transitionEnd = -1, double stopAt = -1)
+		public TargetAnimation(Type type, bool allowOverride = true, bool allowTransition = true, float weight = 0, double transitionStart = -1, double transitionEnd = -1, double stopAt = -1, Type previousType = null)
 		{
 			Type            = type;
+			PreviousType  = previousType;
 			AllowOverride   = allowOverride;
 			AllowTransition = allowTransition;
 			Weight          = weight;

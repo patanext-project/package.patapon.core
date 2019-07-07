@@ -108,9 +108,22 @@ namespace Patapon4TLB.Default
 						break;
 				}
 
-				if (VisualData.CurrAnimation.Type != typeof(JumpAbilityClientAnimationSystem))
+				var currAnim = VisualData.CurrAnimation;
+				var systemType = typeof(JumpAbilityClientAnimationSystem);
+
+				Weight = 0;
+				if (currAnim.CanBlend(Root.GetTime()) && currAnim.PreviousType == systemType)
 				{
-					Weight = 0;
+					Weight = currAnim.GetTransitionWeightFixed(Root.GetTime());
+				}
+				else if (currAnim.Type == systemType)
+				{
+					Weight = 1;
+				}
+
+				if (Weight > 0)
+				{
+					Debug.Log($"??? {currAnim.PreviousType} {currAnim.Type} {Weight}");
 				}
 
 				Root.SetInputWeight(VisualAnimation.GetIndexFrom(Root, Self), Weight);
@@ -201,7 +214,7 @@ namespace Patapon4TLB.Default
 				i--;
 			}
 
-			if (m_AnimationClips == null && m_LoadSuccess == ArrayLength)
+			if (m_LoadSuccess != ArrayLength)
 				return;
 
 			m_AbilityModule.Update(default).Complete();
@@ -232,7 +245,11 @@ namespace Patapon4TLB.Default
 			var currAnim = animation.CurrAnimation;
 			if (currAnim == new TargetAnimation(m_SystemType) && animation.RootTime > currAnim.StopAt)
 			{
-				animation.SetTargetAnimation(TargetAnimation.Null);
+				// allow transitions and overrides now...
+				animation.SetTargetAnimation(new TargetAnimation(currAnim.Type, transitionStart: currAnim.StopAt, transitionEnd: currAnim.StopAt + 0.25f));
+				// if no one set another animation, then let's set to null...
+				if (animation.RootTime > currAnim.StopAt + 0.25f)
+					animation.SetTargetAnimation(TargetAnimation.Null);
 			}
 
 			var abilityEntity = m_AbilityModule.FindFromOwner(backend.DstEntity);
@@ -259,21 +276,25 @@ namespace Patapon4TLB.Default
 			ref var data = ref animation.GetSystemData<SystemData>(m_SystemType);
 
 
-			if (abilityState.WillBeActive && data.StartAt < 0 && abilityState.ActiveId >= data.ActiveId)
+			if (abilityState.WillBeActive && data.StartAt < 0 && abilityState.ActiveId >= data.ActiveId && !abilityState.IsActive)
 			{
 				var serverTime = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Value.Interpolated;
 				var delay      = math.max(abilityState.StartTime - 200 - serverTime, 0) * 0.001f;
 				// StartTime - StartJump Animation Approx Length in ms - Time, aka delay 0.2s before the command
-
+				
+				Debug.Log($"{abilityState.StartTime - serverTime} {delay}");
+ 
 				data.StartAt  = animation.RootTime + delay;
 				data.ActiveId = abilityState.ActiveId + 1;
 			}
 
 			// Start animation if Behavior.ActiveId and Jump.ActiveId is different... or if we need to start now
-			if (!abilityState.WillBeActive && abilityState.ActiveId != data.ActiveId || data.StartAt > 0 && data.StartAt < data.Behaviour.Root.GetTime())
+			if (abilityState.IsActive && abilityState.ActiveId != data.ActiveId || data.StartAt > 0 && data.StartAt < data.Behaviour.Root.GetTime())
 			{
 				var stopAt = animation.RootTime + 3.5f;
 				animation.SetTargetAnimation(new TargetAnimation(m_SystemType, false, false, stopAt: stopAt));
+				
+				Debug.Log("Start Animation");
 
 
 				data.StartAt = -1;

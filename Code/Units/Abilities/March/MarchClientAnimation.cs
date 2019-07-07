@@ -166,7 +166,7 @@ namespace Patapon4TLB.Default
 			var abilityEntity = m_AbilityModule.FindFromOwner(backend.DstEntity);
 			if (abilityEntity == default && currAnim.Type == m_SystemType || currAnim.CanStartAnimationAt(animation.RootTime))
 			{
-				animation.SetTargetAnimation(new TargetAnimation(null, transitionStart: currAnim.TransitionStart, transitionEnd: currAnim.TransitionEnd));
+				animation.SetTargetAnimation(new TargetAnimation(null, transitionStart: currAnim.TransitionStart, transitionEnd: currAnim.TransitionEnd, previousType: currAnim.Type));
 			}
 
 			if (!animation.ContainsSystem(m_SystemType))
@@ -188,7 +188,7 @@ namespace Patapon4TLB.Default
 
 			systemData.Behaviour.TargetAnimation = 0;
 
-			animation.SetTargetAnimation(new TargetAnimation(m_SystemType, transitionStart: currAnim.TransitionStart, transitionEnd: currAnim.TransitionEnd));
+			animation.SetTargetAnimation(new TargetAnimation(m_SystemType, transitionStart: currAnim.TransitionStart, transitionEnd: currAnim.TransitionEnd, previousType: currAnim.PreviousType));
 		}
 	}
 }
