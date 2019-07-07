@@ -1,4 +1,5 @@
 using StormiumTeam.GameBase;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -7,6 +8,7 @@ namespace Patapon4TLB.Default
 {
 	public class SystemAbilityModule : BaseSystemModule
 	{
+		[BurstCompile]
 		private struct CopyJob<T> : IJob
 			where T : struct
 		{

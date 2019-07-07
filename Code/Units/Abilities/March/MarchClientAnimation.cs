@@ -17,7 +17,9 @@ namespace Patapon4TLB.Default
 	{
 		private class SystemPlayable : PlayableBehaviour
 		{
-			public Playable               Self;
+			public Playable                        Self;
+			public UnitVisualPlayableBehaviourData VisualData;
+
 			public AnimationMixerPlayable Mixer;
 			public AnimationMixerPlayable Root;
 
@@ -39,7 +41,7 @@ namespace Patapon4TLB.Default
 					graph.Connect(clipPlayable, 0, Mixer, i);
 				}
 
-				rootMixer.AddInput(self, index, 1);
+				rootMixer.AddInput(self, 0, 1);
 				self.AddInput(Mixer, 0, 1);
 			}
 
@@ -53,6 +55,12 @@ namespace Patapon4TLB.Default
 						Mixer.GetInput(i).Play();
 					else
 						Mixer.GetInput(i).Pause();
+				}
+
+				Weight = 1 - VisualData.CurrAnimation.GetTransitionWeightFixed(VisualData.VisualAnimation.RootTime);
+				if (VisualData.CurrAnimation.Type != typeof(MarchAbilityClientAnimationSystem) && !VisualData.CurrAnimation.CanBlend(VisualData.RootTime))
+				{
+					Weight = 0;
 				}
 
 				Root.SetInputWeight(VisualAnimation.GetIndexFrom(Root, Self), Weight);
@@ -134,6 +142,7 @@ namespace Patapon4TLB.Default
 
 			systemData.Playable  = playable;
 			systemData.Behaviour = behavior;
+			systemData.Behaviour.VisualData = ((UnitVisualAnimation) data.Handle).GetBehaviorData();
 		}
 
 		private void RemoveAnimation(VisualAnimation.ManageData manageData, SystemData systemData)
@@ -153,7 +162,7 @@ namespace Patapon4TLB.Default
 
 				return;
 			}
-			
+
 			var abilityEntity = m_AbilityModule.FindFromOwner(backend.DstEntity);
 			if (abilityEntity == default && currAnim.Type == m_SystemType || currAnim.CanStartAnimationAt(animation.RootTime))
 			{
@@ -174,17 +183,12 @@ namespace Patapon4TLB.Default
 				doAnimation |= abilityState.IsActive;
 			}
 
-			if (doAnimation)
-			{
-				systemData.Behaviour.TargetAnimation = 0;
-				systemData.Behaviour.Weight          = 1 - currAnim.GetTransitionWeightFixed(animation.RootTime);
+			if (!doAnimation)
+				return;
 
-				animation.SetTargetAnimation(new TargetAnimation(m_SystemType, transitionStart: currAnim.TransitionStart, transitionEnd: currAnim.TransitionEnd));
-			}
-			else
-			{
-				systemData.Behaviour.Weight = 0;
-			}
+			systemData.Behaviour.TargetAnimation = 0;
+
+			animation.SetTargetAnimation(new TargetAnimation(m_SystemType, transitionStart: currAnim.TransitionStart, transitionEnd: currAnim.TransitionEnd));
 		}
 	}
 }

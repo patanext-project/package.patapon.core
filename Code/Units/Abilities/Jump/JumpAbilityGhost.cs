@@ -12,6 +12,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Networking.Transport;
+using UnityEngine;
 
 namespace Patapon4TLB.Default
 {
@@ -162,6 +163,9 @@ namespace Patapon4TLB.Default
 	{
 		private struct Job : IJobForEachWithEntity<RhythmAbilityState, JumpAbility, Owner>
 		{
+			[DeallocateOnJobCompletion]
+			public NativeArray<SynchronizedSimulationTime> ServerTime;
+			
 			[ReadOnly] public uint                                      TargetTick;
 			[ReadOnly] public BufferFromEntity<JumpAbilitySnapshotData> SnapshotDataFromEntity;
 			[ReadOnly] public NativeHashMap<int, Entity>                CommandIdToEntity;
@@ -175,6 +179,9 @@ namespace Patapon4TLB.Default
 			{
 				SnapshotDataFromEntity[entity].GetDataAtTick(TargetTick, out var snapshot);
 
+				GhostEntityMap.TryGetValue((int) snapshot.OwnerGhostId, out owner.Target);
+				CommandIdToEntity.TryGetValue(snapshot.CommandId, out state.Command);
+				
 				var predict = snapshot.ClientPredictState && RelativeRhythmEngineFromEntity.Exists(owner.Target);
 				if (predict)
 				{
@@ -189,6 +196,20 @@ namespace Patapon4TLB.Default
 					}
 				}
 
+				if (predict)
+				{
+					if (state.IsActive || state.IsStillChaining)
+					{
+						jumpAbility.ActiveTime = (ServerTime[0].Interpolated - state.StartTime) * 0.001f;
+						jumpAbility.IsJumping  = jumpAbility.ActiveTime <= 0.5f;
+					}
+					else
+					{
+						jumpAbility.ActiveTime = 0.0f;
+						jumpAbility.IsJumping  = false;
+					}
+				}
+
 				if (!predict)
 				{
 					state.IsActive        = snapshot.IsActive;
@@ -196,16 +217,19 @@ namespace Patapon4TLB.Default
 				}
 
 				state.IsActive = snapshot.IsActive;
-				state.Command  = snapshot.CommandId == 0 ? default : CommandIdToEntity[snapshot.CommandId];
 			}
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
 			var convertGhostMapSystem = World.GetExistingSystem<ConvertGhostEntityMap>();
+			var timeArray = new NativeArray<SynchronizedSimulationTime>(1, Allocator.TempJob);
 
-			return new Job
+			inputDeps = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Schedule(timeArray, inputDeps);
+			inputDeps = new Job
 			{
+				ServerTime = timeArray,
+				
 				TargetTick             = NetworkTimeSystem.interpolateTargetTick,
 				SnapshotDataFromEntity = GetBufferFromEntity<JumpAbilitySnapshotData>(),
 
@@ -215,6 +239,8 @@ namespace Patapon4TLB.Default
 				RhythmEngineDataGroup          = new RhythmEngineDataGroup(this),
 				RelativeRhythmEngineFromEntity = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(true)
 			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, convertGhostMapSystem.dependency));
+
+			return inputDeps;
 		}
 	}
 }

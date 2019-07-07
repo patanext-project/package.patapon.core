@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Patapon4TLB.Core;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -9,6 +10,12 @@ using UnityEngine.Playables;
 
 namespace package.patapon.core.Animation
 {
+	public class PlayableBehaviorData
+	{
+		public Entity DstEntity;
+		public EntityManager DstEntityManager;
+	}
+	
 	public struct Transition
 	{
 		public float Key0;
@@ -39,7 +46,7 @@ namespace package.patapon.core.Animation
 			Key2 = pg2 + Key0;
 			Key3 = pg3 + Key0;
 		}
-		
+
 		public Transition(Transition left, AnimationClip clip, float pg2, float pg3)
 		{
 			Key0 = left.Key2;
@@ -60,17 +67,16 @@ namespace package.patapon.core.Animation
 			Key3 = key3;
 		}
 
-		public float Evaluate(float time, float offset = 0)
+		public float Evaluate(float time, float left = 0, float right = 0)
 		{
-			time -= offset;
 			if (time > Key3)
-				return 0;
+				return right;
 			if (time <= Key0)
-				return 0;
+				return left;
 			if (time <= Key1)
-				return math.unlerp(Key0, Key1, time);
+				return math.max(math.unlerp(Key0, Key1, time), left);
 			if (time >= Key2 && time <= Key3)
-				return math.unlerp(Key3, Key2, time);
+				return math.max(math.unlerp(Key3, Key2, time), right);
 			return 1;
 		}
 	}

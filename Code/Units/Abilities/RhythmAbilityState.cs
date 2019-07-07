@@ -18,6 +18,8 @@ namespace Patapon4TLB.Default
 		public bool   IsActive;
 		public int    ActiveId;
 		public bool   IsStillChaining;
+		public bool   WillBeActive;
+		public int    StartTime;
 
 		public void CalculateWithValidCommand(GameCommandState commandState, GameComboState combo, RhythmEngineProcess process)
 		{
@@ -26,10 +28,14 @@ namespace Patapon4TLB.Default
 
 		public void Calculate(RhythmCurrentCommand currCommand, GameCommandState commandState, GameComboState combo, RhythmEngineProcess process)
 		{
+			if (ActiveId == 0)
+				ActiveId++;
+			
 			if (currCommand.CommandTarget != Command)
 			{
 				IsActive        = false;
 				IsStillChaining = false;
+				WillBeActive    = false;
 				return;
 			}
 
@@ -48,7 +54,10 @@ namespace Patapon4TLB.Default
 				ActiveId++;
 			}
 
+			StartTime = commandState.StartTime;
+
 			IsStillChaining = commandState.StartTime <= process.TimeTick && combo.Chain > 0;
+			WillBeActive    = commandState.StartTime > process.TimeTick && process.TimeTick <= commandState.EndTime && !IsActive;
 		}
 	}
 

@@ -100,6 +100,13 @@ namespace Patapon4TLB.Core
 		public Animator Animator;
 	}
 
+	public class UnitVisualPlayableBehaviourData : PlayableBehaviorData
+	{
+		public UnitVisualAnimation VisualAnimation;
+		public TargetAnimation     CurrAnimation => VisualAnimation.CurrAnimation;
+		public double              RootTime      => VisualAnimation.RootTime;
+	}
+
 	public class UnitVisualAnimation : VisualAnimation
 	{
 		public double                 RootTime     => rootMixer.GetTime();
@@ -126,6 +133,16 @@ namespace Patapon4TLB.Core
 		public void SetTargetAnimation(TargetAnimation target)
 		{
 			CurrAnimation = target;
+		}
+
+		public UnitVisualPlayableBehaviourData GetBehaviorData()
+		{
+			return new UnitVisualPlayableBehaviourData
+			{
+				DstEntity        = Backend.DstEntity,
+				DstEntityManager = Backend.DstEntityManager,
+				VisualAnimation  = this
+			};
 		}
 	}
 
@@ -173,7 +190,9 @@ namespace Patapon4TLB.Core
 	{
 		public class SystemPlayable : PlayableBehaviour
 		{
-			public Playable               Self;
+			public Playable                        Self;
+			public UnitVisualPlayableBehaviourData VisualData;
+
 			public AnimationMixerPlayable Mixer;
 			public AnimationMixerPlayable Root;
 			public double                 TransitionStart;
@@ -208,6 +227,11 @@ namespace Patapon4TLB.Core
 				for (var i = 0; i != inputCount; i++)
 				{
 					Mixer.SetInputWeight(i, i == CurrentKey - 1 ? 1 : 0);
+				}
+
+				if (!VisualData.CurrAnimation.AllowTransition && VisualData.CurrAnimation.Type != typeof(UnitPressureAnimationSystem))
+				{
+					e = 0;
 				}
 
 				Root.SetInputWeight(VisualAnimation.GetIndexFrom(Root, Self), e);
@@ -275,8 +299,9 @@ namespace Patapon4TLB.Core
 
 			behavior.Initialize(data.Graph, playable, data.Index, data.Behavior.RootMixer, m_AnimationClips);
 
-			systemData.Playable  = playable;
-			systemData.Behaviour = behavior;
+			systemData.Playable             = playable;
+			systemData.Behaviour            = behavior;
+			systemData.Behaviour.VisualData = ((UnitVisualAnimation) data.Handle).GetBehaviorData();
 		}
 
 		private void RemoveAnimationData(VisualAnimation.ManageData data, SystemData systemData)
@@ -331,7 +356,7 @@ namespace Patapon4TLB.Core
 			var transitionEnd   = m_AnimationClips[lastPressure.Key - 1].length + animation.RootTime;
 
 			animation.SetTargetAnimation(new TargetAnimation(m_SystemType, allowTransition: true, transitionStart: transitionStart, transitionEnd: transitionEnd));
-			data.CurrentKey                              = lastPressure.Key;
+			data.CurrentKey                = lastPressure.Key;
 			data.Behaviour.TransitionStart = transitionStart;
 			data.Behaviour.TransitionEnd   = transitionEnd;
 
