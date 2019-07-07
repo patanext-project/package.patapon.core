@@ -27,15 +27,15 @@ namespace Patapon4TLB.Default
 		{
 			private enum AnimationType
 			{
-				Start,
-				Jump,
-				IdleAir,
-				Fall
+				Start   = 0,
+				Jump    = 1,
+				IdleAir = 2,
+				Fall    = 3
 			}
 
-			public Playable               Self;
+			public Playable                        Self;
 			public UnitVisualPlayableBehaviourData VisualData;
-			
+
 			public AnimationMixerPlayable Mixer;
 			public AnimationMixerPlayable Root;
 
@@ -43,12 +43,12 @@ namespace Patapon4TLB.Default
 			public Phase  Phase;
 
 			private Phase m_PreviousPhase;
-			
+
 			public float Weight;
 
 			public Transition StartTransition;
 			public Transition JumpTransition;
-			
+
 			public Transition IdleAirTransition1;
 			public Transition IdleAirTransition2;
 
@@ -69,8 +69,8 @@ namespace Patapon4TLB.Default
 				rootMixer.AddInput(self, 0, 1);
 				self.AddInput(Mixer, 0, 1);
 
-				StartTransition   = new Transition(clips[0], 0.75f, 1f);
-				JumpTransition    = new Transition(StartTransition, 0.4f, 0.5f);
+				StartTransition = new Transition(clips[0], 0.75f, 1f);
+				JumpTransition  = new Transition(StartTransition, 0.4f, 0.5f);
 			}
 
 			public override void PrepareFrame(Playable playable, FrameData info)
@@ -89,27 +89,30 @@ namespace Patapon4TLB.Default
 					m_PreviousPhase = Phase;
 				}
 
-				Mixer.SetInputWeight(0, 0);
-				Mixer.SetInputWeight(1, 0);
-				Mixer.SetInputWeight(2, 0);
-				// Mixer.SetInputWeight(3, 0); fall
+				Mixer.SetInputWeight((int) AnimationType.Start, 0);
+				Mixer.SetInputWeight((int) AnimationType.Jump, 0);
+				Mixer.SetInputWeight((int) AnimationType.IdleAir, 0);
+				Mixer.SetInputWeight((int) AnimationType.Fall, 0);
 				switch (Phase)
 				{
 					case Phase.Jumping:
-						Mixer.SetInputWeight(0, StartTransition.Evaluate(global));
-						Mixer.SetInputWeight(1, JumpTransition.Evaluate(global, 0, 1));
+						Mixer.SetInputWeight((int) AnimationType.Start, StartTransition.Evaluate(global));
+						Mixer.SetInputWeight((int) AnimationType.Jump, JumpTransition.Evaluate(global, 0, 1));
 						break;
 					case Phase.Idle:
-						Mixer.SetInputWeight(1, IdleAirTransition1.Evaluate(global));
-						Mixer.SetInputWeight(2, IdleAirTransition2.Evaluate(global, 0, 1));
+						Mixer.SetInputWeight((int) AnimationType.Jump, IdleAirTransition1.Evaluate(global));
+						Mixer.SetInputWeight((int) AnimationType.IdleAir, IdleAirTransition2.Evaluate(global, 0, 1));
+						break;
+					case Phase.Fall:
+						Mixer.SetInputWeight((int) AnimationType.Fall, 1);
 						break;
 				}
-				
+
 				if (VisualData.CurrAnimation.Type != typeof(JumpAbilityClientAnimationSystem))
 				{
 					Weight = 0;
 				}
-				
+
 				Root.SetInputWeight(VisualAnimation.GetIndexFrom(Root, Self), Weight);
 			}
 		}
@@ -138,6 +141,8 @@ namespace Patapon4TLB.Default
 
 		private Type m_SystemType;
 
+		private const int ArrayLength = 4;
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -150,8 +155,7 @@ namespace Patapon4TLB.Default
 			m_SystemType                     = GetType();
 			m_ForEachUpdateAnimationDelegate = ForEachUpdateAnimation;
 
-			const int arrayLength = 3;
-			for (var i = 0; i != arrayLength; i++)
+			for (var i = 0; i != ArrayLength; i++)
 			{
 				var key = "Start";
 				switch (i)
@@ -165,6 +169,9 @@ namespace Patapon4TLB.Default
 					case 2:
 						key = "IdleAir";
 						break;
+					case 3:
+						key = "Fall";
+						break;
 				}
 
 				m_AsyncOperationModule.Add(Addressables.LoadAssetAsync<AnimationClip>(string.Format(AddrKey, $"{key}")), new OperationData
@@ -173,6 +180,8 @@ namespace Patapon4TLB.Default
 				});
 			}
 		}
+
+		private int m_LoadSuccess = 0;
 
 		protected override void OnUpdate()
 		{
@@ -183,15 +192,16 @@ namespace Patapon4TLB.Default
 					continue;
 
 				if (m_AnimationClips == null)
-					m_AnimationClips = new AnimationClip[3];
+					m_AnimationClips = new AnimationClip[ArrayLength];
 
 				m_AnimationClips[data.ArrayIndex] = handle.Result;
+				m_LoadSuccess++;
 
 				m_AsyncOperationModule.Handles.RemoveAtSwapBack(i);
 				i--;
 			}
 
-			if (m_AnimationClips == null)
+			if (m_AnimationClips == null && m_LoadSuccess == ArrayLength)
 				return;
 
 			m_AbilityModule.Update(default).Complete();
@@ -205,10 +215,10 @@ namespace Patapon4TLB.Default
 
 			behavior.Initialize(playable, data.Index, data.Graph, data.Behavior.RootMixer, m_AnimationClips);
 
-			systemData.Playable  = playable;
-			systemData.ActiveId  = -1;
-			systemData.StartAt   = -1;
-			systemData.Behaviour = behavior;
+			systemData.Playable             = playable;
+			systemData.ActiveId             = -1;
+			systemData.StartAt              = -1;
+			systemData.Behaviour            = behavior;
 			systemData.Behaviour.VisualData = ((UnitVisualAnimation) data.Handle).GetBehaviorData();
 		}
 
@@ -254,7 +264,7 @@ namespace Patapon4TLB.Default
 				var serverTime = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Value.Interpolated;
 				var delay      = math.max(abilityState.StartTime - 200 - serverTime, 0) * 0.001f;
 				// StartTime - StartJump Animation Approx Length in ms - Time, aka delay 0.2s before the command
-				
+
 				data.StartAt  = animation.RootTime + delay;
 				data.ActiveId = abilityState.ActiveId + 1;
 			}

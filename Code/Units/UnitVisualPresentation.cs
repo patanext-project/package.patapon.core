@@ -352,7 +352,7 @@ namespace Patapon4TLB.Core
 
 			ref var data = ref animation.GetSystemData<SystemData>(m_SystemType);
 
-			var transitionStart = m_AnimationClips[lastPressure.Key - 1].length * 0.75f + animation.RootTime;
+			var transitionStart = m_AnimationClips[lastPressure.Key - 1].length * 0.825f + animation.RootTime;
 			var transitionEnd   = m_AnimationClips[lastPressure.Key - 1].length + animation.RootTime;
 
 			animation.SetTargetAnimation(new TargetAnimation(m_SystemType, allowTransition: true, transitionStart: transitionStart, transitionEnd: transitionEnd));
