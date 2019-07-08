@@ -302,10 +302,10 @@ namespace Patapon4TLB.Core
 			m_SystemType = GetType();
 
 			m_AnimationClips                                                                      =  new AnimationClip[4];
-			Addressables.LoadAssetAsync<AnimationClip>(string.Format(AddrKey, "Pata")).Completed  += op => m_AnimationClips[0] = op.Result;
-			Addressables.LoadAssetAsync<AnimationClip>(string.Format(AddrKey, "Pon")).Completed   += op => m_AnimationClips[1] = op.Result;
-			Addressables.LoadAssetAsync<AnimationClip>(string.Format(AddrKey, "Don")).Completed   += op => m_AnimationClips[2] = op.Result;
-			Addressables.LoadAssetAsync<AnimationClip>(string.Format(AddrKey, "Chaka")).Completed += op => m_AnimationClips[3] = op.Result;
+			Addressables.LoadAsset<AnimationClip>(string.Format(AddrKey, "Pata")).Completed  += op => m_AnimationClips[0] = op.Result;
+			Addressables.LoadAsset<AnimationClip>(string.Format(AddrKey, "Pon")).Completed   += op => m_AnimationClips[1] = op.Result;
+			Addressables.LoadAsset<AnimationClip>(string.Format(AddrKey, "Don")).Completed   += op => m_AnimationClips[2] = op.Result;
+			Addressables.LoadAsset<AnimationClip>(string.Format(AddrKey, "Chaka")).Completed += op => m_AnimationClips[3] = op.Result;
 		}
 
 		protected override void OnUpdate()

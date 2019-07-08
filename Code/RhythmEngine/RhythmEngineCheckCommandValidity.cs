@@ -93,8 +93,7 @@ namespace Patapon4TLB.Default
 
 					if (commandSequence[com].Key != currentCommand[com + comOffset].KeyId)
 						return false;
-
-					if (!predict) Debug.Log($"{currentCommand[com].RenderBeat} [{range.start} <= {comBeat} <= {range.end}]");
+					
 					if (!(range.start <= comBeat && comBeat <= range.end))
 						return false;
 				}

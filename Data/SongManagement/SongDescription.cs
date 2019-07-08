@@ -54,7 +54,7 @@ namespace Patapon4TLB.Core
 			public List<AudioClip> Clips;
 		}
 
-		private List<AsyncOperationHandle> m_AddrOperations;
+		private List<IAsyncOperation> m_AddrOperations;
 		private List<OperationData>   m_OperationData;
 		private bool                  m_IsFinalized;
 
@@ -86,7 +86,7 @@ namespace Patapon4TLB.Core
 		{
 			File = file;
 
-			m_AddrOperations = new List<AsyncOperationHandle>();
+			m_AddrOperations = new List<IAsyncOperation>();
 			m_OperationData  = new List<OperationData>();
 
 			BgmComboParts = new List<BgmComboPart>();
@@ -207,7 +207,7 @@ namespace Patapon4TLB.Core
 				var opAddr = m_AddrOperations[op];
 				var opData = m_OperationData[op];
 
-				if (!opAddr.IsValid())
+				if (!opAddr.IsValid)
 				{
 					Debug.Log($"An operation is not valid. (status={opAddr.Status})");
 					continue;
@@ -289,9 +289,9 @@ namespace Patapon4TLB.Core
 		{
 			for (var i = 0; i != m_AddrOperations.Count; i++)
 			{
-				Addressables.Release(m_AddrOperations[i]);
+				Addressables.ReleaseAsset(m_AddrOperations[i]);
 				if (m_AddrOperations[i].Result != null)
-					Addressables.Release(m_AddrOperations[i].Result);
+					Addressables.ReleaseAsset(m_AddrOperations[i].Result);
 			}
 		}
 

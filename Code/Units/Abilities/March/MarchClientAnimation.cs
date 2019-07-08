@@ -103,7 +103,7 @@ namespace Patapon4TLB.Default
 			GetModule(out m_AsyncOperationModule);
 			GetModule(out m_AbilityModule);
 
-			m_AsyncOperationModule.Add(Addressables.LoadAssetAsync<AnimationClip>(string.Format(AddrKey, "Walking")), new OperationHandleData {IsAttackAnimation = false});
+			m_AsyncOperationModule.Add(Addressables.LoadAsset<AnimationClip>(string.Format(AddrKey, "Walking")), new OperationHandleData {IsAttackAnimation = false});
 		}
 
 		protected override void OnUpdate()

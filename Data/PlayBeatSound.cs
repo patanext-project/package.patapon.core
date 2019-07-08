@@ -156,14 +156,14 @@ namespace Patapon4TLB.Default.Test
 
 					Addressables.LoadAsset<AudioClip>($"int:RhythmEngine/Sounds/drum_{key}_{rank}.ogg").Completed += op =>
 					{
-						Debug.Assert(op.IsValid(), "op.IsValid");
+						Debug.Assert(op.IsValid, "op.IsValid");
 
 						m_AudioOnPressureDrum[key][rank] = op.Result;
 					};
 
 					Addressables.LoadAsset<AudioClip>($"int:RhythmEngine/Sounds/voice_{key}_{rank}.wav").Completed += op =>
 					{
-						Debug.Assert(op.IsValid(), "op.IsValid");
+						Debug.Assert(op.IsValid, "op.IsValid");
 
 						m_AudioOnPressureVoice[key][rank] = op.Result;
 					};

@@ -178,13 +178,13 @@ namespace Patapon4TLB.Default
 						break;
 				}
 
-				m_AsyncOperationModule.Add(Addressables.LoadAssetAsync<AnimationClip>(string.Format(AddrRetreatKey, $"{key}")), new OperationData
+				m_AsyncOperationModule.Add(Addressables.LoadAsset<AnimationClip>(string.Format(AddrRetreatKey, $"{key}")), new OperationData
 				{
 					ArrayIndex = i
 				});
 			}
 
-			m_AsyncOperationModule.Add(Addressables.LoadAssetAsync<AnimationClip>(AddrMarchKey), new OperationData
+			m_AsyncOperationModule.Add(Addressables.LoadAsset<AnimationClip>(AddrMarchKey), new OperationData
 			{
 				ArrayIndex = ArrayLength - 1
 			});

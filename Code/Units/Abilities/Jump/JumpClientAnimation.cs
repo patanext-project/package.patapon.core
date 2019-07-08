@@ -192,7 +192,7 @@ namespace Patapon4TLB.Default
 						break;
 				}
 
-				m_AsyncOperationModule.Add(Addressables.LoadAssetAsync<AnimationClip>(string.Format(AddrKey, $"{key}")), new OperationData
+				m_AsyncOperationModule.Add(Addressables.LoadAsset<AnimationClip>(string.Format(AddrKey, $"{key}")), new OperationData
 				{
 					ArrayIndex = i
 				});

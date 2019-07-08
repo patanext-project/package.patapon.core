@@ -8,8 +8,6 @@ namespace Patapon4TLB.UI.InGame
 {
 	public abstract class UIGameSystemBase : GameBaseSystem
 	{
-		protected List<AsyncOperationHandle> AsyncOperations;
-		
 		public Entity GetRhythmEngineFromTarget(Entity entity)
 		{
 			return EntityManager.HasComponent<Relative<RhythmEngineDescription>>(entity)
