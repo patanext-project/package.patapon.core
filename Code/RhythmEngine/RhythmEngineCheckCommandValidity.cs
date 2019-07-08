@@ -69,9 +69,9 @@ namespace Patapon4TLB.Default
 					return false;
 
 				var lastCommandBeat  = currentCommand[currentCommand.Length - 1].RenderBeat;
-				var firstSequenceBeat = commandSequence[0].BeatRange.start;
+				var lastSequenceBeat = commandSequence[commandSequence.Length - 1].BeatRange.end;
 				//var diff             = lastCommandBeat - firstSequenceBeat;
-				var startBeat = lastCommandBeat - firstSequenceBeat;
+				var startBeat = lastCommandBeat - lastSequenceBeat;
 
 				var length = math.min(currentCommand.Length, commandSequence.Length);
 				if (!predict && length != commandSequence.Length)
@@ -94,7 +94,7 @@ namespace Patapon4TLB.Default
 					if (commandSequence[com].Key != currentCommand[com + comOffset].KeyId)
 						return false;
 
-					if (!predict) Debug.Log($"{currentCommand[com + comOffset].KeyId} [{range.start} <= {comBeat} <= {range.end}]");
+					if (!predict) Debug.Log($"{currentCommand[com].RenderBeat} [{range.start} <= {comBeat} <= {range.end}]");
 					if (!(range.start <= comBeat && comBeat <= range.end))
 						return false;
 				}
