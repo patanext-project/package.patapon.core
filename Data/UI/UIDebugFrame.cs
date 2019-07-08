@@ -143,8 +143,8 @@ namespace Patapon4TLB.UI
 
 				if (debugFrame.m_WantToHost)
 				{
-					ClientServerBootstrap.CreateClientWorlds();
-					ClientServerBootstrap.CreateServerWorld();
+					if (ClientServerBootstrap.PlayModeType != 2) ClientServerBootstrap.CreateClientWorlds();
+					if (ClientServerBootstrap.PlayModeType != 1) ClientServerBootstrap.CreateServerWorld();
 
 					var port = (ushort) int.Parse(debugFrame.PortField.text);
 

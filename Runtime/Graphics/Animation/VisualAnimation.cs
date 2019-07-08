@@ -191,7 +191,7 @@ namespace package.patapon.core.Animation
 			};
 		}
 
-		public unsafe ref T GetSystemData<T>(Type type)
+		public ref T GetSystemData<T>(Type type)
 			where T : struct
 		{
 			return ref ((SystemData<T>) m_SystemData[type]).Data;

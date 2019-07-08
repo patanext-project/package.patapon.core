@@ -14,7 +14,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 		public AsyncAssetPool<GameObject> PresentationPool;
 		public AssetPool<GameObject>      BackendPool;
 
-		private struct ToModel : IComponentData
+		public struct ToModel : IComponentData
 		{
 			public Entity Target;
 		}
@@ -49,7 +49,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 		protected override void OnUpdate()
 		{
-			var entities = Entities.WithAll<BasicUnitSnapshotData, ReplicatedEntityComponent>().WithNone<ToModel>().ToEntityQuery().ToEntityArray(Allocator.TempJob);
+			var entities = m_UnitQuery.ToEntityArray(Allocator.TempJob);
 			for (var ent = 0; ent != entities.Length; ent++)
 			{
 				var gameObject = BackendPool.Dequeue();
@@ -58,8 +58,6 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				backend.OnReset();
 				backend.SetFromPool(PresentationPool, EntityManager, entities[ent]);
 				
-				Debug.Log("Model set for " + entities[ent]);
-
 				using (new SetTemporaryActiveWorld(World))
 				{
 					gameObject.SetActive(true);

@@ -69,8 +69,9 @@ namespace Patapon4TLB.Default
 					return false;
 
 				var lastCommandBeat  = currentCommand[currentCommand.Length - 1].RenderBeat;
-				var lastSequenceBeat = commandSequence[commandSequence.Length - 1].BeatEnd;
-				var diff             = lastCommandBeat - lastSequenceBeat;
+				var firstSequenceBeat = commandSequence[0].BeatRange.start;
+				//var diff             = lastCommandBeat - firstSequenceBeat;
+				var startBeat = lastCommandBeat - firstSequenceBeat;
 
 				var length = math.min(currentCommand.Length, commandSequence.Length);
 				if (!predict && length != commandSequence.Length)
@@ -86,12 +87,15 @@ namespace Patapon4TLB.Default
 				for (var com = length - 1; com >= 0; com--)
 				{
 					var range   = commandSequence[com].BeatRange;
-					var comBeat = diff - currentCommand[com + comOffset].RenderBeat;
+					range.start += startBeat;
+					
+					var comBeat = currentCommand[com + comOffset].RenderBeat;
 
 					if (commandSequence[com].Key != currentCommand[com + comOffset].KeyId)
 						return false;
 
-					if (!(range.start >= comBeat && comBeat <= range.end))
+					if (!predict) Debug.Log($"{currentCommand[com + comOffset].KeyId} [{range.start} <= {comBeat} <= {range.end}]");
+					if (!(range.start <= comBeat && comBeat <= range.end))
 						return false;
 				}
 
@@ -176,14 +180,11 @@ namespace Patapon4TLB.Default
 					    && clientPressureBeat <= process.GetActivationBeat(settings.BeatInterval) + 1)
 					{
 						targetBeat = clientPressureBeat;
-						Debug.Log("Modification...");
 					}
 				}
 
 				rhythmCurrentCommand.ActiveAtTime  = targetBeat * settings.BeatInterval;
 				rhythmCurrentCommand.CommandTarget = result;
-				
-				Debug.Log($"Target time: {rhythmCurrentCommand.ActiveAtTime}, IsServer: {IsServer}, CurrTime: {process.TimeTick}, TargetBEat: {targetBeat}");
 				
 				state.VerifyCommand        = false;
 				state.ApplyCommandNextBeat = true;

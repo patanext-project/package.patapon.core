@@ -108,16 +108,21 @@ namespace Patapon4TLB.UI
 
 		protected override void OnUpdate()
 		{
-			var cameraEntity = m_CameraQuery.GetSingletonEntity();
-			var cameraObject = EntityManager.GetComponentObject<Camera>(cameraEntity);
-			var cameraPosition = cameraObject.transform.position;
-			
+			Entity cameraEntity = default;
+			float3 cameraPosition = default;
+			if (m_CameraQuery.CalculateLength() > 0)
+			{
+				cameraEntity   = m_CameraQuery.GetSingletonEntity();
+				var cameraObject   = EntityManager.GetComponentObject<Camera>(cameraEntity);
+				cameraPosition = cameraObject.transform.position;
+			}
+
 			var currentGamePlayer = GetFirstSelfGamePlayer();
 			var currentCameraState = GetCurrentCameraState(currentGamePlayer);
 
 			var isWorldSpace = currentCameraState.Target != default;
 			var canvasRect = m_Canvas.pixelRect;
-			if (isWorldSpace)
+			if (isWorldSpace && cameraEntity != default)
 			{
 				var translation = EntityManager.GetComponentData<Translation>(currentCameraState.Target);
 				m_Canvas.renderMode         = RenderMode.WorldSpace;

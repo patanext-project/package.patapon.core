@@ -139,6 +139,9 @@ namespace package.patapon.core
                     }
                 }
 
+                if (array == null)
+                    continue;
+                    
                 fixed (void* buffer = array)
                 {
                     UnsafeUtility.MemCpy(buffer, result.GetUnsafePtr(), resultCount * sizeof(float3));

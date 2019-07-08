@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using package.patapon.core.Animation;
+using Patapon4TLB.Core.BasicUnitSnapshot;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using Unity.Collections;
@@ -172,9 +173,17 @@ namespace Patapon4TLB.Core
 			Presentation.Animator.runtimeAnimatorController = null;
 		}
 
+		public override void OnReset()
+		{
+			GetComponent<UnitVisualAnimation>().DestroyPlayableGraph();
+			Animation = null;
+		}
+
 		protected override void Update()
 		{
-			if (DstEntityManager != null && DstEntityManager.IsCreated && DstEntityManager.Exists(DstEntity))
+			if (DstEntityManager != null && DstEntityManager.IsCreated && DstEntityManager.Exists(DstEntity) 
+			    && DstEntityManager.HasComponent<BasicUnitSetModel.ToModel>(DstEntity)
+			    && DstEntityManager.GetComponentData<BasicUnitSetModel.ToModel>(DstEntity).Target == gameObject.GetComponent<GameObjectEntity>().Entity)
 			{
 				base.Update();
 				return;

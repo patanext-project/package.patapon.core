@@ -2,6 +2,7 @@
 
 using System;
 using package.stormiumteam.shared.modding;
+using StormiumTeam.GameBase;
 using Unity.Burst;
 using Unity.Entities;
 using UnityEngine;
@@ -32,6 +33,19 @@ namespace P4.Core
         {
             var i = 0;
             i++;
+        }
+    }
+
+    public class SetVersionSystem : ComponentSystem
+    {
+        protected override void OnCreate()
+        {
+            GameStatic.Version = 1;
+        }
+
+        protected override void OnUpdate()
+        {
+
         }
     }
 }
