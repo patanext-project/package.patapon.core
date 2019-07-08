@@ -79,6 +79,9 @@ namespace Patapon4TLB.Default
 				var comOffset = currentCommand.Length - length;
 				if (comOffset < 0)
 					return false;
+
+				if (!predict && currentCommand.Length != commandSequence.Length)
+					return false;
 				
 				for (var com = length - 1; com >= 0; com--)
 				{

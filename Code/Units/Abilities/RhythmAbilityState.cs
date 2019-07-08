@@ -66,7 +66,7 @@ namespace Patapon4TLB.Default
 	{
 		private void ForEach(ref Owner owner, ref RhythmAbilityState abilityState)
 		{
-			if (owner.Target == default || !EntityManager.Exists(owner.Target))
+			if (owner.Target == default || !EntityManager.Exists(owner.Target) || !EntityManager.HasComponent<Relative<RhythmEngineDescription>>(owner.Target))
 				return; // ????
 
 			var engine = EntityManager.GetComponentData<Relative<RhythmEngineDescription>>(owner.Target).Target;
