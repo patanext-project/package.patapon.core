@@ -22,6 +22,7 @@ namespace Patapon4TLB.Default
 		private struct SendLocalEventToEngine : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineProcess, RhythmEngineState, GamePredictedCommandState>
 		{
 			public NativeArray<RhythmRpcPressureFromClient> PressureEventSingleArray;
+			public NativeArray<bool> ShouldRecoverSingleArray;
 
 			[NativeDisableParallelForRestriction]
 			public BufferFromEntity<RhythmEngineCurrentCommand> CommandSequenceFromEntity;
@@ -62,6 +63,8 @@ namespace Patapon4TLB.Default
 					pressureEvent.ShouldStartRecovery             = true;
 					state.NextBeatRecovery                        = flowBeat + 1;
 					predictedCommand.State.ChainEndTime = -1;
+
+					ShouldRecoverSingleArray[0] = true;
 				}
 				else
 				{
@@ -104,7 +107,7 @@ namespace Patapon4TLB.Default
 				RpcPressureQueue.Schedule(OutgoingDataBufferFromEntity[entity], PressureEventSingleArray[0]);
 				if (ShouldRecover[0])
 				{
-					RpcRecoverQueue.Schedule(OutgoingDataBufferFromEntity[entity], new RhythmRpcClientRecover());
+					RpcRecoverQueue.Schedule(OutgoingDataBufferFromEntity[entity], new RhythmRpcClientRecover {ForceRecover = true, LooseChain = true});
 				}
 			}
 		}
@@ -173,11 +176,14 @@ namespace Patapon4TLB.Default
 			{
 				[0] = pressureEvent
 			};
+			var shouldRecoverSingleArray = new NativeArray<bool>(1, Allocator.TempJob);
 
 			inputDeps = new SendLocalEventToEngine
 			{
 				PressureEventSingleArray  = pressureEventSingleArray,
 				CommandSequenceFromEntity = GetBufferFromEntity<RhythmEngineCurrentCommand>(),
+				
+				ShouldRecoverSingleArray = shouldRecoverSingleArray,
 
 				CreatePressureEventList = m_PressureEventProvider.GetEntityDelayedList()
 			}.Schedule(this, inputDeps);
@@ -187,6 +193,8 @@ namespace Patapon4TLB.Default
 			inputDeps = new SendRpcEvent
 			{
 				PressureEventSingleArray     = pressureEventSingleArray,
+				ShouldRecover = shouldRecoverSingleArray,
+				
 				RpcPressureQueue                     = rpcPressureQueue,
 				RpcRecoverQueue = rpcRecoverQueue,
 				OutgoingDataBufferFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>()

@@ -1,9 +1,11 @@
 using package.patapon.core;
 using StormiumTeam.GameBase;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
+using Unity.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.Default
@@ -17,6 +19,12 @@ namespace Patapon4TLB.Default
 		private struct Job : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineState, RhythmEngineProcess, GameCommandState, RhythmCurrentCommand, GameComboState>
 		{
 			public bool IsServer;
+
+			[NativeDisableParallelForRestriction]
+			public NativeArray<bool> SendEvent;
+
+			[NativeDisableParallelForRestriction]
+			public NativeArray<RhythmRpcClientRecover> RecoverEvent;
 
 			[ReadOnly]
 			public ComponentDataFromEntity<RhythmCommandData> CommandDataFromEntity;
@@ -69,10 +77,18 @@ namespace Patapon4TLB.Default
 
 					if (!IsServer && SimulateTagFromEntity.Exists(entity))
 					{
-						var p = PredictedCommandFromEntity[entity];
+						var p = PredictedComboFromEntity[entity].State;
 
 						PredictedCommandFromEntity[entity] = new GamePredictedCommandState {State = commandState};
 						PredictedComboFromEntity[entity]   = new GameComboPredictedClient {State  = comboState};
+
+						if (p.IsFever != comboState.IsFever
+						    || p.Chain != comboState.Chain
+						    || p.ChainToFever != comboState.ChainToFever)
+						{
+							SendEvent[0]    = true;
+							RecoverEvent[0] = new RhythmRpcClientRecover {LooseChain = true};
+						}
 					}
 				}
 
@@ -81,6 +97,13 @@ namespace Patapon4TLB.Default
 					commandState.StartTime    = -1;
 					commandState.EndTime      = -1;
 					commandState.ChainEndTime = -1;
+
+					/*if (!IsServer)
+					{
+						SendEvent[0]    = true;
+						RecoverEvent[0] = new RhythmRpcClientRecover {LooseChain = true};
+					}*/
+
 					return;
 				}
 
@@ -107,7 +130,7 @@ namespace Patapon4TLB.Default
 				{
 					var previousPrediction = PredictedCommandFromEntity[entity].State;
 					var isNew              = state.ApplyCommandNextBeat;
-					var madOp = math.mad(beatLength, settings.BeatInterval, rhythm.ActiveAtTime);
+					var madOp              = math.mad(beatLength, settings.BeatInterval, rhythm.ActiveAtTime);
 					if (isNew)
 					{
 						previousPrediction.ChainEndTime = (rhythm.CustomEndTime == 0 || rhythm.CustomEndTime == -1)
@@ -129,12 +152,12 @@ namespace Patapon4TLB.Default
 				{
 					var isNew = state.ApplyCommandNextBeat;
 					var madOp = math.mad(beatLength, settings.BeatInterval, rhythm.ActiveAtTime);
-					
+
 					if (isNew)
 					{
 						commandState.StartTime = rhythm.ActiveAtTime;
 						commandState.EndTime   = rhythm.CustomEndTime == -1 ? madOp : rhythm.CustomEndTime;
-						commandState.ChainEndTime = rhythm.CustomEndTime == -1 
+						commandState.ChainEndTime = rhythm.CustomEndTime == -1
 							? (rhythmActiveAtFlowBeat + beatLength + 4) * settings.BeatInterval
 							: rhythm.CustomEndTime;
 
@@ -146,16 +169,58 @@ namespace Patapon4TLB.Default
 			}
 		}
 
+		[BurstCompile]
+		private struct SendRpcRecoverEvent : IJobForEachWithEntity<NetworkIdComponent>
+		{
+			[DeallocateOnJobCompletion] public NativeArray<bool>                   SendEvent;
+			[DeallocateOnJobCompletion] public NativeArray<RhythmRpcClientRecover> RecoverEvent;
+
+			public RpcQueue<RhythmRpcClientRecover> RpcRecoverQueue;
+
+			[NativeDisableParallelForRestriction]
+			public BufferFromEntity<OutgoingRpcDataStreamBufferComponent> OutgoingDataBufferFromEntity;
+
+			public void Execute(Entity entity, int index, ref NetworkIdComponent networkIdComponent)
+			{
+				if (!SendEvent[0])
+					return;
+
+				RpcRecoverQueue.Schedule(OutgoingDataBufferFromEntity[entity], RecoverEvent[0]);
+			}
+		}
+
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
+			var sendEventSingleArray = new NativeArray<bool>(1, Allocator.TempJob);
+			var rpcEventSingleArray  = new NativeArray<RhythmRpcClientRecover>(1, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+
 			inputDeps = new Job
 			{
-				IsServer              = IsServer,
-				CommandDataFromEntity = GetComponentDataFromEntity<RhythmCommandData>(true),
-				PredictedCommandFromEntity   = GetComponentDataFromEntity<GamePredictedCommandState>(),
-				SimulateTagFromEntity = GetComponentDataFromEntity<RhythmEngineSimulateTag>(true),
-				PredictedComboFromEntity = GetComponentDataFromEntity<GameComboPredictedClient>(),
+				IsServer                   = IsServer,
+				
+				SendEvent = sendEventSingleArray,
+				RecoverEvent = rpcEventSingleArray,
+				
+				CommandDataFromEntity      = GetComponentDataFromEntity<RhythmCommandData>(true),
+				PredictedCommandFromEntity = GetComponentDataFromEntity<GamePredictedCommandState>(),
+				SimulateTagFromEntity      = GetComponentDataFromEntity<RhythmEngineSimulateTag>(true),
+				PredictedComboFromEntity   = GetComponentDataFromEntity<GameComboPredictedClient>(),
 			}.Schedule(this, inputDeps);
+
+			if (!IsServer)
+			{
+				var rpcQueue = World.GetExistingSystem<RpcQueueSystem<RhythmRpcClientRecover>>().GetRpcQueue();
+
+				inputDeps = new SendRpcRecoverEvent
+				{
+					SendEvent    = sendEventSingleArray,
+					RecoverEvent = rpcEventSingleArray,
+
+					RpcRecoverQueue = rpcQueue,
+
+					OutgoingDataBufferFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>()
+				}.Schedule(this, inputDeps);
+			}
 
 			return inputDeps;
 		}
