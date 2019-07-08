@@ -68,32 +68,28 @@ namespace Patapon4TLB.Default
 				if (currentCommand.Length <= 0)
 					return false;
 
-				var lastCommandBeat  = currentCommand[currentCommand.Length - 1].RenderBeat;
-				var lastSequenceBeat = commandSequence[commandSequence.Length - 1].BeatRange.end;
-				//var diff             = lastCommandBeat - firstSequenceBeat;
-				var startBeat = lastCommandBeat - lastSequenceBeat;
+				var lastCommandBeat = currentCommand[currentCommand.Length - 1].RenderBeat;
+				var commandLength   = commandSequence[commandSequence.Length - 1].BeatEnd - commandSequence[0].BeatRange.start;
+				var startBeat       = lastCommandBeat - commandLength;
 
-				var length = math.min(currentCommand.Length, commandSequence.Length);
-				if (!predict && length != commandSequence.Length)
+				// disable prediction for now (how should we do it? we should start by CurrentCommand instead of CommandSequence for the for-loop?)
+				if (predict || currentCommand.Length < commandSequence.Length)
 					return false;
 
-				var comOffset = currentCommand.Length - length;
-				if (comOffset < 0)
+				var comDiff = currentCommand.Length - commandSequence.Length;
+				if (comDiff < 0)
 					return false;
 
-				if (!predict && currentCommand.Length != commandSequence.Length)
-					return false;
-				
-				for (var com = length - 1; com >= 0; com--)
+				for (var com = commandSequence.Length - 1; com >= 0; com--)
 				{
-					var range   = commandSequence[com].BeatRange;
+					var range = commandSequence[com].BeatRange;
 					range.start += startBeat;
-					
-					var comBeat = currentCommand[com + comOffset].RenderBeat;
 
-					if (commandSequence[com].Key != currentCommand[com + comOffset].KeyId)
+					var comBeat = currentCommand[com + comDiff].RenderBeat;
+
+					if (commandSequence[com].Key != currentCommand[com + comDiff].KeyId)
 						return false;
-					
+
 					if (!(range.start <= comBeat && comBeat <= range.end))
 						return false;
 				}
@@ -172,6 +168,7 @@ namespace Patapon4TLB.Default
 				state.IsNewPressure = false;
 
 				var targetBeat  = process.GetFlowBeat(settings.BeatInterval) + 1;
+				
 				if (IsServer)
 				{
 					var clientPressureBeat = RhythmEngineProcess.CalculateFlowBeat(currCommandArray[currCommandArray.Length - 1].Data.Time, settings.BeatInterval) + 1;
