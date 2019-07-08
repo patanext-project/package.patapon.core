@@ -81,7 +81,7 @@ namespace Patapon4TLB.Default
 
 						PredictedCommandFromEntity[entity] = new GamePredictedCommandState {State = commandState};
 						PredictedComboFromEntity[entity]   = new GameComboPredictedClient {State  = comboState};
-
+						
 						if (p.IsFever != comboState.IsFever
 						    || p.Chain != comboState.Chain
 						    || p.ChainToFever != comboState.ChainToFever)
@@ -97,12 +97,6 @@ namespace Patapon4TLB.Default
 					commandState.StartTime    = -1;
 					commandState.EndTime      = -1;
 					commandState.ChainEndTime = -1;
-
-					/*if (!IsServer)
-					{
-						SendEvent[0]    = true;
-						RecoverEvent[0] = new RhythmRpcClientRecover {LooseChain = true};
-					}*/
 
 					return;
 				}

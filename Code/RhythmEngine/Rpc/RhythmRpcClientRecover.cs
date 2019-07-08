@@ -1,5 +1,6 @@
 using package.patapon.core;
 using package.patapon.def.Data;
+using package.stormiumteam.shared;
 using Runtime.EcsComponents;
 using StormiumTeam.GameBase;
 using Unity.Collections;
@@ -20,18 +21,29 @@ namespace Patapon4TLB.Default
 			var ent = commandBuffer.CreateEntity(jobIndex);
 			commandBuffer.AddComponent(jobIndex, ent, new RhythmServerExecuteClientRecover
 			{
-				Connection = connection
+				Connection   = connection,
+				ForceRecover = ForceRecover,
+				LooseChain   = LooseChain,
 			});
 		}
 
 		public void Serialize(DataStreamWriter writer)
 		{
+			byte mask = 0, pos = 0;
+			MainBit.SetBitAt(ref mask, pos++, ForceRecover);
+			MainBit.SetBitAt(ref mask, pos++, LooseChain);
 
+			writer.Write(mask);
 		}
 
 		public void Deserialize(DataStreamReader reader, ref DataStreamReader.Context ctx)
 		{
-
+			var mask = reader.ReadByte(ref ctx);
+			{
+				var pos = 0;
+				ForceRecover = MainBit.GetBitAt(mask, pos++) == 1;
+				LooseChain   = MainBit.GetBitAt(mask, pos++) == 1;
+			}
 		}
 	}
 
