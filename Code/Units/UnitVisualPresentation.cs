@@ -169,7 +169,7 @@ namespace Patapon4TLB.Core
 
 		protected override void Update()
 		{
-			if (DstEntityManager == null || DstEntityManager.IsCreated && DstEntityManager.Exists(DstEntity))
+			if (DstEntityManager != null && DstEntityManager.IsCreated && DstEntityManager.Exists(DstEntity))
 			{
 				base.Update();
 				return;

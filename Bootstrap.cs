@@ -5,6 +5,7 @@ using package.stormiumteam.shared.modding;
 using Unity.Burst;
 using Unity.Entities;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace P4.Core
 {
@@ -31,15 +32,6 @@ namespace P4.Core
         {
             var i = 0;
             i++;
-        }
-    }
-
-    public class HideDebugWindow : ComponentSystem
-    {
-        protected override void OnUpdate()
-        {
-            // what the heck unity
-            Debug.developerConsoleVisible = false;
         }
     }
 }

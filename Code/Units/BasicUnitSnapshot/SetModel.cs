@@ -3,6 +3,7 @@ using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
+using Unity.Transforms;
 using UnityEngine;
 
 namespace Patapon4TLB.Core.BasicUnitSnapshot
@@ -18,6 +19,8 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			public Entity Target;
 		}
 
+		private EntityQuery m_UnitQuery;
+		
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -36,6 +39,12 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 				return gameObject;
 			}, World);
+
+			m_UnitQuery = GetEntityQuery(new EntityQueryDesc
+			{
+				All = new ComponentType[]{typeof(BasicUnitSnapshotData), typeof(ReplicatedEntityComponent), typeof(Translation)},
+				None = new ComponentType[]{typeof(ToModel)}
+			});
 		}
 
 		protected override void OnUpdate()
@@ -48,6 +57,8 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 				backend.OnReset();
 				backend.SetFromPool(PresentationPool, EntityManager, entities[ent]);
+				
+				Debug.Log("Model set for " + entities[ent]);
 
 				using (new SetTemporaryActiveWorld(World))
 				{
