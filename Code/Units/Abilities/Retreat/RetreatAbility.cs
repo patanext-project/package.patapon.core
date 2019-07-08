@@ -52,8 +52,10 @@ namespace Patapon4TLB.Default
 					return;
 				}
 
+				const float walkbackTime = 3.25f;
+
 				var wasRetreating = ability.IsRetreating;
-				ability.IsRetreating = ability.ActiveTime <= 2.5f;
+				ability.IsRetreating = ability.ActiveTime <= walkbackTime;
 
 				var translation   = TranslationFromEntity[owner.Target];
 				var unitSettings  = UnitSettingsFromEntity[owner.Target];
@@ -69,17 +71,17 @@ namespace Patapon4TLB.Default
 				}
 
 				// there is a little stop when the character is stopping retreating
-				if (ability.ActiveTime >= 1.5f && ability.ActiveTime <= 2.5f)
+				if (ability.ActiveTime >= 1.5f && ability.ActiveTime <= walkbackTime)
 				{
 					// if he weight more, he will stop faster
 					velocity.Value.x = math.lerp(velocity.Value.x, 0, unitSettings.Weight * 0.25f * DeltaTime);
 				}
 
-				if (!ability.IsRetreating && ability.ActiveTime > 2.5f)
+				if (!ability.IsRetreating && ability.ActiveTime > walkbackTime)
 				{
 					if (wasRetreating)
 					{
-						ability.BackVelocity = math.abs(ability.StartPosition.x - translation.Value.x) * 2f;
+						ability.BackVelocity = math.abs(ability.StartPosition.x - translation.Value.x) * 2.25f;
 					}
 
 					var newPosX = Mathf.MoveTowards(translation.Value.x, ability.StartPosition.x, ability.BackVelocity * DeltaTime);

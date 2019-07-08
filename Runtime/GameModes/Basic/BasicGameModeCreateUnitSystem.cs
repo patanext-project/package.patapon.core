@@ -199,6 +199,21 @@ namespace Patapon4TLB.GameModes.Basic
 
 				Debug.Log($"------------------ Create entity with {unit} {playerData.RhythmEngine}");
 			}
+			
+			// bump players outside of the map
+			Entities.WithAll<UnitDescription>().ForEach((ref Translation translation, ref Velocity velocity, ref UnitTargetPosition target) =>
+			{
+				if (translation.Value.x > 49f)
+				{
+					velocity.Value = new float3(-20, 10, 0);
+					target.Value.x = 42.5f;
+				}
+				if (translation.Value.x < -49f)
+				{
+					velocity.Value = new float3(20, 10, 0);
+					target.Value.x = -42.5f;
+				}
+			});
 
 			Entities.ForEach((ref Translation translation, ref UnitTargetPosition target) =>
 			{

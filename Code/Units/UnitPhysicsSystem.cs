@@ -45,7 +45,7 @@ namespace Patapon4TLB.Core
 					else
 					{
 						var acceleration = math.clamp(math.rcp(unitSettings.Weight), 0, 1) * 10;
-						acceleration = math.min(acceleration * DeltaTime, 1) * 6f;
+						acceleration = math.min(acceleration * DeltaTime, 1) * 0.75f;
 						
 						velocity.Value.x = math.lerp(velocity.Value.x, 0, acceleration);
 					}

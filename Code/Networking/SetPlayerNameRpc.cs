@@ -60,6 +60,7 @@ namespace P4.Core.Code.Networking
 	{
 		private EntityQuery m_Query;
 		private EntityQuery m_PlayerQuery;
+		private EntityQuery m_NewConnections;
 
 		public NetworkConnectionModule ConnectionModule;
 
@@ -67,8 +68,9 @@ namespace P4.Core.Code.Networking
 		{
 			base.OnCreate();
 
-			m_Query       = GetEntityQuery(typeof(SetPlayerNamePayload));
-			m_PlayerQuery = GetEntityQuery(typeof(PlayerDescription));
+			m_Query          = GetEntityQuery(typeof(SetPlayerNamePayload));
+			m_PlayerQuery    = GetEntityQuery(typeof(PlayerDescription));
+			m_NewConnections = GetEntityQuery(typeof(CreateGamePlayer));
 
 			GetModule(out ConnectionModule);
 		}
@@ -79,12 +81,26 @@ namespace P4.Core.Code.Networking
 
 			ConnectionModule.Update(default);
 
-			var payloadEntities         = m_Query.ToEntityArray(Allocator.TempJob);
-			var payloadArray            = m_Query.ToComponentDataArray<SetPlayerNamePayload>(Allocator.TempJob);
-			var playerEntities          = m_PlayerQuery.ToEntityArray(Allocator.TempJob);
+			var payloadEntities = m_Query.ToEntityArray(Allocator.TempJob);
+			var payloadArray    = m_Query.ToComponentDataArray<SetPlayerNamePayload>(Allocator.TempJob);
+			var playerEntities  = m_PlayerQuery.ToEntityArray(Allocator.TempJob);
 			if (IsServer)
 			{
 				var rpcQueue = World.GetOrCreateSystem<RpcQueueSystem<SetPlayerNameRpc>>().GetRpcQueue();
+
+				var newConnections = m_NewConnections.ToEntityArray(Allocator.TempJob);
+				for (var con = 0; con != newConnections.Length; con++)
+				{
+					var outgoingData = EntityManager.GetBuffer<OutgoingRpcDataStreamBufferComponent>(newConnections[con]);
+					foreach (var player in playerEntities)
+					{
+						var serverId = EntityManager.GetComponentData<GamePlayer>(player).ServerId;
+						var name     = EntityManager.GetComponentData<PlayerName>(player);
+
+						rpcQueue.Schedule(outgoingData, new SetPlayerNameRpc {ServerId = serverId, Name = name.Value});
+					}
+				}
+
 				for (var ent = 0; ent != payloadArray.Length; ent++)
 				{
 					var playerIdx = -1;
@@ -92,7 +108,7 @@ namespace P4.Core.Code.Networking
 					{
 						if (!EntityManager.HasComponent<NetworkOwner>(playerEntities[p]))
 							continue;
-							
+
 						var networkOwner = EntityManager.GetComponentData<NetworkOwner>(playerEntities[p]);
 						if (networkOwner.Value == payloadArray[ent].Connection)
 							playerIdx = p;
@@ -140,6 +156,7 @@ namespace P4.Core.Code.Networking
 						Debug.LogError("(Client) No player found with serverId=" + payloadArray[ent].ServerId);
 						continue;
 					}
+
 					EntityManager.DestroyEntity(payloadEntities[ent]);
 
 					// local player

@@ -45,6 +45,9 @@ namespace Patapon4TLB.Default
 
 			public float Weight;
 
+			public Transition RetreatingToStopTransition;
+			public Transition StopFromRetreatingTransition;
+			
 			public Transition StopToWalkTransition;
 			public Transition WalkFromStopTransition;
 
@@ -72,6 +75,13 @@ namespace Patapon4TLB.Default
 
 				if (m_PreviousPhase != Phase)
 				{
+					if (m_PreviousPhase == Phase.Retreating && Phase == Phase.Stop)
+					{
+						RetreatingToStopTransition.End(global, global + 0.15f);
+						StopFromRetreatingTransition.Begin(global, global + 0.15f);
+						StopFromRetreatingTransition.End(global, global + 0.15f);
+					}
+					
 					if (m_PreviousPhase == Phase.Stop && Phase == Phase.WalkBack)
 					{
 						StopToWalkTransition.End(global, global + 0.33f);
@@ -92,7 +102,8 @@ namespace Patapon4TLB.Default
 						Mixer.SetInputWeight((int) AnimationType.Retreat, 1);
 						break;
 					case Phase.Stop:
-						Mixer.SetInputWeight((int) AnimationType.Stop, 1);
+						Mixer.SetInputWeight((int) AnimationType.Retreat, RetreatingToStopTransition.Evaluate(global));
+						Mixer.SetInputWeight((int) AnimationType.Stop, StopFromRetreatingTransition.Evaluate(global, 0, 1));
 						break;
 					case Phase.WalkBack:
 						Mixer.SetInputWeight((int) AnimationType.Stop, StopToWalkTransition.Evaluate(global));
@@ -260,7 +271,7 @@ namespace Patapon4TLB.Default
 			// Start animation if Behavior.ActiveId and Retreat.ActiveId is different
 			if (abilityState.IsActive && abilityState.ActiveId != data.ActiveId)
 			{
-				var stopAt = animation.RootTime + 3f;
+				var stopAt = animation.RootTime + 3.25f;
 				animation.SetTargetAnimation(new TargetAnimation(m_SystemType, false, false, stopAt: stopAt));
 
 				Debug.Log("Start Animation");
@@ -274,7 +285,7 @@ namespace Patapon4TLB.Default
 
 			var targetPhase = Phase.Retreating;
 			// stop
-			if (RetreatAbility.ActiveTime >= 1.5f && RetreatAbility.ActiveTime <= 2.5f)
+			if (RetreatAbility.ActiveTime >= 1.75f && RetreatAbility.ActiveTime <= 3.25f)
 			{
 				targetPhase = Phase.Stop;
 			}
