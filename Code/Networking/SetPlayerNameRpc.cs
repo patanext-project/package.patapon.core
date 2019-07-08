@@ -56,11 +56,14 @@ namespace P4.Core.Code.Networking
 	}
 
 	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
+	[UpdateAfter(typeof(CreateGamePlayerSystem))]
 	public class SetPlayerNameSystem : GameBaseSystem
 	{
 		private EntityQuery m_Query;
 		private EntityQuery m_PlayerQuery;
 		private EntityQuery m_NewConnections;
+
+		private NativeList<Entity> DelaySendNameEntities;
 
 		public NetworkConnectionModule ConnectionModule;
 
@@ -71,6 +74,8 @@ namespace P4.Core.Code.Networking
 			m_Query          = GetEntityQuery(typeof(SetPlayerNamePayload));
 			m_PlayerQuery    = GetEntityQuery(typeof(PlayerDescription));
 			m_NewConnections = GetEntityQuery(typeof(CreateGamePlayer));
+			
+			DelaySendNameEntities = new NativeList<Entity>(Allocator.Persistent);
 
 			GetModule(out ConnectionModule);
 		}
@@ -91,16 +96,10 @@ namespace P4.Core.Code.Networking
 				var newConnections = m_NewConnections.ToEntityArray(Allocator.TempJob);
 				for (var con = 0; con != newConnections.Length; con++)
 				{
-					var outgoingData = EntityManager.GetBuffer<OutgoingRpcDataStreamBufferComponent>(newConnections[con]);
-					foreach (var player in playerEntities)
-					{
-						var serverId = EntityManager.GetComponentData<GamePlayer>(player).ServerId;
-						var name     = EntityManager.GetComponentData<PlayerName>(player);
-
-						rpcQueue.Schedule(outgoingData, new SetPlayerNameRpc {ServerId = serverId, Name = name.Value});
-					}
+					DelaySendNameEntities.Add(EntityManager.GetComponentData<CreateGamePlayer>(newConnections[con]).Connection);
 				}
-
+				newConnections.Dispose();
+				
 				for (var ent = 0; ent != payloadArray.Length; ent++)
 				{
 					var playerIdx = -1;
@@ -131,6 +130,29 @@ namespace P4.Core.Code.Networking
 
 						rpcQueue.Schedule(outgoingData, new SetPlayerNameRpc {ServerId = serverId.Value, Name = payloadArray[ent].Name});
 					}
+				}
+				
+				for (var con = 0; con != DelaySendNameEntities.Length; con++)
+				{
+					if (!EntityManager.HasComponent<OutgoingRpcDataStreamBufferComponent>(DelaySendNameEntities[con]))
+						continue;
+					
+					var outgoingData = EntityManager.GetBuffer<OutgoingRpcDataStreamBufferComponent>(DelaySendNameEntities[con]);
+					foreach (var player in playerEntities)
+					{
+						if (!EntityManager.HasComponent<PlayerName>(player))
+							continue;
+							
+						var serverId = EntityManager.GetComponentData<GamePlayer>(player).ServerId;
+						var name     = EntityManager.GetComponentData<PlayerName>(player);
+						
+						Debug.Log($"(New Client) Send {serverId} to new connection {con}.");
+
+						rpcQueue.Schedule(outgoingData, new SetPlayerNameRpc {ServerId = serverId, Name = name.Value});
+					}
+					
+					DelaySendNameEntities.RemoveAtSwapBack(con);
+					con--;
 				}
 
 				EntityManager.DestroyEntity(m_Query);
