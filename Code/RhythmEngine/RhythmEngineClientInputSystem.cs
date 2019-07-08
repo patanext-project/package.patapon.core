@@ -53,8 +53,6 @@ namespace Patapon4TLB.Default
 				var failFlag2 = pressureData.RenderBeat >= cmdChainEndFlow
 				                && cmdChainEndFlow > 0;
 				
-				Debug.Log($"{pressureData.Time} ----> {pressureData.GetAbsoluteScore()}");
-				
 				if (state.IsRecovery(flowBeat))
 				{
 					predictedCommand.State.ChainEndTime = -1;
@@ -93,14 +91,21 @@ namespace Patapon4TLB.Default
 		private struct SendRpcEvent : IJobForEachWithEntity<NetworkIdComponent>
 		{
 			[DeallocateOnJobCompletion] public NativeArray<RhythmRpcPressureFromClient> PressureEventSingleArray;
-			public                             RpcQueue<RhythmRpcPressureFromClient>    RpcQueue;
+			[DeallocateOnJobCompletion] public NativeArray<bool> ShouldRecover;
+			
+			public                             RpcQueue<RhythmRpcPressureFromClient>    RpcPressureQueue;
+			public                             RpcQueue<RhythmRpcClientRecover>    RpcRecoverQueue;
 
 			[NativeDisableParallelForRestriction]
 			public BufferFromEntity<OutgoingRpcDataStreamBufferComponent> OutgoingDataBufferFromEntity;
 
 			public void Execute(Entity entity, int index, ref NetworkIdComponent networkIdComponent)
 			{
-				RpcQueue.Schedule(OutgoingDataBufferFromEntity[entity], PressureEventSingleArray[0]);
+				RpcPressureQueue.Schedule(OutgoingDataBufferFromEntity[entity], PressureEventSingleArray[0]);
+				if (ShouldRecover[0])
+				{
+					RpcRecoverQueue.Schedule(OutgoingDataBufferFromEntity[entity], new RhythmRpcClientRecover());
+				}
 			}
 		}
 
@@ -162,7 +167,8 @@ namespace Patapon4TLB.Default
 			if (pressureEvent.Key < 0)
 				return inputDeps;
 
-			var rpcQueue = World.GetExistingSystem<RpcQueueSystem<RhythmRpcPressureFromClient>>().GetRpcQueue();
+			var rpcPressureQueue = World.GetExistingSystem<RpcQueueSystem<RhythmRpcPressureFromClient>>().GetRpcQueue();
+			var rpcRecoverQueue = World.GetExistingSystem<RpcQueueSystem<RhythmRpcClientRecover>>().GetRpcQueue();
 			var pressureEventSingleArray = new NativeArray<RhythmRpcPressureFromClient>(1, Allocator.TempJob, NativeArrayOptions.UninitializedMemory)
 			{
 				[0] = pressureEvent
@@ -181,7 +187,8 @@ namespace Patapon4TLB.Default
 			inputDeps = new SendRpcEvent
 			{
 				PressureEventSingleArray     = pressureEventSingleArray,
-				RpcQueue                     = rpcQueue,
+				RpcPressureQueue                     = rpcPressureQueue,
+				RpcRecoverQueue = rpcRecoverQueue,
 				OutgoingDataBufferFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>()
 			}.Schedule(this, inputDeps);
 

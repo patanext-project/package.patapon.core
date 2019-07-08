@@ -51,6 +51,9 @@ namespace Patapon4TLB.Default
 
 			public Transition IdleAirTransition1;
 			public Transition IdleAirTransition2;
+			
+			public Transition FallTransition1;
+			public Transition FallTransition2;
 
 			public void Initialize(Playable self, int index, PlayableGraph graph, AnimationMixerPlayable rootMixer, IReadOnlyList<AnimationClip> clips)
 			{
@@ -86,6 +89,13 @@ namespace Patapon4TLB.Default
 						IdleAirTransition2.End(global + 0.1f, global + 0.1f);
 					}
 
+					if (m_PreviousPhase == Phase.Idle && Phase == Phase.Fall)
+					{
+						FallTransition1.End(global, global + 0.1f);
+						FallTransition2.Begin(global, global + 0.1f);
+						FallTransition2.End(global, global + 0.1f);
+					}
+
 					m_PreviousPhase = Phase;
 				}
 
@@ -104,7 +114,8 @@ namespace Patapon4TLB.Default
 						Mixer.SetInputWeight((int) AnimationType.IdleAir, IdleAirTransition2.Evaluate(global, 0, 1));
 						break;
 					case Phase.Fall:
-						Mixer.SetInputWeight((int) AnimationType.Fall, 1);
+						Mixer.SetInputWeight((int) AnimationType.IdleAir, FallTransition1.Evaluate(global));
+						Mixer.SetInputWeight((int) AnimationType.Fall, FallTransition2.Evaluate(global, 0, 1));
 						break;
 				}
 
@@ -121,18 +132,12 @@ namespace Patapon4TLB.Default
 					Weight = 1;
 				}
 
-				if (Weight > 0)
-				{
-					Debug.Log($"??? {currAnim.PreviousType} {currAnim.Type} {Weight}");
-				}
-
 				Root.SetInputWeight(VisualAnimation.GetIndexFrom(Root, Self), Weight);
 			}
 		}
 
 		private struct SystemData
 		{
-			public ScriptPlayable<SystemPlayable> Playable;
 			public SystemPlayable                 Behaviour;
 
 			public int    ActiveId;
@@ -227,8 +232,7 @@ namespace Patapon4TLB.Default
 			var behavior = playable.GetBehaviour();
 
 			behavior.Initialize(playable, data.Index, data.Graph, data.Behavior.RootMixer, m_AnimationClips);
-
-			systemData.Playable             = playable;
+			
 			systemData.ActiveId             = -1;
 			systemData.StartAt              = -1;
 			systemData.Behaviour            = behavior;

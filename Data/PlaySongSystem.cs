@@ -392,6 +392,7 @@ namespace Patapon4TLB.Default.Test
 			var cmdStartActivationBeat = RhythmEngineProcess.CalculateActivationBeat(clientSystem.CommandStartTime, clientSystem.Interval);
 			var nextBeatDelay          = (cmdStartActivationBeat * clientSystem.Interval - clientSystem.Tick) * 0.001f;
 			m_CommandSource.clip = commandTarget;
+			m_CommandSource.pitch = data.BeatLength == 3 ? 1.25f : 1f;
 			m_CommandSource.PlayScheduled(AudioSettings.dspTime + nextBeatDelay);
 		}
 
