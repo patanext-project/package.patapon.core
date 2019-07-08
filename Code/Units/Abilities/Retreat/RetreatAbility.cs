@@ -53,14 +53,14 @@ namespace Patapon4TLB.Default
 				}
 
 				var wasRetreating = ability.IsRetreating;
-				ability.IsRetreating = ability.ActiveTime <= 2.0f;
+				ability.IsRetreating = ability.ActiveTime <= 2.5f;
 
 				var translation   = TranslationFromEntity[owner.Target];
 				var unitSettings  = UnitSettingsFromEntity[owner.Target];
 				var unitDirection = UnitDirectionFromEntity[owner.Target];
 				var velocity      = VelocityFromEntity[owner.Target];
 
-				var retreatSpeed = unitSettings.MovementAttackSpeed * 2.5f;
+				var retreatSpeed = unitSettings.MovementAttackSpeed * 3f;
 
 				if (!wasRetreating && ability.IsRetreating)
 				{
@@ -69,17 +69,17 @@ namespace Patapon4TLB.Default
 				}
 
 				// there is a little stop when the character is stopping retreating
-				if (ability.IsRetreating && ability.ActiveTime >= 1.75f)
+				if (ability.ActiveTime >= 1.5f && ability.ActiveTime <= 2.5f)
 				{
 					// if he weight more, he will stop faster
-					velocity.Value.x = math.lerp(velocity.Value.x, 0, unitSettings.Weight * DeltaTime);
+					velocity.Value.x = math.lerp(velocity.Value.x, 0, unitSettings.Weight * 0.25f * DeltaTime);
 				}
 
-				if (!ability.IsRetreating)
+				if (!ability.IsRetreating && ability.ActiveTime > 2.5f)
 				{
 					if (wasRetreating)
 					{
-						ability.BackVelocity = math.abs(ability.StartPosition.x - translation.Value.x) * 0.6f;
+						ability.BackVelocity = math.abs(ability.StartPosition.x - translation.Value.x) * 2f;
 					}
 
 					var newPosX = Mathf.MoveTowards(translation.Value.x, ability.StartPosition.x, ability.BackVelocity * DeltaTime);

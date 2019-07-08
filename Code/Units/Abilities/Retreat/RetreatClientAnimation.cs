@@ -45,6 +45,9 @@ namespace Patapon4TLB.Default
 
 			public float Weight;
 
+			public Transition StopToWalkTransition;
+			public Transition WalkFromStopTransition;
+
 			public void Initialize(Playable self, int index, PlayableGraph graph, AnimationMixerPlayable rootMixer, IReadOnlyList<AnimationClip> clips)
 			{
 				Self = self;
@@ -69,9 +72,15 @@ namespace Patapon4TLB.Default
 
 				if (m_PreviousPhase != Phase)
 				{
-					// should we add transitions?
+					if (m_PreviousPhase == Phase.Stop && Phase == Phase.WalkBack)
+					{
+						StopToWalkTransition.End(global, global + 0.33f);
+						WalkFromStopTransition.Begin(global, global + 0.33f);
+						WalkFromStopTransition.End(global, global + 0.33f);
+					}
 
 					m_PreviousPhase = Phase;
+					Mixer.SetTime(0);
 				}
 
 				Mixer.SetInputWeight((int) AnimationType.Retreat, 0);
@@ -86,7 +95,8 @@ namespace Patapon4TLB.Default
 						Mixer.SetInputWeight((int) AnimationType.Stop, 1);
 						break;
 					case Phase.WalkBack:
-						Mixer.SetInputWeight((int) AnimationType.WalkBack, 1);
+						Mixer.SetInputWeight((int) AnimationType.Stop, StopToWalkTransition.Evaluate(global));
+						Mixer.SetInputWeight((int) AnimationType.WalkBack, WalkFromStopTransition.Evaluate(global, 0, 1));
 						break;
 				}
 
@@ -189,7 +199,7 @@ namespace Patapon4TLB.Default
 				i--;
 			}
 
-			if (m_LoadSuccess < ArrayLength - 1)
+			if (m_LoadSuccess < ArrayLength)
 				return;
 
 			m_AbilityModule.Update(default).Complete();
@@ -250,7 +260,7 @@ namespace Patapon4TLB.Default
 			// Start animation if Behavior.ActiveId and Retreat.ActiveId is different
 			if (abilityState.IsActive && abilityState.ActiveId != data.ActiveId)
 			{
-				var stopAt = animation.RootTime + 3.5f;
+				var stopAt = animation.RootTime + 3f;
 				animation.SetTargetAnimation(new TargetAnimation(m_SystemType, false, false, stopAt: stopAt));
 
 				Debug.Log("Start Animation");
@@ -264,7 +274,7 @@ namespace Patapon4TLB.Default
 
 			var targetPhase = Phase.Retreating;
 			// stop
-			if (RetreatAbility.ActiveTime >= 1.75f && RetreatAbility.IsRetreating)
+			if (RetreatAbility.ActiveTime >= 1.5f && RetreatAbility.ActiveTime <= 2.5f)
 			{
 				targetPhase = Phase.Stop;
 			}
