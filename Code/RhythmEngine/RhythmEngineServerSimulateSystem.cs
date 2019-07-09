@@ -1,5 +1,6 @@
 using package.patapon.core;
 using StormiumTeam.GameBase;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -12,6 +13,7 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(RhythmEngineGroup))]
 	public class RhythmEngineServerSimulateSystem : JobGameBaseSystem
 	{
+		[BurstCompile]
 		private struct SimulateJob : IJobForEachWithEntity<RhythmEngineProcess, RhythmEngineState, RhythmEngineSettings>
 		{
 			public uint CurrentTime;

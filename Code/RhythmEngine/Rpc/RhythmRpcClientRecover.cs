@@ -3,6 +3,7 @@ using package.patapon.def.Data;
 using package.stormiumteam.shared;
 using Runtime.EcsComponents;
 using StormiumTeam.GameBase;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -58,6 +59,7 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 	public class RhythmServerClientRecoverSystem : JobComponentSystem
 	{
+		[BurstCompile]
 		private struct Job : IJobForEachWithEntity<RhythmServerExecuteClientRecover>
 		{
 			[DeallocateOnJobCompletion] public NativeArray<ArchetypeChunk> EngineChunks;

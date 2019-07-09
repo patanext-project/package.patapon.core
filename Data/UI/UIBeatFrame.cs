@@ -16,16 +16,45 @@ namespace Patapon4TLB.UI
 			Command,
 		}
 
+		private int[] m_LinesState;
+
 		public GameObject[] Lines = new GameObject[3];
 		public Material     Material;
 
 		public Phase CurrPhase;
 		public Color Color;
 
+		private void OnEnable()
+		{
+			m_LinesState = new int[Lines.Length];
+			for (var i = 0; i != m_LinesState.Length; i++)
+			{
+				m_LinesState[i] = -1;
+			}
+		}
+
 		public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
 		{
 			dstManager.AddComponentObject(entity, transform);
 			dstManager.AddComponentObject(entity, this);
+		}
+
+		public void SetEnabled(int index, bool state)
+		{
+			ref var currState = ref m_LinesState[index];
+			if (currState == -1)
+			{
+				currState = state ? 1 : 0;
+				Lines[index].SetActive(state);
+				return;
+			}
+
+			var stateAsInt = state ? 1 : 0;
+			if (currState == stateAsInt)
+				return;
+
+			currState = stateAsInt;
+			Lines[index].SetActive(state);
 		}
 
 		[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
@@ -99,14 +128,12 @@ namespace Patapon4TLB.UI
 			{
 				if (m_ClientSystem == null)
 				{
-					foreach (var line in uiBeatFrame.Lines)
-						line.SetActive(false);
-					return;
-				}
+					for (var i = 0; i < uiBeatFrame.Lines.Length; i++)
+					{
+						uiBeatFrame.SetEnabled(i, false);
+					}
 
-				foreach (var line in uiBeatFrame.Lines)
-				{
-					line.SetActive(true);
+					return;
 				}
 
 				var newBeat = false;
@@ -155,22 +182,24 @@ namespace Patapon4TLB.UI
 					{
 						SetGrayScale(ref uiBeatFrame.Color, 0.75f);
 
-						uiBeatFrame.Lines[0].SetActive(false);
-						uiBeatFrame.Lines[1].SetActive(true);
-						uiBeatFrame.Lines[2].SetActive(false);
+						uiBeatFrame.SetEnabled(0, false);
+						uiBeatFrame.SetEnabled(1, true);
+						uiBeatFrame.SetEnabled(2, false);
 
 						break;
 					}
+
 					case Phase.Command:
 					{
 						SetGrayScale(ref uiBeatFrame.Color, 0.5f);
 
-						uiBeatFrame.Lines[0].SetActive(true);
-						uiBeatFrame.Lines[1].SetActive(false);
-						uiBeatFrame.Lines[2].SetActive(true);
+						uiBeatFrame.SetEnabled(0, true);
+						uiBeatFrame.SetEnabled(1, false);
+						uiBeatFrame.SetEnabled(2, true);
 
 						break;
 					}
+
 					case Phase.Fever:
 					{
 						// goooo crazy
@@ -181,9 +210,9 @@ namespace Patapon4TLB.UI
 
 						uiBeatFrame.Color[m_CurrentHue % 3] = 1;
 
-						uiBeatFrame.Lines[0].SetActive(true);
-						uiBeatFrame.Lines[1].SetActive(true);
-						uiBeatFrame.Lines[2].SetActive(true);
+						uiBeatFrame.SetEnabled(0, true);
+						uiBeatFrame.SetEnabled(1, true);
+						uiBeatFrame.SetEnabled(2, true);
 
 						break;
 					}

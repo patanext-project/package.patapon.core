@@ -55,13 +55,13 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				var gameObject = BackendPool.Dequeue();
 				var backend    = gameObject.GetComponent<UnitVisualBackend>();
 
-				backend.OnReset();
-				backend.SetFromPool(PresentationPool, EntityManager, entities[ent]);
-				
 				using (new SetTemporaryActiveWorld(World))
 				{
 					gameObject.SetActive(true);
 				}
+				
+				backend.OnReset();
+				backend.SetFromPool(PresentationPool, EntityManager, entities[ent]);
 
 				EntityManager.AddComponentData(entities[ent], new ToModel {Target = gameObject.GetComponent<GameObjectEntity>().Entity});
 			}

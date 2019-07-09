@@ -8,6 +8,8 @@ namespace Patapon4TLB.Default
 {
 	public class SystemAbilityModule : BaseSystemModule
 	{
+		public override ModuleUpdateType UpdateType => ModuleUpdateType.Job;
+
 		[BurstCompile]
 		private struct CopyJob<T> : IJob
 			where T : struct

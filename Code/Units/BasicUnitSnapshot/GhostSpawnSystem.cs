@@ -3,6 +3,7 @@ using Patapon4TLB.Default;
 using Patapon4TLB.UI.InGame;
 using Runtime.Systems;
 using StormiumTeam.GameBase;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -106,6 +107,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 	[UpdateInGroup(typeof(UpdateGhostSystemGroup))]
 	public class BasicUnitUpdateSystem : JobComponentSystem
 	{
+		[BurstCompile]
 		private struct Job : IJobForEachWithEntity<UnitDirection, BasicUnitSnapshotTarget, UnitTargetPosition, Translation, Velocity>
 		{
 			public uint InterpolateTick;

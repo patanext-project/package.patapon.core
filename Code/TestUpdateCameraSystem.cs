@@ -2,6 +2,7 @@ using package.patapon.core;
 using package.stormiumteam.shared;
 using Patapon4TLB.UI.InGame;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
@@ -36,6 +37,7 @@ namespace Patapon4TLB.Core
 		}
 
 		private EntityQueryBuilder.F_D<ServerCameraState> m_ForEach;
+		private EntityQuery                               m_CameraQuery;
 		private Entity                                    m_CameraTarget;
 
 		protected override void OnCreate()
@@ -44,6 +46,7 @@ namespace Patapon4TLB.Core
 
 			m_ForEach = ForEachCameraState;
 
+			m_CameraQuery  = GetEntityQuery(typeof(GameCamera));
 			m_CameraTarget = EntityManager.CreateEntity(typeof(CameraTargetData), typeof(CameraTargetAnchor), typeof(CameraTargetPosition));
 
 			EntityManager.SetComponentData(m_CameraTarget, new CameraTargetAnchor(AnchorType.Screen, new float2(0, 0.7f)));
@@ -59,14 +62,15 @@ namespace Patapon4TLB.Core
 					anchor.Value.y -= 0.1f;
 			});
 
-			Entities.ForEach((Camera camera) =>
-			{
-				if (Input.GetKeyDown(KeyCode.KeypadPlus))
-					OrthographicSize += 1;
-				if (Input.GetKeyDown(KeyCode.KeypadMinus))
-					OrthographicSize -= 1;
-				camera.orthographicSize = math.lerp(camera.orthographicSize, OrthographicSize, Time.deltaTime * 5);
-			});
+			var gameCamera = m_CameraQuery.GetSingletonEntity();
+			var camera     = EntityManager.GetComponentObject<Camera>(gameCamera);
+
+			if (Input.GetKeyDown(KeyCode.KeypadPlus))
+				OrthographicSize++;
+			if (Input.GetKeyDown(KeyCode.KeypadMinus))
+				OrthographicSize--;
+
+			camera.orthographicSize = math.lerp(camera.orthographicSize, OrthographicSize, Time.deltaTime * 5);
 
 			Entities.WithAll<GamePlayerLocalTag>().ForEach(m_ForEach);
 

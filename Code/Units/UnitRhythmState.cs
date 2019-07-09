@@ -1,6 +1,7 @@
 using package.patapon.core;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -16,6 +17,7 @@ namespace Patapon4TLB.Core
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 	public class UnitRhythmStateUpdateSystem : JobComponentSystem
 	{
+		[BurstCompile]
 		private struct Job : IJobForEach<UnitRhythmState, Relative<RhythmEngineDescription>>
 		{
 			[ReadOnly]

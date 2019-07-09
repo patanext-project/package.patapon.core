@@ -7,6 +7,7 @@ using Patapon4TLB.Core;
 using Patapon4TLB.UI.InGame;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Data;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -28,6 +29,7 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(ActionSystemGroup))]
 	public class MarchAbilitySystem : JobGameBaseSystem
 	{
+		[BurstCompile]
 		private struct JobProcess : IJobForEachWithEntity<Owner, RhythmAbilityState, MarchAbility>
 		{
 			public float DeltaTime;

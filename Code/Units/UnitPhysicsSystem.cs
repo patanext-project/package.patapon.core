@@ -1,6 +1,7 @@
 using System;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -15,6 +16,7 @@ namespace Patapon4TLB.Core
 	public class UnitPhysicsSystem : JobComponentSystem
 	{
 		// Right now, there is no collisions or things like that
+		[BurstCompile]
 		[RequireComponentTag(typeof(UnitDescription), typeof(EntityAuthority))]
 		private struct Job : IJobForEach<UnitControllerState, GroundState, Translation, Velocity, UnitBaseSettings, UnitTargetPosition>
 		{

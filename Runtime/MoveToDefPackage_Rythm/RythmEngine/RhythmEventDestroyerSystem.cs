@@ -1,4 +1,5 @@
 ﻿using package.patapon.def.Data;
+using Unity.Burst;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
@@ -13,6 +14,7 @@ namespace package.patapon.core
             world.GetOrCreateSystem<System>();
         }
         
+        [BurstCompile]
         private struct DestroyJob : IJobForEachWithEntity<T>
         {
             public EntityCommandBuffer.Concurrent CommandBuffer;

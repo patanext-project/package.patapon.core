@@ -5,6 +5,7 @@ using package.stormiumteam.shared;
 using Runtime.Systems;
 using StormiumTeam.GameBase;
 using StormiumTeam.Networking.Utilities;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
@@ -156,6 +157,7 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(UpdateGhostSystemGroup))]
 	public class MarchAbilityGhostUpdateSystem : JobComponentSystem
 	{
+		[BurstCompile]
 		private struct Job : IJobForEachWithEntity<RhythmAbilityState, MarchAbility, Owner>
 		{
 			[ReadOnly, DeallocateOnJobCompletion] public NativeArray<SynchronizedSimulationTime> ServerTime;

@@ -2,6 +2,7 @@ using package.patapon.core;
 using package.patapon.def.Data;
 using Runtime.Systems;
 using StormiumTeam.GameBase;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -52,6 +53,7 @@ namespace Patapon4TLB.Default.Snapshot
 	[UpdateBefore(typeof(ConvertGhostToOwnerSystem))]
 	public class RhythmEngineGhostSyncSnapshot : JobComponentSystem
 	{
+		[BurstCompile]
 		private struct SyncJob : IJobForEachWithEntity<Owner, RhythmEngineState, RhythmEngineSettings, RhythmEngineProcess, GameCommandState, RhythmPredictedProcess>
 		{
 			[ReadOnly] public BufferFromEntity<RhythmEngineSnapshotData> SnapshotFromEntity;

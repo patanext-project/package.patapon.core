@@ -197,15 +197,23 @@ namespace Patapon4TLB.Core
 	[UpdateAfter(typeof(RenderInterpolationSystem))]
 	public class UpdateUnitVisualBackendSystem : ComponentSystem
 	{
+		public static int i = 0;
+		
 		protected override void OnUpdate()
 		{
 			EntityManager.CompleteAllJobs();
 
+			i = 0;
+			
 			Entities.ForEach((Transform transform, UnitVisualBackend backend) =>
 			{
 				if (backend.DstEntity == Entity.Null || !EntityManager.Exists(backend.DstEntity) || !EntityManager.HasComponent<Translation>(backend.DstEntity))
 					return;
-				transform.position = EntityManager.GetComponentData<Translation>(backend.DstEntity).Value;
+
+				var pos = EntityManager.GetComponentData<Translation>(backend.DstEntity).Value;
+				pos.z = i++ * 2;
+				
+				transform.position = pos;
 			});
 		}
 	}

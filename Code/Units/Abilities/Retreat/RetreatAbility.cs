@@ -1,6 +1,7 @@
 using Patapon4TLB.Core;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Data;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -25,6 +26,7 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 	public class RetreatAbilitySystem : JobGameBaseSystem
 	{
+		[BurstCompile]
 		private struct Job : IJobForEach<Owner, RhythmAbilityState, RetreatAbility>
 		{
 			[ReadOnly] public float DeltaTime;

@@ -1,4 +1,5 @@
 using Runtime.Systems;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
@@ -10,6 +11,7 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(PreConvertSystemGroup))]
 	public class ConvertGhostEntityMap : JobComponentSystem
 	{
+		[BurstCompile]
 		private struct Job : IJob
 		{
 			[NativeDisableContainerSafetyRestriction]
