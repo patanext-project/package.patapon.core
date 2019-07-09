@@ -5,6 +5,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Patapon4TLB.UI.InGame
 {
@@ -17,24 +18,16 @@ namespace Patapon4TLB.UI.InGame
 		private EntityQuery m_ControlledUnitQuery;
 		private EntityQuery m_BackendQuery;
 
-		private Canvas m_Canvas;
-
 		private const string KeyBase = "int:UI/InGame/Multiplayer/";
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			m_Canvas                      = World.GetOrCreateSystem<UIClientCanvasSystem>().CreateCanvas(out _, "MpTargetCursor");
-			m_Canvas.renderMode           = RenderMode.WorldSpace;
-			m_Canvas.sortingOrder         = (int) UICanvasOrder.UnitCursor;
-			m_Canvas.sortingLayerName     = "UI";
-			m_Canvas.transform.localScale = Vector3.one * 0.007f;
-
 			m_PresentationPool = new AsyncAssetPool<GameObject>(KeyBase + "MpTargetCursor.prefab");
 			m_BackendPool = new AssetPool<GameObject>((pool) =>
 			{
-				var gameObject = new GameObject("TargetCursor Backend", typeof(RectTransform), typeof(UIPlayerTargetCursorBackend), typeof(GameObjectEntity));
+				var gameObject = new GameObject("TargetCursor Backend", typeof(SortingGroup), typeof(UIPlayerTargetCursorBackend), typeof(GameObjectEntity));
 				gameObject.SetActive(false);
 
 				var backend = gameObject.GetComponent<UIPlayerTargetCursorBackend>();
@@ -50,7 +43,7 @@ namespace Patapon4TLB.UI.InGame
 		protected override void OnUpdate()
 		{
 			var controlledUnits = m_ControlledUnitQuery.ToEntityArray(Allocator.TempJob);
-			
+
 			Generate(controlledUnits);
 
 			controlledUnits.Dispose();
@@ -92,7 +85,7 @@ namespace Patapon4TLB.UI.InGame
 					backend.SetDestroyFlags(-1);
 					continue;
 				}
-				
+
 				Debug.Log("Create UIPlayerTargetCursor for " + entities[ent]);
 
 				using (new SetTemporaryActiveWorld(World))
@@ -100,7 +93,10 @@ namespace Patapon4TLB.UI.InGame
 					backend = m_BackendPool.Dequeue().GetComponent<UIPlayerTargetCursorBackend>();
 					backend.gameObject.SetActive(true);
 
-					backend.transform.SetParent(m_Canvas.transform, false);
+					var sortingGroup = backend.GetComponent<SortingGroup>();
+					sortingGroup.sortingLayerName = "UI";
+					sortingGroup.sortingOrder     = (int) UICanvasOrder.UnitCursor;
+
 					backend.SetFromPool(m_PresentationPool, EntityManager, entities[ent]);
 				}
 			}

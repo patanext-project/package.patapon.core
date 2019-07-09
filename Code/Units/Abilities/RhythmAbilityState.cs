@@ -1,7 +1,10 @@
 using System;
 using package.patapon.core;
 using StormiumTeam.GameBase;
+using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.NetCode;
 using UnityEngine;
 
@@ -30,7 +33,7 @@ namespace Patapon4TLB.Default
 		{
 			if (ActiveId == 0)
 				ActiveId++;
-			
+
 			if (currCommand.CommandTarget != Command)
 			{
 				IsActive        = false;
@@ -62,37 +65,71 @@ namespace Patapon4TLB.Default
 	}
 
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-	public class UpdateRhythmAbilityState : ComponentSystem
+	public class UpdateRhythmAbilityState : JobComponentSystem
 	{
-		private void ForEach(ref Owner owner, ref RhythmAbilityState abilityState)
+		[BurstCompile]
+		private struct Job : IJobForEachWithEntity<Owner, RhythmAbilityState>
 		{
-			if (owner.Target == default || !EntityManager.Exists(owner.Target) || !EntityManager.HasComponent<Relative<RhythmEngineDescription>>(owner.Target))
-				return; // ????
+			[ReadOnly]
+			public ComponentDataFromEntity<Relative<RhythmEngineDescription>> RelativeRhythmEngineFromEntity;
 
-			var engine = EntityManager.GetComponentData<Relative<RhythmEngineDescription>>(owner.Target).Target;
-			if (!EntityManager.Exists(engine))
-				return;
+			[ReadOnly]
+			public ComponentDataFromEntity<RhythmEngineDescription> RhythmEngineDescriptionFromEntity;
 
-			var engineProcess  = EntityManager.GetComponentData<RhythmEngineProcess>(engine);
-			var currentCommand = EntityManager.GetComponentData<RhythmCurrentCommand>(engine);
-			var commandState   = EntityManager.GetComponentData<GameCommandState>(engine);
-			var comboState     = EntityManager.GetComponentData<GameComboState>(engine);
+			[ReadOnly] public ComponentDataFromEntity<RhythmEngineProcess>  RhythmEngineProcessFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<RhythmCurrentCommand> RhythmCurrentCommandFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<GameCommandState>     GameCommandStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<GameComboState>       GameComboStateFromEntity;
 
-			abilityState.Calculate(currentCommand, commandState, comboState, engineProcess);
+			[BurstDiscard]
+			private static void NonBurst_ErrorNoOwnerOrNoRelative(Entity owner, Entity entity)
+			{
+				if (owner == default)
+					Debug.LogError($"Default owner found on " + entity);
+				else
+					Debug.LogError($"No RhythmEngine found on owner({owner}) of ability({entity})");
+			}
+
+			[BurstDiscard]
+			private static void NonBurst_ErrorNoRhythmEngine(Entity target, Entity entity)
+			{
+				Debug.LogError($"No RhythmEngine found on target({target}) of ability({entity})");
+			}
+
+			public void Execute(Entity entity, int index, ref Owner owner, ref RhythmAbilityState abilityState)
+			{
+				if (owner.Target == default || !RelativeRhythmEngineFromEntity.Exists(owner.Target))
+				{
+					NonBurst_ErrorNoOwnerOrNoRelative(owner.Target, entity);
+					return;
+				}
+
+				var engine = RelativeRhythmEngineFromEntity[owner.Target].Target;
+				if (!RhythmEngineDescriptionFromEntity.Exists(engine))
+				{
+					NonBurst_ErrorNoRhythmEngine(engine, entity);
+					return;
+				}
+
+				abilityState.Calculate(RhythmCurrentCommandFromEntity[engine],
+					GameCommandStateFromEntity[engine],
+					GameComboStateFromEntity[engine],
+					RhythmEngineProcessFromEntity[engine]);
+			}
 		}
 
-		private EntityQueryBuilder.F_DD<Owner, RhythmAbilityState> m_ForEachDelegate;
 
-		protected override void OnCreate()
+		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			base.OnCreate();
-
-			m_ForEachDelegate = ForEach;
-		}
-
-		protected override void OnUpdate()
-		{
-			Entities.ForEach(m_ForEachDelegate);
+			return new Job
+			{
+				RelativeRhythmEngineFromEntity    = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(true),
+				RhythmEngineDescriptionFromEntity = GetComponentDataFromEntity<RhythmEngineDescription>(true),
+				RhythmEngineProcessFromEntity     = GetComponentDataFromEntity<RhythmEngineProcess>(true),
+				RhythmCurrentCommandFromEntity    = GetComponentDataFromEntity<RhythmCurrentCommand>(true),
+				GameCommandStateFromEntity        = GetComponentDataFromEntity<GameCommandState>(true),
+				GameComboStateFromEntity          = GetComponentDataFromEntity<GameComboState>(true),
+			}.Schedule(this, inputDeps);
 		}
 	}
 }

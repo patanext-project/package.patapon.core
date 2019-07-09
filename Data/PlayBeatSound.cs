@@ -61,7 +61,6 @@ namespace Patapon4TLB.Default.Test
 			var shouldFail = (commandIsRunning && !inputActive) || state.IsRecovery(currFlowBeat) || absRealScore > RhythmPressureData.Error;
 			if (shouldFail)
 			{
-				Debug.Log($"Yes FAIL! c:{commandIsRunning} r:{state.IsRecovery(currFlowBeat)}");
 				score = 2;
 			}
 

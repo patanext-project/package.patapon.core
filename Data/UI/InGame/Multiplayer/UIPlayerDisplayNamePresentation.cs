@@ -11,15 +11,27 @@ namespace Patapon4TLB.UI.InGame
 {
 	public class UIPlayerDisplayNamePresentation : RuntimeAssetPresentation<UIPlayerDisplayNamePresentation>
 	{
-		public TextMeshProUGUI[] NameLabels;
-		public Color ControlledColor;
-		public Color NormalColor;
+		public TextMeshPro[] NameLabels;
+		public Color         ControlledColor;
+		public Color         NormalColor;
+
+		private bool? m_Enabled;
+
+		public void SetEnabled(bool state)
+		{
+			if (m_Enabled != state)
+			{
+				m_Enabled = state;
+				gameObject.SetActive(state);
+			}
+		}
 	}
 
 	public class UIPlayerDisplayNameBackend : RuntimeAssetBackend<UIPlayerDisplayNamePresentation>
 	{
 		public NativeString64 PreviousName;
-		
+		public Color TargetColor;
+
 		protected override void Update()
 		{
 			if (DstEntityManager == null || DstEntityManager.IsCreated && DstEntityManager.Exists(DstEntity))
@@ -27,11 +39,11 @@ namespace Patapon4TLB.UI.InGame
 				base.Update();
 				return;
 			}
-			
+
 			Return(true, true);
 		}
 	}
-	
+
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	[UpdateAfter(typeof(GenerateUIPlayerDisplayNameSystem))]
 	public class UIPlayerDisplayNameSystem : UIGameSystemBase
@@ -44,32 +56,41 @@ namespace Patapon4TLB.UI.InGame
 			Entities.ForEach((UIPlayerDisplayNameBackend backend) =>
 			{
 				var targetPosition = EntityManager.GetComponentData<Translation>(backend.DstEntity);
-
-				backend.transform.position = new Vector3
-				(
-					targetPosition.Value.x,
-					-0.3f,
-					0
-				);
+				var pos            = new Vector3(targetPosition.Value.x, -0.3f, 0);
+				backend.transform.position = pos;
 
 				var presentation = backend.Presentation;
 				if (presentation == null)
 					return;
 
-				foreach (var label in presentation.NameLabels)
-					label.color = presentation.NormalColor;
-
 				var playerRelative = EntityManager.GetComponentData<Relative<PlayerDescription>>(backend.DstEntity).Target;
-				if (playerRelative == default || !EntityManager.HasComponent<PlayerName>(playerRelative))
-					return;
-
-				if (EntityManager.HasComponent<GamePlayerLocalTag>(playerRelative))
+				if (playerRelative == default)
 				{
-					foreach (var label in presentation.NameLabels)
-						label.color = presentation.ControlledColor;
+					presentation.SetEnabled(false);
+					return;
 				}
 
-				var nativeStr = EntityManager.GetComponentData<PlayerName>(playerRelative).Value;
+				backend.TargetColor = presentation.NormalColor;
+				if (EntityManager.HasComponent<GamePlayerLocalTag>(playerRelative))
+				{
+					backend.TargetColor = presentation.ControlledColor;
+				}
+
+				foreach (var label in presentation.NameLabels)
+				{
+					label.color = backend.TargetColor;
+				}
+
+				var nativeStr = new NativeString64();
+				if (EntityManager.HasComponent<PlayerName>(playerRelative))
+				{
+					nativeStr = EntityManager.GetComponentData<PlayerName>(playerRelative).Value;
+				}
+				else
+				{
+					nativeStr.CopyFrom("NoName");
+				}
+
 				if (backend.PreviousName.Equals(nativeStr))
 					return;
 

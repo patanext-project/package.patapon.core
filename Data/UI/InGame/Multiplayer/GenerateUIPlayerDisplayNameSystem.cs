@@ -5,6 +5,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Patapon4TLB.UI.InGame
 {
@@ -17,24 +18,16 @@ namespace Patapon4TLB.UI.InGame
 		private EntityQuery m_PlayerUnitQuery;
 		private EntityQuery m_BackendQuery;
 
-		private Canvas m_Canvas;
-
 		private const string KeyBase = "int:UI/InGame/Multiplayer/";
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
-
-			m_Canvas                      = World.GetOrCreateSystem<UIClientCanvasSystem>().CreateCanvas(out _, "MpDisplayName");
-			m_Canvas.renderMode           = RenderMode.WorldSpace;
-			m_Canvas.sortingOrder         = (int) UICanvasOrder.UnitName;
-			m_Canvas.sortingLayerName     = "UI";
-			m_Canvas.transform.localScale = Vector3.one * 0.0125f;
-
+			
 			m_PresentationPool = new AsyncAssetPool<GameObject>(KeyBase + "MpDisplayName.prefab");
 			m_BackendPool = new AssetPool<GameObject>((pool) =>
 			{
-				var gameObject = new GameObject("DisplayName Backend", typeof(RectTransform), typeof(UIPlayerDisplayNameBackend), typeof(GameObjectEntity));
+				var gameObject = new GameObject("DisplayName Backend", typeof(SortingGroup), typeof(UIPlayerDisplayNameBackend), typeof(GameObjectEntity));
 				gameObject.SetActive(false);
 
 				var backend = gameObject.GetComponent<UIPlayerDisplayNameBackend>();
@@ -92,7 +85,7 @@ namespace Patapon4TLB.UI.InGame
 					backend.SetDestroyFlags(-1);
 					continue;
 				}
-				
+
 				Debug.Log("Create UIPlayerTargetCursor for " + entities[ent]);
 
 				using (new SetTemporaryActiveWorld(World))
@@ -100,7 +93,10 @@ namespace Patapon4TLB.UI.InGame
 					backend = m_BackendPool.Dequeue().GetComponent<UIPlayerDisplayNameBackend>();
 					backend.gameObject.SetActive(true);
 
-					backend.transform.SetParent(m_Canvas.transform, false);
+					var sortingGroup = backend.GetComponent<SortingGroup>();
+					sortingGroup.sortingLayerName = "UI";
+					sortingGroup.sortingOrder     = (int) UICanvasOrder.UnitName;
+
 					backend.SetFromPool(m_PresentationPool, EntityManager, entities[ent]);
 				}
 			}

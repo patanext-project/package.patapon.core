@@ -14,7 +14,6 @@ namespace package.patapon.core
             world.GetOrCreateSystem<System>();
         }
         
-        [BurstCompile]
         private struct DestroyJob : IJobForEachWithEntity<T>
         {
             public EntityCommandBuffer.Concurrent CommandBuffer;

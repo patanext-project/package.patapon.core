@@ -26,6 +26,7 @@ namespace Patapon4TLB.Default
 
 			public EntityCommandBuffer.Concurrent EntityCommandBuffer;
 
+			[BurstDiscard]
 			private void NonBurst_ThrowWarning(Entity entity)
 			{
 				Debug.LogWarning($"Engine '{entity}' had a FlowRhythmEngineSettingsData.BeatInterval of 0 (or less), this is not accepted.");
