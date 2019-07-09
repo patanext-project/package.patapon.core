@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Patapon4TLB.Core;
 using Patapon4TLB.UI.InGame;
+using Runtime.Misc;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
@@ -8,6 +9,7 @@ using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.Rendering;
 
 namespace Patapon4TLB.UI
 {
@@ -20,7 +22,8 @@ namespace Patapon4TLB.UI
 		private AsyncAssetPool<GameObject> m_PresentationPool;
 
 		private EntityQuery m_UnitQuery;
-		private EntityQuery m_BackendQuery;
+		
+		private GetAllBackendModule<UIStatusBackend> m_GetAllBackendModule; 
 
 		private const string KeyBase = "int:UI/InGame/UnitStatus/";
 
@@ -29,7 +32,6 @@ namespace Patapon4TLB.UI
 			base.OnStartRunning();
 
 			m_UnitQuery    = GetEntityQuery(typeof(UnitDescription), typeof(Relative<TeamDescription>));
-			m_BackendQuery = GetEntityQuery(typeof(UIStatusBackend));
 
 			m_UIRoot = new GameObject("UIStatus_RootContainer", typeof(RectTransform));
 			var rectTransform = m_UIRoot.GetComponent<RectTransform>();
@@ -47,11 +49,15 @@ namespace Patapon4TLB.UI
 			{
 				// it's important to set GameObjectEntity as last! (or else other components will not get referenced????)
 				var gameObject = new GameObject("UIStatus Backend", typeof(RectTransform), typeof(UIStatusBackend), typeof(GameObjectEntity));
+				gameObject.SetActive(false);
+				
 				var backend    = gameObject.GetComponent<UIStatusBackend>();
 				backend.SetRootPool(pool);
 
 				return gameObject;
 			}, World);
+			
+			GetModule(out m_GetAllBackendModule);
 		}
 
 		protected override void OnUpdate()
@@ -126,54 +132,33 @@ namespace Patapon4TLB.UI
 
 				return;
 			}
+			
+			m_GetAllBackendModule.TargetEntities = entities;
+			m_GetAllBackendModule.Update(default).Complete();
 
-			var backendEntities = m_BackendQuery.ToEntityArray(Allocator.TempJob);
-			// first, we check the missing backends
-			for (var ent = 0; ent != entities.Length; ent++)
+			var unattachedBackend = m_GetAllBackendModule.BackendWithoutModel;
+			var unattachedCount   = unattachedBackend.Length;
+			for (var i = 0; i != unattachedCount; i++)
 			{
-				var backend = default(UIStatusBackend);
-				for (var back = 0; back != backendEntities.Length; back++)
-				{
-					var tmp = EntityManager.GetComponentObject<UIStatusBackend>(backendEntities[back]);
-					if (tmp.entity != entities[ent])
-						continue;
-
-					backend = tmp;
-					break;
-				}
-
-				if (backend != null)
-					continue;
-				
-				backend = m_BackendPool.Dequeue().GetComponent<UIStatusBackend>();
-				backend.transform.SetParent(m_UIRoot.transform, false);
-				backend.entity = entities[ent];
-
-				backend.SetFromPool(m_PresentationPool, EntityManager, entities[ent]);
+				var backend = EntityManager.GetComponentObject<UIStatusBackend>(unattachedBackend[i]);
+				backend.SetDestroyFlags(0);
 			}
 
-			// now, check for useless backends
-			for (var back = 0; back != backendEntities.Length; back++)
+			var missingEntities = m_GetAllBackendModule.MissingTargets;
+			var missingCount    = missingEntities.Length;
+			for (var i = 0; i != missingCount; i++)
 			{
-				var backend = EntityManager.GetComponentObject<UIStatusBackend>(backendEntities[back]);
-				var result  = default(Entity);
-				
-				for (var ent = 0; ent != entities.Length; ent++)
+				using (new SetTemporaryActiveWorld(World))
 				{
-					if (backend.entity != entities[ent])
-						continue;
+					var backend = m_BackendPool.Dequeue().GetComponent<UIStatusBackend>();
+					backend.gameObject.SetActive(true);
 
-					result = entities[ent];
-					break;
-				}
-
-				if (result == default)
-				{
-					backend.Return(true, true);
+					backend.transform.SetParent(m_UIRoot.transform, false);
+					backend.SetFromPool(m_PresentationPool, EntityManager, missingEntities[i]);
+					
+					Debug.Log("Generate for " + missingEntities[i]);
 				}
 			}
-
-			backendEntities.Dispose();
 		}
 	}
 }

@@ -11,12 +11,11 @@ namespace Patapon4TLB.UI
 {
 	public class UIStatusBackend : RuntimeAssetBackend<UIStatusPresentation>
 	{
-		public Entity entity;
 		public int    priority;
 
 		public RectTransform rectTransform { get; private set; }
 
-		private void OnEnable()
+		public override void OnComponentEnabled()
 		{
 			rectTransform = GetComponent<RectTransform>();
 		}

@@ -16,9 +16,10 @@ namespace Patapon4TLB.UI.InGame
 		private AsyncAssetPool<GameObject> m_PresentationPool;
 
 		private EntityQuery m_ControlledUnitQuery;
-		private EntityQuery m_BackendQuery;
 
 		private const string KeyBase = "int:UI/InGame/Multiplayer/";
+
+		private GetAllBackendModule<UIPlayerTargetCursorBackend> m_GetAllBackendModule;
 
 		protected override void OnCreate()
 		{
@@ -36,8 +37,9 @@ namespace Patapon4TLB.UI.InGame
 				return gameObject;
 			}, World);
 
+			GetModule(out m_GetAllBackendModule);
+
 			m_ControlledUnitQuery = GetEntityQuery(typeof(UnitTargetPosition));
-			m_BackendQuery        = GetEntityQuery(typeof(UIPlayerTargetCursorBackend));
 		}
 
 		protected override void OnUpdate()
@@ -61,47 +63,33 @@ namespace Patapon4TLB.UI.InGame
 				});
 			}
 
-			var backendEntities = m_BackendQuery.ToEntityArray(Allocator.TempJob);
-			// flags previous backend, check for corresponding unit-backend and un-flags, or create one.
-			for (var ent = 0; ent != entities.Length; ent++)
+			m_GetAllBackendModule.TargetEntities = entities;
+			m_GetAllBackendModule.Update(default).Complete();
+
+			var unattachedBackend = m_GetAllBackendModule.BackendWithoutModel;
+			var unattachedCount   = unattachedBackend.Length;
+			for (var i = 0; i != unattachedCount; i++)
 			{
-				UIPlayerTargetCursorBackend backend = null;
-				for (var back = 0; back != backendEntities.Length; back++)
-				{
-					var tmp = EntityManager.GetComponentObject<UIPlayerTargetCursorBackend>(backendEntities[back]);
-					if (tmp.DstEntity != entities[ent])
-					{
-						if (tmp.DestroyFlags >= 0)
-							tmp.SetDestroyFlags(0);
+				var backend = EntityManager.GetComponentObject<UIPlayerTargetCursorBackend>(unattachedBackend[i]);
+				backend.SetDestroyFlags(0);
+			}
 
-						continue;
-					}
-
-					backend = tmp;
-				}
-
-				if (backend != null)
-				{
-					backend.SetDestroyFlags(-1);
-					continue;
-				}
-
-				Debug.Log("Create UIPlayerTargetCursor for " + entities[ent]);
-
+			var missingEntities = m_GetAllBackendModule.MissingTargets;
+			var missingCount    = missingEntities.Length;
+			for (var i = 0; i != missingCount; i++)
+			{
 				using (new SetTemporaryActiveWorld(World))
 				{
-					backend = m_BackendPool.Dequeue().GetComponent<UIPlayerTargetCursorBackend>();
+					var backend = m_BackendPool.Dequeue().GetComponent<UIPlayerTargetCursorBackend>();
 					backend.gameObject.SetActive(true);
 
 					var sortingGroup = backend.GetComponent<SortingGroup>();
 					sortingGroup.sortingLayerName = "UI";
 					sortingGroup.sortingOrder     = (int) UICanvasOrder.UnitCursor;
 
-					backend.SetFromPool(m_PresentationPool, EntityManager, entities[ent]);
+					backend.SetFromPool(m_PresentationPool, EntityManager, missingEntities[i]);
 				}
 			}
-
-			backendEntities.Dispose();
 		}
 	}
 }

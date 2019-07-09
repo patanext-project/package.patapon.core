@@ -29,6 +29,7 @@ namespace Patapon4TLB.Default
 			{
 				ComponentType.ReadWrite<Owner>(),
 				ComponentType.ReadWrite<NetworkOwner>(),
+				ComponentType.ReadWrite<RhythmEngineDescription>(),
 				ComponentType.ReadWrite<RhythmEngineSettings>(),
 				ComponentType.ReadWrite<RhythmEngineState>(),
 				ComponentType.ReadWrite<RhythmEngineCurrentCommand>(),

@@ -14,17 +14,6 @@ namespace Patapon4TLB.UI.InGame
 		public TextMeshPro[] NameLabels;
 		public Color         ControlledColor;
 		public Color         NormalColor;
-
-		private bool? m_Enabled;
-
-		public void SetEnabled(bool state)
-		{
-			if (m_Enabled != state)
-			{
-				m_Enabled = state;
-				gameObject.SetActive(state);
-			}
-		}
 	}
 
 	public class UIPlayerDisplayNameBackend : RuntimeAssetBackend<UIPlayerDisplayNamePresentation>
@@ -66,7 +55,6 @@ namespace Patapon4TLB.UI.InGame
 				var playerRelative = EntityManager.GetComponentData<Relative<PlayerDescription>>(backend.DstEntity).Target;
 				if (playerRelative == default)
 				{
-					presentation.SetEnabled(false);
 					return;
 				}
 

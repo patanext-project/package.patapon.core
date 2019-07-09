@@ -175,7 +175,7 @@ namespace P4.Core.Code.Networking
 					// not found...
 					if (playerIdx == -1)
 					{
-						Debug.LogError("(Client) No player found with serverId=" + payloadArray[ent].ServerId);
+						//Debug.LogError("(Client) No player found with serverId=" + payloadArray[ent].ServerId);
 						continue;
 					}
 
