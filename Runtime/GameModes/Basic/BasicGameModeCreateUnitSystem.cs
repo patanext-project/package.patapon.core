@@ -65,7 +65,7 @@ namespace Patapon4TLB.GameModes.Basic
 			var gameMode = World.GetExistingSystem<BasicGameModeSystem>();
 			for (var pl = 0; pl != gameMode.NewPlayers.Length; pl++)
 			{
-				for (var x = 0; x != 64; x++)
+				for (var x = 0; x != 1; x++)
 				{
 					var playerEntity = gameMode.NewPlayers[pl];
 					var playerData   = EntityManager.GetComponentData<BasicGameModePlayer>(playerEntity);
