@@ -3,6 +3,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Networking.Transport;
 using Unity.NetCode;
+using StormiumTeam.GameBase;
 using Patapon4TLB.Core.BasicUnitSnapshot;
 using Patapon4TLB.Default;
 using Patapon4TLB.Default.Snapshot;
