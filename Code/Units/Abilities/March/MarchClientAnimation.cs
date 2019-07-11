@@ -163,7 +163,7 @@ namespace Patapon4TLB.Default
 				return;
 			}
 
-			var abilityEntity = m_AbilityModule.FindFromOwner(backend.DstEntity);
+			var abilityEntity = m_AbilityModule.GetAbility(backend.DstEntity);
 			if (abilityEntity == default && currAnim.Type == m_SystemType || currAnim.CanStartAnimationAt(animation.RootTime))
 			{
 				animation.SetTargetAnimation(new TargetAnimation(null, transitionStart: currAnim.TransitionStart, transitionEnd: currAnim.TransitionEnd, previousType: currAnim.Type));

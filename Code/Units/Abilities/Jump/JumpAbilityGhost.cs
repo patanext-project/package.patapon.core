@@ -167,7 +167,7 @@ namespace Patapon4TLB.Default
 		{
 			[DeallocateOnJobCompletion]
 			public NativeArray<SynchronizedSimulationTime> ServerTime;
-			
+
 			[ReadOnly] public uint                                      TargetTick;
 			[ReadOnly] public BufferFromEntity<JumpAbilitySnapshotData> SnapshotDataFromEntity;
 			[ReadOnly] public NativeHashMap<int, Entity>                CommandIdToEntity;
@@ -183,7 +183,7 @@ namespace Patapon4TLB.Default
 
 				GhostEntityMap.TryGetValue((int) snapshot.OwnerGhostId, out owner.Target);
 				CommandIdToEntity.TryGetValue(snapshot.CommandId, out state.Command);
-				
+
 				var predict = snapshot.ClientPredictState && RelativeRhythmEngineFromEntity.Exists(owner.Target);
 				if (predict)
 				{
@@ -222,25 +222,37 @@ namespace Patapon4TLB.Default
 			}
 		}
 
+		private ConvertGhostEntityMap            m_ConvertGhostEntityMap;
+		private SynchronizedSimulationTimeSystem m_SynchronizedSimulationTimeSystem;
+		private RhythmCommandManager             m_CommandManager;
+
+		protected override void OnCreate()
+		{
+			base.OnCreate();
+
+			m_ConvertGhostEntityMap            = World.GetOrCreateSystem<ConvertGhostEntityMap>();
+			m_SynchronizedSimulationTimeSystem = World.GetOrCreateSystem<SynchronizedSimulationTimeSystem>();
+			m_CommandManager                   = World.GetOrCreateSystem<RhythmCommandManager>();
+		}
+
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			var convertGhostMapSystem = World.GetExistingSystem<ConvertGhostEntityMap>();
 			var timeArray = new NativeArray<SynchronizedSimulationTime>(1, Allocator.TempJob);
 
-			inputDeps = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Schedule(timeArray, inputDeps);
+			inputDeps = m_SynchronizedSimulationTimeSystem.Schedule(timeArray, inputDeps);
 			inputDeps = new Job
 			{
 				ServerTime = timeArray,
-				
+
 				TargetTick             = NetworkTimeSystem.interpolateTargetTick,
 				SnapshotDataFromEntity = GetBufferFromEntity<JumpAbilitySnapshotData>(),
 
-				CommandIdToEntity = World.GetExistingSystem<RhythmCommandManager>().CommandIdToEntity,
-				GhostEntityMap    = convertGhostMapSystem.HashMap,
+				CommandIdToEntity = m_CommandManager.CommandIdToEntity,
+				GhostEntityMap    = m_ConvertGhostEntityMap.HashMap,
 
 				RhythmEngineDataGroup          = new RhythmEngineDataGroup(this),
 				RelativeRhythmEngineFromEntity = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(true)
-			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, convertGhostMapSystem.dependency));
+			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, m_ConvertGhostEntityMap.dependency));
 
 			return inputDeps;
 		}

@@ -65,28 +65,29 @@ namespace Patapon4TLB.Default
 			}
 		}
 
-		private RhythmEngineEndBarrier      m_EndBarrier;
-		private FlowRhythmBeatEventProvider m_BeatEventProvider;
+		private RhythmEngineEndBarrier           m_EndBarrier;
+		private FlowRhythmBeatEventProvider      m_BeatEventProvider;
+		private SynchronizedSimulationTimeSystem m_SynchronizedSimulationTimeSystem;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			m_EndBarrier        = World.GetOrCreateSystem<RhythmEngineEndBarrier>();
-			m_BeatEventProvider = World.GetOrCreateSystem<FlowRhythmBeatEventProvider>();
+			m_EndBarrier                       = World.GetOrCreateSystem<RhythmEngineEndBarrier>();
+			m_BeatEventProvider                = World.GetOrCreateSystem<FlowRhythmBeatEventProvider>();
+			m_SynchronizedSimulationTimeSystem = World.GetOrCreateSystem<SynchronizedSimulationTimeSystem>();
 
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			var topGroup = World.GetExistingSystem<ServerSimulationSystemGroup>();
-			if (topGroup == null)
-				return inputDeps; // not a server
+			if (!IsServer)
+				return inputDeps;
 
 			inputDeps = new SimulateJob
 			{
-				CurrentTime         = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Value.Predicted,
-				FrameCount          = (int) topGroup.ServerTick,
+				CurrentTime         = m_SynchronizedSimulationTimeSystem.Value.Predicted,
+				FrameCount          = (int) ServerSimulationSystemGroup.ServerTick,
 				CreateBeatEventList = m_BeatEventProvider.GetEntityDelayedList(),
 				EntityCommandBuffer = m_EndBarrier.CreateCommandBuffer().ToConcurrent()
 			}.Schedule(this, inputDeps);

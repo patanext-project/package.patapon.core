@@ -81,7 +81,7 @@ namespace Patapon4TLB.Default
 
 						PredictedCommandFromEntity[entity] = new GamePredictedCommandState {State = commandState};
 						PredictedComboFromEntity[entity]   = new GameComboPredictedClient {State  = comboState};
-						
+
 						if (p.IsFever != comboState.IsFever
 						    || p.Chain != comboState.Chain
 						    || p.ChainToFever != comboState.ChainToFever)
@@ -183,6 +183,32 @@ namespace Patapon4TLB.Default
 			}
 		}
 
+		private EntityQuery m_ProcessQuery;
+		private EntityQuery m_NetworkQuery;
+
+		private RpcQueueSystem<RhythmRpcClientRecover> m_RpcQueueClientRecoverSystem;
+		
+		protected override void OnCreate()
+		{
+			base.OnCreate();
+
+			m_ProcessQuery = GetEntityQuery(
+				typeof(RhythmEngineSettings),
+				typeof(RhythmEngineState),
+				typeof(RhythmEngineProcess),
+				typeof(GameCommandState),
+				typeof(RhythmCurrentCommand),
+				typeof(GameComboState)
+			);
+
+			m_NetworkQuery = GetEntityQuery(
+				typeof(OutgoingRpcDataStreamBufferComponent),
+				typeof(NetworkIdComponent)
+			);
+
+			m_RpcQueueClientRecoverSystem = World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcClientRecover>>();
+		}
+
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
 			var sendEventSingleArray = new NativeArray<bool>(1, Allocator.TempJob);
@@ -190,20 +216,20 @@ namespace Patapon4TLB.Default
 
 			inputDeps = new Job
 			{
-				IsServer                   = IsServer,
-				
-				SendEvent = sendEventSingleArray,
+				IsServer = IsServer,
+
+				SendEvent    = sendEventSingleArray,
 				RecoverEvent = rpcEventSingleArray,
-				
+
 				CommandDataFromEntity      = GetComponentDataFromEntity<RhythmCommandData>(true),
 				PredictedCommandFromEntity = GetComponentDataFromEntity<GamePredictedCommandState>(),
 				SimulateTagFromEntity      = GetComponentDataFromEntity<RhythmEngineSimulateTag>(true),
 				PredictedComboFromEntity   = GetComponentDataFromEntity<GameComboPredictedClient>(),
-			}.Schedule(this, inputDeps);
+			}.Schedule(m_ProcessQuery, inputDeps);
 
 			if (!IsServer)
 			{
-				var rpcQueue = World.GetExistingSystem<RpcQueueSystem<RhythmRpcClientRecover>>().GetRpcQueue();
+				var rpcQueue = m_RpcQueueClientRecoverSystem.GetRpcQueue();
 
 				inputDeps = new SendRpcRecoverEvent
 				{
@@ -213,7 +239,7 @@ namespace Patapon4TLB.Default
 					RpcRecoverQueue = rpcQueue,
 
 					OutgoingDataBufferFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>()
-				}.Schedule(this, inputDeps);
+				}.Schedule(m_NetworkQuery, inputDeps);
 			}
 
 			return inputDeps;

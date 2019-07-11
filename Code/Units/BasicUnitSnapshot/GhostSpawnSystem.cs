@@ -17,12 +17,12 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 {
 	public struct BasicUnitSnapshotTarget : IComponentData
 	{
-		public uint LastSnapshotTick;
-		public bool Grounded;
+		public uint   LastSnapshotTick;
+		public bool   Grounded;
 		public float3 Position;
-		public int NearPositionCount;
+		public int    NearPositionCount;
 	}
-	
+
 	public class BasicUnitGhostSpawnSystem : DefaultGhostSpawnSystem<BasicUnitSnapshotData>
 	{
 		protected override EntityArchetype GetGhostArchetype()
@@ -152,22 +152,29 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			}
 		}
 
+		private ConvertGhostEntityMap m_ConvertGhostEntityMap;
+
+		protected override void OnCreate()
+		{
+			base.OnCreate();
+
+			m_ConvertGhostEntityMap = World.GetOrCreateSystem<ConvertGhostEntityMap>();
+		}
+
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			var convertGhostMapSystem = World.GetExistingSystem<ConvertGhostEntityMap>();
-
 			return new Job
 			{
 				InterpolateTick = NetworkTimeSystem.interpolateTargetTick,
 				PredictTick     = NetworkTimeSystem.predictTargetTick,
 
 				SnapshotDataFromEntity = GetBufferFromEntity<BasicUnitSnapshotData>(true),
-				GhostEntityMap         = convertGhostMapSystem.HashMap,
+				GhostEntityMap         = m_ConvertGhostEntityMap.HashMap,
 
 				RelativePlayerFromEntity       = GetComponentDataFromEntity<Relative<PlayerDescription>>(),
 				RelativeTeamFromEntity         = GetComponentDataFromEntity<Relative<TeamDescription>>(),
 				RelativeRhythmEngineFromEntity = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(),
-			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, convertGhostMapSystem.dependency));
+			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, m_ConvertGhostEntityMap.dependency));
 		}
 	}
 
@@ -182,9 +189,9 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				var distance = math.distance(translation.Value, target.Position);
 
 				var factor = target.NearPositionCount + 1;
-				
+
 				translation.Value = math.lerp(translation.Value, target.Position, Time.deltaTime * (velocity.speed + distance + 1f));
-				translation.Value = Vector3.MoveTowards(translation.Value, target.Position,  math.max(distance * 0.1f, velocity.speed * Time.deltaTime) * 0.9f * factor);
+				translation.Value = Vector3.MoveTowards(translation.Value, target.Position, math.max(distance * 0.1f, velocity.speed * Time.deltaTime) * 0.9f * factor);
 				if (target.Grounded)
 				{
 					translation.Value.y = 0;

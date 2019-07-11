@@ -140,6 +140,9 @@ namespace Patapon4TLB.Core
 		{
 			Presentation = presentation;
 			SetAnimatorOutput("standard output", presentation.Animator);
+			
+			m_PlayableGraph.Stop();
+			m_PlayableGraph.Play();
 		}
 
 		public void SetTargetAnimation(TargetAnimation target)

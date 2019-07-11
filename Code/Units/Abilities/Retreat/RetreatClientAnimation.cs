@@ -237,7 +237,7 @@ namespace Patapon4TLB.Default
 		private void ForEachUpdateAnimation(UnitVisualBackend backend, UnitVisualAnimation animation)
 		{
 			var currAnim = animation.CurrAnimation;
-			if (currAnim == new TargetAnimation(m_SystemType) && animation.RootTime > currAnim.StopAt)
+			if (currAnim.Type == m_SystemType && animation.RootTime > currAnim.StopAt)
 			{
 				// allow transitions and overrides now...
 				animation.SetTargetAnimation(new TargetAnimation(currAnim.Type, transitionStart: currAnim.StopAt, transitionEnd: currAnim.StopAt + 0.25f));
@@ -246,7 +246,7 @@ namespace Patapon4TLB.Default
 					animation.SetTargetAnimation(TargetAnimation.Null);
 			}
 
-			var abilityEntity = m_AbilityModule.FindFromOwner(backend.DstEntity);
+			var abilityEntity = m_AbilityModule.GetAbility(backend.DstEntity);
 			if (abilityEntity == default)
 				return;
 
@@ -260,7 +260,7 @@ namespace Patapon4TLB.Default
 			
 			if (!abilityState.IsStillChaining && !abilityState.IsActive && !abilityState.WillBeActive)
 			{
-				if (currAnim == new TargetAnimation(m_SystemType))
+				if (currAnim.Type == m_SystemType)
 					animation.SetTargetAnimation(TargetAnimation.Null);
 
 				return;

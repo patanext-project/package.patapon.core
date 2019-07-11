@@ -201,25 +201,37 @@ namespace Patapon4TLB.Default
 			}
 		}
 
+		private ConvertGhostEntityMap            m_ConvertGhostEntityMap;
+		private SynchronizedSimulationTimeSystem m_SynchronizedSimulationTimeSystem;
+		private RhythmCommandManager             m_CommandManager;
+
+		protected override void OnCreate()
+		{
+			base.OnCreate();
+
+			m_ConvertGhostEntityMap            = World.GetOrCreateSystem<ConvertGhostEntityMap>();
+			m_SynchronizedSimulationTimeSystem = World.GetOrCreateSystem<SynchronizedSimulationTimeSystem>();
+			m_CommandManager                   = World.GetOrCreateSystem<RhythmCommandManager>();
+		}
+
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			var convertMap = World.GetExistingSystem<ConvertGhostEntityMap>();
-			var timeArray  = new NativeArray<SynchronizedSimulationTime>(1, Allocator.TempJob);
+			var timeArray = new NativeArray<SynchronizedSimulationTime>(1, Allocator.TempJob);
 
-			inputDeps = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Schedule(timeArray, inputDeps);
+			inputDeps = m_SynchronizedSimulationTimeSystem.Schedule(timeArray, inputDeps);
 			inputDeps = new Job
 			{
 				TargetTick = NetworkTimeSystem.interpolateTargetTick,
 				ServerTime = timeArray,
 
 				SnapshotDataFromEntity = GetBufferFromEntity<MarchAbilitySnapshotData>(true),
-				CommandIdToEntity      = World.GetExistingSystem<RhythmCommandManager>().CommandIdToEntity,
+				CommandIdToEntity      = m_CommandManager.CommandIdToEntity,
 
 				RelativeRhythmEngineFromEntity = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(true),
 				RhythmEngineDataGroup          = new RhythmEngineDataGroup(this),
 
-				GhostEntityMap = convertMap.HashMap
-			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, convertMap.dependency));
+				GhostEntityMap = m_ConvertGhostEntityMap.HashMap
+			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, m_ConvertGhostEntityMap.dependency));
 
 			return inputDeps;
 		}

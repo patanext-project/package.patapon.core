@@ -1,6 +1,7 @@
 using StormiumTeam.GameBase;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
 
@@ -10,30 +11,40 @@ namespace Patapon4TLB.Default
 	{
 		public override ModuleUpdateType UpdateType => ModuleUpdateType.Job;
 
-		[BurstCompile]
-		private struct CopyJob<T> : IJob
-			where T : struct
+		private struct ValueAbility
 		{
-			[DeallocateOnJobCompletion]
-			public NativeArray<T> Source;
+			public Entity Owner;
+			public Entity Ability;
+		}
 
-			public NativeList<T> Destination;
+		[BurstCompile]
+		private struct ClearJob : IJob
+		{
+			public NativeHashMap<Entity, ValueAbility> HashMap;
 
 			public void Execute()
 			{
-				Destination.Clear();
-				Destination.AddRange(Source);
+				HashMap.Clear();
 			}
 		}
 
-		public EntityQuery        Query;
-		public NativeList<Entity> EntityArray;
-		public NativeList<Owner>  OwnerArray;
+		[BurstCompile]
+		private struct SearchJob : IJobForEachWithEntity<Owner>
+		{
+			public NativeHashMap<Entity, ValueAbility>.Concurrent OwnerToAbilityMap;
+
+			public void Execute(Entity e, int _, ref Owner owner)
+			{
+				OwnerToAbilityMap.TryAdd(owner.Target, new ValueAbility {Owner = owner.Target, Ability = e});
+			}
+		}
+
+		public  EntityQuery                         Query;
+		private NativeHashMap<Entity, ValueAbility> m_OwnerToAbilityMap;
 
 		protected override void OnEnable()
 		{
-			EntityArray = new NativeList<Entity>(Allocator.Persistent);
-			OwnerArray = new NativeList<Owner>(Allocator.Persistent);
+			m_OwnerToAbilityMap = new NativeHashMap<Entity, ValueAbility>(32, Allocator.Persistent);
 		}
 
 		protected override void OnUpdate(ref JobHandle jobHandle)
@@ -41,30 +52,20 @@ namespace Patapon4TLB.Default
 			if (Query == null)
 				return;
 
-			Query.AddDependency(jobHandle);
-			var tmpEntities   = Query.ToEntityArray(Allocator.TempJob, out var dep1);
-			var tmpOwnerArray = Query.ToComponentDataArray<Owner>(Allocator.TempJob, out var dep2);
-
-			jobHandle = JobHandle.CombineDependencies(jobHandle, dep1, dep2);
-			jobHandle = new CopyJob<Entity> {Source = tmpEntities, Destination = EntityArray}.Schedule(jobHandle);
-			jobHandle = new CopyJob<Owner> {Source = tmpOwnerArray, Destination = OwnerArray}.Schedule(jobHandle);
+			jobHandle = new SearchJob
+			{
+				OwnerToAbilityMap = m_OwnerToAbilityMap.ToConcurrent()
+			}.Schedule(Query, jobHandle);
 		}
 
 		protected override void OnDisable()
 		{
-			EntityArray.Dispose();
-			OwnerArray.Dispose();
+			m_OwnerToAbilityMap.Dispose();
 		}
 
-		public Entity FindFromOwner(Entity owner)
+		public Entity GetAbility(Entity owner)
 		{
-			for (var ab = 0; ab != EntityArray.Length; ab++)
-			{
-				if (OwnerArray[ab].Target == owner)
-					return EntityArray[ab];
-			}
-
-			return Entity.Null;
+			return m_OwnerToAbilityMap.TryGetValue(owner, out var value) ? value.Ability : default;
 		}
 	}
 }

@@ -19,7 +19,6 @@ namespace Patapon4TLB.Default
 	public class RhythmEngineCheckCommandValidity : JobGameBaseSystem
 	{
 		[BurstCompile]
-		[ExcludeComponent(typeof(NetworkStreamDisconnected))]
 		private struct GetRpcTargetConnectionJob : IJobForEachWithEntity<NetworkStreamConnection>
 		{
 			public NativeArray<Entity> Target;
@@ -218,27 +217,40 @@ namespace Patapon4TLB.Default
 			}
 		}
 
+		private EntityQuery m_RpcTargetQuery;
+		private EntityQuery m_ProcessQuery;
 		private EntityQuery m_AvailableCommandQuery;
+
+		private RpcQueueSystem<RhythmRpcNewClientCommand> m_RpcQueueNewClientCommand;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
+			m_RpcTargetQuery = GetEntityQuery(typeof(NetworkStreamConnection), typeof(OutgoingRpcDataStreamBufferComponent), ComponentType.Exclude<NetworkStreamDisconnected>());
+			m_ProcessQuery = GetEntityQuery(
+				typeof(RhythmEngineSettings), 
+				typeof(RhythmEngineState), 
+				typeof(RhythmEngineProcess),
+				typeof(RhythmCurrentCommand),
+				typeof(RhythmEngineSimulateTag)
+				);
 			m_AvailableCommandQuery = GetEntityQuery(typeof(RhythmCommandSequenceContainer));
+			m_RpcQueueNewClientCommand = World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcNewClientCommand>>();
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
 			m_AvailableCommandQuery.AddDependency(inputDeps);
 
-			var rpcTargetConnection = new NativeArray<Entity>(1, Allocator.TempJob);
+			var rpcTargetConnection = new NativeArray<Entity>(1, Allocator.TempJob, NativeArrayOptions.UninitializedMemory) {[0] = default};
 
 			if (!IsServer)
 			{
 				inputDeps = new GetRpcTargetConnectionJob
 				{
 					Target = rpcTargetConnection
-				}.ScheduleSingle(this, inputDeps);
+				}.ScheduleSingle(m_RpcTargetQuery, inputDeps);
 			}
 
 			inputDeps = new VerifyJob
@@ -252,8 +264,8 @@ namespace Patapon4TLB.Default
 				CurrentCommandFromEntity = GetBufferFromEntity<RhythmEngineCurrentCommand>(),
 
 				OutgoingDataFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>(),
-				RpcClientCommandQueue  = World.GetExistingSystem<RpcQueueSystem<RhythmRpcNewClientCommand>>().GetRpcQueue()
-			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, queryHandle));
+				RpcClientCommandQueue  = m_RpcQueueNewClientCommand.GetRpcQueue()
+			}.Schedule(m_ProcessQuery, JobHandle.CombineDependencies(inputDeps, queryHandle));
 
 			return inputDeps;
 		}
