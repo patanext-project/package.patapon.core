@@ -125,9 +125,7 @@ namespace Patapon4TLB.UI
 			{
 				Entities.ForEach((UIStatusBackend backend) =>
 				{
-					backend.DisableNextUpdate                 = true;
-					backend.ReturnToPoolOnDisable             = true;
-					backend.ReturnPresentationToPoolNextFrame = true;
+					backend.ReturnDelayed(PostUpdateCommands, true, true);
 				});
 
 				return;

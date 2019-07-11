@@ -20,16 +20,10 @@ namespace Patapon4TLB.UI.InGame
 	{
 		public NativeString64 PreviousName;
 		public Color TargetColor;
-
-		protected override void Update()
+		
+		public override void OnPoolSet()
 		{
-			if (DstEntityManager == null || DstEntityManager.IsCreated && DstEntityManager.Exists(DstEntity))
-			{
-				base.Update();
-				return;
-			}
-
-			Return(true, true);
+			DstEntityManager.AddComponentData(BackendEntity, RuntimeAssetDisable.All);
 		}
 	}
 

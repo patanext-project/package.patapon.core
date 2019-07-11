@@ -136,7 +136,9 @@ namespace package.patapon.core.Animation
 
 		public void DestroyPlayableGraph()
 		{
-			m_PlayableGraph.Destroy();
+			if (m_PlayableGraph.IsValid())
+				m_PlayableGraph.Destroy();
+			m_SystemData.Clear();
 		}
 
 		private void OnDestroy()

@@ -11,10 +11,15 @@ namespace Patapon4TLB.UI
 {
 	public class UIStatusBackend : RuntimeAssetBackend<UIStatusPresentation>
 	{
-		public int    priority;
+		public int priority;
 
 		public RectTransform rectTransform { get; private set; }
 
+		public override void OnPoolSet()
+		{
+			DstEntityManager.AddComponentData(BackendEntity, RuntimeAssetDisable.All);
+		}
+		
 		public override void OnComponentEnabled()
 		{
 			rectTransform = GetComponent<RectTransform>();

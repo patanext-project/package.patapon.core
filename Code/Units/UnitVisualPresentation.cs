@@ -168,6 +168,7 @@ namespace Patapon4TLB.Core
 		public override void OnPoolSet()
 		{
 			(Animation = GetComponent<UnitVisualAnimation>()).OnBackendSet(this);
+			DstEntityManager.AddComponentData(BackendEntity, RuntimeAssetDisable.All);
 		}
 
 		public override void OnPresentationSet()

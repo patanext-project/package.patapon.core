@@ -57,9 +57,7 @@ namespace Patapon4TLB.UI.InGame
 			{
 				Entities.ForEach((UIPlayerTargetCursorBackend backend) =>
 				{
-					backend.DisableNextUpdate                 = true;
-					backend.ReturnToPoolOnDisable             = true;
-					backend.ReturnPresentationToPoolNextFrame = true;
+					backend.ReturnDelayed(PostUpdateCommands, true, true);
 				});
 			}
 
