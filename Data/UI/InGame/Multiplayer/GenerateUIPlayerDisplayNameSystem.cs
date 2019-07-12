@@ -37,6 +37,9 @@ namespace Patapon4TLB.UI.InGame
 				return gameObject;
 			}, World);
 
+			m_PresentationPool.AddElements(16);
+			m_BackendPool.AddElements(16);
+
 			GetModule(out m_GetAllBackendModule);
 
 			m_PlayerUnitQuery = GetEntityQuery(typeof(UnitDescription), typeof(Relative<PlayerDescription>));

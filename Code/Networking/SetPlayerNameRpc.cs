@@ -113,8 +113,6 @@ namespace P4.Core.Code.Networking
 							playerIdx = p;
 					}
 
-					Debug.Log($"{payloadArray[ent].Name} -> {playerIdx}");
-
 					if (playerIdx < 0)
 					{
 						Debug.LogError("(Server) No player found with connection=" + payloadArray[ent].Connection);
@@ -146,8 +144,6 @@ namespace P4.Core.Code.Networking
 						var serverId = EntityManager.GetComponentData<GamePlayer>(player).ServerId;
 						var name     = EntityManager.GetComponentData<PlayerName>(player);
 						
-						Debug.Log($"(New Client) Send {serverId} to new connection {con}.");
-
 						rpcQueue.Schedule(outgoingData, new SetPlayerNameRpc {ServerId = serverId, Name = name.Value});
 					}
 					
@@ -175,7 +171,6 @@ namespace P4.Core.Code.Networking
 					// not found...
 					if (playerIdx == -1)
 					{
-						//Debug.LogError("(Client) No player found with serverId=" + payloadArray[ent].ServerId);
 						continue;
 					}
 

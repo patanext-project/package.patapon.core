@@ -39,6 +39,9 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 				return gameObject;
 			}, World);
+			
+			PresentationPool.AddElements(16);
+			BackendPool.AddElements(16);
 
 			m_UnitQuery = GetEntityQuery(new EntityQueryDesc
 			{

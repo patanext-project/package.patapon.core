@@ -31,7 +31,7 @@ namespace Patapon4TLB.UI
 		{
 			base.OnStartRunning();
 
-			m_UnitQuery    = GetEntityQuery(typeof(UnitDescription), typeof(Relative<TeamDescription>));
+			m_UnitQuery = GetEntityQuery(typeof(UnitDescription), typeof(Relative<TeamDescription>));
 
 			m_UIRoot = new GameObject("UIStatus_RootContainer", typeof(RectTransform));
 			var rectTransform = m_UIRoot.GetComponent<RectTransform>();
@@ -50,13 +50,16 @@ namespace Patapon4TLB.UI
 				// it's important to set GameObjectEntity as last! (or else other components will not get referenced????)
 				var gameObject = new GameObject("UIStatus Backend", typeof(RectTransform), typeof(UIStatusBackend), typeof(GameObjectEntity));
 				gameObject.SetActive(false);
-				
-				var backend    = gameObject.GetComponent<UIStatusBackend>();
+
+				var backend = gameObject.GetComponent<UIStatusBackend>();
 				backend.SetRootPool(pool);
 
 				return gameObject;
 			}, World);
-			
+
+			m_PresentationPool.AddElements(16);
+			m_BackendPool.AddElements(16);
+
 			GetModule(out m_GetAllBackendModule);
 		}
 
@@ -153,8 +156,6 @@ namespace Patapon4TLB.UI
 
 					backend.transform.SetParent(m_UIRoot.transform, false);
 					backend.SetFromPool(m_PresentationPool, EntityManager, missingEntities[i]);
-					
-					Debug.Log("Generate for " + missingEntities[i]);
 				}
 			}
 		}

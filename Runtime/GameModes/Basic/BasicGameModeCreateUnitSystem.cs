@@ -24,8 +24,6 @@ namespace Patapon4TLB.GameModes.Basic
 		protected override void OnCreate()
 		{
 			base.OnCreate();
-			
-			Debug.Log("------------------- Create UnitSystem");
 
 			m_UnitArchetype = EntityManager.CreateArchetype
 			(
@@ -198,8 +196,6 @@ namespace Patapon4TLB.GameModes.Basic
 					cameraState.Data.Target = unit;
 
 					EntityManager.SetComponentData(playerEntity, cameraState);
-
-					Debug.Log($"------------------ Create entity with {unit} {playerData.RhythmEngine}");
 				}
 			}
 
