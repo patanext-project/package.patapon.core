@@ -5,6 +5,7 @@ using Patapon4TLB.Core;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Animations;
@@ -17,14 +18,20 @@ namespace Patapon4TLB.Default
 	{
 		private class SystemPlayable : PlayableBehaviour
 		{
+			private int m_PreviousAnimation;
+			
 			public Playable                        Self;
 			public UnitVisualPlayableBehaviourData VisualData;
 
 			public AnimationMixerPlayable Mixer;
 			public AnimationMixerPlayable Root;
 
+			public bool ForceAnimation; // no transition
 			public int   TargetAnimation;
 			public float Weight;
+
+			public Transition ToTransition;
+			public Transition FromTransition;
 
 			public void Initialize(Playable self, int index, PlayableGraph graph, AnimationMixerPlayable rootMixer, IReadOnlyList<AnimationClip> clips)
 			{
@@ -47,14 +54,52 @@ namespace Patapon4TLB.Default
 
 			public override void PrepareFrame(Playable playable, FrameData info)
 			{
+				var global = (float) Root.GetTime();
+
+				if (Weight >= 1 & m_PreviousAnimation != TargetAnimation)
+				{
+					var offset = 0f;
+					if (m_PreviousAnimation == 1) // walking
+					{
+						var clipPlayable = (AnimationClipPlayable) Mixer.GetInput(m_PreviousAnimation);
+						var length       = clipPlayable.GetAnimationClip().length;
+						var mod          = clipPlayable.GetTime() % length;
+						if (mod > length * 0.5f)
+						{
+							offset += length - (float) mod;
+						}
+						else
+						{
+							offset += (float) mod;
+						}
+						
+						offset -= length * 0.25f;
+						if (offset < 0)
+							offset += length * 0.25f;
+					}
+
+					m_PreviousAnimation = TargetAnimation;
+
+					ToTransition.End(global + offset, global + offset + 0.2f);
+					FromTransition.Begin(global + offset, global + offset + 0.2f);
+					FromTransition.End(global + offset, global + offset + 0.2f);
+				}
+
+				if (ForceAnimation)
+				{
+					ForceAnimation = false;
+					
+					m_PreviousAnimation = TargetAnimation;
+					
+					ToTransition.End(0, 0);
+					FromTransition.Begin(0, 0);
+					FromTransition.End(0, 0);
+				}
+				
 				var inputCount = Mixer.GetInputCount();
 				for (var i = 0; i != inputCount; i++)
 				{
-					Mixer.SetInputWeight(i, i == TargetAnimation ? 1 : 0);
-					if (i == TargetAnimation)
-						Mixer.GetInput(i).Play();
-					else
-						Mixer.GetInput(i).Pause();
+					Mixer.SetInputWeight(i, i == TargetAnimation ? FromTransition.Evaluate(global, 0, 1) : ToTransition.Evaluate(global));
 				}
 
 				Weight = 1 - VisualData.CurrAnimation.GetTransitionWeightFixed(VisualData.VisualAnimation.RootTime);
@@ -75,11 +120,11 @@ namespace Patapon4TLB.Default
 
 		private struct OperationHandleData
 		{
-			public bool IsAttackAnimation;
+			public int Index;
 		}
 
-		private AnimationClip m_MarchAnimationClip;
-		private AnimationClip m_MarchAttackAnimationClip;
+		private AnimationClip[] m_Clips;
+		private int m_LoadSuccess;
 
 		private AsyncOperationModule m_AsyncOperationModule;
 		private SystemAbilityModule  m_AbilityModule;
@@ -103,7 +148,12 @@ namespace Patapon4TLB.Default
 			GetModule(out m_AsyncOperationModule);
 			GetModule(out m_AbilityModule);
 
-			m_AsyncOperationModule.Add(Addressables.LoadAsset<AnimationClip>(string.Format(AddrKey, "Walking")), new OperationHandleData {IsAttackAnimation = false});
+			m_AbilityModule.Query = m_MarchAbilitiesQuery;
+
+			m_Clips = new AnimationClip[2];
+			
+			m_AsyncOperationModule.Add(Addressables.LoadAsset<AnimationClip>(string.Format(AddrKey, "Idle")), new OperationHandleData {Index = 0});
+			m_AsyncOperationModule.Add(Addressables.LoadAsset<AnimationClip>(string.Format(AddrKey, "Walking")), new OperationHandleData {Index = 1});
 		}
 
 		protected override void OnUpdate()
@@ -114,14 +164,14 @@ namespace Patapon4TLB.Default
 				if (handle.Result == null)
 					continue;
 
-				if (data.IsAttackAnimation) m_MarchAttackAnimationClip = handle.Result;
-				else m_MarchAnimationClip                              = handle.Result;
+				m_Clips[data.Index] = handle.Result;
+				m_LoadSuccess++;
 
 				m_AsyncOperationModule.Handles.RemoveAtSwapBack(i);
 				i--;
 			}
 
-			if (m_MarchAnimationClip == null)
+			if (m_LoadSuccess < m_Clips.Length)
 				return;
 
 
@@ -134,14 +184,10 @@ namespace Patapon4TLB.Default
 			var playable = ScriptPlayable<SystemPlayable>.Create(data.Graph);
 			var behavior = playable.GetBehaviour();
 
-			behavior.Initialize(playable, data.Index, data.Graph, data.Behavior.RootMixer, new[]
-			{
-				m_MarchAnimationClip,
-				// m_MarchAttackAnimationClip // not yet
-			});
+			behavior.Initialize(playable, data.Index, data.Graph, data.Behavior.RootMixer, m_Clips);
 
-			systemData.Playable  = playable;
-			systemData.Behaviour = behavior;
+			systemData.Playable             = playable;
+			systemData.Behaviour            = behavior;
 			systemData.Behaviour.VisualData = ((UnitVisualAnimation) data.Handle).GetBehaviorData();
 		}
 
@@ -177,16 +223,25 @@ namespace Patapon4TLB.Default
 			var systemData  = animation.GetSystemData<SystemData>(m_SystemType);
 			var doAnimation = currAnim == TargetAnimation.Null || currAnim.Type == m_SystemType;
 
+			var abilityActive       = false;
+			var abilityWillBeActive = false;
 			if (abilityEntity != default)
 			{
 				var abilityState = EntityManager.GetComponentData<RhythmAbilityState>(abilityEntity);
-				doAnimation |= abilityState.IsActive;
+				abilityWillBeActive =  abilityState.WillBeActive;
+				doAnimation         |= abilityActive = abilityState.IsActive;
 			}
+			
+			if (abilityActive || abilityWillBeActive)
+			{
+				systemData.Behaviour.ForceAnimation = true;
+			}
+
+			var velocity = EntityManager.GetComponentData<Velocity>(backend.DstEntity);
+			systemData.Behaviour.TargetAnimation = math.abs(velocity.Value.x) > 0f || abilityWillBeActive || abilityActive ? 1 : 0;
 
 			if (!doAnimation)
 				return;
-
-			systemData.Behaviour.TargetAnimation = 0;
 
 			animation.SetTargetAnimation(new TargetAnimation(m_SystemType, transitionStart: currAnim.TransitionStart, transitionEnd: currAnim.TransitionEnd, previousType: currAnim.PreviousType));
 		}

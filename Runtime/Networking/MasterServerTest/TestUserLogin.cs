@@ -1,4 +1,6 @@
+using System;
 using System.Net;
+using P4TLB.MasterServer;
 using Patapon4TLB.Core.MasterServer;
 using Unity.Entities;
 using UnityEngine;
@@ -13,7 +15,7 @@ namespace Patapon4TLB.Core.MasterServerTest
 	 * Once we get the result, print it here and destroy it
 	 * 
 	 */
-	public class TestGetUserLogin : ComponentSystem
+	public class TestUserLogin : ComponentSystem
 	{
 		// Tag to differentiate our custom request from other requests.
 		private struct CustomRequestTag : IComponentData
@@ -29,22 +31,21 @@ namespace Patapon4TLB.Core.MasterServerTest
 			
 			// Create our request.
 			// The 'RequestUserAccountData' component will be removed once the MasterServer has sent an answer to us (it will add a 'ResultUserAccountData' component)
-			var request = EntityManager.CreateEntity(typeof(CustomRequestTag), typeof(RequestGetUserAccountData));
-			// get from an user that got a GUID of 0 (that an example, GUID don't work like that lol)
-			EntityManager.SetComponentData(request, new RequestGetUserAccountData {UserGuid = 0}); 
+			var request = EntityManager.CreateEntity(typeof(CustomRequestTag), typeof(RequestUserLogin));
+			EntityManager.SetComponentData(request, new RequestUserLogin("DISCORD_136793316523114497", string.Empty, UserLoginRequest.Types.RequestType.Player)); 
 			
 			// Create a query where we only want the result.
-			// If there is a result, then there shouldn't be any Request* component anymore on it.
+			// If there is a result and no error, then there shouldn't be any Request* component anymore on it.
 			m_ResultQuery = GetEntityQuery(new EntityQueryDesc
 			{
-				All = new ComponentType[] {typeof(CustomRequestTag), typeof(ResultGetUserAccountData)},
-				None = new ComponentType[] {typeof(RequestGetUserAccountData)}
+				All = new ComponentType[] {typeof(CustomRequestTag), typeof(ResultUserLogin)},
+				None = new ComponentType[] {typeof(RequestUserLogin)}
 			});
 		}
 
 		protected override void OnUpdate()
 		{
-			Entities.ForEach((ref RequestGetUserAccountData request) =>
+			Entities.ForEach((ref RequestGetUserAccountData request, ref ResultUserLogin result) =>
 			{
 				if (request.error)
 				{
@@ -52,9 +53,9 @@ namespace Patapon4TLB.Core.MasterServerTest
 				}
 			});
 			
-			Entities.With(m_ResultQuery).ForEach((Entity e, ref ResultGetUserAccountData result) =>
+			Entities.With(m_ResultQuery).ForEach((Entity e, ref ResultUserLogin result) =>
 			{
-				Debug.Log($"Account data received! login={result.Login}");
+				Debug.Log($"Account data received! token={result.Token}, clientId={result.ClientId}, userId={result.UserId}");
 
 				// Destroy our entity...
 				PostUpdateCommands.DestroyEntity(e);
