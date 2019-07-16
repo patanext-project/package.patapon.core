@@ -218,7 +218,7 @@ namespace Patapon4TLB.Default
 						{
 							// recover...
 							Debug.Log($"recover... ({cmdEndFlowBeat} > {flowBeat + 1}) or {executePressure.RpcData.ShouldStartRecovery}");
-							state.NextBeatRecovery = flowBeat + 1;
+							state.NextBeatRecovery = flowBeat + 2;
 						}
 
 						state.LastPressureBeat  = flowBeat;

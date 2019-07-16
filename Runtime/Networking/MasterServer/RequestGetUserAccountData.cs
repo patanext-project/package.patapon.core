@@ -6,7 +6,9 @@ using Boo.Lang;
 using Google.Protobuf;
 using Grpc.Core;
 using P4TLB.MasterServer;
+using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
+using Unity.Collections;
 using Unity.Entities;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -60,11 +62,19 @@ namespace Patapon4TLB.Core.MasterServer
 		public NativeString64 Login;
 	}
 
-	public struct CurrentMasterServerClient : IComponentData
+	public struct ConnectedMasterServerClient : IComponentData
 	{
 		/// NEVER SHARE IT
 		public NativeString64 Token;
 		public int ClientId;
+	}
+
+	public struct MasterServerIsPlayer : IComponentData
+	{
+	}
+
+	public struct MasterServerIsServer : IComponentData
+	{
 	}
 
 	[UpdateInGroup(typeof(MasterServerProcessRpcSystem))]
@@ -78,12 +88,10 @@ namespace Patapon4TLB.Core.MasterServer
 		private MasterServerSystem m_MasterServer;
 		private EntityQuery        m_MasterServerWithoutClient;
 
-		private Authentication.AuthenticationClient m_Client;
+		private AuthenticationService.AuthenticationServiceClient m_Client;
 
 		private MasterServerRequestModule<RequestUserLogin, RequestUserLogin.Processing, ResultUserLogin> m_RequestUserLoginModule;
 		private EntityQuery m_ClientQuery;
-		
-		private int m_RequestCount = 1;
 
 		protected override void OnCreate()
 		{
@@ -91,9 +99,9 @@ namespace Patapon4TLB.Core.MasterServer
 			
 			GetModule(out m_RequestUserLoginModule);
 
-			m_MasterServer              = World.GetOrCreateSystem<MasterServerSystem>();
+			m_MasterServer = BootWorld.GetOrCreateSystem<MasterServerSystem>();
 			m_MasterServerWithoutClient = GetEntityQuery(typeof(MasterServerConnection), ComponentType.Exclude<UserAccountClient>());
-			m_ClientQuery = GetEntityQuery(typeof(CurrentMasterServerClient));
+			m_ClientQuery = GetEntityQuery(typeof(ConnectedMasterServerClient));
 			
 			m_MasterServer.BeforeShutdown += OnBeforeShutdown;
 		}
@@ -105,7 +113,7 @@ namespace Patapon4TLB.Core.MasterServer
 				if (m_MasterServer.channel == null)
 					return;
 				
-				m_Client = new Authentication.AuthenticationClient(m_MasterServer.channel);
+				m_Client = new AuthenticationService.AuthenticationServiceClient(m_MasterServer.channel);
 
 				PostUpdateCommands.AddComponent(e, new UserAccountClient());
 			});
@@ -132,13 +140,10 @@ namespace Patapon4TLB.Core.MasterServer
 				if (!request.error)
 				{
 					EntityManager.RemoveComponent<RequestUserLogin>(item.Entity);
-					
-					if (m_ClientQuery.CalculateLength() == 0)
-					{
-						Debug.Log("created entity...");
-						EntityManager.CreateEntity(typeof(CurrentMasterServerClient));
-					}
-					SetSingleton(new CurrentMasterServerClient
+
+					var isType = request.Type == UserLoginRequest.Types.RequestType.Player ? typeof(MasterServerIsPlayer) : typeof(MasterServerIsServer);
+					var ent    = EntityManager.CreateEntity(typeof(ConnectedMasterServerClient), isType);
+					EntityManager.SetComponentData(ent, new ConnectedMasterServerClient
 					{
 						ClientId = result.ClientId,
 						Token    = new NativeString64(result.Token)
@@ -160,19 +165,20 @@ namespace Patapon4TLB.Core.MasterServer
 		{
 			if (m_Client == null)
 				return;
-			
-			Debug.Log("-1");
-			if (m_ClientQuery.CalculateLength() > 0)
-			{
-				Debug.Log("-2");
-				var data = m_ClientQuery.GetSingleton<CurrentMasterServerClient>();
 
-				m_Client.DisconnectAsync(new DisconnectRequest
+			using (var entities = m_ClientQuery.ToEntityArray(Allocator.TempJob))
+			using (var components = m_ClientQuery.ToComponentDataArray<ConnectedMasterServerClient>(Allocator.TempJob))
+			{
+				for (var ent = 0; ent != entities.Length; ent++)
 				{
-					Reason = "shutdown",
-					Token  = data.Token.ToString()
-				});
-				Debug.Log("-3");
+					m_Client.DisconnectAsync(new DisconnectRequest
+					{
+						Reason = "shutdown",
+						Token  = components[ent].Token.ToString()
+					});
+					
+					EntityManager.DestroyEntity(entities[ent]);
+				}
 			}
 		}
 	}

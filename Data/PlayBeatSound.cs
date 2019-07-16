@@ -65,7 +65,7 @@ namespace Patapon4TLB.Default.Test
 			}
 
 			// do the perfect sound
-			var isPerfect = currentCommand.ActiveAtTime >= process.TimeTick && currentCommand.Power >= 100;
+			var isPerfect = !shouldFail && currentCommand.ActiveAtTime >= process.TimeTick && currentCommand.Power >= 100;
 			if (isPerfect)
 			{
 				m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPerfect, 1.25f);
