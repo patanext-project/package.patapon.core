@@ -11,6 +11,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
 using UnityEngine;
+using ILogger = Grpc.Core.Logging.ILogger;
 
 namespace Patapon4TLB.Core.MasterServer
 {
@@ -34,6 +35,9 @@ namespace Patapon4TLB.Core.MasterServer
 		}
 	}
 
+	public class MasterServerProcessRpcMainWorldSystem : ComponentSystemGroup
+	{}
+	
 	public class MasterServerProcessRpcSystem : ComponentSystemGroup
 	{
 		[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
@@ -41,13 +45,11 @@ namespace Patapon4TLB.Core.MasterServer
 		{
 			public void SetSystems(List<ComponentSystemBase> systems)
 			{
-				Debug.Log("ye");
 				foreach (var system in systems)
 				{
 					if (m_systemsToUpdate.Any(s => s.GetType() == system.GetType()))
 						continue;
-
-					Debug.Log("add " + system.GetType());
+					
 					m_systemsToUpdate.Add(World.GetOrCreateSystem(system.GetType()));
 				}
 
@@ -55,8 +57,6 @@ namespace Patapon4TLB.Core.MasterServer
 				{
 					if (systems.Any(s => s.GetType() == system.GetType()))
 						continue;
-					
-					Debug.Log("remove " + system.GetType());
 
 					World.DestroySystem(system);
 					m_systemsToUpdate.Remove(system);
@@ -110,11 +110,72 @@ namespace Patapon4TLB.Core.MasterServer
 		public event ShutDownEvent BeforeShutdown;
 		public Channel channel { get; private set; }
 
+		public class Logger : ILogger
+		{
+			public string Prefix;
+			
+			public ILogger ForType<T>()
+			{
+				return new Logger {Prefix = typeof(T).Name};
+			}
+
+			public void Debug(string message)
+			{
+				UnityEngine.Debug.Log($"{Prefix}:debug -> {message}");
+			}
+
+			public void Debug(string format, params object[] formatArgs)
+			{
+				Debug(string.Format(format, formatArgs));
+			}
+
+			public void Info(string message)
+			{
+				UnityEngine.Debug.Log($"{Prefix}:info -> {message}");
+			}
+
+			public void Info(string format, params object[] formatArgs)
+			{
+				Info(string.Format(format, formatArgs));
+			}
+
+			public void Warning(string message)
+			{
+				UnityEngine.Debug.Log($"{Prefix}:warning -> {message}");
+			}
+
+			public void Warning(string format, params object[] formatArgs)
+			{
+				Warning(string.Format(format, formatArgs));
+			}
+
+			public void Warning(Exception exception, string message)
+			{
+				Warning($"thrown {exception}, msg: {message}");
+			}
+
+			public void Error(string message)
+			{
+				UnityEngine.Debug.Log($"{Prefix}:error -> {message}");
+			}
+
+			public void Error(string format, params object[] formatArgs)
+			{
+				Error(string.Format(format, formatArgs));
+			}
+
+			public void Error(Exception exception, string message)
+			{
+				Warning($"thrown {exception}, msg: {message}");
+			}
+		}
+		
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
 			m_ConnectionQuery = GetEntityQuery(typeof(MasterServerConnection));
+			GrpcEnvironment.SetLogger(new Logger());
 		}
 
 		protected override void OnUpdate()
@@ -148,7 +209,7 @@ namespace Patapon4TLB.Core.MasterServer
 			if (channel != null && channel.State != ChannelState.Shutdown)
 			{
 				BeforeShutdown?.Invoke();
-				channel.ShutdownAsync();
+				//channel.ShutdownAsync();
 			}
 			channel = null;
 
@@ -183,8 +244,8 @@ namespace Patapon4TLB.Core.MasterServer
 		protected override void OnEnable()
 		{
 			// hack
-			RequestQuery = System.EntityManager.CreateEntityQuery(typeof(TRequest), ComponentType.Exclude<TCompleted>());
-			ProcessingQuery = System.EntityManager.CreateEntityQuery(typeof(TProcessing));
+			RequestQuery = System.EntityManager.CreateEntityQuery(typeof(TRequest), ComponentType.Exclude<TProcessing>(), ComponentType.Exclude<TCompleted>());
+			ProcessingQuery = System.EntityManager.CreateEntityQuery(typeof(TRequest), typeof(TProcessing));
 			ResultQuery = System.EntityManager.CreateEntityQuery(typeof(TCompleted));
 
 			m_Requests = new NativeList<Request>(Allocator.Persistent);
@@ -214,6 +275,11 @@ namespace Patapon4TLB.Core.MasterServer
 					}
 				}
 			}
+		}
+
+		public void AddProcessTagToAllRequests()
+		{
+			System.EntityManager.AddComponent(RequestQuery, typeof(TProcessing));
 		}
 
 		public NativeArray<Request> GetRequests()
