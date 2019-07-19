@@ -6,6 +6,7 @@ using Patapon4TLB.UI.InGame;
 using Runtime.Misc;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
+using StormiumTeam.Shared.Gen;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -25,11 +26,6 @@ namespace Patapon4TLB.UI
 
 		public Sprite[] sprites;
 		public Color[]  colors;
-
-		private void OnEnable()
-		{
-			//animator.enabled = false; // manual update
-		}
 	}
 
 	public class UIDrumPressureBackend : RuntimeAssetBackend<UIDrumPressurePresentation>
@@ -40,24 +36,33 @@ namespace Patapon4TLB.UI
 		public bool perfect;
 
 		public bool play;
+
+		public override void OnPoolSet()
+		{
+			DstEntityManager.AddComponent(BackendEntity, typeof(RuntimeAssetDisable));
+		}
 	}
 
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	public class UIDrumPressureSystemClientInternal : ComponentSystem
 	{
 		public List<PressureEvent> Events = new List<PressureEvent>();
+		private EntityQuery m_Query;
+
+		protected override void OnCreate() => m_Query = GetEntityQuery(ComponentType.ReadWrite<PressureEvent>());
 
 		protected override void OnUpdate()
 		{
 			Events.Clear();
 
-			Entities.ForEach((ref PressureEvent ev) =>
+			PressureEvent ev = default;
+			/*foreach (var _ in this.ToEnumerator_D(m_Query, ref ev))
 			{
 				if (!EntityManager.HasComponent<RhythmEngineSimulateTag>(ev.Engine))
-					return;
+					continue;
 
-				Events.Add(ev);
-			});
+				Events.Add(ev);			
+			}*/
 		}
 
 		protected override void OnStopRunning()
@@ -83,6 +88,7 @@ namespace Patapon4TLB.UI
 
 		private Canvas m_Canvas;
 		private EntityQuery m_CameraQuery;
+		private EntityQuery m_BackendQuery;
 		
 		protected override void OnCreate()
 		{
@@ -104,35 +110,37 @@ namespace Patapon4TLB.UI
 
 				Debug.Log("Created with " + i);
 			}
+
+			m_BackendQuery = GetEntityQuery(typeof(UIDrumPressureBackend), typeof(RuntimeAssetDisable));
 		}
 
 		protected override void OnUpdate()
 		{
-			Entity cameraEntity = default;
+			Entity cameraEntity   = default;
 			float3 cameraPosition = default;
 			if (m_CameraQuery.CalculateLength() > 0)
 			{
-				cameraEntity   = m_CameraQuery.GetSingletonEntity();
-				var cameraObject   = EntityManager.GetComponentObject<Camera>(cameraEntity);
+				cameraEntity = m_CameraQuery.GetSingletonEntity();
+				var cameraObject = EntityManager.GetComponentObject<Camera>(cameraEntity);
 				cameraPosition = cameraObject.transform.position;
 			}
 
-			var currentGamePlayer = GetFirstSelfGamePlayer();
+			var currentGamePlayer  = GetFirstSelfGamePlayer();
 			var currentCameraState = GetCurrentCameraState(currentGamePlayer);
 
 			var isWorldSpace = currentCameraState.Target != default;
-			var canvasRect = m_Canvas.pixelRect;
+			var canvasRect   = m_Canvas.pixelRect;
 			if (isWorldSpace && cameraEntity != default)
 			{
 				var translation = EntityManager.GetComponentData<Translation>(currentCameraState.Target);
-				m_Canvas.renderMode         = RenderMode.WorldSpace;
-				m_Canvas.transform.position = new Vector3(translation.Value.x, translation.Value.y + 25 * 0.05f, cameraPosition.z + 10);
+				m_Canvas.renderMode           = RenderMode.WorldSpace;
+				m_Canvas.transform.position   = new Vector3(translation.Value.x, translation.Value.y + 25 * 0.05f, cameraPosition.z + 10);
 				m_Canvas.transform.localScale = Vector3.one * 0.05f;
 
 				var rectTransform = m_Canvas.GetComponent<RectTransform>();
 				rectTransform.sizeDelta = new Vector2(100, 100);
 
-				canvasRect.width = 90;
+				canvasRect.width  = 90;
 				canvasRect.height = 105;
 			}
 			else
@@ -142,8 +150,9 @@ namespace Patapon4TLB.UI
 			}
 
 			var internalSystem = World.GetExistingSystem<UIDrumPressureSystemClientInternal>();
-			var pixelRange = new float2(canvasRect.width, canvasRect.height);
+			var pixelRange     = new float2(canvasRect.width, canvasRect.height);
 
+			UIDrumPressureBackend backend = null;
 			foreach (var ev in internalSystem.Events)
 			{
 				var keyRange = new float2();
@@ -167,13 +176,13 @@ namespace Patapon4TLB.UI
 					keyRange.y += Random.Range(-0.025f, 0.025f);
 					keyRange.x =  Random.Range(-0.1f, 0.1f);
 				}
-				
+
 				keyRange += 0.5f;
-				
-				var width = pixelRange.x * 0.5f;
+
+				var width  = pixelRange.x * 0.5f;
 				var height = pixelRange.y * 0.5f;
 				var keyPos = new float2(math.lerp(-width, width, keyRange.x), math.lerp(-height, height, keyRange.y));
-				
+
 				var beGameObject = DrumBackendPools[ev.Key].Dequeue();
 				using (new SetTemporaryActiveWorld(World))
 				{
@@ -187,7 +196,7 @@ namespace Patapon4TLB.UI
 					beGameObject.transform.rotation      = Quaternion.Euler(0, 0, Random.Range(-12.5f, 12.5f));
 				}
 
-				var backend = beGameObject.GetComponent<UIDrumPressureBackend>();
+				backend = beGameObject.GetComponent<UIDrumPressureBackend>();
 				backend.OnReset();
 				backend.SetFromPool(DrumPresentationPools[ev.Key], EntityManager);
 
@@ -207,7 +216,8 @@ namespace Patapon4TLB.UI
 				}
 			}
 
-			Entities.ForEach((UIDrumPressureBackend backend) =>
+			RuntimeAssetDisable disable = default;
+			foreach (var _ in this.ToEnumerator_DC(m_BackendQuery, ref disable, ref backend))
 			{
 				var presentation = backend.Presentation;
 				if (presentation != null)
@@ -226,17 +236,13 @@ namespace Patapon4TLB.UI
 						presentation.animator.SetFloat(StrHashVariant, backend.rand);
 						presentation.animator.SetTrigger(StrHashPlay);
 					}
-
-					//presentation.animator.Update(Time.deltaTime);
 				}
 
 				if (backend.endTime > Time.time)
-					return;
+					continue;
 
-				backend.DisableNextUpdate                 = true;
-				backend.ReturnToPoolOnDisable             = true;
-				backend.ReturnPresentationToPoolNextFrame = true;
-			});
+				disable = RuntimeAssetDisable.AllAndIgnoreParent;
+			}
 		}
 
 		private GameObject CreateBackendDrumGameObject(AssetPool<GameObject> poolCaller)
@@ -244,11 +250,7 @@ namespace Patapon4TLB.UI
 			var go = new GameObject("(Not Init) BackendPressure", typeof(RectTransform), typeof(UIDrumPressureBackend), typeof(GameObjectEntity));
 			go.SetActive(false);
 			go.GetComponent<UIDrumPressureBackend>().SetRootPool(poolCaller);
-
-			/*var rectTransform = go.GetComponent<RectTransform>();
-			rectTransform.anchorMin = Vector2.zero;
-			rectTransform.anchorMax = Vector2.one;*/
-
+			
 			return go;
 		}
 	}

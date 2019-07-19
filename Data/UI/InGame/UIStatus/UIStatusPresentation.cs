@@ -1,6 +1,7 @@
 using System;
 using Patapon4TLB.UI.InGame;
 using StormiumTeam.GameBase;
+using StormiumTeam.Shared.Gen;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
@@ -60,6 +61,8 @@ namespace Patapon4TLB.UI
 			public int index;
 			public int priority;
 
+			public Entity entity;
+
 			public int CompareTo(SortBackend other)
 			{
 				return other.priority - priority;
@@ -77,40 +80,31 @@ namespace Patapon4TLB.UI
 
 		protected override void OnUpdate()
 		{
-			using (var chunks = m_Query.CreateArchetypeChunkArray(Allocator.TempJob))
+			var length = m_Query.CalculateLength();
+			var sorted = new NativeArray<SortBackend>(length, Allocator.Temp);
+
+			UIStatusBackend backend = null;
+			foreach (var (i, entity) in this.ToEnumerator_C(m_Query, ref backend))
 			{
-				var backendType = GetArchetypeChunkComponentType<UIStatusBackend>();
-				foreach (var chunk in chunks)
-				{
-					var backendArray = chunk.GetComponentObjects(backendType, EntityManager);
-					var sorted       = new NativeArray<SortBackend>(chunk.Count, Allocator.Temp);
-
-					// first, sort backends...
-					for (var ent = 0; ent != chunk.Count; ent++)
-					{
-						sorted[ent] = new SortBackend {index = ent, priority = backendArray[ent].priority};
-					}
-
-					sorted.Sort();
-
-					for (var i = 0; i != sorted.Length; i++)
-					{
-						var backend       = backendArray[sorted[i].index];
-						var rectTransform = backend.GetComponent<RectTransform>();
-
-						rectTransform.anchorMin        = new Vector2(0, 0.5f);
-						rectTransform.anchorMax        = new Vector2(0, 0.5f);
-						rectTransform.pivot            = new Vector2(0, 0.5f);
-						rectTransform.sizeDelta        = new Vector2(100, 100);
-						rectTransform.anchoredPosition = new Vector2(i * 100, 0);
-					}
-				}
+				sorted[i] = new SortBackend {index = i, priority = backend.priority, entity = entity};
 			}
 
-			Entities.ForEach((UIStatusBackend backend) =>
+			for (var i = 0; i != sorted.Length; i++)
 			{
+				backend = EntityManager.GetComponentObject<UIStatusBackend>(sorted[i].entity);
+
 				var rectTransform = backend.rectTransform;
-			});
+				rectTransform.anchorMin        = new Vector2(0, 0.5f);
+				rectTransform.anchorMax        = new Vector2(0, 0.5f);
+				rectTransform.pivot            = new Vector2(0, 0.5f);
+				rectTransform.sizeDelta        = new Vector2(100, 100);
+				rectTransform.anchoredPosition = new Vector2(i * 100, 0);
+			}
+
+			foreach (var enumeration in this.ToEnumerator_C(m_Query, ref backend))
+			{
+				// normal behavior here...
+			}
 		}
 	}
 }
