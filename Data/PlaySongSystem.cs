@@ -106,6 +106,7 @@ namespace Patapon4TLB.Default.Test
 
 	[AlwaysUpdateSystem]
 	[UpdateInGroup(typeof(PresentationSystemGroup))]
+	[NotClientServerSystem]
 	public class PlaySongSystem : GameBaseSystem
 	{
 		public Dictionary<string, DescriptionFileJsonData> Files;
