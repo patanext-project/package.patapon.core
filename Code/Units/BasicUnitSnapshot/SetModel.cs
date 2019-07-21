@@ -11,8 +11,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	public class BasicUnitSetModel : ComponentSystem
 	{
-		public AsyncAssetPool<GameObject> PresentationPool;
-		public AssetPool<GameObject>      BackendPool;
+		public AssetPool<GameObject> BackendPool;
 
 		public struct ToModel : IComponentData
 		{
@@ -20,12 +19,11 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 		}
 
 		private EntityQuery m_UnitQuery;
-		
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			PresentationPool = new AsyncAssetPool<GameObject>("character");
 			BackendPool = new AssetPool<GameObject>((pool) =>
 			{
 				var gameObject = new GameObject("UnitVisualBackend Pooled");
@@ -39,14 +37,13 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 				return gameObject;
 			}, World);
-			
-			PresentationPool.AddElements(16);
+
 			BackendPool.AddElements(16);
 
 			m_UnitQuery = GetEntityQuery(new EntityQueryDesc
 			{
-				All = new ComponentType[]{typeof(BasicUnitSnapshotData), typeof(ReplicatedEntityComponent), typeof(Translation)},
-				None = new ComponentType[]{typeof(ToModel)}
+				All  = new ComponentType[] {typeof(BasicUnitSnapshotData), typeof(ReplicatedEntityComponent), typeof(Translation)},
+				None = new ComponentType[] {typeof(ToModel)}
 			});
 		}
 
@@ -62,9 +59,9 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				{
 					gameObject.SetActive(true);
 				}
-				
+
 				backend.OnReset();
-				backend.SetFromPool(PresentationPool, EntityManager, entities[ent]);
+				backend.SetTarget(EntityManager, entities[ent]);
 
 				EntityManager.AddComponentData(entities[ent], new ToModel {Target = gameObject.GetComponent<GameObjectEntity>().Entity});
 			}

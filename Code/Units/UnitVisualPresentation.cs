@@ -164,8 +164,8 @@ namespace Patapon4TLB.Core
 	public class UnitVisualBackend : RuntimeAssetBackend<UnitVisualPresentation>
 	{
 		public UnitVisualAnimation Animation { get; private set; }
-
-		public override void OnPoolSet()
+		
+		public override void OnTargetUpdate()
 		{
 			(Animation = GetComponent<UnitVisualAnimation>()).OnBackendSet(this);
 			DstEntityManager.AddComponentData(BackendEntity, RuntimeAssetDisable.All);

@@ -40,7 +40,7 @@ namespace Patapon4TLB.UI.InGame
 
 	public class UIPlayerTargetCursorBackend : RuntimeAssetBackend<UIPlayerTargetCursorPresentation>
 	{
-		public override void OnPoolSet()
+		public override void OnTargetUpdate()
 		{
 			DstEntityManager.AddComponentData(BackendEntity, RuntimeAssetDisable.All);
 		}

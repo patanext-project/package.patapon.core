@@ -155,7 +155,8 @@ namespace Patapon4TLB.UI
 					backend.gameObject.SetActive(true);
 
 					backend.transform.SetParent(m_UIRoot.transform, false);
-					backend.SetFromPool(m_PresentationPool, EntityManager, missingEntities[i]);
+					backend.SetTarget(EntityManager, missingEntities[i]);
+					backend.SetPresentation(m_PresentationPool);
 				}
 			}
 		}

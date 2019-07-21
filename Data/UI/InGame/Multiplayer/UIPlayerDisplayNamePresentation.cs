@@ -21,7 +21,7 @@ namespace Patapon4TLB.UI.InGame
 		public NativeString64 PreviousName;
 		public Color TargetColor;
 		
-		public override void OnPoolSet()
+		public override void OnTargetUpdate()
 		{
 			DstEntityManager.AddComponentData(BackendEntity, RuntimeAssetDisable.All);
 		}

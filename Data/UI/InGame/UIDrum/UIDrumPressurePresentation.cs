@@ -37,7 +37,7 @@ namespace Patapon4TLB.UI
 
 		public bool play;
 
-		public override void OnPoolSet()
+		public override void OnTargetUpdate()
 		{
 			DstEntityManager.AddComponent(BackendEntity, typeof(RuntimeAssetDisable));
 		}
@@ -198,7 +198,8 @@ namespace Patapon4TLB.UI
 
 				backend = beGameObject.GetComponent<UIDrumPressureBackend>();
 				backend.OnReset();
-				backend.SetFromPool(DrumPresentationPools[ev.Key], EntityManager);
+				backend.SetTarget(EntityManager);
+				backend.SetPresentation(DrumPresentationPools[ev.Key]);
 
 				var prevRand = backend.rand;
 

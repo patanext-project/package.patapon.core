@@ -16,7 +16,7 @@ namespace Patapon4TLB.UI
 
 		public RectTransform rectTransform { get; private set; }
 
-		public override void OnPoolSet()
+		public override void OnTargetUpdate()
 		{
 			DstEntityManager.AddComponentData(BackendEntity, RuntimeAssetDisable.All);
 		}
