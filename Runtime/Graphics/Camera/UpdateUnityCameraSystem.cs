@@ -9,6 +9,7 @@ using UnityEngine.Profiling;
 
 namespace package.patapon.core
 {
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
     public class UpdateUnityCameraSystem : ComponentSystem
     {
         struct DataToSet

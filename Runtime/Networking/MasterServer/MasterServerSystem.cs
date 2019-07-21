@@ -39,69 +39,9 @@ namespace Patapon4TLB.Core.MasterServer
 	{}
 	
 	public class MasterServerProcessRpcSystem : ComponentSystemGroup
-	{
-		[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
-		public class SimulationGroup : ComponentSystemGroup
-		{
-			public void SetSystems(List<ComponentSystemBase> systems)
-			{
-				foreach (var system in systems)
-				{
-					if (m_systemsToUpdate.Any(s => s.GetType() == system.GetType()))
-						continue;
-					
-					m_systemsToUpdate.Add(World.GetOrCreateSystem(system.GetType()));
-				}
+	{}
 
-				foreach (var system in m_systemsToUpdate)
-				{
-					if (systems.Any(s => s.GetType() == system.GetType()))
-						continue;
-
-					World.DestroySystem(system);
-					m_systemsToUpdate.Remove(system);
-				}
-			}
-		}
-
-		private int m_PreviousClientCount = -1;
-		private int m_PreviousServerCount = -1;
-
-		protected override void OnUpdate()
-		{
-			base.OnUpdate();
-
-			if (m_PreviousClientCount != ClientServerBootstrap.ClientCreationCount
-			    || m_PreviousServerCount != ClientServerBootstrap.ServerCreationCount)
-			{
-				m_PreviousClientCount = ClientServerBootstrap.ClientCreationCount;
-				m_PreviousServerCount = ClientServerBootstrap.ServerCreationCount;
-				
-				SortSystemUpdateList();
-			}
-		}
-
-		public override void SortSystemUpdateList()
-		{
-			base.SortSystemUpdateList();
-
-			void UpdateWorld(World world)
-			{
-				var group = world.GetOrCreateSystem<SimulationGroup>();
-				group.SetSystems(m_systemsToUpdate);
-			}
-
-			if (ClientServerBootstrap.clientWorld != null)
-				foreach (var world in ClientServerBootstrap.clientWorld)
-				{
-					UpdateWorld(world);
-				}
-
-			if (ClientServerBootstrap.serverWorld != null)
-				UpdateWorld(ClientServerBootstrap.serverWorld);
-		}
-	}
-
+	[NotClientServerSystem]
 	public class MasterServerSystem : ComponentSystem
 	{
 		private EntityQuery m_ConnectionQuery;

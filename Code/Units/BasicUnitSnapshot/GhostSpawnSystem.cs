@@ -153,20 +153,22 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 		}
 
 		private ConvertGhostEntityMap m_ConvertGhostEntityMap;
+		private NetworkTimeSystem m_NetworkTimeSystem;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
 			m_ConvertGhostEntityMap = World.GetOrCreateSystem<ConvertGhostEntityMap>();
+			m_NetworkTimeSystem = World.GetOrCreateSystem<NetworkTimeSystem>();
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
 			return new Job
 			{
-				InterpolateTick = NetworkTimeSystem.interpolateTargetTick,
-				PredictTick     = NetworkTimeSystem.predictTargetTick,
+				InterpolateTick = m_NetworkTimeSystem.interpolateTargetTick,
+				PredictTick     = m_NetworkTimeSystem.predictTargetTick,
 
 				SnapshotDataFromEntity = GetBufferFromEntity<BasicUnitSnapshotData>(true),
 				GhostEntityMap         = m_ConvertGhostEntityMap.HashMap,

@@ -86,14 +86,14 @@ namespace Patapon4TLB.Default.Snapshot
 				state.IsPaused         = snapshotData.IsPaused;
 				state.NextBeatRecovery = math.max(state.NextBeatRecovery, snapshotData.Recovery);
 
-				commandState.StartTime = snapshotData.CommandStartTime;
-				commandState.EndTime   = snapshotData.CommandEndTime;
+				commandState.StartTime    = snapshotData.CommandStartTime;
+				commandState.EndTime      = snapshotData.CommandEndTime;
 				commandState.ChainEndTime = snapshotData.CommandChainEndTime;
 
 				process.StartTime = snapshotData.StartTime;
 				if (!SimulateTagFromEntity.Exists(entity))
 				{
-					process.TimeTick = (int)(ServerTime - snapshotData.StartTime);
+					process.TimeTick = (int) (ServerTime - snapshotData.StartTime);
 
 					CommandIdToEntity.TryGetValue(snapshotData.CommandTypeId, out var commandTarget);
 					RhythmCurrentCommand[entity] = new RhythmCurrentCommand
@@ -146,13 +146,15 @@ namespace Patapon4TLB.Default.Snapshot
 
 		private EndSimulationEntityCommandBufferSystem m_Barrier;
 		private EntityQuery                            m_LocalPlayerQuery;
+		private NetworkTimeSystem                      m_NetworkTimeSystem;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			m_LocalPlayerQuery = GetEntityQuery(typeof(GamePlayer), typeof(GamePlayerReadyTag), typeof(GamePlayerLocalTag));
-			m_Barrier          = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+			m_LocalPlayerQuery  = GetEntityQuery(typeof(GamePlayer), typeof(GamePlayerReadyTag), typeof(GamePlayerLocalTag));
+			m_Barrier           = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+			m_NetworkTimeSystem = World.GetOrCreateSystem<NetworkTimeSystem>();
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -171,7 +173,7 @@ namespace Patapon4TLB.Default.Snapshot
 				CommandIdToEntity = World.GetExistingSystem<RhythmCommandManager>().CommandIdToEntity,
 				GhostEntityMap    = convertGhostMapSystem.HashMap,
 
-				TargetTick = NetworkTimeSystem.predictTargetTick
+				TargetTick = m_NetworkTimeSystem.predictTargetTick
 			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, convertGhostMapSystem.dependency));
 
 			var localPlayerLength = m_LocalPlayerQuery.CalculateLength();

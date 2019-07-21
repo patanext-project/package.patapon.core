@@ -6,6 +6,7 @@ using Patapon4TLB.Default.Snapshot;
 using StormiumTeam.GameBase;
 using StormiumTeam.ThirdParty;
 using TMPro;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Networking.Transport;
@@ -46,11 +47,11 @@ namespace Patapon4TLB.UI
 		[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
 		public class InternalSystem : GameBaseSystem
 		{
-			public List<(Entity connection, uint ping)> States = new List<(Entity connection, uint ping)>();
+			public List<(Entity connection, float ping)> States = new List<(Entity connection, float ping)>();
 
 			private void GetPings(Entity entity, ref NetworkSnapshotAckComponent ackComponent)
 			{
-				States.Add((entity, ackComponent.LastReceivedRTT));
+				States.Add((entity, ackComponent.EstimatedRTT));
 			}
 
 			private EntityQueryBuilder.F_ED<NetworkSnapshotAckComponent> m_ForEachDelegate;
@@ -106,6 +107,29 @@ namespace Patapon4TLB.UI
 
 			private float m_LastUpdate;
 
+			private void CleanWorld(World world)
+			{
+				using (var entities = world.EntityManager.GetAllEntities(Allocator.TempJob))
+					world.EntityManager.DestroyEntity(entities);
+			}
+
+			private void SetState(World world, bool enabled)
+			{
+				void EnableSystem<T>()
+					where T : ComponentSystemBase
+				{
+					var s = world.GetExistingSystem<T>();
+					if (s != null)
+						s.Enabled = enabled;
+				}
+
+				EnableSystem<TickClientInitializationSystem>();
+				EnableSystem<TickClientSimulationSystem>();
+				EnableSystem<TickClientPresentationSystem>();
+				EnableSystem<TickServerInitializationSystem>();
+				EnableSystem<TickServerSimulationSystem>();
+			}
+
 			private unsafe void ForEach(UIDebugFrame debugFrame)
 			{
 				debugFrame.ConnectedFrame.SetActive(m_InternalSystem != null);
@@ -113,19 +137,27 @@ namespace Patapon4TLB.UI
 
 				debugFrame.HostButton.interactable    = debugFrame.PortField.text.Length > 0;
 				debugFrame.ConnectButton.interactable = debugFrame.PortField.text.Length > 0 && debugFrame.AddressField.text.Length > 0;
-				
-				
-				
+
+
+
 				if (debugFrame.m_WantToDisconnect)
 				{
-					ClientServerBootstrap.StopClientWorlds(World);
-					ClientServerBootstrap.StopServerWorld(World);
+					if (ClientServerBootstrap.clientWorld != null)
+						foreach (var world in ClientServerBootstrap.clientWorld)
+						{
+							CleanWorld(world);
+							SetState(world, false);
+						}
+
+					if (ClientServerBootstrap.serverWorld != null)
+					{
+						CleanWorld(ClientServerBootstrap.serverWorld);
+						SetState(ClientServerBootstrap.serverWorld, false);
+					}
 				}
 
 				if (debugFrame.m_WantToConnect)
 				{
-					ClientServerBootstrap.CreateClientWorlds();
-
 					var port = (ushort) int.Parse(debugFrame.PortField.text);
 					var ep   = NetworkEndPoint.Parse(debugFrame.AddressField.text, port);
 
@@ -135,7 +167,7 @@ namespace Patapon4TLB.UI
 						foreach (var world in ClientServerBootstrap.clientWorld)
 						{
 							var ent = world.GetExistingSystem<NetworkStreamReceiveSystem>().Connect(ep);
-							
+
 							world.GetExistingSystem<TestSetPlayerName>().Name = debugFrame.UsernameField.text;
 						}
 					}
@@ -143,8 +175,12 @@ namespace Patapon4TLB.UI
 
 				if (debugFrame.m_WantToHost)
 				{
-					if (ClientServerBootstrap.PlayModeType != 2) ClientServerBootstrap.CreateClientWorlds();
-					if (ClientServerBootstrap.PlayModeType != 1) ClientServerBootstrap.CreateServerWorld();
+					if (ClientServerBootstrap.clientWorld != null)
+						foreach (var world in ClientServerBootstrap.clientWorld)
+							SetState(world, false);
+
+					if (ClientServerBootstrap.serverWorld != null)
+						SetState(ClientServerBootstrap.serverWorld, true);
 
 					var port = (ushort) int.Parse(debugFrame.PortField.text);
 

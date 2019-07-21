@@ -1,6 +1,7 @@
 using System.Net;
 using Patapon4TLB.Core.MasterServer;
 using Unity.Entities;
+using Unity.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.Core.MasterServerTest
@@ -13,6 +14,7 @@ namespace Patapon4TLB.Core.MasterServerTest
 	 * Once we get the result, print it here and destroy it
 	 * 
 	 */
+	[NotClientServerSystem]
 	public class TestGetUserLogin : ComponentSystem
 	{
 		// Tag to differentiate our custom request from other requests.

@@ -9,6 +9,7 @@ using UnityEngine;
 
 namespace Patapon4TLB.Core
 {
+	[NotClientServerSystem]
 	public class SetPlayerClientSystem : ComponentSystem
 	{
 		private string m_Login;
@@ -16,12 +17,10 @@ namespace Patapon4TLB.Core
 
 		private Entity m_PreviousRequest;
 
-		private int m_PreviousClientCreationCount = -1;
-
 		protected override void OnCreate()
 		{
 			base.OnCreate();
-			
+
 			SetLoginAndPassword("server_0", "");
 			RequestConnection();
 		}
@@ -30,45 +29,40 @@ namespace Patapon4TLB.Core
 		{
 			if (m_PreviousRequest == default)
 				return;
-			
-			if (ClientServerBootstrap.ClientCreationCount != m_PreviousClientCreationCount
-			    && ClientServerBootstrap.clientWorld != null)
+
+			if (!EntityManager.HasComponent<ResultUserLogin>(m_PreviousRequest))
+				return;
+			// error...
+			if (EntityManager.HasComponent<RequestUserLogin>(m_PreviousRequest))
 			{
-				if (!EntityManager.HasComponent<ResultUserLogin>(m_PreviousRequest))
-					return;
-				// error...
-				if (EntityManager.HasComponent<RequestUserLogin>(m_PreviousRequest))
-				{
-					var error = EntityManager.GetComponentData<RequestUserLogin>(m_PreviousRequest).ErrorCode;
-					Debug.LogError($"Error when trying to connect: {error}");
-
-					EntityManager.DestroyEntity(m_PreviousRequest);
-					m_PreviousRequest = default;
-					return;
-				}
-				
-				Debug.Log("Successfuly connected...");
-
-				var result = EntityManager.GetComponentData<ResultUserLogin>(m_PreviousRequest);
+				var error = EntityManager.GetComponentData<RequestUserLogin>(m_PreviousRequest).ErrorCode;
+				Debug.LogError($"Error when trying to connect: {error}");
 
 				EntityManager.DestroyEntity(m_PreviousRequest);
-				m_PreviousRequest             = default;
-				m_PreviousClientCreationCount = ClientServerBootstrap.ClientCreationCount;
+				m_PreviousRequest = default;
+				return;
+			}
 
-				foreach (var world in ClientServerBootstrap.clientWorld)
+			Debug.Log("Successfuly connected...");
+
+			var result = EntityManager.GetComponentData<ResultUserLogin>(m_PreviousRequest);
+
+			EntityManager.DestroyEntity(m_PreviousRequest);
+			m_PreviousRequest = default;
+
+			foreach (var world in ClientServerBootstrap.clientWorld)
+			{
+				var query = world.EntityManager.CreateEntityQuery(typeof(ConnectedMasterServerClient));
+				if (query.CalculateLength() == 0)
 				{
-					var query = world.EntityManager.CreateEntityQuery(typeof(ConnectedMasterServerClient));
-					if (query.CalculateLength() == 0)
-					{
-						world.EntityManager.CreateEntity(typeof(ConnectedMasterServerClient));
-					}
-
-					query.SetSingleton(new ConnectedMasterServerClient
-					{
-						Token = result.Token,
-						ClientId = result.ClientId
-					});
+					world.EntityManager.CreateEntity(typeof(ConnectedMasterServerClient));
 				}
+
+				query.SetSingleton(new ConnectedMasterServerClient
+				{
+					Token    = result.Token,
+					ClientId = result.ClientId
+				});
 			}
 		}
 

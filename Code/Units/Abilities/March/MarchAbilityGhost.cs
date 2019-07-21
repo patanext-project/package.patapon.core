@@ -204,6 +204,7 @@ namespace Patapon4TLB.Default
 		private ConvertGhostEntityMap            m_ConvertGhostEntityMap;
 		private SynchronizedSimulationTimeSystem m_SynchronizedSimulationTimeSystem;
 		private RhythmCommandManager             m_CommandManager;
+		private NetworkTimeSystem                m_NetworkTimeSystem;
 
 		protected override void OnCreate()
 		{
@@ -212,6 +213,7 @@ namespace Patapon4TLB.Default
 			m_ConvertGhostEntityMap            = World.GetOrCreateSystem<ConvertGhostEntityMap>();
 			m_SynchronizedSimulationTimeSystem = World.GetOrCreateSystem<SynchronizedSimulationTimeSystem>();
 			m_CommandManager                   = World.GetOrCreateSystem<RhythmCommandManager>();
+			m_NetworkTimeSystem                = World.GetOrCreateSystem<NetworkTimeSystem>();
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -221,7 +223,7 @@ namespace Patapon4TLB.Default
 			inputDeps = m_SynchronizedSimulationTimeSystem.Schedule(timeArray, inputDeps);
 			inputDeps = new Job
 			{
-				TargetTick = NetworkTimeSystem.interpolateTargetTick,
+				TargetTick = m_NetworkTimeSystem.interpolateTargetTick,
 				ServerTime = timeArray,
 
 				SnapshotDataFromEntity = GetBufferFromEntity<MarchAbilitySnapshotData>(true),
