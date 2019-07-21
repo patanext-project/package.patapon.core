@@ -47,6 +47,9 @@ namespace Patapon4TLB.UI
 		[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
 		public class InternalSystem : GameBaseSystem
 		{
+			private struct AliveComponent : IComponentData
+			{}
+			
 			public List<(Entity connection, float ping)> States = new List<(Entity connection, float ping)>();
 
 			private void GetPings(Entity entity, ref NetworkSnapshotAckComponent ackComponent)
@@ -62,11 +65,14 @@ namespace Patapon4TLB.UI
 			public bool IsCmdClient,   IsCmdServer;
 			public bool HasConnection;
 
+			public bool Alive => this.HasSingleton<AliveComponent>();
+
 			protected override void OnCreate()
 			{
 				base.OnCreate();
 
 				m_ForEachDelegate = GetPings;
+				EntityManager.CreateEntity(typeof(AliveComponent));
 			}
 
 			protected override void OnUpdate()
@@ -132,8 +138,8 @@ namespace Patapon4TLB.UI
 
 			private unsafe void ForEach(UIDebugFrame debugFrame)
 			{
-				debugFrame.ConnectedFrame.SetActive(m_InternalSystem != null);
-				debugFrame.DisconnectedFrame.SetActive(m_InternalSystem == null);
+				debugFrame.ConnectedFrame.SetActive(m_InternalSystem?.Alive == false);
+				debugFrame.DisconnectedFrame.SetActive(m_InternalSystem?.Alive == true);
 
 				debugFrame.HostButton.interactable    = debugFrame.PortField.text.Length > 0;
 				debugFrame.ConnectButton.interactable = debugFrame.PortField.text.Length > 0 && debugFrame.AddressField.text.Length > 0;

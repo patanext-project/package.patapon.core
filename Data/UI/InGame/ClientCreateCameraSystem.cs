@@ -79,6 +79,7 @@ namespace Patapon4TLB.UI.InGame
 	}
 
 	[UpdateBefore(typeof(TickClientPresentationSystem))]
+	[NotClientServerSystem]
 	[AlwaysUpdateSystem]
 	public class ManageClientCameraSystem : GameBaseSystem
 	{
@@ -124,27 +125,6 @@ namespace Patapon4TLB.UI.InGame
 			}
 		}
 	}
-
-	/*[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
-	public class ClientSimulationTransformSystemGroup : ComponentSystemGroup
-	{
-		public override void SortSystemUpdateList()
-		{
-			m_systemsToUpdate = new List<ComponentSystemBase>();
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<CopyTransformFromGameObjectSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameCompositeScaleSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameParentSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFramePostRotationEulerSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameRotationEulerSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameCompositeRotationSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameParentScaleInverseSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameTRSToLocalToParentSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameTRSToLocalToWorldSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameLocalToParentSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<CopyTransformToGameObjectSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameWorldToLocalSystem>());
-		}
-	}*/
 
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	public class ClientPresentationTransformSystemGroup : ComponentSystemGroup

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Unity.Entities;
+using Unity.NetCode;
 using NotImplementedException = System.NotImplementedException;
 
 namespace Patapon4TLB.Default
@@ -14,6 +15,7 @@ namespace Patapon4TLB.Default
 			set => m_World = value;
 		}
 		
+		[NotClientServerSystem]
 		internal class System : ComponentSystem
 		{
 			protected override void OnCreate()

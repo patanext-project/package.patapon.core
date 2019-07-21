@@ -3,6 +3,7 @@ using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Data;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -10,6 +11,7 @@ using UnityEngine.Profiling;
 namespace package.patapon.core
 {
     [UpdateInGroup(typeof(PresentationSystemGroup))]
+    [NotClientServerSystem]
     public class UpdateUnityCameraSystem : ComponentSystem
     {
         struct DataToSet

@@ -35,9 +35,6 @@ namespace Patapon4TLB.Core.MasterServer
 		}
 	}
 
-	public class MasterServerProcessRpcMainWorldSystem : ComponentSystemGroup
-	{}
-	
 	public class MasterServerProcessRpcSystem : ComponentSystemGroup
 	{}
 

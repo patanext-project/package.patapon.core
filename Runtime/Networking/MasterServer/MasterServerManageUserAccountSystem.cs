@@ -4,6 +4,7 @@ using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.Core.MasterServer
@@ -38,7 +39,8 @@ namespace Patapon4TLB.Core.MasterServer
 		public ulong          UserId;
 	}
 	
-	[UpdateInGroup(typeof(MasterServerProcessRpcMainWorldSystem))]
+	[UpdateInGroup(typeof(MasterServerProcessRpcSystem))]
+	[NotClientServerSystem]
 	[AlwaysUpdateSystem]
 	public class MasterServerManageUserAccountSystem : GameBaseSystem
 	{
