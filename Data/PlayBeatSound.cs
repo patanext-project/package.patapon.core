@@ -56,8 +56,8 @@ namespace Patapon4TLB.Default.Test
 			var inputActive = gameCommandState.IsInputActive(process.TimeTick, settings.BeatInterval)
 			                  || predictedCommand.State.IsInputActive(process.TimeTick, settings.BeatInterval);
 			var commandIsRunning = gameCommandState.IsGamePlayActive(process.TimeTick)
-			                  || predictedCommand.State.IsGamePlayActive(process.TimeTick);
-			
+			                       || predictedCommand.State.IsGamePlayActive(process.TimeTick);
+
 			var shouldFail = (commandIsRunning && !inputActive) || state.IsRecovery(currFlowBeat) || absRealScore > RhythmPressureData.Error;
 			if (shouldFail)
 			{
@@ -130,10 +130,10 @@ namespace Patapon4TLB.Default.Test
 
 		protected void OnLoadAssets()
 		{
-			Addressables.LoadAsset<AudioClip>("int:RhythmEngine/Sounds/on_new_beat.ogg")
+			Addressables.LoadAssetAsync<AudioClip>("int:RhythmEngine/Sounds/on_new_beat.ogg")
 			            .Completed += op => m_AudioOnNewBeat = op.Result;
 
-			Addressables.LoadAsset<AudioClip>("int:RhythmEngine/Sounds/perfect_1.wav")
+			Addressables.LoadAssetAsync<AudioClip>("int:RhythmEngine/Sounds/perfect_1.wav")
 			            .Completed += op => m_AudioOnPerfect = op.Result;
 
 			m_AudioOnPressureDrum  = new Dictionary<int, Dictionary<int, AudioClip>>(12);
@@ -153,16 +153,16 @@ namespace Patapon4TLB.Default.Test
 					m_AudioOnPressureDrum[key][rank]  = null;
 					m_AudioOnPressureVoice[key][rank] = null;
 
-					Addressables.LoadAsset<AudioClip>($"int:RhythmEngine/Sounds/drum_{key}_{rank}.ogg").Completed += op =>
+					Addressables.LoadAssetAsync<AudioClip>($"int:RhythmEngine/Sounds/drum_{key}_{rank}.ogg").Completed += op =>
 					{
-						Debug.Assert(op.IsValid, "op.IsValid");
+						Debug.Assert(op.IsValid(), "op.IsValid");
 
 						m_AudioOnPressureDrum[key][rank] = op.Result;
 					};
 
-					Addressables.LoadAsset<AudioClip>($"int:RhythmEngine/Sounds/voice_{key}_{rank}.wav").Completed += op =>
+					Addressables.LoadAssetAsync<AudioClip>($"int:RhythmEngine/Sounds/voice_{key}_{rank}.wav").Completed += op =>
 					{
-						Debug.Assert(op.IsValid, "op.IsValid");
+						Debug.Assert(op.IsValid(), "op.IsValid");
 
 						m_AudioOnPressureVoice[key][rank] = op.Result;
 					};

@@ -10,15 +10,15 @@ namespace Patapon4TLB.Core
 {
 	public class SongDescription : IDisposable
 	{
-		public const string CmdKeyNormal = "normal";
+		public const string CmdKeyNormal   = "normal";
 		public const string CmdKeyPreFever = "prefever";
-		public const string CmdKeyFever = "fever";
-		
+		public const string CmdKeyFever    = "fever";
+
 		public const string BgmKeyNormalEntrance = "normal_entrance";
-		public const string BgmKeyNormal = "normal";
-		public const string BgmKeyFeverEntrance = "fever_entrance";
-		public const string BgmKeyFever = "fever";
-		
+		public const string BgmKeyNormal         = "normal";
+		public const string BgmKeyFeverEntrance  = "fever_entrance";
+		public const string BgmKeyFever          = "fever";
+
 		private enum OpType
 		{
 			BgmFull,
@@ -49,14 +49,14 @@ namespace Patapon4TLB.Core
 
 		public struct BgmComboPart
 		{
-			public int ScoreNeeded;
-			public int ClipCount;
+			public int             ScoreNeeded;
+			public int             ClipCount;
 			public List<AudioClip> Clips;
 		}
 
-		private List<IAsyncOperation> m_AddrOperations;
-		private List<OperationData>   m_OperationData;
-		private bool                  m_IsFinalized;
+		private List<AsyncOperationHandle> m_AddrOperations;
+		private List<OperationData>        m_OperationData;
+		private bool                       m_IsFinalized;
 
 		public bool AreAddressableCompleted
 		{
@@ -77,16 +77,16 @@ namespace Patapon4TLB.Core
 		// example of the possibilities: normal, pre-fever, fever
 		public Dictionary<string, Dictionary<string, List<AudioClip>>> CommandsAudio;
 
-		public List<AudioClip>          BgmEntranceClips;
-		public List<AudioClip> BgmFeverEntranceClips;
-		public List<AudioClip>                BgmFeverLoopClips;
+		public List<AudioClip>    BgmEntranceClips;
+		public List<AudioClip>    BgmFeverEntranceClips;
+		public List<AudioClip>    BgmFeverLoopClips;
 		public List<BgmComboPart> BgmComboParts;
 
 		public SongDescription(DescriptionFileJsonData file)
 		{
 			File = file;
 
-			m_AddrOperations = new List<IAsyncOperation>();
+			m_AddrOperations = new List<AsyncOperationHandle>();
 			m_OperationData  = new List<OperationData>();
 
 			BgmComboParts = new List<BgmComboPart>();
@@ -190,7 +190,7 @@ namespace Patapon4TLB.Core
 			{
 				throw new InvalidOperationException("Already finalized song.");
 			}
-			
+
 			if (!AreAddressableCompleted)
 				throw new InvalidOperationException("We haven't loaded all addressable asset yet!");
 
@@ -207,7 +207,7 @@ namespace Patapon4TLB.Core
 				var opAddr = m_AddrOperations[op];
 				var opData = m_OperationData[op];
 
-				if (!opAddr.IsValid)
+				if (!opAddr.IsValid())
 				{
 					Debug.Log($"An operation is not valid. (status={opAddr.Status})");
 					continue;
@@ -221,6 +221,7 @@ namespace Patapon4TLB.Core
 
 						break;
 					}
+
 					case OpType.BgmSlice:
 					{
 						if (opData.BgmSliceType == OpBgmSliceType.Normal)
@@ -260,6 +261,7 @@ namespace Patapon4TLB.Core
 						clips.Add(audioClip);
 						break;
 					}
+
 					case OpBgmSliceType.Fever:
 						bgmFeverLoopClips.Add(audioClip);
 						break;
@@ -280,7 +282,7 @@ namespace Patapon4TLB.Core
 			}
 
 			BgmFeverEntranceClips = bgmFeverEntranceClips;
-			BgmFeverLoopClips = bgmFeverLoopClips;
+			BgmFeverLoopClips     = bgmFeverLoopClips;
 
 			m_IsFinalized = true;
 		}
@@ -289,9 +291,9 @@ namespace Patapon4TLB.Core
 		{
 			for (var i = 0; i != m_AddrOperations.Count; i++)
 			{
-				Addressables.ReleaseAsset(m_AddrOperations[i]);
+				Addressables.Release(m_AddrOperations[i]);
 				if (m_AddrOperations[i].Result != null)
-					Addressables.ReleaseAsset(m_AddrOperations[i].Result);
+					Addressables.Release(m_AddrOperations[i].Result);
 			}
 		}
 

@@ -129,28 +129,20 @@ namespace Patapon4TLB.UI.InGame
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	public class ClientPresentationTransformSystemGroup : ComponentSystemGroup
 	{
-		protected override void OnUpdate()
+		private TransformSystemGroup m_Group;
+		
+		protected override void OnCreate()
 		{
-			base.OnUpdate();
-			
-			EntityManager.CompleteAllJobs();
+			base.OnCreate();
+			m_Group = World.GetOrCreateSystem<TransformSystemGroup>();
 		}
 
-		public override void SortSystemUpdateList()
+		protected override void OnUpdate()
 		{
-			m_systemsToUpdate = new List<ComponentSystemBase>();
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<CopyTransformFromGameObjectSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameCompositeScaleSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameParentSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFramePostRotationEulerSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameRotationEulerSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameCompositeRotationSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameParentScaleInverseSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameTRSToLocalToParentSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameTRSToLocalToWorldSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameLocalToParentSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<CopyTransformToGameObjectSystem>());
-			m_systemsToUpdate.Add(World.GetOrCreateSystem<EndFrameWorldToLocalSystem>());
-		}		
+			EntityManager.CompleteAllJobs();
+			m_Group.Update();
+			
+			base.OnUpdate();
+		}
 	}
 }

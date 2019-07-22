@@ -138,8 +138,8 @@ namespace Patapon4TLB.UI
 
 			private unsafe void ForEach(UIDebugFrame debugFrame)
 			{
-				debugFrame.ConnectedFrame.SetActive(m_InternalSystem?.Alive == false);
-				debugFrame.DisconnectedFrame.SetActive(m_InternalSystem?.Alive == true);
+				debugFrame.ConnectedFrame.SetActive(!m_InternalSystem.Alive);
+				debugFrame.DisconnectedFrame.SetActive(m_InternalSystem.Alive);
 
 				debugFrame.HostButton.interactable    = debugFrame.PortField.text.Length > 0;
 				debugFrame.ConnectButton.interactable = debugFrame.PortField.text.Length > 0 && debugFrame.AddressField.text.Length > 0;
