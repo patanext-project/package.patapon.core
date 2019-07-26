@@ -32,6 +32,9 @@ namespace Patapon4TLB.Core
 
 			public void Execute(ref UnitControllerState controllerState, ref GroundState groundState, ref Translation translation, ref Velocity velocity, [ReadOnly] ref UnitBaseSettings unitSettings, [ReadOnly] ref UnitTargetPosition targetPosition)
 			{
+				if (velocity.Value.y > 0)
+					groundState.Value = false;
+				
 				var target = controllerState.OverrideTargetPosition ? controllerState.TargetPosition : targetPosition.Value;
 				if (!controllerState.ControlOverVelocity.x)
 				{

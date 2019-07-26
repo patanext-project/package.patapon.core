@@ -3,6 +3,7 @@ using package.StormiumTeam.GameBase;
 using Patapon4TLB.Core;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Data;
 using Unity.Collections;
 using Unity.Entities;
@@ -30,6 +31,8 @@ namespace Patapon4TLB.GameModes.Basic
 				typeof(GhostComponent),
 				
 				typeof(EntityAuthority),
+				typeof(LivableDescription),
+				typeof(MovableDescription),
 				typeof(UnitDescription),
 
 				typeof(UnitBaseSettings),
@@ -208,6 +211,19 @@ namespace Patapon4TLB.GameModes.Basic
 					target.Value.x += 0.1f;
 				else if (Input.GetKey(KeyCode.LeftArrow))
 					target.Value.x -= 0.1f;
+			});
+			
+			Entities.ForEach((ref GameEvent gameEvent, ref TargetImpulseEvent impulse) =>
+			{
+				Debug.Log(impulse.Destination  +" yes");
+				if (EntityManager.HasComponent<Velocity>(impulse.Destination))
+				{
+					var vel = EntityManager.GetComponentData<Velocity>(impulse.Destination);
+					vel.Value *= impulse.Momentum;
+					vel.Value += impulse.Force;
+					
+					EntityManager.SetComponentData(impulse.Destination, vel);
+				}
 			});
 		}
 	}

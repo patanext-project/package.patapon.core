@@ -2,6 +2,7 @@ using System;
 using P4.Core.Code.Networking;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
 using Unity.Entities;
 using Unity.Networking.Transport;
 using Unity.NetCode;
@@ -18,6 +19,7 @@ public struct RpcCollection : IRpcCollection
         typeof(SetPlayerNameRpc),
         typeof(ClientLoadedRpc),
         typeof(PlayerConnectedRpc),
+        typeof(TargetDamageEventRpc),
 
     };
     public void ExecuteRpc(int type, DataStreamReader reader, ref DataStreamReader.Context ctx, Entity connection, EntityCommandBuffer.Concurrent commandBuffer, int jobIndex)
@@ -80,6 +82,13 @@ public struct RpcCollection : IRpcCollection
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
+            case 8:
+            {
+                var tmp = new TargetDamageEventRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
 
         }
     }
@@ -110,6 +119,7 @@ public class P4ExperimentRpcSystem : RpcSystem<RpcCollection>
         World.GetOrCreateSystem<RpcQueueSystem<SetPlayerNameRpc>>().SetTypeIndex(5);
         World.GetOrCreateSystem<RpcQueueSystem<ClientLoadedRpc>>().SetTypeIndex(6);
         World.GetOrCreateSystem<RpcQueueSystem<PlayerConnectedRpc>>().SetTypeIndex(7);
+        World.GetOrCreateSystem<RpcQueueSystem<TargetDamageEventRpc>>().SetTypeIndex(8);
 
     }
 }
