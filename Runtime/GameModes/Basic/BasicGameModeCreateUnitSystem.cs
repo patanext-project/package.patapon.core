@@ -215,7 +215,6 @@ namespace Patapon4TLB.GameModes.Basic
 			
 			Entities.ForEach((ref GameEvent gameEvent, ref TargetImpulseEvent impulse) =>
 			{
-				Debug.Log(impulse.Destination  +" yes");
 				if (EntityManager.HasComponent<Velocity>(impulse.Destination))
 				{
 					var vel = EntityManager.GetComponentData<Velocity>(impulse.Destination);
