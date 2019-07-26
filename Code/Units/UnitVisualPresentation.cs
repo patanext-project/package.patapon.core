@@ -134,6 +134,8 @@ namespace Patapon4TLB.Core
 			DestroyPlayableGraph();
 			CreatePlayableGraph($"{backend.DstEntity}");
 			CreatePlayable();
+			
+			m_PlayableGraph.Stop();
 		}
 
 		public void OnPresentationSet(UnitVisualPresentation presentation)

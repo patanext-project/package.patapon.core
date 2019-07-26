@@ -88,6 +88,7 @@ namespace Patapon4TLB.UI.InGame.DamageVfx
 				textPopBackend.SetPresentation(m_PopTextPool.Presentation);
 				textPopBackend.Play(damageEvent);
 				textPopBackend.SetToPoolAt = Time.time + 2f;
+				textPopBackend.transform.localScale = Vector3.one * 0.5f;
 
 				EntityManager.AddComponentData(textPopBackend.BackendEntity, new RuntimeAssetDisable());
 			}

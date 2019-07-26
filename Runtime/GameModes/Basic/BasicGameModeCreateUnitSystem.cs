@@ -2,6 +2,7 @@ using package.patapon.core;
 using package.StormiumTeam.GameBase;
 using Patapon4TLB.Core;
 using Patapon4TLB.Default;
+using Patapon4TLB.Default.Attack;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Data;
@@ -127,6 +128,13 @@ namespace Patapon4TLB.GameModes.Basic
 						[2] = new RhythmCommandSequence(2, RhythmKeys.Up),
 						[3] = new RhythmCommandSequence(3, RhythmKeys.Up),
 					});
+					var attackCommand = World.GetOrCreateSystem<RhythmCommandBuilder>().GetOrCreate(new NativeArray<RhythmCommandSequence>(4, Allocator.TempJob)
+					{
+						[0] = new RhythmCommandSequence(0, RhythmKeys.Right),
+						[1] = new RhythmCommandSequence(1, RhythmKeys.Right),
+						[2] = new RhythmCommandSequence(2, RhythmKeys.Left),
+						[3] = new RhythmCommandSequence(3, RhythmKeys.Right),
+					});
 
 					using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
 					{
@@ -189,6 +197,16 @@ namespace Patapon4TLB.GameModes.Basic
 							Owner              = unit
 						}, createList);
 						EntityManager.AddComponent(createList[0], typeof(GhostComponent));
+					}
+
+					using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
+					{
+						World.GetOrCreateSystem<BasicTaterazayAttackAbility.Provider>().SpawnLocalEntityWithArguments(new BasicTaterazayAttackAbility.Create
+						{
+							Command = attackCommand,
+							Owner   = unit
+						}, createList);
+						//EntityManager.AddComponent(createList[0], typeof(GhostComponent));
 					}
 
 					playerData.Unit = unit;
