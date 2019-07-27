@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using package.patapon.core.Animation;
+using package.patapon.core.VisualPresentation;
 using Patapon4TLB.Core.BasicUnitSnapshot;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
+using StormiumTeam.Shared.Gen;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
@@ -102,9 +104,11 @@ namespace Patapon4TLB.Core
 	{
 	}
 
-	public class UnitVisualPresentation : RuntimeAssetPresentation<UnitVisualPresentation>
+	public abstract class UnitVisualPresentation : RuntimeAssetPresentation<UnitVisualPresentation>
 	{
 		public Animator Animator;
+
+		public abstract void UpdateData();
 	}
 
 	public class UnitVisualPlayableBehaviourData : PlayableBehaviorData
@@ -166,6 +170,7 @@ namespace Patapon4TLB.Core
 	public class UnitVisualBackend : RuntimeAssetBackend<UnitVisualPresentation>
 	{
 		public UnitVisualAnimation Animation { get; private set; }
+		public string CurrentArchetype;
 		
 		public override void OnTargetUpdate()
 		{
@@ -204,23 +209,52 @@ namespace Patapon4TLB.Core
 	public class UpdateUnitVisualBackendSystem : ComponentSystem
 	{
 		public static int i = 0;
-		
+
+		private EntityQuery m_BackendQuery;
+		private List<(UnitVisualBackend backend, string archetype)> m_UpdateArchetypeList;
+		protected override void OnCreate()
+		{
+			base.OnCreate();
+
+			m_BackendQuery = GetEntityQuery(typeof(Transform), typeof(UnitVisualBackend));
+			m_UpdateArchetypeList = new List<(UnitVisualBackend backend, string archetype)>();
+		}
+
 		protected override void OnUpdate()
 		{
 			EntityManager.CompleteAllJobs();
 
 			i = 0;
-			
-			Entities.ForEach((Transform transform, UnitVisualBackend backend) =>
+			m_UpdateArchetypeList.Clear();
+
+			Transform transform = null;
+			UnitVisualBackend backend = null;
+			foreach (var _ in this.ToEnumerator_CC(m_BackendQuery, ref transform, ref backend))
 			{
 				if (backend.DstEntity == Entity.Null || !EntityManager.Exists(backend.DstEntity) || !EntityManager.HasComponent<Translation>(backend.DstEntity))
 					return;
 
 				var pos = EntityManager.GetComponentData<Translation>(backend.DstEntity).Value;
 				pos.z = i++ * 2;
-				
+
 				transform.position = pos;
-			});
+
+				// Load presentation
+				const string unitArchetype = "UH.basic"; // this will be dynamic in the future (based on entity class)
+				if (backend.CurrentArchetype != unitArchetype)
+				{
+					backend.CurrentArchetype = unitArchetype;
+					m_UpdateArchetypeList.Add((backend, unitArchetype));
+				}
+			}
+
+			foreach (var (be, archetype) in m_UpdateArchetypeList)
+			{
+				var pool = World.GetExistingSystem<UnitVisualArchetypeManager>().GetArchetypePool(archetype);
+
+				backend.ReturnPresentation();
+				backend.SetPresentation(pool);
+			}
 		}
 	}
 
