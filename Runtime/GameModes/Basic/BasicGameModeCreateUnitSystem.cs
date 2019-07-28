@@ -78,6 +78,8 @@ namespace Patapon4TLB.GameModes.Basic
 
 					EntityManager.SetComponentData(unit, new UnitBaseSettings
 					{
+						AttackSpeed = 1.75f,
+						
 						MovementAttackSpeed = 2.25f,
 						BaseWalkSpeed       = 2f,
 						FeverWalkSpeed      = 2.2f,
@@ -206,7 +208,7 @@ namespace Patapon4TLB.GameModes.Basic
 							Command = attackCommand,
 							Owner   = unit
 						}, createList);
-						//EntityManager.AddComponent(createList[0], typeof(GhostComponent));
+						EntityManager.AddComponent(createList[0], typeof(GhostComponent));
 					}
 
 					playerData.Unit = unit;

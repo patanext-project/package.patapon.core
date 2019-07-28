@@ -1,14 +1,14 @@
 using System;
 using Patapon4TLB.Core.BasicUnitSnapshot;
 using Patapon4TLB.Default;
+using Patapon4TLB.Default.Attack;
 using Patapon4TLB.Default.Snapshot;
 using Patapon4TLB.GameModes.Basic;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Networking.Transport;
 using Unity.NetCode;
-
+using Unity.Networking.Transport;
 public struct GhostDeserializerCollection : IGhostDeserializerCollection
 {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -20,6 +20,7 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
             "JumpAbilityGhostSerializer",
             "MarchAbilityGhostSerializer",
             "RetreatAbilityGhostSerializer",
+            "BasicTaterazayAttackAbilityGhostSerializer",
             "DefaultRhythmEngineGhostSerializer",
             "BasicUnitGhostSerializer",
             "SynchronizedSimulationTimeGhostSerializer",
@@ -30,7 +31,7 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
         return arr;
     }
 
-    public int Length => 9;
+    public int Length => 10;
 #endif
     public void Initialize(World world)
     {
@@ -50,26 +51,30 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
         m_RetreatAbilitySnapshotDataNewGhostIds = curRetreatAbilityGhostSpawnSystem.NewGhostIds;
         m_RetreatAbilitySnapshotDataNewGhosts = curRetreatAbilityGhostSpawnSystem.NewGhosts;
         curRetreatAbilityGhostSpawnSystem.GhostType = 3;
+        var curBasicTaterazayAttackAbilitySpawn = world.GetOrCreateSystem<BasicTaterazayAttackAbilitySpawn>();
+        m_BasicTaterazayAttackAbilitySnapshotDataNewGhostIds = curBasicTaterazayAttackAbilitySpawn.NewGhostIds;
+        m_BasicTaterazayAttackAbilitySnapshotDataNewGhosts = curBasicTaterazayAttackAbilitySpawn.NewGhosts;
+        curBasicTaterazayAttackAbilitySpawn.GhostType = 4;
         var curDefaultRhythmEngineGhostSpawnSystem = world.GetOrCreateSystem<DefaultRhythmEngineGhostSpawnSystem>();
         m_RhythmEngineSnapshotDataNewGhostIds = curDefaultRhythmEngineGhostSpawnSystem.NewGhostIds;
         m_RhythmEngineSnapshotDataNewGhosts = curDefaultRhythmEngineGhostSpawnSystem.NewGhosts;
-        curDefaultRhythmEngineGhostSpawnSystem.GhostType = 4;
+        curDefaultRhythmEngineGhostSpawnSystem.GhostType = 5;
         var curBasicUnitGhostSpawnSystem = world.GetOrCreateSystem<BasicUnitGhostSpawnSystem>();
         m_BasicUnitSnapshotDataNewGhostIds = curBasicUnitGhostSpawnSystem.NewGhostIds;
         m_BasicUnitSnapshotDataNewGhosts = curBasicUnitGhostSpawnSystem.NewGhosts;
-        curBasicUnitGhostSpawnSystem.GhostType = 5;
+        curBasicUnitGhostSpawnSystem.GhostType = 6;
         var curSynchronizedSimulationTimeGhostSpawnSystem = world.GetOrCreateSystem<SynchronizedSimulationTimeGhostSpawnSystem>();
         m_SynchronizedSimulationTimeSnapshotNewGhostIds = curSynchronizedSimulationTimeGhostSpawnSystem.NewGhostIds;
         m_SynchronizedSimulationTimeSnapshotNewGhosts = curSynchronizedSimulationTimeGhostSpawnSystem.NewGhosts;
-        curSynchronizedSimulationTimeGhostSpawnSystem.GhostType = 6;
+        curSynchronizedSimulationTimeGhostSpawnSystem.GhostType = 7;
         var curGamePlayerGhostSpawnSystem = world.GetOrCreateSystem<GamePlayerGhostSpawnSystem>();
         m_GamePlayerSnapshotNewGhostIds = curGamePlayerGhostSpawnSystem.NewGhostIds;
         m_GamePlayerSnapshotNewGhosts = curGamePlayerGhostSpawnSystem.NewGhosts;
-        curGamePlayerGhostSpawnSystem.GhostType = 7;
+        curGamePlayerGhostSpawnSystem.GhostType = 8;
         var curTeamEmptyGhostSpawnSystem = world.GetOrCreateSystem<TeamEmptyGhostSpawnSystem>();
         m_TeamEmptySnapshotDataNewGhostIds = curTeamEmptyGhostSpawnSystem.NewGhostIds;
         m_TeamEmptySnapshotDataNewGhosts = curTeamEmptyGhostSpawnSystem.NewGhosts;
-        curTeamEmptyGhostSpawnSystem.GhostType = 8;
+        curTeamEmptyGhostSpawnSystem.GhostType = 9;
 
     }
 
@@ -79,6 +84,7 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
         m_JumpAbilitySnapshotDataFromEntity = system.GetBufferFromEntity<JumpAbilitySnapshotData>();
         m_MarchAbilitySnapshotDataFromEntity = system.GetBufferFromEntity<MarchAbilitySnapshotData>();
         m_RetreatAbilitySnapshotDataFromEntity = system.GetBufferFromEntity<RetreatAbilitySnapshotData>();
+        m_BasicTaterazayAttackAbilitySnapshotDataFromEntity = system.GetBufferFromEntity<BasicTaterazayAttackAbilitySnapshotData>();
         m_RhythmEngineSnapshotDataFromEntity = system.GetBufferFromEntity<RhythmEngineSnapshotData>();
         m_BasicUnitSnapshotDataFromEntity = system.GetBufferFromEntity<BasicUnitSnapshotData>();
         m_SynchronizedSimulationTimeSnapshotFromEntity = system.GetBufferFromEntity<SynchronizedSimulationTimeSnapshot>();
@@ -109,22 +115,26 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
                 baseline3, reader, ref ctx, compressionModel);
             break;
         case 4:
-            GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_RhythmEngineSnapshotDataFromEntity, entity, snapshot, baseline, baseline2,
+            GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_BasicTaterazayAttackAbilitySnapshotDataFromEntity, entity, snapshot, baseline, baseline2,
                 baseline3, reader, ref ctx, compressionModel);
             break;
         case 5:
-            GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_BasicUnitSnapshotDataFromEntity, entity, snapshot, baseline, baseline2,
+            GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_RhythmEngineSnapshotDataFromEntity, entity, snapshot, baseline, baseline2,
                 baseline3, reader, ref ctx, compressionModel);
             break;
         case 6:
-            GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_SynchronizedSimulationTimeSnapshotFromEntity, entity, snapshot, baseline, baseline2,
+            GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_BasicUnitSnapshotDataFromEntity, entity, snapshot, baseline, baseline2,
                 baseline3, reader, ref ctx, compressionModel);
             break;
         case 7:
-            GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_GamePlayerSnapshotFromEntity, entity, snapshot, baseline, baseline2,
+            GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_SynchronizedSimulationTimeSnapshotFromEntity, entity, snapshot, baseline, baseline2,
                 baseline3, reader, ref ctx, compressionModel);
             break;
         case 8:
+            GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_GamePlayerSnapshotFromEntity, entity, snapshot, baseline, baseline2,
+                baseline3, reader, ref ctx, compressionModel);
+            break;
+        case 9:
             GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_TeamEmptySnapshotDataFromEntity, entity, snapshot, baseline, baseline2,
                 baseline3, reader, ref ctx, compressionModel);
             break;
@@ -155,22 +165,26 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
                 m_RetreatAbilitySnapshotDataNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<RetreatAbilitySnapshotData>(snapshot, reader, ref ctx, compressionModel));
                 break;
             case 4:
+                m_BasicTaterazayAttackAbilitySnapshotDataNewGhostIds.Add(ghostId);
+                m_BasicTaterazayAttackAbilitySnapshotDataNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<BasicTaterazayAttackAbilitySnapshotData>(snapshot, reader, ref ctx, compressionModel));
+                break;
+            case 5:
                 m_RhythmEngineSnapshotDataNewGhostIds.Add(ghostId);
                 m_RhythmEngineSnapshotDataNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<RhythmEngineSnapshotData>(snapshot, reader, ref ctx, compressionModel));
                 break;
-            case 5:
+            case 6:
                 m_BasicUnitSnapshotDataNewGhostIds.Add(ghostId);
                 m_BasicUnitSnapshotDataNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<BasicUnitSnapshotData>(snapshot, reader, ref ctx, compressionModel));
                 break;
-            case 6:
+            case 7:
                 m_SynchronizedSimulationTimeSnapshotNewGhostIds.Add(ghostId);
                 m_SynchronizedSimulationTimeSnapshotNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<SynchronizedSimulationTimeSnapshot>(snapshot, reader, ref ctx, compressionModel));
                 break;
-            case 7:
+            case 8:
                 m_GamePlayerSnapshotNewGhostIds.Add(ghostId);
                 m_GamePlayerSnapshotNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<GamePlayerSnapshot>(snapshot, reader, ref ctx, compressionModel));
                 break;
-            case 8:
+            case 9:
                 m_TeamEmptySnapshotDataNewGhostIds.Add(ghostId);
                 m_TeamEmptySnapshotDataNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<TeamEmptySnapshotData>(snapshot, reader, ref ctx, compressionModel));
                 break;
@@ -192,6 +206,9 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
     private BufferFromEntity<RetreatAbilitySnapshotData> m_RetreatAbilitySnapshotDataFromEntity;
     private NativeList<int> m_RetreatAbilitySnapshotDataNewGhostIds;
     private NativeList<RetreatAbilitySnapshotData> m_RetreatAbilitySnapshotDataNewGhosts;
+    private BufferFromEntity<BasicTaterazayAttackAbilitySnapshotData> m_BasicTaterazayAttackAbilitySnapshotDataFromEntity;
+    private NativeList<int> m_BasicTaterazayAttackAbilitySnapshotDataNewGhostIds;
+    private NativeList<BasicTaterazayAttackAbilitySnapshotData> m_BasicTaterazayAttackAbilitySnapshotDataNewGhosts;
     private BufferFromEntity<RhythmEngineSnapshotData> m_RhythmEngineSnapshotDataFromEntity;
     private NativeList<int> m_RhythmEngineSnapshotDataNewGhostIds;
     private NativeList<RhythmEngineSnapshotData> m_RhythmEngineSnapshotDataNewGhosts;

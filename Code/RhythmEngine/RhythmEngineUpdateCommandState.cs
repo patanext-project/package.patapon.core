@@ -166,8 +166,8 @@ namespace Patapon4TLB.Default
 		[BurstCompile]
 		private struct SendRpcRecoverEvent : IJobForEachWithEntity<NetworkIdComponent>
 		{
-			[DeallocateOnJobCompletion] public NativeArray<bool>                   SendEvent;
-			[DeallocateOnJobCompletion] public NativeArray<RhythmRpcClientRecover> RecoverEvent;
+			public NativeArray<bool>                   SendEvent; 
+			public NativeArray<RhythmRpcClientRecover> RecoverEvent;
 
 			public RpcQueue<RhythmRpcClientRecover> RpcRecoverQueue;
 
@@ -180,6 +180,16 @@ namespace Patapon4TLB.Default
 					return;
 
 				RpcRecoverQueue.Schedule(OutgoingDataBufferFromEntity[entity], RecoverEvent[0]);
+			}
+		}
+
+		private struct DisposeJob : IJob
+		{
+			[DeallocateOnJobCompletion] public NativeArray<bool>                   SendEvent;
+			[DeallocateOnJobCompletion] public NativeArray<RhythmRpcClientRecover> RecoverEvent;
+			public void Execute()
+			{
+				
 			}
 		}
 
@@ -241,6 +251,12 @@ namespace Patapon4TLB.Default
 					OutgoingDataBufferFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>()
 				}.Schedule(m_NetworkQuery, inputDeps);
 			}
+
+			inputDeps = new DisposeJob
+			{
+				SendEvent = sendEventSingleArray,
+				RecoverEvent = rpcEventSingleArray
+			}.Schedule(inputDeps);
 
 			return inputDeps;
 		}
