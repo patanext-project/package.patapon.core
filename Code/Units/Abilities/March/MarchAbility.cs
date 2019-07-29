@@ -35,9 +35,8 @@ namespace Patapon4TLB.Default
 			public float DeltaTime;
 
 			[ReadOnly] public ComponentDataFromEntity<Translation>        TranslationFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<UnitRhythmState>    UnitStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<UnitPlayState>    UnitPlayStateFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<GroundState>        GroundStateFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<UnitBaseSettings>   UnitSettingsFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<UnitTargetPosition> UnitTargetPositionFromEntity;
 
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitControllerState> UnitControllerStateFromEntity;
@@ -48,26 +47,20 @@ namespace Patapon4TLB.Default
 				if (!state.IsActive)
 					return;
 
-				var unitSettings   = UnitSettingsFromEntity[owner.Target];
 				var targetPosition = UnitTargetPositionFromEntity[owner.Target];
 				var groundState    = GroundStateFromEntity[owner.Target];
 
 				if (!groundState.Value)
 					return;
 
-				var combo    = UnitStateFromEntity[owner.Target].Combo;
+				var unitPlayState = UnitPlayStateFromEntity[owner.Target];
 				var velocity = VelocityFromEntity[owner.Target];
 
 				// to not make tanks op, we need to get the weight from entity and use it as an acceleration factor
-				var acceleration = math.clamp(math.rcp(unitSettings.Weight), 0, 1) * marchAbility.AccelerationFactor * 50;
+				var acceleration = math.clamp(math.rcp(unitPlayState.Weight), 0, 1) * marchAbility.AccelerationFactor * 50;
 				acceleration = math.min(acceleration * DeltaTime, 1);
 
-				var walkSpeed = unitSettings.BaseWalkSpeed;
-				if (combo.IsFever)
-				{
-					walkSpeed = unitSettings.FeverWalkSpeed;
-				}
-
+				var walkSpeed = unitPlayState.MovementSpeed;
 				var direction = System.Math.Sign(targetPosition.Value.x - TranslationFromEntity[owner.Target].Value.x);
 
 				velocity.Value.x                 = math.lerp(velocity.Value.x, walkSpeed * direction, acceleration);
@@ -87,8 +80,7 @@ namespace Patapon4TLB.Default
 			return new JobProcess
 			{
 				DeltaTime                     = GetSingleton<GameTimeComponent>().DeltaTime,
-				UnitStateFromEntity           = GetComponentDataFromEntity<UnitRhythmState>(true),
-				UnitSettingsFromEntity        = GetComponentDataFromEntity<UnitBaseSettings>(true),
+				UnitPlayStateFromEntity       = GetComponentDataFromEntity<UnitPlayState>(true),
 				TranslationFromEntity         = GetComponentDataFromEntity<Translation>(true),
 				GroundStateFromEntity         = GetComponentDataFromEntity<GroundState>(true),
 				UnitTargetPositionFromEntity  = GetComponentDataFromEntity<UnitTargetPosition>(true),

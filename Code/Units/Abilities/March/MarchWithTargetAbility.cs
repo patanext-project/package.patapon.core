@@ -24,10 +24,9 @@ namespace Patapon4TLB.Default
 		{
 			public float DeltaTime;
 
-			[ReadOnly] public ComponentDataFromEntity<UnitRhythmState>  UnitStateFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<GroundState>      GroundStateFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<UnitBaseSettings> UnitSettingsFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<UnitDirection>    UnitDirectionFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<GroundState>   GroundStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<UnitPlayState> UnitPlayStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<UnitDirection> UnitDirectionFromEntity;
 
 			[NativeDisableParallelForRestriction]
 			public ComponentDataFromEntity<UnitTargetPosition> UnitTargetPositionFromEntity;
@@ -40,7 +39,7 @@ namespace Patapon4TLB.Default
 					return;
 				}
 
-				var unitSettings   = UnitSettingsFromEntity[owner.Target];
+				var unitPlayState  = UnitPlayStateFromEntity[owner.Target];
 				var unitDirection  = UnitDirectionFromEntity[owner.Target];
 				var targetPosition = UnitTargetPositionFromEntity[owner.Target];
 				var groundState    = GroundStateFromEntity[owner.Target];
@@ -48,20 +47,13 @@ namespace Patapon4TLB.Default
 				if (!groundState.Value)
 					return;
 
-				var combo = UnitStateFromEntity[owner.Target].Combo;
-
 				// a different acceleration (not using the unit weight)
 				var acceleration = marchAbility.AccelerationFactor;
 				acceleration = math.min(acceleration * DeltaTime, 1);
 
 				marchAbility.Time += DeltaTime;
 
-				var walkSpeed = unitSettings.BaseWalkSpeed;
-				if (combo.IsFever)
-				{
-					walkSpeed = unitSettings.FeverWalkSpeed;
-				}
-
+				var walkSpeed = unitPlayState.MovementSpeed;
 				targetPosition.Value.x += walkSpeed * unitDirection.Value * (marchAbility.Time > 0.5f ? 1 : math.lerp(4, 1, marchAbility.Time + 0.5f)) * acceleration;
 
 				UnitTargetPositionFromEntity[owner.Target] = targetPosition;
@@ -76,8 +68,7 @@ namespace Patapon4TLB.Default
 			return new JobProcess
 			{
 				DeltaTime                    = GetSingleton<GameTimeComponent>().DeltaTime,
-				UnitStateFromEntity          = GetComponentDataFromEntity<UnitRhythmState>(true),
-				UnitSettingsFromEntity       = GetComponentDataFromEntity<UnitBaseSettings>(true),
+				UnitPlayStateFromEntity      = GetComponentDataFromEntity<UnitPlayState>(true),
 				UnitDirectionFromEntity      = GetComponentDataFromEntity<UnitDirection>(true),
 				GroundStateFromEntity        = GetComponentDataFromEntity<GroundState>(true),
 				UnitTargetPositionFromEntity = GetComponentDataFromEntity<UnitTargetPosition>(),

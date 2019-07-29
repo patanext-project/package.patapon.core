@@ -17,8 +17,8 @@ namespace Patapon4TLB.UI.InGame.DamageVfx
 		[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
 		public class Recover : GameBaseSystem
 		{
-			public  List<TargetDamageEvent> DamageEvents = new List<TargetDamageEvent>();
-			private EntityQuery             m_DamageEventQuery;
+			public  List<(uint, TargetDamageEvent)> DamageEvents = new List<(uint, TargetDamageEvent)>();
+			private EntityQuery                     m_DamageEventQuery;
 
 			protected override void OnCreateManager()
 			{
@@ -33,9 +33,10 @@ namespace Patapon4TLB.UI.InGame.DamageVfx
 					return;
 
 				TargetDamageEvent damageEvent = default;
-				foreach (var _ in this.ToEnumerator_D(m_DamageEventQuery, ref damageEvent))
+				GameEvent         gameEvent   = default;
+				foreach (var _ in this.ToEnumerator_DD(m_DamageEventQuery, ref damageEvent, ref gameEvent))
 				{
-					DamageEvents.Add(damageEvent);
+					DamageEvents.Add((gameEvent.SnapshotTick, damageEvent));
 				}
 			}
 		}
@@ -73,9 +74,15 @@ namespace Patapon4TLB.UI.InGame.DamageVfx
 
 		protected override void OnUpdate()
 		{
-			var recover = World.GetExistingSystem<Recover>();
-			foreach (var damageEvent in recover.DamageEvents)
+			var currentTick = World.GetExistingSystem<NetworkTimeSystem>().interpolateTargetTick;
+			var recover     = World.GetExistingSystem<Recover>();
+
+			for (var i = 0; i != recover.DamageEvents.Count; i++)
 			{
+				var (tick, ev) = recover.DamageEvents[i];
+				if (currentTick < tick)
+					continue;
+
 				var textPopBackendGameObject = m_PopTextPool.Backend.Dequeue();
 				using (new SetTemporaryActiveWorld(World))
 				{
@@ -86,14 +93,15 @@ namespace Patapon4TLB.UI.InGame.DamageVfx
 
 				textPopBackend.SetTarget(EntityManager);
 				textPopBackend.SetPresentation(m_PopTextPool.Presentation);
-				textPopBackend.Play(damageEvent);
-				textPopBackend.SetToPoolAt = Time.time + 2f;
+				textPopBackend.Play(ev);
+				textPopBackend.SetToPoolAt          = Time.time + 2f;
 				textPopBackend.transform.localScale = Vector3.one * 0.5f;
 
 				EntityManager.AddComponentData(textPopBackend.BackendEntity, new RuntimeAssetDisable());
-			}
 
-			recover.DamageEvents.Clear();
+				recover.DamageEvents.RemoveAtSwapBack(i);
+				i--;
+			}
 		}
 	}
 }

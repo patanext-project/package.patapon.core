@@ -46,7 +46,7 @@ namespace Patapon4TLB.Default.Attack
 				var currAnim   = VisualData.CurrAnimation;
 				var systemType = typeof(BasicTaterazayAttackAnimation);
 
-				Mixer.GetInput(0).SetTime(global);
+				Mixer.SetTime(global);
 
 				Weight = 0;
 				if (currAnim.CanBlend(Root.GetTime()) && currAnim.PreviousType == systemType)
@@ -70,7 +70,6 @@ namespace Patapon4TLB.Default.Attack
 
 		private struct OperationData
 		{
-			public int ArrayIndex;
 		}
 		
 		private AsyncOperationModule m_AsyncOperationModule;
@@ -96,10 +95,7 @@ namespace Patapon4TLB.Default.Attack
 			m_AbilityModule.Query = GetEntityQuery(typeof(BasicTaterazayAttackAbility), typeof(Owner));
 
 			m_SystemType = GetType();
-			m_AsyncOperationModule.Add(Addressables.LoadAssetAsync<AnimationClip>(AddrKey), new OperationData
-			{
-				ArrayIndex = 0
-			});
+			m_AsyncOperationModule.Add(Addressables.LoadAssetAsync<AnimationClip>(AddrKey), new OperationData());
 		}
 
 		protected override void OnUpdate()
@@ -128,22 +124,12 @@ namespace Patapon4TLB.Default.Attack
 			foreach (var _ in this.ToEnumerator_CC(m_BackendQuery, ref backend, ref animation))
 			{
 				var currAnim = animation.CurrAnimation;
-				if (currAnim.Type != m_SystemType && !currAnim.AllowOverride)
-				{
-					if (animation.ContainsSystem(m_SystemType))
-					{
-						animation.GetSystemData<SystemData>(m_SystemType).Behaviour.Weight = 0;
-					}
-
-					continue;
-				}
-
 				if (currAnim.Type == m_SystemType && currAnim.StopAt < animation.RootTime)
 				{
 					// allow transitions and overrides now...
-					animation.SetTargetAnimation(new TargetAnimation(currAnim.Type, transitionStart: currAnim.StopAt, transitionEnd: currAnim.StopAt + 0.25));
+					animation.SetTargetAnimation(new TargetAnimation(currAnim.Type, transitionStart: currAnim.StopAt, transitionEnd: currAnim.StopAt + 0.33));
 					// if no one set another animation, then let's set to null...
-					if (animation.RootTime > currAnim.StopAt + 0.25)
+					if (animation.RootTime > currAnim.StopAt + 0.33)
 						animation.SetTargetAnimation(TargetAnimation.Null);
 				}
 
@@ -151,6 +137,7 @@ namespace Patapon4TLB.Default.Attack
 				if (abilityEntity == default)
 					continue;
 
+				var gameTick = (int) GetSingleton<SynchronizedSimulationTime>().Interpolated;
 				var attackAbility = EntityManager.GetComponentData<BasicTaterazayAttackAbility>(abilityEntity);
 				if (attackAbility.AttackStartTime < 0)
 				{
@@ -164,14 +151,14 @@ namespace Patapon4TLB.Default.Attack
 
 				ref var systemData = ref animation.GetSystemData<SystemData>(m_SystemType);
 				if (attackAbility.AttackStartTime == systemData.PreviousAttackTick)
+				{
 					continue;
-				
-				Debug.Log($"attack! {attackAbility.AttackStartTime} <-> {systemData.PreviousAttackTick}");
-				
-				systemData.PreviousAttackTick  = attackAbility.AttackStartTime;
-				systemData.Behaviour.StartTime = animation.RootTime;
+				}
 
-				animation.SetTargetAnimation(new TargetAnimation(m_SystemType, allowOverride: false, allowTransition: false, stopAt: animation.RootTime + 0.6));
+				systemData.PreviousAttackTick  = attackAbility.AttackStartTime;
+				systemData.Behaviour.StartTime = animation.RootTime - GameTime.ConvertToTime(gameTick - attackAbility.AttackStartTime);
+
+				animation.SetTargetAnimation(new TargetAnimation(m_SystemType, allowOverride: false, allowTransition: false, stopAt: animation.RootTime + 0.4));
 			}
 		}
 		
@@ -189,7 +176,6 @@ namespace Patapon4TLB.Default.Attack
 
 		private void RemoveAnimation(VisualAnimation.ManageData data, SystemData systemData)
 		{
-
 		}
 	}
 }

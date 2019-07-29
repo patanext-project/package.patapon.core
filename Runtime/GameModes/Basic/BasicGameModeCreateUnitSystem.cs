@@ -37,6 +37,7 @@ namespace Patapon4TLB.GameModes.Basic
 				typeof(UnitDescription),
 
 				typeof(UnitBaseSettings),
+				typeof(UnitPlayState),
 				typeof(UnitControllerState),
 				typeof(UnitDirection),
 				typeof(UnitTargetPosition),
@@ -99,6 +100,7 @@ namespace Patapon4TLB.GameModes.Basic
 					EntityManager.SetComponentData(unit, new GroundState(true));
 					EntityManager.SetComponentData(unit, new Relative<PlayerDescription> {Target       = playerEntity});
 					EntityManager.SetComponentData(unit, new Relative<RhythmEngineDescription> {Target = playerData.RhythmEngine});
+					EntityManager.SetComponentData(unit, new Relative<TeamDescription> {Target = gameMode.GameModeData.PlayerTeam});
 					EntityManager.SetComponentData(unit, new DestroyChainReaction(playerEntity));
 
 					// We should instead search for entities with 'MarchCommand' component tag...

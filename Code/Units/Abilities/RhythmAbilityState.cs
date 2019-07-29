@@ -59,7 +59,7 @@ namespace Patapon4TLB.Default
 
 			StartTime = commandState.StartTime;
 
-			IsStillChaining = commandState.StartTime <= process.TimeTick && combo.Chain > 0;
+			IsStillChaining = commandState.StartTime <= process.TimeTick + (IsStillChaining ? 500 : 0) && combo.Chain > 0;
 			WillBeActive    = commandState.StartTime > process.TimeTick && process.TimeTick <= commandState.EndTime && !IsActive;
 		}
 	}

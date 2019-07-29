@@ -15,4 +15,13 @@ namespace Patapon4TLB.Default
 		/// </summary>
 		public float Weight;
 	}
+
+	public struct UnitPlayState : IComponentData
+	{
+		public float MovementSpeed;
+		public float MovementAttackSpeed;
+		public float AttackSpeed;
+
+		public float Weight; // not used for now
+	}
 }

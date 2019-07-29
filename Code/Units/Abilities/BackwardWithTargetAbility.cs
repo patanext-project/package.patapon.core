@@ -22,10 +22,9 @@ namespace Patapon4TLB.Default
 		{
 			public float DeltaTime;
 
-			[ReadOnly] public ComponentDataFromEntity<UnitRhythmState>  UnitStateFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<GroundState>      GroundStateFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<UnitBaseSettings> UnitSettingsFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<UnitDirection>    UnitDirectionFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<GroundState>   GroundStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<UnitPlayState> UnitPlayStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<UnitDirection> UnitDirectionFromEntity;
 
 			[NativeDisableParallelForRestriction]
 			public ComponentDataFromEntity<UnitTargetPosition> UnitTargetPositionFromEntity;
@@ -38,7 +37,7 @@ namespace Patapon4TLB.Default
 					return;
 				}
 
-				var unitSettings   = UnitSettingsFromEntity[owner.Target];
+				var unitPlayState  = UnitPlayStateFromEntity[owner.Target];
 				var unitDirection  = UnitDirectionFromEntity[owner.Target];
 				var targetPosition = UnitTargetPositionFromEntity[owner.Target];
 				var groundState    = GroundStateFromEntity[owner.Target];
@@ -46,18 +45,11 @@ namespace Patapon4TLB.Default
 				if (!groundState.Value)
 					return;
 
-				var combo = UnitStateFromEntity[owner.Target].Combo;
-
 				// to not make tanks op, we need to get the weight from entity and use it as an acceleration factor
 				var acceleration = BackwardAbility.AccelerationFactor;
 				acceleration = math.min(acceleration * DeltaTime, 1);
 
-				var walkSpeed = unitSettings.BaseWalkSpeed;
-				if (combo.IsFever)
-				{
-					walkSpeed = unitSettings.FeverWalkSpeed;
-				}
-				
+				var walkSpeed = unitPlayState.MovementSpeed;
 				BackwardAbility.Time += DeltaTime;
 
 				walkSpeed *= -0.5f;
@@ -76,8 +68,7 @@ namespace Patapon4TLB.Default
 			return new JobProcess
 			{
 				DeltaTime                    = GetSingleton<GameTimeComponent>().DeltaTime,
-				UnitStateFromEntity          = GetComponentDataFromEntity<UnitRhythmState>(true),
-				UnitSettingsFromEntity       = GetComponentDataFromEntity<UnitBaseSettings>(true),
+				UnitPlayStateFromEntity      = GetComponentDataFromEntity<UnitPlayState>(true),
 				UnitDirectionFromEntity      = GetComponentDataFromEntity<UnitDirection>(true),
 				GroundStateFromEntity        = GetComponentDataFromEntity<GroundState>(true),
 				UnitTargetPositionFromEntity = GetComponentDataFromEntity<UnitTargetPosition>(),
@@ -109,9 +100,9 @@ namespace Patapon4TLB.Default
 		public override void SetEntityData(Entity entity, Create data)
 		{
 			EntityManager.ReplaceOwnerData(entity, data.Owner);
-			EntityManager.SetComponentData(entity, new RhythmAbilityState {Command                = data.Command});
+			EntityManager.SetComponentData(entity, new RhythmAbilityState {Command                   = data.Command});
 			EntityManager.SetComponentData(entity, new BackwardWithTargetAbility {AccelerationFactor = data.AccelerationFactor});
-			EntityManager.SetComponentData(entity, new Owner {Target                              = data.Owner});
+			EntityManager.SetComponentData(entity, new Owner {Target                                 = data.Owner});
 			EntityManager.SetComponentData(entity, new DestroyChainReaction(data.Owner));
 		}
 	}

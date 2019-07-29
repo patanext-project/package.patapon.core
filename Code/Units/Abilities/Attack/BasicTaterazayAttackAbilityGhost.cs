@@ -168,7 +168,11 @@ namespace Patapon4TLB.Default.Attack
 
 			public void Execute(Entity entity, int index, ref RhythmAbilityState state, ref BasicTaterazayAttackAbility attackAbility, ref Owner owner)
 			{
-				SnapshotDataFromEntity[entity].GetDataAtTick(TargetTick, out var snapshot);
+				var buffer = SnapshotDataFromEntity[entity];
+				if (buffer.Length == 0)
+					return;
+
+				var snapshot = buffer[buffer.Length - 1];
 
 				GhostEntityMap.TryGetValue((int) snapshot.OwnerGhostId, out owner.Target);
 				CommandIdToEntity.TryGetValue(snapshot.CommandId, out state.Command);
