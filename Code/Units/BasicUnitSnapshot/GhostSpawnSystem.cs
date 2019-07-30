@@ -34,14 +34,14 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				typeof(UnitDescription),
 
 				typeof(UnitBaseSettings),
+				typeof(UnitPlayState),
 				typeof(UnitControllerState),
 				typeof(UnitDirection),
 				typeof(UnitTargetPosition),
-				typeof(UnitRhythmState),
 
 				typeof(Translation),
 				typeof(Rotation),
-				//typeof(LocalToWorld),
+				typeof(LocalToWorld),
 
 				typeof(PhysicsCollider),
 				typeof(PhysicsDamping),
@@ -77,7 +77,6 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				typeof(UnitControllerState),
 				typeof(UnitDirection),
 				typeof(UnitTargetPosition),
-				typeof(UnitRhythmState),
 
 				typeof(Translation),
 				typeof(Rotation),

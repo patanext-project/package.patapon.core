@@ -36,21 +36,15 @@ namespace Patapon4TLB.Default
 
 			if (currCommand.CommandTarget != Command)
 			{
-				IsActive        = false;
-				IsStillChaining = false;
+				IsActive        = IsActive && commandState.StartTime > process.TimeTick && currCommand.Previous == Command;
+				IsStillChaining = IsStillChaining && commandState.StartTime > process.TimeTick && currCommand.Previous == Command;
+				StartTime       = -1;
 				WillBeActive    = false;
 				return;
 			}
 
-			if (commandState.IsGamePlayActive(process.TimeTick))
-			{
-				IsActive = currCommand.CommandTarget == Command;
-			}
-			else
-			{
-				IsActive = false;
-			}
-
+			IsActive = commandState.IsGamePlayActive(process.TimeTick);
+			
 			if (IsActive && PreviousActiveStartTime != commandState.StartTime)
 			{
 				PreviousActiveStartTime = commandState.StartTime;

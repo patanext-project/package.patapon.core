@@ -12,6 +12,7 @@ namespace package.patapon.core
 
 	public struct RhythmCurrentCommand : IComponentData
 	{
+		public Entity Previous;
 		public Entity CommandTarget;
 
 		/// <summary>

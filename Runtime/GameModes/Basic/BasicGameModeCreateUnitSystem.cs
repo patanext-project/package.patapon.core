@@ -30,7 +30,7 @@ namespace Patapon4TLB.GameModes.Basic
 			m_UnitArchetype = EntityManager.CreateArchetype
 			(
 				typeof(GhostComponent),
-				
+
 				typeof(EntityAuthority),
 				typeof(LivableDescription),
 				typeof(MovableDescription),
@@ -41,7 +41,6 @@ namespace Patapon4TLB.GameModes.Basic
 				typeof(UnitControllerState),
 				typeof(UnitDirection),
 				typeof(UnitTargetPosition),
-				typeof(UnitRhythmState),
 
 				typeof(Translation),
 				typeof(Rotation),
@@ -80,14 +79,13 @@ namespace Patapon4TLB.GameModes.Basic
 					EntityManager.SetComponentData(unit, new UnitBaseSettings
 					{
 						AttackSpeed = 1.75f,
-						
+
 						MovementAttackSpeed = 2.25f,
 						BaseWalkSpeed       = 2f,
 						FeverWalkSpeed      = 2.2f,
 						Weight              = 6
 					});
 					EntityManager.SetComponentData(unit, UnitDirection.Right);
-					EntityManager.SetComponentData(unit, new UnitRhythmState());
 					EntityManager.SetComponentData(unit, PhysicsMass.CreateDynamic(collider.Value.MassProperties, 1));
 					EntityManager.SetComponentData(unit, new PhysicsCollider
 					{
@@ -100,7 +98,7 @@ namespace Patapon4TLB.GameModes.Basic
 					EntityManager.SetComponentData(unit, new GroundState(true));
 					EntityManager.SetComponentData(unit, new Relative<PlayerDescription> {Target       = playerEntity});
 					EntityManager.SetComponentData(unit, new Relative<RhythmEngineDescription> {Target = playerData.RhythmEngine});
-					EntityManager.SetComponentData(unit, new Relative<TeamDescription> {Target = gameMode.GameModeData.PlayerTeam});
+					EntityManager.SetComponentData(unit, new Relative<TeamDescription> {Target         = gameMode.GameModeData.PlayerTeam});
 					EntityManager.SetComponentData(unit, new DestroyChainReaction(playerEntity));
 
 					// We should instead search for entities with 'MarchCommand' component tag...
@@ -234,7 +232,7 @@ namespace Patapon4TLB.GameModes.Basic
 				else if (Input.GetKey(KeyCode.LeftArrow))
 					target.Value.x -= 0.1f;
 			});
-			
+
 			Entities.ForEach((ref GameEvent gameEvent, ref TargetImpulseEvent impulse) =>
 			{
 				if (EntityManager.HasComponent<Velocity>(impulse.Destination))
@@ -242,7 +240,7 @@ namespace Patapon4TLB.GameModes.Basic
 					var vel = EntityManager.GetComponentData<Velocity>(impulse.Destination);
 					vel.Value *= impulse.Momentum;
 					vel.Value += impulse.Force;
-					
+
 					EntityManager.SetComponentData(impulse.Destination, vel);
 				}
 			});

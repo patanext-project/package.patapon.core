@@ -179,6 +179,7 @@ namespace Patapon4TLB.Default
 				}
 
 				rhythmCurrentCommand.ActiveAtTime  = targetBeat * settings.BeatInterval;
+				rhythmCurrentCommand.Previous = rhythmCurrentCommand.CommandTarget;
 				rhythmCurrentCommand.CommandTarget = result;
 				
 				state.VerifyCommand        = false;

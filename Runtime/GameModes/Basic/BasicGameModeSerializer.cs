@@ -49,7 +49,8 @@ namespace Patapon4TLB.GameModes.Basic
 			var data = chunk.GetNativeArray(GameModeDataType.Archetype)[ent];
 			snapshot.Tick              = tick;
 			snapshot.StartTime         = data.StartTime;
-			snapshot.PlayerTeamGhostId = data.PlayerTeam != default ? (uint) GhostStateFromEntity[data.PlayerTeam].ghostId : 0;
+			snapshot.PlayerTeamGhostId = GhostStateFromEntity.GetGhostId(data.PlayerTeam);
+			snapshot.EnemyTeamGhostId  = GhostStateFromEntity.GetGhostId(data.EnemyTeam);
 		}
 	}
 
@@ -59,6 +60,7 @@ namespace Patapon4TLB.GameModes.Basic
 
 		public uint StartTime;
 		public uint PlayerTeamGhostId;
+		public uint EnemyTeamGhostId;
 
 		public void PredictDelta(uint tick, ref BasicGameModeSnapshot baseline1, ref BasicGameModeSnapshot baseline2)
 		{
@@ -69,6 +71,7 @@ namespace Patapon4TLB.GameModes.Basic
 		{
 			writer.WritePackedUIntDelta(StartTime, baseline.StartTime, compressionModel);
 			writer.WritePackedUIntDelta(PlayerTeamGhostId, baseline.PlayerTeamGhostId, compressionModel);
+			writer.WritePackedUIntDelta(EnemyTeamGhostId, baseline.EnemyTeamGhostId, compressionModel);
 		}
 
 		public void Deserialize(uint tick, ref BasicGameModeSnapshot baseline, DataStreamReader reader, ref DataStreamReader.Context ctx, NetworkCompressionModel compressionModel)
@@ -77,12 +80,14 @@ namespace Patapon4TLB.GameModes.Basic
 
 			StartTime         = reader.ReadPackedUIntDelta(ref ctx, baseline.StartTime, compressionModel);
 			PlayerTeamGhostId = reader.ReadPackedUIntDelta(ref ctx, baseline.PlayerTeamGhostId, compressionModel);
+			EnemyTeamGhostId  = reader.ReadPackedUIntDelta(ref ctx, baseline.EnemyTeamGhostId, compressionModel);
 		}
 
 		public void Interpolate(ref BasicGameModeSnapshot target, float factor)
 		{
 			StartTime         = target.StartTime;
 			PlayerTeamGhostId = target.PlayerTeamGhostId;
+			EnemyTeamGhostId = target.EnemyTeamGhostId;
 		}
 	}
 

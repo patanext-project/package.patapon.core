@@ -12,11 +12,13 @@ namespace Patapon4TLB.GameModes.Basic
 	{
 		public uint   StartTime;
 		public Entity PlayerTeam;
+		public Entity EnemyTeam;
 
 		public void Set(BasicGameModeSnapshot snapshot, NativeHashMap<int, GhostEntity> ghostMap)
 		{
 			StartTime  = snapshot.StartTime;
 			PlayerTeam = snapshot.PlayerTeamGhostId != 0 ? ghostMap[(int) snapshot.PlayerTeamGhostId].entity : default;
+			EnemyTeam  = snapshot.EnemyTeamGhostId != 0 ? ghostMap[(int) snapshot.EnemyTeamGhostId].entity : default;
 		}
 	}
 

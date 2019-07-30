@@ -224,7 +224,7 @@ namespace Patapon4TLB.Default.Attack
 						var acceleration = math.clamp(math.rcp(playState.Weight), 0, 1) * 50;
 						acceleration = math.min(acceleration * DeltaTime, 1);
 
-						velocity.Value.x = math.lerp(velocity.Value.x, playState.MovementSpeed, acceleration);
+						velocity.Value.x = math.lerp(velocity.Value.x, playState.MovementAttackSpeed, acceleration);
 
 						VelocityFromEntity[owner.Target] = velocity;
 					}

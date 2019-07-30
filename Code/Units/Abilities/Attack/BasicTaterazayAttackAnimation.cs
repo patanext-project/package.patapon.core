@@ -5,6 +5,7 @@ using StormiumTeam.GameBase;
 using StormiumTeam.Shared.Gen;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Animations;
@@ -154,11 +155,11 @@ namespace Patapon4TLB.Default.Attack
 				{
 					continue;
 				}
-
+				
 				systemData.PreviousAttackTick  = attackAbility.AttackStartTime;
-				systemData.Behaviour.StartTime = animation.RootTime - GameTime.ConvertToTime(gameTick - attackAbility.AttackStartTime);
+				systemData.Behaviour.StartTime = animation.RootTime - math.clamp(GameTime.ConvertToTime(gameTick - attackAbility.AttackStartTime), -0.2f, 0.2f);
 
-				animation.SetTargetAnimation(new TargetAnimation(m_SystemType, allowOverride: false, allowTransition: false, stopAt: animation.RootTime + 0.4));
+				animation.SetTargetAnimation(new TargetAnimation(m_SystemType, allowOverride: false, allowTransition: false, stopAt: animation.RootTime + 0.55));
 			}
 		}
 		

@@ -36,8 +36,7 @@ namespace Patapon4TLB.Core
 					if (comboState.Score >= 50)
 						state.MovementAttackSpeed += state.MovementAttackSpeed * 0.2f;
 				}
-
-				state.MovementAttackSpeed = settings.MovementAttackSpeed;
+				
 				state.Weight              = settings.Weight;
 			}
 		}
