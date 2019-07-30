@@ -21,9 +21,6 @@ namespace Patapon4TLB.Default
 			[ReadOnly]
 			public int FrameCount;
 
-			[NativeDisableParallelForRestriction]
-			public NativeList<FlowRhythmBeatEventProvider.Create> CreateBeatEventList;
-
 			public EntityCommandBuffer.Concurrent EntityCommandBuffer;
 
 			[BurstDiscard]
@@ -55,18 +52,10 @@ namespace Patapon4TLB.Default
 				{
 					// what to do?
 				}
-
-				CreateBeatEventList.Add(new FlowRhythmBeatEventProvider.Create
-				{
-					Target     = entity,
-					FrameCount = FrameCount,
-					Beat       = process.GetActivationBeat(settings.BeatInterval)
-				});
 			}
 		}
 
 		private RhythmEngineEndBarrier           m_EndBarrier;
-		private FlowRhythmBeatEventProvider      m_BeatEventProvider;
 		private SynchronizedSimulationTimeSystem m_SynchronizedSimulationTimeSystem;
 
 		protected override void OnCreate()
@@ -74,7 +63,6 @@ namespace Patapon4TLB.Default
 			base.OnCreate();
 
 			m_EndBarrier                       = World.GetOrCreateSystem<RhythmEngineEndBarrier>();
-			m_BeatEventProvider                = World.GetOrCreateSystem<FlowRhythmBeatEventProvider>();
 			m_SynchronizedSimulationTimeSystem = World.GetOrCreateSystem<SynchronizedSimulationTimeSystem>();
 
 		}
@@ -88,11 +76,9 @@ namespace Patapon4TLB.Default
 			{
 				CurrentTime         = m_SynchronizedSimulationTimeSystem.Value.Predicted,
 				FrameCount          = (int) ServerSimulationSystemGroup.ServerTick,
-				CreateBeatEventList = m_BeatEventProvider.GetEntityDelayedList(),
 				EntityCommandBuffer = m_EndBarrier.CreateCommandBuffer().ToConcurrent()
 			}.Schedule(this, inputDeps);
 
-			m_BeatEventProvider.AddJobHandleForProducer(inputDeps);
 			m_EndBarrier.AddJobHandleForProducer(inputDeps);
 
 			return inputDeps;

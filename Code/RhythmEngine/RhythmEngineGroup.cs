@@ -11,8 +11,7 @@ namespace Patapon4TLB.Default
 	{
 		private RhythmEngineBeginBarrier m_BeginBarrier;
 		private RhythmEngineEndBarrier m_EndBarrier;
-
-		private FlowRhythmBeatEventProvider m_BeatEventProvider;
+		
 		private FlowRhythmPressureEventProvider m_PressureEventProvider;
 
 		private List<ComponentSystemBase> m_SystemsInGroup = new List<ComponentSystemBase>();
@@ -25,8 +24,7 @@ namespace Patapon4TLB.Default
 
 			m_BeginBarrier = World.GetOrCreateSystem<RhythmEngineBeginBarrier>();
 			m_EndBarrier   = World.GetOrCreateSystem<RhythmEngineEndBarrier>();
-
-			m_BeatEventProvider     = World.GetOrCreateSystem<FlowRhythmBeatEventProvider>();
+			
 			m_PressureEventProvider = World.GetOrCreateSystem<FlowRhythmPressureEventProvider>();
 
 			if (World.GetExistingSystem<ServerSimulationSystemGroup>() != null)
@@ -41,12 +39,10 @@ namespace Patapon4TLB.Default
 		{
 			m_BeginBarrier.Update();
 			
-			m_BeatEventProvider.FlushDelayedEntities();
 			m_PressureEventProvider.FlushDelayedEntities();
 			
 			base.OnUpdate();
 			
-			m_BeatEventProvider.FlushDelayedEntities();
 			m_PressureEventProvider.FlushDelayedEntities();
 			
 			m_EndBarrier.Update();
@@ -69,11 +65,6 @@ namespace Patapon4TLB.Default
 	
 	[DisableAutoCreation]
 	public class RhythmEngineEndBarrier : EntityCommandBufferSystem
-	{
-	}
-
-	[UpdateInGroup(typeof(RhythmEngineGroup))]
-	public class RhythmEngineFlowSystem : FlowRhythmEngine
 	{
 	}
 }

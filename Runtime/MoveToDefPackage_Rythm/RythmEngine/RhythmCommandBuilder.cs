@@ -46,10 +46,7 @@ namespace package.patapon.core
 					return;
 
 				if (UnsafeUtility.MemCmp(sequenceBuffer.GetUnsafePtr(), sequence.GetUnsafePtr(), sizeof(RhythmCommandSequence) * sequenceBuffer.Length) == 0)
-				{
 					finalEntity = entity;
-					return;
-				}
 			});
 
 			if (finalEntity != default)
