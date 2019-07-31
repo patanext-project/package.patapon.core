@@ -176,7 +176,7 @@ namespace Patapon4TLB.Default.Snapshot
 				TargetTick = m_NetworkTimeSystem.predictTargetTick
 			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, convertGhostMapSystem.dependency));
 
-			var localPlayerLength = m_LocalPlayerQuery.CalculateLength();
+			var localPlayerLength = m_LocalPlayerQuery.CalculateEntityCount();
 			if (localPlayerLength == 1)
 			{
 				m_LocalPlayerQuery.AddDependency(inputDeps);

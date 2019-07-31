@@ -53,7 +53,7 @@ namespace Patapon4TLB.Core
 			foreach (var world in ClientServerBootstrap.clientWorld)
 			{
 				var query = world.EntityManager.CreateEntityQuery(typeof(ConnectedMasterServerClient));
-				if (query.CalculateLength() == 0)
+				if (query.CalculateEntityCount() == 0)
 				{
 					world.EntityManager.CreateEntity(typeof(ConnectedMasterServerClient));
 				}

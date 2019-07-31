@@ -191,7 +191,7 @@ namespace Patapon4TLB.Default
 				CurrentCommandFromEntity   = GetBufferFromEntity<RhythmEngineCurrentCommand>()
 			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, queryHandleData, queryHandleEntities));
 
-			if (m_ExecuteCommandQuery.CalculateLength() > 0)
+			if (m_ExecuteCommandQuery.CalculateEntityCount() > 0)
 			{
 				inputDeps.Complete();
 				EntityManager.DestroyEntity(m_ExecuteCommandQuery);

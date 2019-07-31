@@ -80,7 +80,7 @@ namespace Patapon4TLB.UI
 
 		protected override void OnUpdate()
 		{
-			var length = m_Query.CalculateLength();
+			var length = m_Query.CalculateEntityCount();
 			var sorted = new NativeArray<SortBackend>(length, Allocator.Temp);
 
 			UIStatusBackend backend = null;

@@ -87,7 +87,7 @@ namespace package.patapon.core
 
             for (var cam = 0; cam != cameras.Length; cam++)
             {
-                m_ValidSplinePerCamera[cameras[cam]] = new NativeArray<bool>(m_SplineQuery.CalculateLength(), Allocator.TempJob);
+                m_ValidSplinePerCamera[cameras[cam]] = new NativeArray<bool>(m_SplineQuery.CalculateEntityCount(), Allocator.TempJob);
 
                 var bounds = new Bounds(cameras[cam].transform.position, cameras[cam].GetExtents()).Flat2D();
                 m_LastJobHandle = new JobIntersection

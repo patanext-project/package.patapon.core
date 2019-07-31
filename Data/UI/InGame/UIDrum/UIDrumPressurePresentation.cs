@@ -118,7 +118,7 @@ namespace Patapon4TLB.UI
 		{
 			Entity cameraEntity   = default;
 			float3 cameraPosition = default;
-			if (m_CameraQuery.CalculateLength() > 0)
+			if (m_CameraQuery.CalculateEntityCount() > 0)
 			{
 				cameraEntity = m_CameraQuery.GetSingletonEntity();
 				var cameraObject = EntityManager.GetComponentObject<Camera>(cameraEntity);

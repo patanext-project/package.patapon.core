@@ -46,7 +46,7 @@ namespace Patapon4TLB.GameModes.Basic
 
 		protected override void OnUpdate()
 		{
-			if (m_GameModeQuery.CalculateLength() < 0)
+			if (m_GameModeQuery.CalculateEntityCount() < 0)
 				return;
 
 			GameModeData = m_GameModeQuery.GetSingleton<BasicGameModeData>();

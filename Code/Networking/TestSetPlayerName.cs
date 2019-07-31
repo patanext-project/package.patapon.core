@@ -31,7 +31,7 @@ namespace P4.Core.Code.Networking
 
 		protected override void OnUpdate()
 		{
-			if (m_LocalPlayerWithoutNameQuery.CalculateLength() == 0)
+			if (m_LocalPlayerWithoutNameQuery.CalculateEntityCount() == 0)
 				return;
 
 			var playerEntity = m_LocalPlayerWithoutNameQuery.GetSingletonEntity();

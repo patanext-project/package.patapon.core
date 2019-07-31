@@ -85,7 +85,7 @@ namespace Patapon4TLB.GameModes.Basic
 						FeverWalkSpeed      = 2.2f,
 						Weight              = 6
 					});
-					EntityManager.SetComponentData(unit, UnitDirection.Right);
+					EntityManager.SetComponentData(unit, UnitDirection.Left);
 					EntityManager.SetComponentData(unit, PhysicsMass.CreateDynamic(collider.Value.MassProperties, 1));
 					EntityManager.SetComponentData(unit, new PhysicsCollider
 					{

@@ -417,6 +417,14 @@ namespace Patapon4TLB.Core
 				else if (ev == m_PressureEvents.Length - 1)
 					return; // no events found
 			}
+			
+			// invert keys...
+			var unitDirection = EntityManager.GetComponentData<UnitDirection>(backend.DstEntity);
+			if (unitDirection.IsLeft)
+			{
+				if (lastPressure.Key == RhythmKeys.Left) lastPressure.Key  = RhythmKeys.Right;
+				if (lastPressure.Key == RhythmKeys.Right) lastPressure.Key = RhythmKeys.Left;
+			}
 
 			if (!animation.ContainsSystem(m_SystemType))
 			{

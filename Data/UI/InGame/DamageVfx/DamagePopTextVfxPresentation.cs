@@ -75,12 +75,13 @@ namespace Patapon4TLB.UI.InGame.DamageVfx
 				{
 					presentation.Animator.Update(Time.deltaTime);
 					
-					var count = (int)((Time.time - backend.StartTime) * 20);
+					var count = (int)((Time.time - backend.StartTime) * 15);
 					foreach (var label in presentation.DamageLabels)
 					{
 						label.maxVisibleCharacters = count;
+						label.ForceMeshUpdate(true);
 						
-						/*var textInfo = label.textInfo;
+						var textInfo = label.textInfo;
 						for (var t = 0; t != textInfo.characterCount; t++)
 						{
 							var charInfo = textInfo.characterInfo[t];
@@ -92,21 +93,22 @@ namespace Patapon4TLB.UI.InGame.DamageVfx
 							var sourceBottomRight = charInfo.bottomRight;	
 
 							var offset = (sourceTopLeft + sourceBottomRight) * 0.5f;
-							
-							var matrix = Matrix4x4.TRS(Vector3.one, Quaternion.identity, Vector3.one * (1 + Time.time - backend.StartTime));
+
+							var wave = math.max((t - (Time.time - backend.StartTime) * 15) * 1.33f, 0) + 1;
+							var matrix = Matrix4x4.TRS(Vector3.one, Quaternion.identity, wave * Vector3.one);
 
 							var destinationTopLeft     = matrix.MultiplyPoint3x4(sourceTopLeft - offset) + offset;
 							var destinationTopRight    = matrix.MultiplyPoint3x4(sourceTopRight - offset) + offset;
 							var destinationBottomLeft  = matrix.MultiplyPoint3x4(sourceBottomLeft - offset) + offset;
 							var destinationBottomRight = matrix.MultiplyPoint3x4(sourceBottomRight - offset) + offset;
 							
-							meshInfo.vertices[charInfo.vertexIndex + 1] = Vector3.one * 4; // TL
+							meshInfo.vertices[charInfo.vertexIndex + 1] = destinationTopLeft; // TL
 							meshInfo.vertices[charInfo.vertexIndex + 2] = destinationTopRight; // TR
 							meshInfo.vertices[charInfo.vertexIndex + 0] = destinationBottomLeft; // BL
-							meshInfo.vertices[charInfo.vertexIndex + 3] = Vector3.one * -4; // BR
+							meshInfo.vertices[charInfo.vertexIndex + 3] = destinationBottomRight; // BR
 
 							label.mesh.vertices = meshInfo.vertices;
-						}*/
+						}
 					}
 					continue;
 				}

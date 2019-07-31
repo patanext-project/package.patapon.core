@@ -198,15 +198,15 @@ namespace Patapon4TLB.Default
 
 		protected override void OnUpdate()
 		{
-			var sameLength = m_PreviousLength == m_Commands.CalculateLength();
-			var newPlayers = m_NewConnections.CalculateLength() > 0;
-			if (m_PreviousLength == m_Commands.CalculateLength()
+			var sameLength = m_PreviousLength == m_Commands.CalculateEntityCount();
+			var newPlayers = m_NewConnections.CalculateEntityCount() > 0;
+			if (m_PreviousLength == m_Commands.CalculateEntityCount()
 			    && !newPlayers)
 				return;
 
 			if (!sameLength)
 			{
-				m_PreviousLength = m_Commands.CalculateLength();
+				m_PreviousLength = m_Commands.CalculateEntityCount();
 				EntityManager.CompleteAllJobs();
 
 				m_LastChainId++;
@@ -276,7 +276,7 @@ namespace Patapon4TLB.Default
 
 		protected override void OnUpdate()
 		{
-			if (m_CommandRequest.CalculateLength() <= 0)
+			if (m_CommandRequest.CalculateEntityCount() <= 0)
 				return;
 
 			EntityManager.CompleteAllJobs();
