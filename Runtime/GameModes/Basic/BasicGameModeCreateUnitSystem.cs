@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using P4TLB.MasterServer.GamePlay;
 using package.patapon.core;
 using package.StormiumTeam.GameBase;
 using Patapon4TLB.Core;
@@ -62,6 +65,122 @@ namespace Patapon4TLB.GameModes.Basic
 			);
 		}
 
+		// static list...
+		private List<Ability> GetAbilities(uint ct) // ct = class type (0: tate, 1: yari, 2: yumi)
+		{
+			var list = new List<Ability>
+			{
+				new Ability {Type = ct == 0 ? AbilityType.TateBasicMarch : AbilityType.BasicMarch},
+				new Ability {Type = AbilityType.BasicBackward},
+				new Ability {Type = AbilityType.BasicJump},
+				new Ability {Type = AbilityType.BasicRetreat}
+			};
+
+			switch (ct)
+			{
+				case 0:
+					list.Add(new Ability {Type = AbilityType.TateBasicAttack});
+					list.Add(new Ability {Type = AbilityType.TateBasicDefense});
+					break;
+				case 1:
+					list.Add(new Ability {Type = AbilityType.YariBasicAttack});
+					list.Add(new Ability {Type = AbilityType.YariBasicDefense});
+					break;
+				case 2:
+					list.Add(new Ability {Type = AbilityType.YumiBasicAttack});
+					list.Add(new Ability {Type = AbilityType.YumiBasicDefense});
+					break;
+				default:
+					throw new NotImplementedException();
+			}
+
+			return list;
+		}
+
+		private void CreateAbilityForEntity(List<Ability> abilities, Entity entity)
+		{
+			Entity FindCommand(Type type)
+			{
+				var query = GetEntityQuery(type);
+				if (query.CalculateEntityCount() == 0)
+					return Entity.Null;
+				using (var entities = query.ToEntityArray(Allocator.TempJob))
+					return entities[0];
+			}
+
+			void CreateAbility<TProvider, TActionCreate>(TActionCreate create)
+				where TProvider : BaseProviderBatch<TActionCreate>
+				where TActionCreate : struct
+			{
+				using (var entities = new NativeList<Entity>(1, Allocator.TempJob))
+				{
+					var provider = World.GetOrCreateSystem<TProvider>();
+					provider.SpawnLocalEntityWithArguments(create, entities);
+				}
+			}
+
+			foreach (var ab in abilities)
+			{
+				switch (ab.Type)
+				{
+					case AbilityType.Unknown:
+						throw new InvalidOperationException();
+					case AbilityType.TateBasicMarch:
+					case AbilityType.BasicMarch:
+						CreateAbility<MarchAbilityProvider, MarchAbilityProvider.Create>(new MarchAbilityProvider.Create
+						{
+							Owner              = entity,
+							AccelerationFactor = 1,
+							Command            = FindCommand(typeof(MarchCommand))
+						});
+						break;
+					case AbilityType.BasicBackward:
+						CreateAbility<BackwardAbilityProvider, BackwardAbilityProvider.Create>(new BackwardAbilityProvider.Create
+						{
+							Owner              = entity,
+							AccelerationFactor = 1,
+							Command            = FindCommand(typeof(BackwardAbility))
+						});
+						break;
+					case AbilityType.BasicJump:
+						CreateAbility<JumpAbilityProvider, JumpAbilityProvider.Create>(new JumpAbilityProvider.Create
+						{
+							Owner              = entity,
+							AccelerationFactor = 1,
+							Command            = FindCommand(typeof(JumpAbility))
+						});
+						break;
+					case AbilityType.BasicRetreat:
+						CreateAbility<RetreatAbilityProvider, RetreatAbilityProvider.Create>(new RetreatAbilityProvider.Create
+						{
+							Owner              = entity,
+							AccelerationFactor = 1,
+							Command            = FindCommand(typeof(RetreatAbility))
+						});
+						break;
+					case AbilityType.TateBasicAttack:
+						CreateAbility<BasicTaterazayAttackAbility.Provider, BasicTaterazayAttackAbility.Create>(new BasicTaterazayAttackAbility.Create
+						{
+							Owner   = entity,
+							Command = FindCommand(typeof(AttackCommand))
+						});
+						break;
+					case AbilityType.TateBasicDefense:
+						break;
+					case AbilityType.YariBasicAttack:
+						break;
+					case AbilityType.YariBasicDefense:
+						break;
+					case AbilityType.YumiBasicAttack:
+						break;
+					case AbilityType.YumiBasicDefense:
+						break;
+					default:
+						throw new ArgumentOutOfRangeException();
+				}
+			}
+		}
+
 		protected override void OnUpdate()
 		{
 			var gameMode = World.GetExistingSystem<BasicGameModeSystem>();
@@ -101,115 +220,8 @@ namespace Patapon4TLB.GameModes.Basic
 					EntityManager.SetComponentData(unit, new Relative<TeamDescription> {Target         = gameMode.GameModeData.PlayerTeam});
 					EntityManager.SetComponentData(unit, new DestroyChainReaction(playerEntity));
 
-					// We should instead search for entities with 'MarchCommand' component tag...
-					var marchCommand = World.GetExistingSystem<RhythmCommandBuilder>().GetOrCreate(new NativeArray<RhythmCommandSequence>(4, Allocator.TempJob)
-					{
-						[0] = new RhythmCommandSequence(0, RhythmKeys.Left),
-						[1] = new RhythmCommandSequence(1, RhythmKeys.Left),
-						[2] = new RhythmCommandSequence(2, RhythmKeys.Left),
-						[3] = new RhythmCommandSequence(3, RhythmKeys.Right),
-					});
-					var retreatCommand = World.GetExistingSystem<RhythmCommandBuilder>().GetOrCreate(new NativeArray<RhythmCommandSequence>(4, Allocator.TempJob)
-					{
-						[0] = new RhythmCommandSequence(0, RhythmKeys.Right),
-						[1] = new RhythmCommandSequence(1, RhythmKeys.Left),
-						[2] = new RhythmCommandSequence(2, RhythmKeys.Right),
-						[3] = new RhythmCommandSequence(3, RhythmKeys.Left),
-					});
-					var backwardCommand = World.GetExistingSystem<RhythmCommandBuilder>().GetOrCreate(new NativeArray<RhythmCommandSequence>(4, Allocator.TempJob)
-					{
-						[0] = new RhythmCommandSequence(0, RhythmKeys.Up),
-						[1] = new RhythmCommandSequence(1, RhythmKeys.Left),
-						[2] = new RhythmCommandSequence(2, RhythmKeys.Up),
-						[3] = new RhythmCommandSequence(3, RhythmKeys.Left),
-					});
-					var jumpCommand = World.GetExistingSystem<RhythmCommandBuilder>().GetOrCreate(new NativeArray<RhythmCommandSequence>(4, Allocator.TempJob)
-					{
-						[0] = new RhythmCommandSequence(0, RhythmKeys.Down),
-						[1] = new RhythmCommandSequence(1, RhythmKeys.Down),
-						[2] = new RhythmCommandSequence(2, RhythmKeys.Up),
-						[3] = new RhythmCommandSequence(3, RhythmKeys.Up),
-					});
-					var attackCommand = World.GetOrCreateSystem<RhythmCommandBuilder>().GetOrCreate(new NativeArray<RhythmCommandSequence>(4, Allocator.TempJob)
-					{
-						[0] = new RhythmCommandSequence(0, RhythmKeys.Right),
-						[1] = new RhythmCommandSequence(1, RhythmKeys.Right),
-						[2] = new RhythmCommandSequence(2, RhythmKeys.Left),
-						[3] = new RhythmCommandSequence(3, RhythmKeys.Right),
-					});
-
-					using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
-					{
-						World.GetOrCreateSystem<MarchAbilityProvider>().SpawnLocalEntityWithArguments(new MarchAbilityProvider.Create
-						{
-							Command            = marchCommand,
-							AccelerationFactor = 1,
-							Owner              = unit
-						}, createList);
-						EntityManager.AddComponent(createList[0], typeof(GhostComponent));
-					}
-
-					using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
-					{
-						World.GetOrCreateSystem<MarchWithTargetAbilityProvider>().SpawnLocalEntityWithArguments(new MarchWithTargetAbilityProvider.Create
-						{
-							Command            = marchCommand,
-							AccelerationFactor = 1,
-							Owner              = unit
-						}, createList);
-					}
-
-					using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
-					{
-						World.GetOrCreateSystem<RetreatAbilityProvider>().SpawnLocalEntityWithArguments(new RetreatAbilityProvider.Create
-						{
-							Command            = retreatCommand,
-							AccelerationFactor = 1,
-							Owner              = unit
-						}, createList);
-						EntityManager.AddComponent(createList[0], typeof(GhostComponent));
-					}
-
-					using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
-					{
-						World.GetOrCreateSystem<BackwardAbilityProvider>().SpawnLocalEntityWithArguments(new BackwardAbilityProvider.Create
-						{
-							Command            = backwardCommand,
-							AccelerationFactor = 1,
-							Owner              = unit
-						}, createList);
-					}
-
-					using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
-					{
-						World.GetOrCreateSystem<BackwardWithTargetAbilityProvider>().SpawnLocalEntityWithArguments(new BackwardWithTargetAbilityProvider.Create
-						{
-							Command            = backwardCommand,
-							AccelerationFactor = 1,
-							Owner              = unit
-						}, createList);
-					}
-
-					using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
-					{
-						World.GetOrCreateSystem<JumpAbilityProvider>().SpawnLocalEntityWithArguments(new JumpAbilityProvider.Create
-						{
-							Command            = jumpCommand,
-							AccelerationFactor = 1,
-							Owner              = unit
-						}, createList);
-						EntityManager.AddComponent(createList[0], typeof(GhostComponent));
-					}
-
-					using (var createList = new NativeList<Entity>(1, Allocator.TempJob))
-					{
-						World.GetOrCreateSystem<BasicTaterazayAttackAbility.Provider>().SpawnLocalEntityWithArguments(new BasicTaterazayAttackAbility.Create
-						{
-							Command = attackCommand,
-							Owner   = unit
-						}, createList);
-						EntityManager.AddComponent(createList[0], typeof(GhostComponent));
-					}
+					var abilities = GetAbilities(0);
+					CreateAbilityForEntity(abilities, unit);
 
 					playerData.Unit = unit;
 					EntityManager.SetComponentData(playerEntity, playerData);

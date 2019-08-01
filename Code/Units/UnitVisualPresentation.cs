@@ -422,8 +422,8 @@ namespace Patapon4TLB.Core
 			var unitDirection = EntityManager.GetComponentData<UnitDirection>(backend.DstEntity);
 			if (unitDirection.IsLeft)
 			{
-				if (lastPressure.Key == RhythmKeys.Left) lastPressure.Key  = RhythmKeys.Right;
-				if (lastPressure.Key == RhythmKeys.Right) lastPressure.Key = RhythmKeys.Left;
+				if (lastPressure.Key == RhythmKeys.Left) lastPressure.Key       = RhythmKeys.Right;
+				else if (lastPressure.Key == RhythmKeys.Right) lastPressure.Key = RhythmKeys.Left;
 			}
 
 			if (!animation.ContainsSystem(m_SystemType))

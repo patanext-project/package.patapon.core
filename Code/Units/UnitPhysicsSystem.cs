@@ -25,6 +25,7 @@ namespace Patapon4TLB.Core
 			public float  DeltaTime;
 			public float3 Gravity;
 
+			[ReadOnly] public ComponentDataFromEntity<UnitDirection> UnitDirectionFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<Relative<TeamDescription>> RelativeTeamFromEntity;
 			[ReadOnly] public BufferFromEntity<TeamEnemies>                      TeamEnemiesFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<TeamBlockMovableArea>      BlockMovableAreaFromEntity;
@@ -44,6 +45,7 @@ namespace Patapon4TLB.Core
 				if (velocity.Value.y > 0)
 					groundState.Value = false;
 
+				var previousPosition = translation.Value;
 				var target = controllerState.OverrideTargetPosition ? controllerState.TargetPosition : targetPosition.Value;
 				if (!controllerState.ControlOverVelocity.x)
 				{
@@ -71,6 +73,7 @@ namespace Patapon4TLB.Core
 						velocity.Value += Gravity * DeltaTime;
 				}
 
+				
 				translation.Value += velocity.Value * DeltaTime;
 				if (translation.Value.y < 0) // meh
 					translation.Value.y = 0;
@@ -91,9 +94,28 @@ namespace Patapon4TLB.Core
 								continue;
 
 							var area = BlockMovableAreaFromEntity[enemies[i].Target];
-							// for now, we only think that the unit is facing to the right
-							if (translation.Value.x > area.LeftX)
+							// If the new position is superior the area and the previous one inferior, teleport back to the area.
+							if (translation.Value.x > area.LeftX && previousPosition.x <= area.LeftX)
+							{
+								Debug.Log("superior");
 								translation.Value.x = area.LeftX;
+							}
+
+							if (translation.Value.x < area.RightX && previousPosition.x >= area.RightX)
+							{
+								Debug.Log("inferior");
+								translation.Value.x = area.RightX;
+							}
+							
+							// if it's inside...
+							if (translation.Value.x > area.LeftX && translation.Value.x < area.RightX)
+							{
+								var unitDirection = UnitDirectionFromEntity[entity];
+								if (unitDirection.IsLeft)
+									translation.Value = area.LeftX;
+								else if (unitDirection.IsRight)
+									translation.Value = area.RightX;
+							}
 						}
 					}
 				}
@@ -114,6 +136,7 @@ namespace Patapon4TLB.Core
 				RelativeTeamFromEntity     = GetComponentDataFromEntity<Relative<TeamDescription>>(true),
 				BlockMovableAreaFromEntity = GetComponentDataFromEntity<TeamBlockMovableArea>(true),
 				TeamEnemiesFromEntity      = GetBufferFromEntity<TeamEnemies>(true),
+				UnitDirectionFromEntity = GetComponentDataFromEntity<UnitDirection>(true)
 			}.Schedule(this, inputDeps);
 		}
 	}

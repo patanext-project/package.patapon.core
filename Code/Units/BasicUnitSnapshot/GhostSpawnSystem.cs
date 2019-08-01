@@ -41,7 +41,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 				typeof(Translation),
 				typeof(Rotation),
-				typeof(LocalToWorld),
+				//typeof(LocalToWorld),
 
 				typeof(PhysicsCollider),
 				typeof(PhysicsDamping),
@@ -197,6 +197,13 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				{
 					translation.Value.y = 0;
 				}
+			});
+			
+			Entities.ForEach((UnitVisualBackend backend) =>
+			{
+				var unitDirection = EntityManager.GetComponentData<UnitDirection>(backend.DstEntity);
+				
+				backend.transform.localScale = new Vector3(unitDirection.Value, 1, 1);
 			});
 		}
 	}
