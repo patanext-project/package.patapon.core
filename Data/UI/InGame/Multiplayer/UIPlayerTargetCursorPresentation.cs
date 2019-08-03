@@ -67,6 +67,8 @@ namespace Patapon4TLB.UI.InGame
 				if (presentation == null)
 					return;
 
+				if (!EntityManager.HasComponent<Relative<PlayerDescription>>(backend.DstEntity))
+					return;
 				var playerRelative = EntityManager.GetComponentData<Relative<PlayerDescription>>(backend.DstEntity).Target;
 				if (playerRelative == default)
 				{

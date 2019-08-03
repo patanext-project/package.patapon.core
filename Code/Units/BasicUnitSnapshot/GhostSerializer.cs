@@ -1,3 +1,4 @@
+using DefaultNamespace;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using StormiumTeam.Networking.Utilities;
@@ -30,18 +31,12 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			system.GetGhostComponentType(out UnitTargetPositionGhostType);
 			system.GetGhostComponentType(out TranslationGhostType);
 			system.GetGhostComponentType(out VelocityGhostType);
-			system.GetGhostComponentType(out RelativePlayerGhostType);
-			system.GetGhostComponentType(out RelativeTeamGhostType);
-			system.GetGhostComponentType(out RelativeRhythmEngineGhostType);
 		}
 
 		public GhostComponentType<UnitDirection>                     UnitDirectionGhostType;
 		public GhostComponentType<UnitTargetPosition>                UnitTargetPositionGhostType;
 		public GhostComponentType<Translation>                       TranslationGhostType;
 		public GhostComponentType<Velocity>                          VelocityGhostType;
-		public GhostComponentType<Relative<PlayerDescription>>       RelativePlayerGhostType;
-		public GhostComponentType<Relative<TeamDescription>>         RelativeTeamGhostType;
-		public GhostComponentType<Relative<RhythmEngineDescription>> RelativeRhythmEngineGhostType;
 
 		public bool CanSerialize(EntityArchetype arch)
 		{
@@ -76,34 +71,6 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			snapshot.Velocity.Set(BasicUnitSnapshotData.Quantization, velocity.Value);
 
 			snapshot.GroundFlags = translation.Value.y <= 0.0001f ? (byte) 1 : (byte) 0;
-
-			if (chunk.Has(RelativePlayerGhostType.Archetype))
-			{
-				var relativePlayer = chunk.GetNativeArray(RelativePlayerGhostType.Archetype)[ent];
-				snapshot.PlayerGhostId = GetGhostId(relativePlayer.Target);
-			}
-			else snapshot.PlayerGhostId = 0;
-
-			if (chunk.Has(RelativeTeamGhostType.Archetype))
-			{
-				var relativeTeam = chunk.GetNativeArray(RelativeTeamGhostType.Archetype)[ent];
-				snapshot.TeamGhostId = GetGhostId(relativeTeam.Target);
-			}
-			else snapshot.TeamGhostId = 0;
-
-			if (chunk.Has(RelativeRhythmEngineGhostType.Archetype))
-			{
-				var relativeRhythmEngine = chunk.GetNativeArray(RelativeRhythmEngineGhostType.Archetype)[ent];
-				snapshot.RhythmEngineGhostId = GetGhostId(relativeRhythmEngine.Target);
-			}
-			else snapshot.RhythmEngineGhostId = 0;
-		}
-
-		private uint GetGhostId(Entity target)
-		{
-			if (target == default || !GhostStateFromEntity.Exists(target))
-				return 0;
-			return (uint) GhostStateFromEntity[target].ghostId;
 		}
 	}
 }

@@ -403,6 +403,9 @@ namespace Patapon4TLB.Core
 			if (m_PressureEvents.Length == 0 || backend.Presentation == null || !animation.CurrAnimation.AllowOverride)
 				return;
 
+			if (!EntityManager.HasComponent<Relative<RhythmEngineDescription>>(backend.DstEntity))
+				return;
+			
 			var relativeRhythmEngine = EntityManager.GetComponentData<Relative<RhythmEngineDescription>>(backend.DstEntity);
 			if (relativeRhythmEngine.Target == default)
 				return;

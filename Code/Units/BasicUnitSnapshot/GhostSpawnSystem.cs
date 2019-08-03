@@ -52,13 +52,6 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				typeof(GhostOwner),
 				typeof(Owner),
 
-				typeof(GhostRelative<PlayerDescription>),
-				typeof(Relative<PlayerDescription>),
-				typeof(GhostRelative<RhythmEngineDescription>),
-				typeof(Relative<RhythmEngineDescription>),
-				typeof(GhostRelative<TeamDescription>),
-				typeof(Relative<TeamDescription>),
-
 				typeof(ActionContainer),
 
 				typeof(ReplicatedEntityComponent)
@@ -114,11 +107,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 			[ReadOnly] public BufferFromEntity<BasicUnitSnapshotData> SnapshotDataFromEntity;
 			[ReadOnly] public NativeHashMap<int, Entity>              GhostEntityMap;
-
-			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Relative<PlayerDescription>>       RelativePlayerFromEntity;
-			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Relative<TeamDescription>>         RelativeTeamFromEntity;
-			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Relative<RhythmEngineDescription>> RelativeRhythmEngineFromEntity;
-
+			
 			public void Execute(Entity entity, int jobIndex, ref UnitDirection unitDirection, ref BasicUnitSnapshotTarget target, ref UnitTargetPosition unitTargetPosition, ref Translation translation, ref Velocity velocity)
 			{
 				SnapshotDataFromEntity[entity].GetDataAtTick(PredictTick, out var snapshot);
@@ -140,14 +129,6 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				target.LastSnapshotTick = snapshot.Tick;
 				target.Position         = targetPosition;
 				target.Grounded         = snapshot.GroundFlags == 1;
-
-				GhostEntityMap.TryGetValue((int) snapshot.PlayerGhostId, out var relativePlayer);
-				GhostEntityMap.TryGetValue((int) snapshot.TeamGhostId, out var relativeTeam);
-				GhostEntityMap.TryGetValue((int) snapshot.RhythmEngineGhostId, out var relativeRhythmEngine);
-
-				RelativePlayerFromEntity[entity]       = new Relative<PlayerDescription> {Target       = relativePlayer};
-				RelativeTeamFromEntity[entity]         = new Relative<TeamDescription> {Target         = relativeTeam};
-				RelativeRhythmEngineFromEntity[entity] = new Relative<RhythmEngineDescription> {Target = relativeRhythmEngine};
 			}
 		}
 
@@ -171,10 +152,6 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 				SnapshotDataFromEntity = GetBufferFromEntity<BasicUnitSnapshotData>(true),
 				GhostEntityMap         = m_ConvertGhostEntityMap.HashMap,
-
-				RelativePlayerFromEntity       = GetComponentDataFromEntity<Relative<PlayerDescription>>(),
-				RelativeTeamFromEntity         = GetComponentDataFromEntity<Relative<TeamDescription>>(),
-				RelativeRhythmEngineFromEntity = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(),
 			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, m_ConvertGhostEntityMap.dependency));
 		}
 	}

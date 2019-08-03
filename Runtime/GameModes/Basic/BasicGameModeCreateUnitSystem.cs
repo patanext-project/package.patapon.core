@@ -18,6 +18,7 @@ using CapsuleCollider = Unity.Physics.CapsuleCollider;
 namespace Patapon4TLB.GameModes.Basic
 {
 	[DisableAutoCreation]
+	[AlwaysUpdateSystem]
 	public class BasicGameModeCreateUnitSystem : GameBaseSystem
 	{
 		// static list...
@@ -50,6 +51,42 @@ namespace Patapon4TLB.GameModes.Basic
 			}
 
 			return list;
+		}
+
+		protected override void OnStartRunning()
+		{
+			base.OnStartRunning();
+
+			return;
+			// Create an enemy bot
+			var gameMode = GetSingleton<BasicGameModeData>();
+
+			var unitProvider = World.GetOrCreateSystem<UnitProvider>();
+			var unit         = Entity.Null;
+			using (var entities = new NativeList<Entity>(Allocator.TempJob))
+			{
+				var capsuleColl = CapsuleCollider.Create(0, math.up() * 2, 0.5f);
+				unitProvider.SpawnLocalEntityWithArguments(new UnitProvider.Create
+				{
+					MovableCollider = capsuleColl,
+					Direction       = UnitDirection.Right,
+					Settings = new UnitBaseSettings
+					{
+						AttackSpeed = 1.75f,
+
+						MovementAttackSpeed = 2.25f,
+						BaseWalkSpeed       = 2f,
+						FeverWalkSpeed      = 2.2f,
+						Weight              = 6
+					},
+					Mass = PhysicsMass.CreateKinematic(capsuleColl.Value.MassProperties)
+				}, entities);
+				unit = entities[0];
+			}
+
+			EntityManager.AddComponent(unit, typeof(GhostComponent));
+			EntityManager.AddComponentData(unit, new Relative<TeamDescription> {Target = gameMode.EnemyTeam});
+			EntityManager.SetComponentData(unit, new Translation {Value                = new float3(10, 0, 0)});
 		}
 
 		protected override void OnUpdate()

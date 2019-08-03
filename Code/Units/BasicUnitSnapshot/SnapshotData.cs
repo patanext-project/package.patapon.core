@@ -14,10 +14,6 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 		public byte GroundFlags;
 
-		public uint PlayerGhostId;
-		public uint TeamGhostId;
-		public uint RhythmEngineGhostId;
-
 		public int             Direction;
 		public QuantizedFloat3 TargetPosition;
 		public QuantizedFloat3 Position;
@@ -29,17 +25,14 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			var dimension = Direction == 0 ? 3 : 2;
 			for (var i = 0; i < dimension; i++)
 			{
-				Position[i] = predict.PredictInt(Position[i], baseline1.Position[i], baseline2.Position[i]);
+				Position[i]       = predict.PredictInt(Position[i], baseline1.Position[i], baseline2.Position[i]);
 				TargetPosition[i] = predict.PredictInt(TargetPosition[i], baseline1.TargetPosition[i], baseline2.TargetPosition[i]);
 			}
 		}
 
 		public void Serialize(ref BasicUnitSnapshotData baseline, DataStreamWriter writer, NetworkCompressionModel compressionModel)
 		{
-			// 4
-			writer.WritePackedUIntDelta(PlayerGhostId, baseline.PlayerGhostId, compressionModel);
-			writer.WritePackedUIntDelta(TeamGhostId, baseline.TeamGhostId, compressionModel);
-			writer.WritePackedUIntDelta(RhythmEngineGhostId, baseline.RhythmEngineGhostId, compressionModel);
+			// 2
 			writer.WritePackedUIntDelta(GroundFlags, baseline.GroundFlags, compressionModel);
 			writer.WritePackedInt(Direction, compressionModel);
 
@@ -57,12 +50,9 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 		{
 			Tick = tick;
 
-			// 4
-			PlayerGhostId       = reader.ReadPackedUIntDelta(ref ctx, baseline.PlayerGhostId, compressionModel);
-			TeamGhostId         = reader.ReadPackedUIntDelta(ref ctx, baseline.TeamGhostId, compressionModel);
-			RhythmEngineGhostId = reader.ReadPackedUIntDelta(ref ctx, baseline.RhythmEngineGhostId, compressionModel);
-			GroundFlags         = (byte) reader.ReadPackedUIntDelta(ref ctx, baseline.GroundFlags, compressionModel);
-			Direction           = reader.ReadPackedInt(ref ctx, compressionModel);
+			// 2
+			GroundFlags = (byte) reader.ReadPackedUIntDelta(ref ctx, baseline.GroundFlags, compressionModel);
+			Direction   = reader.ReadPackedInt(ref ctx, compressionModel);
 
 			// Position and velocity
 			var dimension = Direction == 0 ? 3 : 2;
@@ -76,8 +66,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 		public void Interpolate(ref BasicUnitSnapshotData target, float factor)
 		{
-			PlayerGhostId = target.PlayerGhostId;
-			Direction     = target.Direction;
+			Direction = target.Direction;
 
 			Position.Result = (int3) math.lerp(Position.Result, target.Position.Result, factor);
 			Velocity.Result = (int3) math.lerp(Velocity.Result, target.Velocity.Result, factor);

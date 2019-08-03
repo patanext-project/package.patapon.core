@@ -9,5 +9,7 @@ namespace Patapon4TLB.Core
 {
 	public struct UnitDescription : IEntityDescription
 	{
+		public class Sync : SynchronizeRelativeSystem<UnitDescription>
+		{}
 	}
 }
