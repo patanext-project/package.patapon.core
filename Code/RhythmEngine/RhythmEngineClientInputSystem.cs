@@ -40,7 +40,7 @@ namespace Patapon4TLB.Default
 				pressureEvent.FlowBeat = flowBeat;
 				state.IsNewPressure    = true;
 
-				var pressureData    = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.TimeTick);
+				var pressureData    = new RhythmPressureData(pressureEvent.Key, settings.BeatInterval, process.Milliseconds);
 				var cmdChainEndFlow = RhythmEngineProcess.CalculateFlowBeat(predictedCommand.State.ChainEndTime, settings.BeatInterval);
 				var cmdEndFlow      = RhythmEngineProcess.CalculateFlowBeat(predictedCommand.State.EndTime, settings.BeatInterval);
 				// check for one beat space between inputs (should we just check for predicted commands? 'maybe' we would have a command with one beat space)
@@ -56,13 +56,13 @@ namespace Patapon4TLB.Default
 				
 				if (state.IsRecovery(flowBeat))
 				{
-					predictedCommand.State.ChainEndTime = -1;
+					predictedCommand.State.ChainEndTime = default;
 				}
 				else if (cmdEndFlow > flowBeat || failFlag1 || failFlag2 || failFlag3 || pressureData.GetAbsoluteScore() > RhythmPressureData.Error)
 				{
 					pressureEvent.ShouldStartRecovery             = true;
 					state.NextBeatRecovery                        = flowBeat + 1;
-					predictedCommand.State.ChainEndTime = -1;
+					predictedCommand.State.ChainEndTime = default;
 
 					ShouldRecoverSingleArray[0] = true;
 				}
@@ -82,7 +82,7 @@ namespace Patapon4TLB.Default
 					{
 						Engine     = entity,
 						Key        = pressureEvent.Key,
-						Time       = process.TimeTick,
+						TimeMs     = process.Milliseconds,
 						RenderBeat = pressureData.RenderBeat,
 						Score      = pressureData.Score
 					}

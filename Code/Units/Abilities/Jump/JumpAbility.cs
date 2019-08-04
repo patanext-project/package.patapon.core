@@ -25,11 +25,7 @@ namespace Patapon4TLB.Default
 		private struct Job : IJobForEach<Owner, RhythmAbilityState, JumpAbility>
 		{
 			[ReadOnly] public float DeltaTime;
-
-			[ReadOnly] public ComponentDataFromEntity<Translation>      TranslationFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<UnitBaseSettings> UnitSettingsFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<UnitDirection>    UnitDirectionFromEntity;
-
+			
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitControllerState> UnitControllerStateFromEntity;
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Velocity>            VelocityFromEntity;
 
@@ -58,12 +54,8 @@ namespace Patapon4TLB.Default
 
 				var wasJumping = ability.IsJumping;
 				ability.IsJumping = ability.ActiveTime <= 0.5f;
-
-				var translation   = TranslationFromEntity[owner.Target];
-				var unitSettings  = UnitSettingsFromEntity[owner.Target];
-				var unitDirection = UnitDirectionFromEntity[owner.Target];
+				
 				var velocity      = VelocityFromEntity[owner.Target];
-
 				if (!wasJumping && ability.IsJumping)
 				{
 					velocity.Value.y = math.max(velocity.Value.y + 20, 20);
@@ -89,10 +81,7 @@ namespace Patapon4TLB.Default
 		{
 			return new Job
 			{
-				DeltaTime                     = GetSingleton<GameTimeComponent>().DeltaTime,
-				TranslationFromEntity         = GetComponentDataFromEntity<Translation>(true),
-				UnitSettingsFromEntity        = GetComponentDataFromEntity<UnitBaseSettings>(true),
-				UnitDirectionFromEntity       = GetComponentDataFromEntity<UnitDirection>(true),
+				DeltaTime                     = World.GetExistingSystem<ServerSimulationSystemGroup>().UpdateDeltaTime,
 				UnitControllerStateFromEntity = GetComponentDataFromEntity<UnitControllerState>(),
 				VelocityFromEntity            = GetComponentDataFromEntity<Velocity>()
 			}.Schedule(this, inputDeps);

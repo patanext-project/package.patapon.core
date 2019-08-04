@@ -23,7 +23,6 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
             "BasicTaterazayAttackAbilityGhostSerializer",
             "DefaultRhythmEngineGhostSerializer",
             "BasicUnitGhostSerializer",
-            "SynchronizedSimulationTimeGhostSerializer",
             "GamePlayerGhostSerializer",
             "TeamEmptyGhostSerializer",
 
@@ -63,10 +62,6 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
         m_BasicUnitSnapshotDataNewGhostIds = curBasicUnitGhostSpawnSystem.NewGhostIds;
         m_BasicUnitSnapshotDataNewGhosts = curBasicUnitGhostSpawnSystem.NewGhosts;
         curBasicUnitGhostSpawnSystem.GhostType = 6;
-        var curSynchronizedSimulationTimeGhostSpawnSystem = world.GetOrCreateSystem<SynchronizedSimulationTimeGhostSpawnSystem>();
-        m_SynchronizedSimulationTimeSnapshotNewGhostIds = curSynchronizedSimulationTimeGhostSpawnSystem.NewGhostIds;
-        m_SynchronizedSimulationTimeSnapshotNewGhosts = curSynchronizedSimulationTimeGhostSpawnSystem.NewGhosts;
-        curSynchronizedSimulationTimeGhostSpawnSystem.GhostType = 7;
         var curGamePlayerGhostSpawnSystem = world.GetOrCreateSystem<GamePlayerGhostSpawnSystem>();
         m_GamePlayerSnapshotNewGhostIds = curGamePlayerGhostSpawnSystem.NewGhostIds;
         m_GamePlayerSnapshotNewGhosts = curGamePlayerGhostSpawnSystem.NewGhosts;
@@ -87,7 +82,6 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
         m_BasicTaterazayAttackAbilitySnapshotDataFromEntity = system.GetBufferFromEntity<BasicTaterazayAttackAbilitySnapshotData>();
         m_RhythmEngineSnapshotDataFromEntity = system.GetBufferFromEntity<RhythmEngineSnapshotData>();
         m_BasicUnitSnapshotDataFromEntity = system.GetBufferFromEntity<BasicUnitSnapshotData>();
-        m_SynchronizedSimulationTimeSnapshotFromEntity = system.GetBufferFromEntity<SynchronizedSimulationTimeSnapshot>();
         m_GamePlayerSnapshotFromEntity = system.GetBufferFromEntity<GamePlayerSnapshot>();
         m_TeamEmptySnapshotDataFromEntity = system.GetBufferFromEntity<TeamEmptySnapshotData>();
 
@@ -124,10 +118,6 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
             break;
         case 6:
             GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_BasicUnitSnapshotDataFromEntity, entity, snapshot, baseline, baseline2,
-                baseline3, reader, ref ctx, compressionModel);
-            break;
-        case 7:
-            GhostReceiveSystem<GhostDeserializerCollection>.InvokeDeserialize(m_SynchronizedSimulationTimeSnapshotFromEntity, entity, snapshot, baseline, baseline2,
                 baseline3, reader, ref ctx, compressionModel);
             break;
         case 8:
@@ -176,10 +166,6 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
                 m_BasicUnitSnapshotDataNewGhostIds.Add(ghostId);
                 m_BasicUnitSnapshotDataNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<BasicUnitSnapshotData>(snapshot, reader, ref ctx, compressionModel));
                 break;
-            case 7:
-                m_SynchronizedSimulationTimeSnapshotNewGhostIds.Add(ghostId);
-                m_SynchronizedSimulationTimeSnapshotNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<SynchronizedSimulationTimeSnapshot>(snapshot, reader, ref ctx, compressionModel));
-                break;
             case 8:
                 m_GamePlayerSnapshotNewGhostIds.Add(ghostId);
                 m_GamePlayerSnapshotNewGhosts.Add(GhostReceiveSystem<GhostDeserializerCollection>.InvokeSpawn<GamePlayerSnapshot>(snapshot, reader, ref ctx, compressionModel));
@@ -215,9 +201,6 @@ public struct GhostDeserializerCollection : IGhostDeserializerCollection
     private BufferFromEntity<BasicUnitSnapshotData> m_BasicUnitSnapshotDataFromEntity;
     private NativeList<int> m_BasicUnitSnapshotDataNewGhostIds;
     private NativeList<BasicUnitSnapshotData> m_BasicUnitSnapshotDataNewGhosts;
-    private BufferFromEntity<SynchronizedSimulationTimeSnapshot> m_SynchronizedSimulationTimeSnapshotFromEntity;
-    private NativeList<int> m_SynchronizedSimulationTimeSnapshotNewGhostIds;
-    private NativeList<SynchronizedSimulationTimeSnapshot> m_SynchronizedSimulationTimeSnapshotNewGhosts;
     private BufferFromEntity<GamePlayerSnapshot> m_GamePlayerSnapshotFromEntity;
     private NativeList<int> m_GamePlayerSnapshotNewGhostIds;
     private NativeList<GamePlayerSnapshot> m_GamePlayerSnapshotNewGhosts;

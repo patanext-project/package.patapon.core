@@ -6,6 +6,7 @@ using StormiumTeam.Shared.Gen;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Animations;
@@ -66,21 +67,21 @@ namespace Patapon4TLB.Default.Attack
 		private struct SystemData
 		{
 			public SystemPlayable Behaviour;
-			public int PreviousAttackTick;
+			public uint           PreviousAttackTick;
 		}
 
 		private struct OperationData
 		{
 		}
-		
+
 		private AsyncOperationModule m_AsyncOperationModule;
 		private SystemAbilityModule  m_AbilityModule;
-		
-		private const string          AddrKey = "tate_anim.uber/BasicAttack.anim";
+
+		private const string        AddrKey = "tate_anim.uber/BasicAttack.anim";
 		private       AnimationClip m_AnimationClip;
 
 		private Type m_SystemType;
-		private int m_LoadSuccess;
+		private int  m_LoadSuccess;
 
 		private EntityQuery m_BackendQuery;
 
@@ -103,7 +104,7 @@ namespace Patapon4TLB.Default.Attack
 		{
 			for (var i = 0; i != m_AsyncOperationModule.Handles.Count; i++)
 			{
-				var (handle, data) = m_AsyncOperationModule.Get<AnimationClip, OperationData>(i);
+				var (handle, _) = m_AsyncOperationModule.Get<AnimationClip, OperationData>(i);
 				if (handle.Result == null)
 					continue;
 
@@ -119,9 +120,10 @@ namespace Patapon4TLB.Default.Attack
 
 			m_AbilityModule.Update(default).Complete();
 
-			UnitVisualBackend backend = null;
+			UnitVisualBackend   backend   = null;
 			UnitVisualAnimation animation = null;
 
+			var serverTick = ServerTick;
 			foreach (var _ in this.ToEnumerator_CC(m_BackendQuery, ref backend, ref animation))
 			{
 				var currAnim = animation.CurrAnimation;
@@ -138,9 +140,9 @@ namespace Patapon4TLB.Default.Attack
 				if (abilityEntity == default)
 					continue;
 
-				var gameTick = (int) GetSingleton<SynchronizedSimulationTime>().Interpolated;
+				var gameTick      = serverTick;
 				var attackAbility = EntityManager.GetComponentData<BasicTaterazayAttackAbility>(abilityEntity);
-				if (attackAbility.AttackStartTime < 0)
+				if (attackAbility.AttackStartTick <= 0)
 				{
 					continue;
 				}
@@ -151,18 +153,20 @@ namespace Patapon4TLB.Default.Attack
 				}
 
 				ref var systemData = ref animation.GetSystemData<SystemData>(m_SystemType);
-				if (attackAbility.AttackStartTime == systemData.PreviousAttackTick)
+				if (attackAbility.AttackStartTick == systemData.PreviousAttackTick)
 				{
 					continue;
 				}
-				
-				systemData.PreviousAttackTick  = attackAbility.AttackStartTime;
-				systemData.Behaviour.StartTime = animation.RootTime - math.clamp(GameTime.ConvertToTime(gameTick - attackAbility.AttackStartTime), -0.2f, 0.2f);
+
+				var aheadStartDifference = UTick.CopyDelta(gameTick, gameTick.Value - attackAbility.AttackStartTick);
+
+				systemData.PreviousAttackTick  = attackAbility.AttackStartTick;
+				systemData.Behaviour.StartTime = animation.RootTime - math.clamp(aheadStartDifference.Seconds, -0.2, 0.2);
 
 				animation.SetTargetAnimation(new TargetAnimation(m_SystemType, allowOverride: false, allowTransition: false, stopAt: animation.RootTime + 0.55));
 			}
 		}
-		
+
 		private void AddAnimation(ref VisualAnimation.ManageData data, ref SystemData systemData)
 		{
 			var playable = ScriptPlayable<SystemPlayable>.Create(data.Graph);
@@ -170,7 +174,7 @@ namespace Patapon4TLB.Default.Attack
 
 			behavior.Initialize(playable, data.Index, data.Graph, data.Behavior.RootMixer, m_AnimationClip);
 
-			systemData.PreviousAttackTick = -1;
+			systemData.PreviousAttackTick   = 0;
 			systemData.Behaviour            = behavior;
 			systemData.Behaviour.VisualData = ((UnitVisualAnimation) data.Handle).GetBehaviorData();
 		}

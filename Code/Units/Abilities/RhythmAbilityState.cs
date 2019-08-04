@@ -36,15 +36,15 @@ namespace Patapon4TLB.Default
 
 			if (currCommand.CommandTarget != Command)
 			{
-				IsActive        = IsActive && commandState.StartTime > process.TimeTick && currCommand.Previous == Command;
-				IsStillChaining = IsStillChaining && commandState.StartTime > process.TimeTick && currCommand.Previous == Command;
+				IsActive        = IsActive && commandState.StartTime > process.Milliseconds && currCommand.Previous == Command;
+				IsStillChaining = IsStillChaining && commandState.StartTime > process.Milliseconds && currCommand.Previous == Command;
 				StartTime       = -1;
 				WillBeActive    = false;
 				return;
 			}
 
-			IsActive = commandState.IsGamePlayActive(process.TimeTick);
-			
+			IsActive = commandState.IsGamePlayActive(process.Milliseconds);
+
 			if (IsActive && PreviousActiveStartTime != commandState.StartTime)
 			{
 				PreviousActiveStartTime = commandState.StartTime;
@@ -53,8 +53,8 @@ namespace Patapon4TLB.Default
 
 			StartTime = commandState.StartTime;
 
-			IsStillChaining = commandState.StartTime <= process.TimeTick + (IsStillChaining ? 500 : 0) && combo.Chain > 0;
-			WillBeActive    = commandState.StartTime > process.TimeTick && process.TimeTick <= commandState.EndTime && !IsActive;
+			IsStillChaining = commandState.StartTime <= process.Milliseconds + (IsStillChaining ? 500 : 0) && combo.Chain > 0;
+			WillBeActive    = commandState.StartTime > process.Milliseconds && process.Milliseconds <= commandState.EndTime && !IsActive;
 		}
 	}
 

@@ -6,6 +6,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
+using Unity.NetCode;
 using Unity.Physics;
 using Unity.Transforms;
 using UnityEngine;
@@ -76,7 +77,7 @@ namespace Patapon4TLB.Default
 
 			return new JobProcess
 			{
-				DeltaTime                     = GetSingleton<GameTimeComponent>().DeltaTime,
+				DeltaTime                     = World.GetExistingSystem<ServerSimulationSystemGroup>().UpdateDeltaTime,
 				UnitPlayStateFromEntity       = GetComponentDataFromEntity<UnitPlayState>(true),
 				TranslationFromEntity         = GetComponentDataFromEntity<Translation>(true),
 				GroundStateFromEntity         = GetComponentDataFromEntity<GroundState>(true),

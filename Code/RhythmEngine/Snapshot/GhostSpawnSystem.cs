@@ -59,7 +59,7 @@ namespace Patapon4TLB.Default.Snapshot
 			[ReadOnly] public BufferFromEntity<RhythmEngineSnapshotData> SnapshotFromEntity;
 			public            uint                                       TargetTick;
 
-			public uint ServerTime;
+			public UTick ServerTick;
 
 			[ReadOnly] public ComponentDataFromEntity<RhythmEngineSimulateTag> SimulateTagFromEntity;
 			[ReadOnly] public NativeHashMap<int, Entity>                       CommandIdToEntity;
@@ -93,7 +93,7 @@ namespace Patapon4TLB.Default.Snapshot
 				process.StartTime = snapshotData.StartTime;
 				if (!SimulateTagFromEntity.Exists(entity))
 				{
-					process.TimeTick = (int) (ServerTime - snapshotData.StartTime);
+					process.Milliseconds = (int) (ServerTick.Ms - snapshotData.StartTime);
 
 					CommandIdToEntity.TryGetValue(snapshotData.CommandTypeId, out var commandTarget);
 					RhythmCurrentCommand[entity] = new RhythmCurrentCommand
@@ -104,7 +104,7 @@ namespace Patapon4TLB.Default.Snapshot
 					};
 				}
 
-				predictedProcess.Time = snapshotData.StartTime > 0 ? (ServerTime - snapshotData.StartTime) * 0.001f : 0;
+				predictedProcess.Time = snapshotData.StartTime > 0 ? (ServerTick.Ms - snapshotData.StartTime) * 0.001f : 0;
 
 				var comboState     = ComboStateFromEntity[entity];
 				var predictedCombo = PredictedComboFromEntity[entity];
@@ -164,7 +164,7 @@ namespace Patapon4TLB.Default.Snapshot
 			inputDeps = new SyncJob()
 			{
 				SnapshotFromEntity       = GetBufferFromEntity<RhythmEngineSnapshotData>(),
-				ServerTime               = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Value.Predicted,
+				ServerTick               = m_NetworkTimeSystem.GetTickInterpolated(),
 				SimulateTagFromEntity    = GetComponentDataFromEntity<RhythmEngineSimulateTag>(),
 				ComboStateFromEntity     = GetComponentDataFromEntity<GameComboState>(),
 				PredictedComboFromEntity = GetComponentDataFromEntity<GameComboPredictedClient>(),

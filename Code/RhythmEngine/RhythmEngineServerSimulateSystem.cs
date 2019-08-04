@@ -16,13 +16,8 @@ namespace Patapon4TLB.Default
 		[BurstCompile]
 		private struct SimulateJob : IJobForEachWithEntity<RhythmEngineProcess, RhythmEngineState, RhythmEngineSettings>
 		{
-			public uint CurrentTime;
-
-			[ReadOnly]
-			public int FrameCount;
-
-			public EntityCommandBuffer.Concurrent EntityCommandBuffer;
-
+			public UTick CurrentTick;
+			
 			[BurstDiscard]
 			private void NonBurst_ThrowWarning(Entity entity)
 			{
@@ -33,7 +28,7 @@ namespace Patapon4TLB.Default
 			{
 				var previousBeat = process.GetActivationBeat(settings.BeatInterval);
 
-				process.TimeTick = (int) (CurrentTime - process.StartTime);
+				process.Milliseconds = (int)(CurrentTick.Ms - process.StartTime);
 				if (settings.BeatInterval <= 0.0001f)
 				{
 					NonBurst_ThrowWarning(entity);
@@ -55,18 +50,6 @@ namespace Patapon4TLB.Default
 			}
 		}
 
-		private RhythmEngineEndBarrier           m_EndBarrier;
-		private SynchronizedSimulationTimeSystem m_SynchronizedSimulationTimeSystem;
-
-		protected override void OnCreate()
-		{
-			base.OnCreate();
-
-			m_EndBarrier                       = World.GetOrCreateSystem<RhythmEngineEndBarrier>();
-			m_SynchronizedSimulationTimeSystem = World.GetOrCreateSystem<SynchronizedSimulationTimeSystem>();
-
-		}
-
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
 			if (!IsServer)
@@ -74,13 +57,9 @@ namespace Patapon4TLB.Default
 
 			inputDeps = new SimulateJob
 			{
-				CurrentTime         = m_SynchronizedSimulationTimeSystem.Value.Predicted,
-				FrameCount          = (int) ServerSimulationSystemGroup.ServerTick,
-				EntityCommandBuffer = m_EndBarrier.CreateCommandBuffer().ToConcurrent()
+				CurrentTick         = World.GetExistingSystem<ServerSimulationSystemGroup>().GetTick(),
 			}.Schedule(this, inputDeps);
-
-			m_EndBarrier.AddJobHandleForProducer(inputDeps);
-
+			
 			return inputDeps;
 		}
 	}

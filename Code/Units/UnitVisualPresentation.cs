@@ -188,6 +188,7 @@ namespace Patapon4TLB.Core
 		{
 			GetComponent<UnitVisualAnimation>().DestroyPlayableGraph();
 			Animation = null;
+			CurrentArchetype = string.Empty;
 		}
 
 		protected override void Update()
@@ -232,7 +233,10 @@ namespace Patapon4TLB.Core
 			foreach (var _ in this.ToEnumerator_CC(m_BackendQuery, ref transform, ref backend))
 			{
 				if (backend.DstEntity == Entity.Null || !EntityManager.Exists(backend.DstEntity) || !EntityManager.HasComponent<Translation>(backend.DstEntity))
+				{
+					Debug.Log("null? " + backend.DstEntity);
 					return;
+				}
 
 				var pos = EntityManager.GetComponentData<Translation>(backend.DstEntity).Value;
 				pos.z = i++ * 2;
@@ -252,8 +256,8 @@ namespace Patapon4TLB.Core
 			{
 				var pool = World.GetExistingSystem<UnitVisualArchetypeManager>().GetArchetypePool(archetype);
 
-				backend.ReturnPresentation();
-				backend.SetPresentation(pool);
+				be.ReturnPresentation();
+				be.SetPresentation(pool);
 			}
 		}
 	}

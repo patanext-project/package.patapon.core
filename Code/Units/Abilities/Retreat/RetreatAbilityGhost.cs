@@ -165,10 +165,7 @@ namespace Patapon4TLB.Default
 		[BurstCompile]
 		private struct Job : IJobForEachWithEntity<RhythmAbilityState, RetreatAbility, Owner>
 		{
-			[DeallocateOnJobCompletion]
-			public NativeArray<SynchronizedSimulationTime> ServerTime;
-
-			[ReadOnly] public uint                                         TargetTick;
+			[ReadOnly] public UTick                                        ServerTick;
 			[ReadOnly] public BufferFromEntity<RetreatAbilitySnapshotData> SnapshotDataFromEntity;
 			[ReadOnly] public NativeHashMap<int, Entity>                   CommandIdToEntity;
 			[ReadOnly] public NativeHashMap<int, Entity>                   GhostEntityMap;
@@ -179,7 +176,7 @@ namespace Patapon4TLB.Default
 
 			public void Execute(Entity entity, int index, ref RhythmAbilityState state, ref RetreatAbility RetreatAbility, ref Owner owner)
 			{
-				SnapshotDataFromEntity[entity].GetDataAtTick(TargetTick, out var snapshot);
+				SnapshotDataFromEntity[entity].GetDataAtTick(ServerTick.Value, out var snapshot);
 
 				GhostEntityMap.TryGetValue((int) snapshot.OwnerGhostId, out owner.Target);
 				CommandIdToEntity.TryGetValue(snapshot.CommandId, out state.Command);
@@ -202,7 +199,7 @@ namespace Patapon4TLB.Default
 				{
 					if (state.IsActive || state.IsStillChaining)
 					{
-						RetreatAbility.ActiveTime   = (ServerTime[0].Interpolated - state.StartTime) * 0.001f;
+						RetreatAbility.ActiveTime   = (ServerTick.Ms - state.StartTime) * 0.001f;
 						RetreatAbility.IsRetreating = RetreatAbility.ActiveTime <= 2.0f;
 					}
 					else
@@ -222,31 +219,24 @@ namespace Patapon4TLB.Default
 			}
 		}
 
-		private ConvertGhostEntityMap            m_ConvertGhostEntityMap;
-		private SynchronizedSimulationTimeSystem m_SynchronizedSimulationTimeSystem;
-		private RhythmCommandManager             m_CommandManager;
-		private NetworkTimeSystem                m_NetworkTimeSystem;
+		private ConvertGhostEntityMap m_ConvertGhostEntityMap;
+		private RhythmCommandManager  m_CommandManager;
+		private NetworkTimeSystem     m_NetworkTimeSystem;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			m_ConvertGhostEntityMap            = World.GetOrCreateSystem<ConvertGhostEntityMap>();
-			m_SynchronizedSimulationTimeSystem = World.GetOrCreateSystem<SynchronizedSimulationTimeSystem>();
-			m_CommandManager                   = World.GetOrCreateSystem<RhythmCommandManager>();
-			m_NetworkTimeSystem                = World.GetOrCreateSystem<NetworkTimeSystem>();
+			m_ConvertGhostEntityMap = World.GetOrCreateSystem<ConvertGhostEntityMap>();
+			m_CommandManager        = World.GetOrCreateSystem<RhythmCommandManager>();
+			m_NetworkTimeSystem     = World.GetOrCreateSystem<NetworkTimeSystem>();
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			var timeArray = new NativeArray<SynchronizedSimulationTime>(1, Allocator.TempJob);
-
-			inputDeps = m_SynchronizedSimulationTimeSystem.Schedule(timeArray, inputDeps);
 			inputDeps = new Job
 			{
-				ServerTime = timeArray,
-
-				TargetTick             = m_NetworkTimeSystem.interpolateTargetTick,
+				ServerTick             = m_NetworkTimeSystem.GetTickInterpolated(),
 				SnapshotDataFromEntity = GetBufferFromEntity<RetreatAbilitySnapshotData>(),
 
 				CommandIdToEntity = m_CommandManager.CommandIdToEntity,

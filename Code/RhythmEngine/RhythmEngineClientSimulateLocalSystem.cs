@@ -4,6 +4,7 @@ using StormiumTeam.GameBase;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.Default
@@ -15,7 +16,7 @@ namespace Patapon4TLB.Default
 		[BurstCompile]
 		private struct SimulateJob : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineState, RhythmEngineProcess, RhythmPredictedProcess>
 		{
-			public uint CurrentTime;
+			public UTick ServerTick;
 
 			[BurstDiscard]
 			private void NonBurst_ThrowWarning0(Entity entity)
@@ -36,7 +37,7 @@ namespace Patapon4TLB.Default
 
 				var previousBeat = process.GetActivationBeat(settings.BeatInterval);
 
-				process.TimeTick = (int) (CurrentTime - process.StartTime);
+				process.Milliseconds = (int)(ServerTick.Ms - process.StartTime);
 				if (settings.BeatInterval <= 0.0001f)
 				{
 					NonBurst_ThrowWarning0(entity);
@@ -67,7 +68,7 @@ namespace Patapon4TLB.Default
 
 			return new SimulateJob
 			{
-				CurrentTime = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Value.Predicted
+				ServerTick = World.GetExistingSystem<NetworkTimeSystem>().GetTickInterpolated()
 			}.Schedule(this, inputDeps);
 		}
 	}

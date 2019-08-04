@@ -18,12 +18,11 @@ namespace Patapon4TLB.Default.Attack
 {
 	public struct BasicTaterazayAttackAbility : IComponentData
 	{
-		public const int DelayBeforeSlash = 100;
-		
+		public const int DelaySlashMs = 100;
+
 		public bool HasSlashed;
 
-		public int AttackStartTime;
-
+		public uint  AttackStartTick;
 		public float NextAttackDelay;
 
 		[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
@@ -31,18 +30,18 @@ namespace Patapon4TLB.Default.Attack
 		{
 			private struct Job : IJobForEach<RhythmAbilityState, BasicTaterazayAttackAbility, Owner>
 			{
-				public int   Tick;
+				public UTick Tick;
 				public float DeltaTime;
 
 				public NativeList<TargetDamageEvent> DamageEventList;
 
 				[ReadOnly] public ComponentDataFromEntity<UnitBaseSettings> UnitSettingsFromEntity;
-				[ReadOnly] public ComponentDataFromEntity<UnitPlayState> UnitPlayStateFromEntity;
-				
-				public ComponentDataFromEntity<Translation> TranslationFromEntity;
-				public ComponentDataFromEntity<UnitTargetPosition> TargetFromEntity;
+				[ReadOnly] public ComponentDataFromEntity<UnitPlayState>    UnitPlayStateFromEntity;
+
+				public ComponentDataFromEntity<Translation>         TranslationFromEntity;
+				public ComponentDataFromEntity<UnitTargetPosition>  TargetFromEntity;
 				public ComponentDataFromEntity<UnitControllerState> ControllerFromEntity;
-				public ComponentDataFromEntity<Velocity> VelocityFromEntity;
+				public ComponentDataFromEntity<Velocity>            VelocityFromEntity;
 
 				[DeallocateOnJobCompletion]
 				public NativeArray<ArchetypeChunk> LivableChunks;
@@ -78,15 +77,15 @@ namespace Patapon4TLB.Default.Attack
 							var entity = entityArray[ent];
 							if (origin == entity)
 								continue; // lol no
-							
+
 							var transform = ltwArray[ent];
 							var collider  = collArray[ent];
 
 							var collection = new CustomCollideCollection(new CustomCollide(collider, transform));
 							var collector  = new ClosestHitCollector<DistanceHit>(1.0f);
-							if (!collection.CalculateDistance(distanceInput, ref collector)) 
+							if (!collection.CalculateDistance(distanceInput, ref collector))
 								continue;
-							
+
 							DamageEventList.Add(new TargetDamageEvent
 							{
 								Position    = collector.ClosestHit.Position,
@@ -100,12 +99,12 @@ namespace Patapon4TLB.Default.Attack
 
 				public void SeekNearestEnemy(Entity origin, float seekRange, out Entity nearestEnemy, out float3 target, out float targetDistance)
 				{
-					nearestEnemy = Entity.Null;
-					target = float3.zero;
+					nearestEnemy   = Entity.Null;
+					target         = float3.zero;
 					targetDistance = default;
-					
+
 					var shortestDistance = float.MaxValue;
-					var originPos = TargetFromEntity[origin].Value;
+					var originPos        = TargetFromEntity[origin].Value;
 					for (var ch = 0; ch != LivableChunks.Length; ch++)
 					{
 						var chunk       = LivableChunks[ch];
@@ -137,18 +136,18 @@ namespace Patapon4TLB.Default.Attack
 
 				public void Execute(ref RhythmAbilityState state, ref BasicTaterazayAttackAbility ability, [ReadOnly] ref Owner owner)
 				{
-					const float seekRange = 20f;
+					const float seekRange   = 20f;
 					const float attackRange = 3.5f;
-					
+
 					SeekNearestEnemy(owner.Target, seekRange, out var nearestEnemy, out var targetPosition, out var enemyDistance);
 					if (nearestEnemy != default && TranslationFromEntity[owner.Target].Value.x > targetPosition.x)
 					{
 						var tr = TranslationFromEntity[owner.Target];
-						tr.Value.x = targetPosition.x;
+						tr.Value.x                          = targetPosition.x;
 						TranslationFromEntity[owner.Target] = tr;
 					}
 
-					var settings = UnitSettingsFromEntity[owner.Target];
+					var settings  = UnitSettingsFromEntity[owner.Target];
 					var playState = UnitPlayStateFromEntity[owner.Target];
 					if (state.IsStillChaining && !state.IsActive && nearestEnemy != default)
 					{
@@ -165,13 +164,15 @@ namespace Patapon4TLB.Default.Attack
 					{
 						var controller = ControllerFromEntity[owner.Target];
 						controller.ControlOverVelocity.x   = true;
-						ControllerFromEntity[owner.Target] = controller;						
+						ControllerFromEntity[owner.Target] = controller;
 					}
 
+					var attackStartTick = UTick.CopyDelta(Tick, ability.AttackStartTick);
+
 					ability.NextAttackDelay -= DeltaTime;
-					if (ability.AttackStartTime >= 0)
+					if (ability.AttackStartTick > 0)
 					{
-						if (ability.AttackStartTime + DelayBeforeSlash < Tick && !ability.HasSlashed)
+						if (Tick >= UTick.AddMs(attackStartTick, DelaySlashMs) && !ability.HasSlashed)
 						{
 							ability.HasSlashed = true;
 							Debug.Log(Tick + " >  slash!");
@@ -192,8 +193,8 @@ namespace Patapon4TLB.Default.Attack
 						}
 
 						// stop attacking once the animation is done
-						if (ability.AttackStartTime + 500 < Tick)
-							ability.AttackStartTime = -1;
+						if (Tick >= UTick.AddMs(attackStartTick, 500))
+							ability.AttackStartTick = 0;
 					}
 
 					if (!state.IsActive)
@@ -202,18 +203,18 @@ namespace Patapon4TLB.Default.Attack
 					// if no enemy are present, continue...
 					if (nearestEnemy == default)
 						return;
-					
+
 					// if all conditions are ok, start attacking.
 					enemyDistance = math.distance(TranslationFromEntity[owner.Target].Value.x, targetPosition.x);
-					if (enemyDistance <= attackRange && ability.NextAttackDelay <= 0.0f && ability.AttackStartTime < 0)
+					if (enemyDistance <= attackRange && ability.NextAttackDelay <= 0.0f && ability.AttackStartTick <= 0)
 					{
 						ability.NextAttackDelay = settings.AttackSpeed;
-						ability.AttackStartTime = Tick;
+						ability.AttackStartTick = Tick.Value;
 						ability.HasSlashed      = false;
 
 						Debug.Log(Tick + " >  start attack!");
 					}
-					else if (ability.AttackStartTime + DelayBeforeSlash < Tick)
+					else if (Tick >= UTick.AddMs(attackStartTick, DelaySlashMs))
 					{
 						var controller = ControllerFromEntity[owner.Target];
 						controller.ControlOverVelocity.x = true;
@@ -249,17 +250,15 @@ namespace Patapon4TLB.Default.Attack
 			{
 				inputDeps = new Job
 				{
-					Tick      = GetSingleton<GameTimeComponent>().Tick,
-					DeltaTime = GetSingleton<GameTimeComponent>().DeltaTime,
-
+					Tick            = World.GetExistingSystem<ServerSimulationSystemGroup>().GetTick(),
 					DamageEventList = m_DamageEventProvider.GetEntityDelayedList(),
 
-					UnitSettingsFromEntity = GetComponentDataFromEntity<UnitBaseSettings>(true),
+					UnitSettingsFromEntity  = GetComponentDataFromEntity<UnitBaseSettings>(true),
 					UnitPlayStateFromEntity = GetComponentDataFromEntity<UnitPlayState>(true),
-					ControllerFromEntity = GetComponentDataFromEntity<UnitControllerState>(),
-					TargetFromEntity = GetComponentDataFromEntity<UnitTargetPosition>(),
-					TranslationFromEntity  = GetComponentDataFromEntity<Translation>(),
-					VelocityFromEntity = GetComponentDataFromEntity<Velocity>(),
+					ControllerFromEntity    = GetComponentDataFromEntity<UnitControllerState>(),
+					TargetFromEntity        = GetComponentDataFromEntity<UnitTargetPosition>(),
+					TranslationFromEntity   = GetComponentDataFromEntity<Translation>(),
+					VelocityFromEntity      = GetComponentDataFromEntity<Velocity>(),
 
 					LivableChunks = m_LivableQuery.CreateArchetypeChunkArray(Allocator.TempJob, out var dep1),
 					EntityType    = GetArchetypeChunkEntityType(),

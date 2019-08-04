@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using DefaultNamespace;
 using package.patapon.core;
 using package.stormiumteam.shared;
 using Runtime.Systems;
@@ -123,14 +124,7 @@ namespace Patapon4TLB.Default
 			snapshot.CommandId = rhythmAbilityState.Command == default ? 0 : CommandIdFromEntity[rhythmAbilityState.Command].Value;
 
 			var owner = chunk.GetNativeArray(GhostOwnerType.Archetype)[ent];
-			snapshot.OwnerGhostId = GetGhostId(owner.Target);
-		}
-
-		private uint GetGhostId(Entity target)
-		{
-			if (target == default || !GhostStateFromEntity.Exists(target))
-				return 0;
-			return (uint) GhostStateFromEntity[target].ghostId;
+			snapshot.OwnerGhostId = GhostStateFromEntity.GetGhostId(owner.Target);
 		}
 	}
 
@@ -160,9 +154,7 @@ namespace Patapon4TLB.Default
 		[BurstCompile]
 		private struct Job : IJobForEachWithEntity<RhythmAbilityState, MarchAbility, Owner>
 		{
-			[ReadOnly, DeallocateOnJobCompletion] public NativeArray<SynchronizedSimulationTime> ServerTime;
-
-			[ReadOnly] public uint                                       TargetTick;
+			[ReadOnly] public UTick                                      ServerTick;
 			[ReadOnly] public BufferFromEntity<MarchAbilitySnapshotData> SnapshotDataFromEntity;
 			[ReadOnly] public NativeHashMap<int, Entity>                 CommandIdToEntity;
 
@@ -175,7 +167,7 @@ namespace Patapon4TLB.Default
 
 			public void Execute(Entity entity, int index, ref RhythmAbilityState state, ref MarchAbility marchAbility, ref Owner owner)
 			{
-				SnapshotDataFromEntity[entity].GetDataAtTick(TargetTick, out var snapshot);
+				SnapshotDataFromEntity[entity].GetDataAtTick(ServerTick.Value, out var snapshot);
 
 				GhostEntityMap.TryGetValue((int) snapshot.OwnerGhostId, out owner.Target);
 				CommandIdToEntity.TryGetValue(snapshot.CommandId, out state.Command);
@@ -201,30 +193,24 @@ namespace Patapon4TLB.Default
 			}
 		}
 
-		private ConvertGhostEntityMap            m_ConvertGhostEntityMap;
-		private SynchronizedSimulationTimeSystem m_SynchronizedSimulationTimeSystem;
-		private RhythmCommandManager             m_CommandManager;
-		private NetworkTimeSystem                m_NetworkTimeSystem;
+		private ConvertGhostEntityMap m_ConvertGhostEntityMap;
+		private RhythmCommandManager  m_CommandManager;
+		private NetworkTimeSystem     m_NetworkTimeSystem;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			m_ConvertGhostEntityMap            = World.GetOrCreateSystem<ConvertGhostEntityMap>();
-			m_SynchronizedSimulationTimeSystem = World.GetOrCreateSystem<SynchronizedSimulationTimeSystem>();
-			m_CommandManager                   = World.GetOrCreateSystem<RhythmCommandManager>();
-			m_NetworkTimeSystem                = World.GetOrCreateSystem<NetworkTimeSystem>();
+			m_ConvertGhostEntityMap = World.GetOrCreateSystem<ConvertGhostEntityMap>();
+			m_CommandManager        = World.GetOrCreateSystem<RhythmCommandManager>();
+			m_NetworkTimeSystem     = World.GetOrCreateSystem<NetworkTimeSystem>();
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			var timeArray = new NativeArray<SynchronizedSimulationTime>(1, Allocator.TempJob);
-
-			inputDeps = m_SynchronizedSimulationTimeSystem.Schedule(timeArray, inputDeps);
 			inputDeps = new Job
 			{
-				TargetTick = m_NetworkTimeSystem.interpolateTargetTick,
-				ServerTime = timeArray,
+				ServerTick = m_NetworkTimeSystem.GetTickInterpolated(),
 
 				SnapshotDataFromEntity = GetBufferFromEntity<MarchAbilitySnapshotData>(true),
 				CommandIdToEntity      = m_CommandManager.CommandIdToEntity,

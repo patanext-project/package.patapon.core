@@ -22,7 +22,7 @@ namespace Patapon4TLB.Default.Attack
 		public bool ClientPredictState;
 		public bool IsActive;
 		public int  CommandId;
-		public int  StartAttackTick;
+		public uint  StartAttackTick;
 		public uint OwnerGhostId;
 
 		public void PredictDelta(uint tick, ref BasicTaterazayAttackAbilitySnapshotData baseline1, ref BasicTaterazayAttackAbilitySnapshotData baseline2)
@@ -40,7 +40,7 @@ namespace Patapon4TLB.Default.Attack
 
 			writer.WritePackedUInt(mask, compressionModel);
 			writer.WritePackedIntDelta(CommandId, baseline.CommandId, compressionModel);
-			writer.WritePackedIntDelta(StartAttackTick, baseline.StartAttackTick, compressionModel);
+			writer.WritePackedUIntDelta(StartAttackTick, baseline.StartAttackTick, compressionModel);
 			writer.WritePackedUIntDelta(OwnerGhostId, baseline.OwnerGhostId, compressionModel);
 		}
 
@@ -55,7 +55,7 @@ namespace Patapon4TLB.Default.Attack
 			}
 
 			CommandId       = reader.ReadPackedIntDelta(ref ctx, baseline.CommandId, compressionModel);
-			StartAttackTick = reader.ReadPackedIntDelta(ref ctx, baseline.StartAttackTick, compressionModel);
+			StartAttackTick = reader.ReadPackedUIntDelta(ref ctx, baseline.StartAttackTick, compressionModel);
 			OwnerGhostId    = reader.ReadPackedUIntDelta(ref ctx, baseline.OwnerGhostId, compressionModel);
 		}
 
@@ -123,7 +123,7 @@ namespace Patapon4TLB.Default.Attack
 
 			snapshot.IsActive        = abilityState.IsActive;
 			snapshot.CommandId       = abilityState.Command == default ? 0 : CommandIdFromEntity[abilityState.Command].Value;
-			snapshot.StartAttackTick = attackAbility.AttackStartTime;
+			snapshot.StartAttackTick = attackAbility.AttackStartTick;
 			snapshot.OwnerGhostId    = GhostStateFromEntity.GetGhostId(owner.Target);
 		}
 	}
@@ -154,10 +154,7 @@ namespace Patapon4TLB.Default.Attack
 		[BurstCompile]
 		private struct Job : IJobForEachWithEntity<RhythmAbilityState, BasicTaterazayAttackAbility, Owner>
 		{
-			[DeallocateOnJobCompletion]
-			public NativeArray<SynchronizedSimulationTime> ServerTime;
-
-			[ReadOnly] public uint                                                      TargetTick;
+			[ReadOnly] public UTick                                                     TargetTick;
 			[ReadOnly] public BufferFromEntity<BasicTaterazayAttackAbilitySnapshotData> SnapshotDataFromEntity;
 			[ReadOnly] public NativeHashMap<int, Entity>                                CommandIdToEntity;
 			[ReadOnly] public NativeHashMap<int, Entity>                                GhostEntityMap;
@@ -198,9 +195,11 @@ namespace Patapon4TLB.Default.Attack
 
 				if (!predict)
 				{
+					var startAttackTick = UTick.CopyDelta(TargetTick, snapshot.StartAttackTick);
+
 					state.IsActive                = snapshot.IsActive;
-					attackAbility.AttackStartTime = snapshot.StartAttackTick;
-					attackAbility.HasSlashed      = snapshot.StartAttackTick > TargetTick + BasicTaterazayAttackAbility.DelayBeforeSlash;
+					attackAbility.AttackStartTick = snapshot.StartAttackTick;
+					attackAbility.HasSlashed      = UTick.AddMs(startAttackTick, BasicTaterazayAttackAbility.DelaySlashMs) <= TargetTick;
 				}
 
 				state.IsActive = snapshot.IsActive;
@@ -208,7 +207,6 @@ namespace Patapon4TLB.Default.Attack
 		}
 
 		private ConvertGhostEntityMap            m_ConvertGhostEntityMap;
-		private SynchronizedSimulationTimeSystem m_SynchronizedSimulationTimeSystem;
 		private RhythmCommandManager             m_CommandManager;
 		private NetworkTimeSystem                m_NetworkTimeSystem;
 
@@ -217,21 +215,15 @@ namespace Patapon4TLB.Default.Attack
 			base.OnCreate();
 
 			m_ConvertGhostEntityMap            = World.GetOrCreateSystem<ConvertGhostEntityMap>();
-			m_SynchronizedSimulationTimeSystem = World.GetOrCreateSystem<SynchronizedSimulationTimeSystem>();
 			m_CommandManager                   = World.GetOrCreateSystem<RhythmCommandManager>();
 			m_NetworkTimeSystem                = World.GetOrCreateSystem<NetworkTimeSystem>();
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			var timeArray = new NativeArray<SynchronizedSimulationTime>(1, Allocator.TempJob);
-
-			inputDeps = m_SynchronizedSimulationTimeSystem.Schedule(timeArray, inputDeps);
 			inputDeps = new Job
 			{
-				ServerTime = timeArray,
-
-				TargetTick             = m_NetworkTimeSystem.interpolateTargetTick,
+				TargetTick             = m_NetworkTimeSystem.GetTickInterpolated(),
 				SnapshotDataFromEntity = GetBufferFromEntity<BasicTaterazayAttackAbilitySnapshotData>(),
 
 				CommandIdToEntity = m_CommandManager.CommandIdToEntity,

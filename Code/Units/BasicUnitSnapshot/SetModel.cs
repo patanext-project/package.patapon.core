@@ -61,6 +61,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				}
 
 				backend.OnReset();
+				backend.gameObject.name = "UnitBackend:" + entities[ent];
 				backend.SetTarget(EntityManager, entities[ent]);
 
 				EntityManager.AddComponentData(entities[ent], new ToModel {Target = gameObject.GetComponent<GameObjectEntity>().Entity});

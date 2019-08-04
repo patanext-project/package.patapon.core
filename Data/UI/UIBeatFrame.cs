@@ -87,10 +87,10 @@ namespace Patapon4TLB.UI
 					LastBeatTime   = Time.time;
 				}
 
-				IsCommandServer = gameCommandState.StartTime <= process.TimeTick && gameCommandState.EndTime > process.TimeTick;
+				IsCommandServer = gameCommandState.StartTime <= process.Milliseconds && gameCommandState.EndTime > process.Milliseconds;
 				if (EntityManager.HasComponent<RhythmEngineSimulateTag>(entity))
 				{
-					IsCommandClient = currentCommand.ActiveAtTime <= process.TimeTick && predictedCommand.State.EndTime > process.TimeTick;
+					IsCommandClient = currentCommand.ActiveAtTime <= process.Milliseconds && predictedCommand.State.EndTime > process.Milliseconds;
 				}
 			}
 

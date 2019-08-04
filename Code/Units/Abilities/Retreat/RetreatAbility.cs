@@ -106,7 +106,7 @@ namespace Patapon4TLB.Default
 		{
 			return new Job
 			{
-				DeltaTime                     = GetSingleton<GameTimeComponent>().DeltaTime,
+				DeltaTime                     = World.GetExistingSystem<ServerSimulationSystemGroup>().UpdateDeltaTime,
 				TranslationFromEntity         = GetComponentDataFromEntity<Translation>(true),
 				UnitSettingsFromEntity        = GetComponentDataFromEntity<UnitBaseSettings>(true),
 				UnitDirectionFromEntity       = GetComponentDataFromEntity<UnitDirection>(true),

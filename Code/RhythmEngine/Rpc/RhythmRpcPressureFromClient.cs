@@ -116,7 +116,7 @@ namespace Patapon4TLB.Default
 						Ev = new PressureEvent
 						{
 							Engine     = ghostEntity.entity,
-							Time       = -1, // find the time
+							TimeMs       = -1, // find the time
 							RenderBeat = executePressure.RpcData.Beat,
 							Key        = executePressure.RpcData.Key,
 							Score      = executePressure.RpcData.Score

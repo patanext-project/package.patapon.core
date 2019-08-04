@@ -48,15 +48,10 @@ namespace Patapon4TLB.Default.Test
 			var settings         = EntityManager.GetComponentData<RhythmEngineSettings>(pressureEvent.Engine);
 
 			var currFlowBeat = process.GetFlowBeat(settings.BeatInterval);
-
-			/*
-			var isRunningCommand = gameCommandState.StartTime <= process.TimeTick && gameCommandState.EndTime > process.TimeTick            // server
-			                       || currentCommand.ActiveAtTime <= process.TimeTick && predictedCommand.State.EndTime > process.TimeTick; // client
-*/
-			var inputActive = gameCommandState.IsInputActive(process.TimeTick, settings.BeatInterval)
-			                  || predictedCommand.State.IsInputActive(process.TimeTick, settings.BeatInterval);
-			var commandIsRunning = gameCommandState.IsGamePlayActive(process.TimeTick)
-			                       || predictedCommand.State.IsGamePlayActive(process.TimeTick);
+			var inputActive = gameCommandState.IsInputActive(process.Milliseconds, settings.BeatInterval)
+			                  || predictedCommand.State.IsInputActive(process.Milliseconds, settings.BeatInterval);
+			var commandIsRunning = gameCommandState.IsGamePlayActive(process.Milliseconds)
+			                       || predictedCommand.State.IsGamePlayActive(process.Milliseconds);
 
 			var shouldFail = (commandIsRunning && !inputActive) || state.IsRecovery(currFlowBeat) || absRealScore > RhythmPressureData.Error;
 			if (shouldFail)
@@ -65,7 +60,7 @@ namespace Patapon4TLB.Default.Test
 			}
 
 			// do the perfect sound
-			var isPerfect = !shouldFail && currentCommand.ActiveAtTime >= process.TimeTick && currentCommand.Power >= 100;
+			var isPerfect = !shouldFail && currentCommand.ActiveAtTime >= process.Milliseconds && currentCommand.Power >= 100;
 			if (isPerfect)
 			{
 				m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPerfect, 1.25f);

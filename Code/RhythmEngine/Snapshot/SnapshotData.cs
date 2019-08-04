@@ -15,13 +15,13 @@ namespace Patapon4TLB.Default.Snapshot
 		public uint MaxBeats;
 		public uint BeatInterval;
 
-		public int OwnerGhostId;
+		public int  OwnerGhostId;
 		public int StartTime;     // in ms
-		public int CommandTypeId; // CommandState.IsActive will be set if ghostId is null or not
+		public int  CommandTypeId; // CommandState.IsActive will be set if ghostId is null or not
 		public int CommandStartTime;
 		public int CommandEndTime;
 		public int CommandChainEndTime;
-		public int Recovery;
+		public int  Recovery;
 
 		public int  ComboScore;
 		public int  ComboChain;

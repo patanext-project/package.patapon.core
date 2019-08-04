@@ -1,4 +1,5 @@
 ﻿using System;
+using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -8,24 +9,15 @@ namespace package.patapon.core
 {
     public static class FlowRhythmEngine
     {
-        public static (int original, int correct) GetRhythmBeat(int pressureTimeTick, int beatIntervalTick)
-        {
-            var original = pressureTimeTick != 0 ? pressureTimeTick / beatIntervalTick : 0;
-            var add      = pressureTimeTick + (beatIntervalTick / 2);
-            var correct  = add != 0 ? add / beatIntervalTick : 0;
-
-            return (original, correct);
-        }
-
         /// <summary>
         /// Compute the score from a beat and time.
         /// </summary>
-        /// <param name="timeTick">The time</param>
+        /// <param name="tick">The tick</param>
         /// <param name="interval">The interval between each beat</param>
         /// <returns></returns>
-        public static float GetScore(int timeTick, int interval)
+        public static float GetScore(long timeMs, int interval)
         {
-            var beatTimeDelta  = timeTick % interval;
+            var beatTimeDelta  = timeMs % interval;
             var halvedInterval = interval * 0.5;
             var correctedTime  = (beatTimeDelta - halvedInterval);
 
@@ -50,10 +42,8 @@ namespace package.patapon.core
 
     public struct RhythmEngineProcess : IComponentData
     {
-        public int TimeTick;
+        public int Milliseconds;
         public int StartTime;
-
-        public double TimeReal => TimeTick * 0.001;
 
         /// <summary>
         /// Return the current beat from the time plus interval.
@@ -62,13 +52,11 @@ namespace package.patapon.core
         /// <returns></returns>
         public int GetActivationBeat(int beatInterval)
         {
-            if (TimeTick == 0 || beatInterval == 0)
+            if (Milliseconds == 0 || beatInterval == 0)
                 return 0;
 
-            var b = TimeTick / beatInterval;
-            if (TimeTick < 0)
-                b--;
-            return b;
+            // removed support for negative beat...
+            return (int) (Milliseconds / beatInterval);
         }
 
         /// <summary>
@@ -79,34 +67,32 @@ namespace package.patapon.core
         /// <returns></returns>
         public int GetFlowBeat(int beatInterval)
         {
-            if (TimeTick == 0 || beatInterval == 0)
+            if (Milliseconds == 0 || beatInterval == 0)
                 return 0;
 
-            var offsetTime = TimeTick + (beatInterval * Math.Sign(beatInterval) / 2);
+            var offsetTime = Milliseconds + (beatInterval * Math.Sign(beatInterval) / 2);
             if (offsetTime == 0)
                 return 0;
 
-            var b = offsetTime / beatInterval;
-            if (offsetTime < 0)
-                b--;
-            return b;
-        }
-        
-        public static int CalculateActivationBeat(int timeTick, int interval)
-        {
-            return new RhythmEngineProcess {TimeTick = timeTick}.GetActivationBeat(interval);
+            // removed support for negative beat...
+            return (int) (offsetTime / beatInterval);
         }
 
-        public static int CalculateFlowBeat(int timeTick, int interval)
+        public static int CalculateActivationBeat(int ms, int interval)
         {
-            return new RhythmEngineProcess {TimeTick = timeTick}.GetFlowBeat(interval);
+            return new RhythmEngineProcess {Milliseconds = ms}.GetActivationBeat(interval);
+        }
+
+        public static int CalculateFlowBeat(int ms, int interval)
+        {
+            return new RhythmEngineProcess {Milliseconds = ms}.GetFlowBeat(interval);
         }
     }
 
     public struct RhythmPressureData : IComponentData
     {
         public const float Error = 0.9f;
-        
+
         /// <summary>
         /// Our custom Rhythm Key (Pata 1, Pon 2, Don 3, Chaka 4) 
         /// </summary>
@@ -132,15 +118,15 @@ namespace package.patapon.core
         /// </example>
         public float Score;
 
-        public RhythmPressureData(int keyId, int beatInterval, int timeTick)
+        public RhythmPressureData(int keyId, int beatInterval, int timeMs)
         {
-            var process = new RhythmEngineProcess {TimeTick = timeTick};
+            var process = new RhythmEngineProcess {Milliseconds = timeMs};
             RenderBeat = process.GetFlowBeat(beatInterval);
 
-            Score = FlowRhythmEngine.GetScore(timeTick, beatInterval);
+            Score = FlowRhythmEngine.GetScore(timeMs, beatInterval);
 
             KeyId = keyId;
-            Time  = timeTick;
+            Time = timeMs;
         }
 
         public float GetAbsoluteScore()

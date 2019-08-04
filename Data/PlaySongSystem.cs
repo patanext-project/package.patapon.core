@@ -20,7 +20,7 @@ namespace Patapon4TLB.Default.Test
 		public int FlowBeat;
 		public int ActivationBeat;
 		public int Interval;
-		public int Tick;
+		public int ProcessMs;
 
 		public bool HasActiveRhythmEngine;
 		public bool IsCommand;
@@ -56,16 +56,16 @@ namespace Patapon4TLB.Default.Test
 				ActivationBeat = activeBeat;
 				FlowBeat       = process.GetFlowBeat(settings.BeatInterval);
 
-				Tick     = process.TimeTick;
-				Interval = settings.BeatInterval;
+				ProcessMs = process.Milliseconds;
+				Interval  = settings.BeatInterval;
 
 				HasActiveRhythmEngine = true;
 			});
 
 			Entities.WithAll<RhythmEngineSimulateTag>().ForEach((ref GameCommandState gameCommandState, ref RhythmCurrentCommand currentCommand, ref GamePredictedCommandState predictedCommand, ref GameComboState comboState, ref GameComboPredictedClient predictedCombo) =>
 			{
-				var tmp = gameCommandState.StartTime <= Tick && gameCommandState.StartTime > Tick // server
-				          || predictedCommand.State.StartTime <= Tick && predictedCommand.State.EndTime > Tick; // client
+				var tmp = gameCommandState.StartTime <= ProcessMs && gameCommandState.StartTime > ProcessMs               // server
+				          || predictedCommand.State.StartTime <= ProcessMs && predictedCommand.State.EndTime > ProcessMs; // client
 
 				CommandStartTime = math.max(predictedCommand.State.StartTime, gameCommandState.StartTime);
 				CommandEndTime   = math.max(gameCommandState.EndTime, predictedCommand.State.EndTime);
@@ -86,7 +86,7 @@ namespace Patapon4TLB.Default.Test
 					ComboState         = predictedCombo.State;
 					isClientPrediction = true;
 				}
-				
+
 				IsCommand = tmp;
 			});
 		}
@@ -117,7 +117,7 @@ namespace Patapon4TLB.Default.Test
 
 		private AudioSource[] m_BgmSources;
 		private AudioSource   m_CommandSource;
-		private AudioSource m_CommandVfxSource;
+		private AudioSource   m_CommandVfxSource;
 
 		protected override void OnCreate()
 		{
@@ -161,7 +161,7 @@ namespace Patapon4TLB.Default.Test
 			m_CommandSource      = CreateAudioSource("Command", 1);
 			m_CommandSource.loop = false;
 
-			m_CommandVfxSource = CreateAudioSource("Vfx Command", 1);
+			m_CommandVfxSource      = CreateAudioSource("Vfx Command", 1);
 			m_CommandVfxSource.loop = false;
 
 			Addressables.LoadAsset<AudioClip>("int:RhythmEngine/Sounds/voice_fever.wav").Completed += (op) => m_FeverClip     = op.Result;
@@ -242,11 +242,11 @@ namespace Patapon4TLB.Default.Test
 				targetAudio = CurrentSong.BgmEntranceClips[commandLength % CurrentSong.BgmEntranceClips.Count];
 			}
 
-			var nextBeatDelay = (((clientSystem.ActivationBeat + 1) * clientSystem.Interval) - clientSystem.Tick) * 0.001f;
+			var nextBeatDelay          = (((clientSystem.ActivationBeat + 1) * clientSystem.Interval) - clientSystem.ProcessMs) * 0.001f;
 			var cmdStartActivationBeat = RhythmEngineProcess.CalculateActivationBeat(clientSystem.CommandStartTime, clientSystem.Interval);
 			if (cmdStartActivationBeat >= clientSystem.ActivationBeat) // we have a planned command
 			{
-				nextBeatDelay = (cmdStartActivationBeat * clientSystem.Interval - clientSystem.Tick) * 0.001f;
+				nextBeatDelay = (cmdStartActivationBeat * clientSystem.Interval - clientSystem.ProcessMs) * 0.001f;
 			}
 
 			// Check if we should change clips or if we are requested to...
@@ -285,7 +285,7 @@ namespace Patapon4TLB.Default.Test
 					if (cmdData.BeatLength == 3)
 					{
 						var cmdEndActivationBeat = RhythmEngineProcess.CalculateActivationBeat(clientSystem.CommandEndTime, clientSystem.Interval);
-						var endBeatDelay = (cmdEndActivationBeat * clientSystem.Interval - clientSystem.Tick) * 0.001f;
+						var endBeatDelay         = (cmdEndActivationBeat * clientSystem.Interval - clientSystem.ProcessMs) * 0.001f;
 
 						m_BgmSources[m_Flip].clip = currBgmSource.clip;
 						m_BgmSources[m_Flip].PlayScheduled(AudioSettings.dspTime + nextBeatDelay);
@@ -339,7 +339,7 @@ namespace Patapon4TLB.Default.Test
 			{
 				if (clientSystem.ComboState.Chain <= 0)
 					m_CommandSource.Stop(); // interrupted
-				
+
 				return;
 			}
 
@@ -370,7 +370,7 @@ namespace Patapon4TLB.Default.Test
 				{
 					m_WasFever = false;
 				}
-				
+
 				var clips = CurrentSong.CommandsAudio[id][key];
 				commandTarget = clips[m_CommandChain[data.Identifier.GetHashCode()] % (clips.Count)];
 			}
@@ -391,8 +391,8 @@ namespace Patapon4TLB.Default.Test
 				return;
 
 			var cmdStartActivationBeat = RhythmEngineProcess.CalculateActivationBeat(clientSystem.CommandStartTime, clientSystem.Interval);
-			var nextBeatDelay          = (cmdStartActivationBeat * clientSystem.Interval - clientSystem.Tick) * 0.001f;
-			m_CommandSource.clip = commandTarget;
+			var nextBeatDelay          = (cmdStartActivationBeat * clientSystem.Interval - clientSystem.ProcessMs) * 0.001f;
+			m_CommandSource.clip  = commandTarget;
 			m_CommandSource.pitch = data.BeatLength == 3 ? 1.25f : 1f;
 			m_CommandSource.PlayScheduled(AudioSettings.dspTime + nextBeatDelay);
 		}

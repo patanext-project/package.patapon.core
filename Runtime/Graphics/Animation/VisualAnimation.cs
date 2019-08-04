@@ -133,6 +133,8 @@ namespace package.patapon.core.Animation
 		protected AnimationMixerPlayable rootMixer => m_Playable.RootMixer;
 		protected PlayableGraph                    m_PlayableGraph;
 
+		private AnimationPlayableOutput m_AnimationPlayableOutput;
+
 
 		public void DestroyPlayableGraph()
 		{
@@ -156,12 +158,16 @@ namespace package.patapon.core.Animation
 			m_PlayableGraph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
 			m_PlayableGraph.Play();
 			m_Playable = ScriptPlayable<VisualAnimationPlayable>.Create(m_PlayableGraph).GetBehaviour();
+			m_AnimationPlayableOutput = AnimationPlayableOutput.Create(m_PlayableGraph, m_PlayableGraph.GetEditorName(), null);
+			m_AnimationPlayableOutput.SetSourcePlayable(m_Playable.Playable, 0);
 		}
 
 		public void SetAnimatorOutput(string outputName, Animator animator)
 		{
-			var output = AnimationPlayableOutput.Create(m_PlayableGraph, "Standard Output", animator);
-			output.SetSourcePlayable(m_Playable.Playable);
+			if (m_AnimationPlayableOutput.GetHandle() == null)
+				throw new InvalidOperationException();
+			
+			m_AnimationPlayableOutput.SetTarget(animator);
 		}
 
 		public bool ContainsSystem(Type type)

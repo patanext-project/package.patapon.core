@@ -2,6 +2,7 @@ using StormiumTeam.Networking.Utilities;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Networking.Transport;
+using UnityEngine;
 
 namespace Patapon4TLB.Core.BasicUnitSnapshot
 {

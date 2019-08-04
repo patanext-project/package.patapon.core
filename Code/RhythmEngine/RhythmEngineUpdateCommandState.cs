@@ -62,7 +62,7 @@ namespace Patapon4TLB.Default
 				}
 
 				var flowBeat = process.GetFlowBeat(settings.BeatInterval);
-				if (state.IsRecovery(flowBeat) || (!commandState.HasActivity(process.TimeTick, settings.BeatInterval) && rhythmActiveAtFlowBeat < flowBeat && checkStopBeat + mercy < flowBeat)
+				if (state.IsRecovery(flowBeat) || (!commandState.HasActivity(process.Milliseconds, settings.BeatInterval) && rhythmActiveAtFlowBeat < flowBeat && checkStopBeat + mercy < flowBeat)
 				                               || (rhythm.CommandTarget == default && rhythm.HasPredictedCommands && rhythmActiveAtFlowBeat < state.LastPressureBeat))
 				{
 					comboState.Chain        = 0;

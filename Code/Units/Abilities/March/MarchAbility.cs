@@ -36,7 +36,7 @@ namespace Patapon4TLB.Default
 			public float DeltaTime;
 
 			[ReadOnly] public ComponentDataFromEntity<Translation>        TranslationFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<UnitPlayState>    UnitPlayStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<UnitPlayState>      UnitPlayStateFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<GroundState>        GroundStateFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<UnitTargetPosition> UnitTargetPositionFromEntity;
 
@@ -55,7 +55,7 @@ namespace Patapon4TLB.Default
 					return;
 
 				var unitPlayState = UnitPlayStateFromEntity[owner.Target];
-				var velocity = VelocityFromEntity[owner.Target];
+				var velocity      = VelocityFromEntity[owner.Target];
 
 				// to not make tanks op, we need to get the weight from entity and use it as an acceleration factor
 				var acceleration = math.clamp(math.rcp(unitPlayState.Weight), 0, 1) * marchAbility.AccelerationFactor * 50;
@@ -80,7 +80,7 @@ namespace Patapon4TLB.Default
 
 			return new JobProcess
 			{
-				DeltaTime                     = GetSingleton<GameTimeComponent>().DeltaTime,
+				DeltaTime                     = World.GetExistingSystem<ServerSimulationSystemGroup>().UpdateDeltaTime,
 				UnitPlayStateFromEntity       = GetComponentDataFromEntity<UnitPlayState>(true),
 				TranslationFromEntity         = GetComponentDataFromEntity<Translation>(true),
 				GroundStateFromEntity         = GetComponentDataFromEntity<GroundState>(true),

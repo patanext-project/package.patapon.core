@@ -164,8 +164,10 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 		{
 			Entities.ForEach((ref Translation translation, ref Velocity velocity, ref BasicUnitSnapshotTarget target) =>
 			{
+				for (var v = 0; v != 3; v++)
+					translation.Value[v] = math.isnan(translation.Value[v]) ? 0.0f : translation.Value[v];
+			
 				var distance = math.distance(translation.Value, target.Position);
-
 				var factor = target.NearPositionCount + 1;
 
 				translation.Value = math.lerp(translation.Value, target.Position, Time.deltaTime * (velocity.speed + distance + 1f));
@@ -174,6 +176,8 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				{
 					translation.Value.y = 0;
 				}
+				
+				Debug.Log($"{translation.Value} {target.Position}");
 			});
 			
 			Entities.ForEach((UnitVisualBackend backend) =>

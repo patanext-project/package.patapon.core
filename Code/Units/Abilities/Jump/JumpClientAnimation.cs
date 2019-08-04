@@ -282,7 +282,7 @@ namespace Patapon4TLB.Default
 
 			if (abilityState.WillBeActive && data.StartAt < 0 && abilityState.ActiveId >= data.ActiveId && !abilityState.IsActive)
 			{
-				var serverTime = World.GetExistingSystem<SynchronizedSimulationTimeSystem>().Value.Interpolated;
+				var serverTime = ServerTick.Ms;
 				var delay      = math.max(abilityState.StartTime - 200 - serverTime, 0) * 0.001f;
 				// StartTime - StartJump Animation Approx Length in ms - Time, aka delay 0.2s before the command
 				

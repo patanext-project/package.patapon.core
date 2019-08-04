@@ -152,7 +152,7 @@ namespace Patapon4TLB.Default
 						}
 					}*/ // todo: it's a bit buggy right now (client is not well synchronized from server)
 
-					Debug.Log($"Difference: {process.TimeTick - lastCmdTime}\t o: {offset}");
+					Debug.Log($"Difference: {process.Milliseconds - lastCmdTime}\t o: {offset}");
 				}
 				else
 				{

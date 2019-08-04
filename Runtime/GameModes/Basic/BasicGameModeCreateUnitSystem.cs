@@ -57,19 +57,18 @@ namespace Patapon4TLB.GameModes.Basic
 		{
 			base.OnStartRunning();
 
-			return;
 			// Create an enemy bot
 			var gameMode = GetSingleton<BasicGameModeData>();
 
 			var unitProvider = World.GetOrCreateSystem<UnitProvider>();
-			var unit         = Entity.Null;
+			Entity unit;
 			using (var entities = new NativeList<Entity>(Allocator.TempJob))
 			{
 				var capsuleColl = CapsuleCollider.Create(0, math.up() * 2, 0.5f);
 				unitProvider.SpawnLocalEntityWithArguments(new UnitProvider.Create
 				{
 					MovableCollider = capsuleColl,
-					Direction       = UnitDirection.Right,
+					Direction       = UnitDirection.Left,
 					Settings = new UnitBaseSettings
 					{
 						AttackSpeed = 1.75f,
@@ -86,7 +85,7 @@ namespace Patapon4TLB.GameModes.Basic
 
 			EntityManager.AddComponent(unit, typeof(GhostComponent));
 			EntityManager.AddComponentData(unit, new Relative<TeamDescription> {Target = gameMode.EnemyTeam});
-			EntityManager.SetComponentData(unit, new Translation {Value                = new float3(10, 0, 0)});
+			EntityManager.SetComponentData(unit, new Translation {Value                = new float3(7.5f, 50, 0)});
 		}
 
 		protected override void OnUpdate()

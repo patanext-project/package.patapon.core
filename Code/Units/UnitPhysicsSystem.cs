@@ -25,7 +25,7 @@ namespace Patapon4TLB.Core
 			public float  DeltaTime;
 			public float3 Gravity;
 
-			[ReadOnly] public ComponentDataFromEntity<UnitDirection> UnitDirectionFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<UnitDirection>             UnitDirectionFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<Relative<TeamDescription>> RelativeTeamFromEntity;
 			[ReadOnly] public BufferFromEntity<TeamEnemies>                      TeamEnemiesFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<TeamBlockMovableArea>      BlockMovableAreaFromEntity;
@@ -46,7 +46,7 @@ namespace Patapon4TLB.Core
 					groundState.Value = false;
 
 				var previousPosition = translation.Value;
-				var target = controllerState.OverrideTargetPosition ? controllerState.TargetPosition : targetPosition.Value;
+				var target           = controllerState.OverrideTargetPosition ? controllerState.TargetPosition : targetPosition.Value;
 				if (!controllerState.ControlOverVelocity.x)
 				{
 					if (groundState.Value)
@@ -73,7 +73,10 @@ namespace Patapon4TLB.Core
 						velocity.Value += Gravity * DeltaTime;
 				}
 
-				
+				for (var v = 0; v != 3; v++)
+					velocity.Value[v] = math.isnan(velocity.Value[v]) ? 0.0f : velocity.Value[v];
+
+
 				translation.Value += velocity.Value * DeltaTime;
 				if (translation.Value.y < 0) // meh
 					translation.Value.y = 0;
@@ -106,7 +109,7 @@ namespace Patapon4TLB.Core
 								Debug.Log("inferior");
 								translation.Value.x = area.RightX;
 							}
-							
+
 							// if it's inside...
 							if (translation.Value.x > area.LeftX && translation.Value.x < area.RightX)
 							{
@@ -120,6 +123,9 @@ namespace Patapon4TLB.Core
 					}
 				}
 
+				for (var v = 0; v != 3; v++)
+					translation.Value[v] = math.isnan(translation.Value[v]) ? 0.0f : translation.Value[v];
+
 				controllerState.ControlOverVelocity    = false;
 				controllerState.OverrideTargetPosition = false;
 				controllerState.PassThroughEnemies     = false;
@@ -130,13 +136,13 @@ namespace Patapon4TLB.Core
 		{
 			return new Job
 			{
-				DeltaTime = GetSingleton<GameTimeComponent>().DeltaTime,
+				DeltaTime = World.GetExistingSystem<ServerSimulationSystemGroup>().UpdateDeltaTime,
 				Gravity   = new float3(0, -20f, 0),
 
 				RelativeTeamFromEntity     = GetComponentDataFromEntity<Relative<TeamDescription>>(true),
 				BlockMovableAreaFromEntity = GetComponentDataFromEntity<TeamBlockMovableArea>(true),
 				TeamEnemiesFromEntity      = GetBufferFromEntity<TeamEnemies>(true),
-				UnitDirectionFromEntity = GetComponentDataFromEntity<UnitDirection>(true)
+				UnitDirectionFromEntity    = GetComponentDataFromEntity<UnitDirection>(true)
 			}.Schedule(this, inputDeps);
 		}
 	}

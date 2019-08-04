@@ -86,11 +86,11 @@ namespace Patapon4TLB.UI
 
 					ClientActivationBeat = activationBeat;
 					ServerActivationBeat = predictedProcess.Beat;
-					TimeDiff             = process.TimeTick - (int) (predictedProcess.Time * 1000);
+					TimeDiff             = process.Milliseconds - (int) (predictedProcess.Time * 1000);
 
 
-					IsCmdServer = gameCommandState.StartTime <= process.TimeTick && gameCommandState.EndTime > process.TimeTick;
-					IsCmdClient = currentCommand.ActiveAtTime <= process.TimeTick && predictedCommand.State.EndTime > process.TimeTick;
+					IsCmdServer = gameCommandState.StartTime <= process.Milliseconds && gameCommandState.EndTime > process.Milliseconds;
+					IsCmdClient = currentCommand.ActiveAtTime <= process.Milliseconds && predictedCommand.State.EndTime > process.Milliseconds;
 
 					ServerCmdBeat = gameCommandState.StartTime;
 					ClientCmdBeat = currentCommand.CustomEndTime;

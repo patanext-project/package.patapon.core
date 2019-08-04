@@ -21,7 +21,7 @@ namespace Patapon4TLB.Core
 		{
 			if (cameraState.Target == default)
 				return;
-
+			
 			var translation = EntityManager.GetComponentData<Translation>(cameraState.Target);
 
 			translation.Value.x += World.GetExistingSystem<CameraInputSystem>().CurrentPanning * (OrthographicSize + 2.5f);

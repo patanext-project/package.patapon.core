@@ -1,4 +1,5 @@
-﻿using Unity.Entities;
+﻿using StormiumTeam.GameBase;
+using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -139,20 +140,20 @@ namespace package.patapon.core
 		public int EndTime;
 		public int ChainEndTime;
 
-		public bool IsGamePlayActive(int tick)
+		public bool IsGamePlayActive(int milliseconds)
 		{
-			return tick >= StartTime && tick <= EndTime;
+			return milliseconds >= StartTime && milliseconds <= EndTime;
 		}
 
-		public bool IsInputActive(int tick, int beatInterval)
+		public bool IsInputActive(int milliseconds, int beatInterval)
 		{
-			return tick >= EndTime - beatInterval && tick <= EndTime + beatInterval;
+			return milliseconds >= EndTime - beatInterval && milliseconds <= EndTime + beatInterval;
 		}
 
-		public bool HasActivity(int tick, int beatInterval)
+		public bool HasActivity(int milliseconds, int beatInterval)
 		{
-			return IsGamePlayActive(tick)
-			       || IsInputActive(tick, beatInterval);
+			return IsGamePlayActive(milliseconds)
+			       || IsInputActive(milliseconds, beatInterval);
 		}
 	}
 
