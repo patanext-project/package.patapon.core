@@ -26,7 +26,7 @@ namespace Patapon4TLB.GameModes
 			{
 				m_IsLaunch = true;
 				var mgr = World.GetOrCreateSystem<GameModeManager>();
-				mgr.SetGameMode(new VersusHeadOn
+				mgr.SetGameMode(new MpVersusHeadOn
 				{
 					
 				}, "VS-HeadOn");

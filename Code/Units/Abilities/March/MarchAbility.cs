@@ -6,6 +6,7 @@ using package.StormiumTeam.GameBase;
 using Patapon4TLB.Core;
 using Patapon4TLB.UI.InGame;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Data;
 using Unity.Burst;
 using Unity.Collections;
@@ -108,7 +109,8 @@ namespace Patapon4TLB.Default
 				typeof(RhythmAbilityState),
 				typeof(MarchAbility),
 				typeof(Owner),
-				typeof(DestroyChainReaction)
+				typeof(DestroyChainReaction),
+				typeof(PlayEntityTag),
 			};
 		}
 

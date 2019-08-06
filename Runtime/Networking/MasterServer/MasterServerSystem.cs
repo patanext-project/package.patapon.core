@@ -15,42 +15,22 @@ using ILogger = Grpc.Core.Logging.ILogger;
 
 namespace Patapon4TLB.Core.MasterServer
 {
-	public struct MasterServerConnection : ISharedComponentData, IEquatable<MasterServerConnection>
-	{
-		public IPEndPoint EndPoint;
-
-		public bool Equals(MasterServerConnection other)
-		{
-			return Equals(EndPoint, other.EndPoint);
-		}
-
-		public override bool Equals(object obj)
-		{
-			return obj is MasterServerConnection other && Equals(other);
-		}
-
-		public override int GetHashCode()
-		{
-			return (EndPoint != null ? EndPoint.GetHashCode() : 0);
-		}
-	}
-
 	public class MasterServerProcessRpcSystem : ComponentSystemGroup
-	{}
+	{
+	}
 
 	[NotClientServerSystem]
 	public class MasterServerSystem : ComponentSystem
 	{
-		private EntityQuery m_ConnectionQuery;
-
 		public delegate void ShutDownEvent();
+
 		public event ShutDownEvent BeforeShutdown;
-		public Channel channel { get; private set; }
+		public Channel             channel { get; private set; }
 
 		public class Logger : ILogger
 		{
 			public string Prefix;
-			
+
 			public ILogger ForType<T>()
 			{
 				return new Logger {Prefix = typeof(T).Name};
@@ -106,12 +86,14 @@ namespace Patapon4TLB.Core.MasterServer
 				Warning($"thrown {exception}, msg: {message}");
 			}
 		}
-		
+
+		private Dictionary<Type, object> m_ExistingClients;
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			m_ConnectionQuery = GetEntityQuery(typeof(MasterServerConnection));
+			m_ExistingClients = new Dictionary<Type, object>();
 			GrpcEnvironment.SetLogger(new Logger());
 		}
 
@@ -124,19 +106,14 @@ namespace Patapon4TLB.Core.MasterServer
 			base.OnDestroy();
 
 			Disconnect().Wait();
+			m_ExistingClients.Clear();
 		}
 
 		public async Task SetMasterServer(IPEndPoint endpoint)
 		{
 			await Disconnect();
 
-			var entity = EntityManager.CreateEntity();
-			EntityManager.AddSharedComponentData(entity, new MasterServerConnection
-			{
-				EndPoint = endpoint
-			});
-			
-			channel = new Channel("localhost", 4242, ChannelCredentials.Insecure);
+			channel = new Channel(endpoint.Address.ToString(), endpoint.Port, ChannelCredentials.Insecure);
 			await channel.ConnectAsync();
 		}
 
@@ -148,15 +125,27 @@ namespace Patapon4TLB.Core.MasterServer
 				BeforeShutdown?.Invoke();
 				//channel.ShutdownAsync();
 			}
+
 			channel = null;
+			m_ExistingClients.Clear();
+		}
 
-			Entities.With(m_ConnectionQuery).ForEach((Entity entity, MasterServerConnection connection) =>
-			{
-				// TODO: real disconnection
-				Debug.Log("Disconnected from " + connection.ToString());
-			});
+		public bool HasClient<T>()
+			where T : ClientBase
+		{
+			return m_ExistingClients.ContainsKey(typeof(T));
+		}
 
-			EntityManager.DestroyEntity(m_ConnectionQuery);
+		public void AddClient<T>(Func<T> func)
+			where T : ClientBase
+		{
+			m_ExistingClients[typeof(T)] = func();
+		}
+
+		public T GetClient<T>()
+			where T : ClientBase
+		{
+			return (T) m_ExistingClients[typeof(T)];
 		}
 	}
 
@@ -167,23 +156,23 @@ namespace Patapon4TLB.Core.MasterServer
 	{
 		public struct Request
 		{
-			public Entity Entity;
+			public Entity   Entity;
 			public TRequest Value;
 		}
-		
+
 		public EntityQuery RequestQuery;
 		public EntityQuery ProcessingQuery;
 		public EntityQuery ResultQuery;
 
 		private NativeList<Request> m_Requests;
-		private bool m_Update;
-		
+		private bool                m_Update;
+
 		protected override void OnEnable()
 		{
 			// hack
-			RequestQuery = System.EntityManager.CreateEntityQuery(typeof(TRequest), ComponentType.Exclude<TProcessing>(), ComponentType.Exclude<TCompleted>());
+			RequestQuery    = System.EntityManager.CreateEntityQuery(typeof(TRequest), ComponentType.Exclude<TProcessing>(), ComponentType.Exclude<TCompleted>());
 			ProcessingQuery = System.EntityManager.CreateEntityQuery(typeof(TRequest), typeof(TProcessing));
-			ResultQuery = System.EntityManager.CreateEntityQuery(typeof(TCompleted));
+			ResultQuery     = System.EntityManager.CreateEntityQuery(typeof(TCompleted));
 
 			m_Requests = new NativeList<Request>(Allocator.Persistent);
 		}
@@ -193,21 +182,21 @@ namespace Patapon4TLB.Core.MasterServer
 			m_Requests.Clear();
 
 			m_Update = true;
-			
-			var entityType = System.GetArchetypeChunkEntityType();
+
+			var entityType    = System.GetArchetypeChunkEntityType();
 			var componentType = System.GetArchetypeChunkComponentType<TRequest>(true);
 			using (var chunks = RequestQuery.CreateArchetypeChunkArray(Allocator.TempJob))
 			{
 				foreach (var chunk in chunks)
 				{
-					var entityArray = chunk.GetNativeArray(entityType);
+					var entityArray  = chunk.GetNativeArray(entityType);
 					var requestArray = chunk.GetNativeArray(componentType);
 					for (var i = 0; i != chunk.Count; i++)
 					{
 						m_Requests.Add(new Request
 						{
 							Entity = entityArray[i],
-							Value = requestArray[i]
+							Value  = requestArray[i]
 						});
 					}
 				}
@@ -223,7 +212,7 @@ namespace Patapon4TLB.Core.MasterServer
 		{
 			if (!m_Update)
 				throw new InvalidOperationException("This module was not even updated once!");
-			
+
 			return m_Requests;
 		}
 

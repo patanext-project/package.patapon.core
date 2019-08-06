@@ -290,7 +290,8 @@ namespace Patapon4TLB.Default.Attack
 					typeof(RhythmAbilityState),
 					typeof(BasicTaterazayAttackAbility),
 					typeof(Owner),
-					typeof(DestroyChainReaction)
+					typeof(DestroyChainReaction),
+					typeof(PlayEntityTag),
 				};
 			}
 

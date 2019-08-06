@@ -21,7 +21,8 @@ namespace Patapon4TLB.GameModes
 				typeof(TeamAllies),
 				typeof(TeamEnemies),
 				typeof(TeamBlockMovableArea),
-				typeof(GhostComponent)
+				typeof(GhostComponent),
+				typeof(PlayEntityTag),
 			};
 		}
 

@@ -1,6 +1,7 @@
 using package.StormiumTeam.GameBase;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Data;
 using Unity.Entities;
 using Unity.Physics;
@@ -43,7 +44,9 @@ namespace Patapon4TLB.Core
 				typeof(Velocity),
 				typeof(GroundState),
 
-				typeof(ActionContainer)
+				typeof(ActionContainer),
+				
+				typeof(PlayEntityTag),
 			};
 		}
 

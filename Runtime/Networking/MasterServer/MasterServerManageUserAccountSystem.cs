@@ -12,10 +12,11 @@ namespace Patapon4TLB.Core.MasterServer
 	public struct RequestUserLogin : IMasterServerRequest, IComponentData
 	{
 		public struct Processing : IComponentData
-		{}
-		
+		{
+		}
+
 		public UserLoginResponse.Types.ErrorCode ErrorCode;
-		
+
 		public bool error => ErrorCode != UserLoginResponse.Types.ErrorCode.Success;
 
 		public NativeString64                     Login;
@@ -38,31 +39,31 @@ namespace Patapon4TLB.Core.MasterServer
 		public int            ClientId;
 		public ulong          UserId;
 	}
-	
+
 	[UpdateInGroup(typeof(MasterServerProcessRpcSystem))]
 	[NotClientServerSystem]
 	[AlwaysUpdateSystem]
 	public class MasterServerManageUserAccountSystem : GameBaseSystem
 	{
-		private MasterServerSystem m_MasterServer;
+		private MasterServerSystem                   m_MasterServer;
 		private MasterServerRequestUserAccountSystem m_RequestSystem;
-		
+
 		private MasterServerRequestModule<RequestUserLogin, RequestUserLogin.Processing, ResultUserLogin> m_RequestUserLoginModule;
 		private EntityQuery                                                                               m_ClientQuery;
-		
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
-			
+
 			if (World != BootWorld.World)
 				throw new InvalidOperationException();
-			
+
 			GetModule(out m_RequestUserLoginModule);
-			
-			m_MasterServer = World.GetOrCreateSystem<MasterServerSystem>();
+
+			m_MasterServer  = World.GetOrCreateSystem<MasterServerSystem>();
 			m_RequestSystem = World.GetOrCreateSystem<MasterServerRequestUserAccountSystem>();
-			m_ClientQuery = GetEntityQuery(typeof(ConnectedMasterServerClient));
-			
+			m_ClientQuery   = GetEntityQuery(typeof(ConnectedMasterServerClient));
+
 			m_MasterServer.BeforeShutdown += OnBeforeShutdown;
 		}
 
@@ -70,22 +71,28 @@ namespace Patapon4TLB.Core.MasterServer
 		{
 			if (m_RequestSystem.Client == null)
 				return;
-		
+
 			m_RequestUserLoginModule.Update();
 			m_RequestUserLoginModule.AddProcessTagToAllRequests();
-			
+
 			var userLoginRequests = m_RequestUserLoginModule.GetRequests();
 			foreach (var item in userLoginRequests)
 			{
 				var request = item.Value;
 				var rpc = new UserLoginRequest
 				{
-					Login = request.Login.ToString(),
+					Login    = request.Login.ToString(),
 					Password = request.HashedPassword.ToString(),
-					Type = request.Type
+					Type     = request.Type
 				};
-				
+
 				var result = await m_RequestSystem.Client.UserLoginAsync(rpc);
+				// if the user deleted the entity, throw an error as it's not accepted when log in...
+				if (!EntityManager.Exists(item.Entity))
+				{
+					Debug.LogError("You shouldn't destroy the 'LogInRequest' entity.");
+					continue;
+				}
 
 				request.ErrorCode = result.Error;
 				if (!request.error)
@@ -103,9 +110,9 @@ namespace Patapon4TLB.Core.MasterServer
 
 				EntityManager.AddComponentData(item.Entity, new ResultUserLogin
 				{
-					Token = new NativeString64(result.Token),
+					Token    = new NativeString64(result.Token),
 					ClientId = result.ClientId,
-					UserId = result.UserId
+					UserId   = result.UserId
 				});
 			}
 		}
@@ -125,7 +132,7 @@ namespace Patapon4TLB.Core.MasterServer
 						Reason = "shutdown",
 						Token  = components[ent].Token.ToString()
 					});
-					
+
 					EntityManager.DestroyEntity(entities[ent]);
 				}
 			}

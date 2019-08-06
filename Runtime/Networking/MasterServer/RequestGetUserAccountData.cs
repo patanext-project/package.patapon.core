@@ -56,8 +56,6 @@ namespace Patapon4TLB.Core.MasterServer
 		}
 
 		private MasterServerSystem m_MasterServer;
-		private EntityQuery        m_MasterServerWithoutClient;
-
 		public AuthenticationService.AuthenticationServiceClient Client;
 
 		protected override void OnCreate()
@@ -65,24 +63,17 @@ namespace Patapon4TLB.Core.MasterServer
 			base.OnCreate();
 
 			m_MasterServer = BootWorld.GetOrCreateSystem<MasterServerSystem>();
-			m_MasterServerWithoutClient = GetEntityQuery(typeof(MasterServerConnection), ComponentType.Exclude<UserAccountClient>());
 		}
 
 		protected override void OnUpdate()
 		{
-			Entities.With(m_MasterServerWithoutClient).ForEach((Entity e, MasterServerConnection connection) =>
+			if (!m_MasterServer.HasClient<AuthenticationService.AuthenticationServiceClient>())
 			{
-				if (m_MasterServer.channel == null)
-					return;
-				
-				Client = new AuthenticationService.AuthenticationServiceClient(m_MasterServer.channel);
-
-				PostUpdateCommands.AddComponent(e, new UserAccountClient());
-			});
-			
-			if (Client == null)
-				return;
-			
+				m_MasterServer.AddClient(() =>
+				{
+					return Client = new AuthenticationService.AuthenticationServiceClient(m_MasterServer.channel);
+				});
+			}
 		}
 	}
 }
