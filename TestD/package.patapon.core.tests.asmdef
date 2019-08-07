@@ -1,0 +1,43 @@
+{
+    "name": "package.patapon.core.Tests",
+    "references": [
+        "package.guerro.shared",
+        "package.patapon.masterserver.shared",
+        "package.stormiumteam.gamebase",
+        "package.stormiumteam.networking",
+        "Unity.TextMeshPro",
+        "Unity.InputSystem",
+        "Unity.Networking.Transport",
+        "Unity.NetCode",
+        "Unity.Addressables",
+        "Unity.ResourceManager",
+        "Unity.Physics",
+        "Unity.Entities",
+        "Unity.Entities.Hybrid",
+        "Unity.Transforms",
+        "Unity.Transforms.Hybrid",
+        "Unity.Mathematics",
+        "Unity.Collections",
+        "Unity.Entities.Tests",
+        "Unity.Jobs",
+        "Unity.Burst",
+        "package.patapon.core",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll",
+        "Google.Protobuf.dll",
+        "Grpc.Core.Api.dll",
+        "Grpc.Core.dll",
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [
+    ],
+    "versionDefines": []
+}

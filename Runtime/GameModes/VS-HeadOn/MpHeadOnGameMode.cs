@@ -20,7 +20,6 @@ namespace Patapon4TLB.GameModes
 		
 		public enum State
 		{
-			GetImportantPlayerData,
 			InitMap,
 			RoundStart,
 			Playing,
@@ -116,7 +115,7 @@ namespace Patapon4TLB.GameModes
 
 				// ----------------------------- //
 				// Set PlayState
-				gameMode.PlayState = MpVersusHeadOn.State.GetImportantPlayerData;
+				gameMode.PlayState = MpVersusHeadOn.State.InitMap;
 			}
 
 			// ----------------------------- ----------------------------- //
@@ -136,32 +135,11 @@ namespace Patapon4TLB.GameModes
 			// ----------------------------- ----------------------------- //
 			switch (gameMode.PlayState)
 			{
-				// Get from the important players their army information
-				case MpVersusHeadOn.State.GetImportantPlayerData:
-					using (var entities = m_PlayerQuery.ToEntityArray(Allocator.TempJob))
-					{
-						for (var ent = 0; ent != entities.Length; ent++)
-						{
-							var result = this.EntityManager.CreateEntity(typeof(MpVersusHeadOn), typeof(ResultGetUserArmyData));
-							var armyBlob = ResultGetUserArmyData.ConstructBlob(Allocator.Persistent, new int[][]
-							{
-								new[]
-								{
-									0
-								}
-							});
-						}
-					}
-					
-					break;
-				
 				// ----------------------------- //
 				// Init from map data
 				//
 				// This is where we will get the game towers, spawn points...
 				// or placing gimmicks...
-				//
-				// This is also the place to load player data from MasterServer (if players aren't customized)
 				case MpVersusHeadOn.State.InitMap:
 					if (!MapManager.IsMapLoaded)
 						return;
