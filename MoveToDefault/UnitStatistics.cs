@@ -2,8 +2,10 @@ using Unity.Entities;
 
 namespace Patapon4TLB.Default
 {
-	public struct UnitBaseSettings : IComponentData
+	public struct UnitStatistics : IComponentData
 	{
+		public int Health;
+
 		public float MovementAttackSpeed;
 		public float BaseWalkSpeed;
 		public float FeverWalkSpeed;

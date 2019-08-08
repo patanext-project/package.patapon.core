@@ -35,7 +35,7 @@ namespace Patapon4TLB.Default.Attack
 
 				public NativeList<TargetDamageEvent> DamageEventList;
 
-				[ReadOnly] public ComponentDataFromEntity<UnitBaseSettings> UnitSettingsFromEntity;
+				[ReadOnly] public ComponentDataFromEntity<UnitStatistics> UnitSettingsFromEntity;
 				[ReadOnly] public ComponentDataFromEntity<UnitPlayState>    UnitPlayStateFromEntity;
 
 				public ComponentDataFromEntity<Translation>         TranslationFromEntity;
@@ -253,7 +253,7 @@ namespace Patapon4TLB.Default.Attack
 					Tick            = World.GetExistingSystem<ServerSimulationSystemGroup>().GetTick(),
 					DamageEventList = m_DamageEventProvider.GetEntityDelayedList(),
 
-					UnitSettingsFromEntity  = GetComponentDataFromEntity<UnitBaseSettings>(true),
+					UnitSettingsFromEntity  = GetComponentDataFromEntity<UnitStatistics>(true),
 					UnitPlayStateFromEntity = GetComponentDataFromEntity<UnitPlayState>(true),
 					ControllerFromEntity    = GetComponentDataFromEntity<UnitControllerState>(),
 					TargetFromEntity        = GetComponentDataFromEntity<UnitTargetPosition>(),

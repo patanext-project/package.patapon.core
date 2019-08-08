@@ -15,7 +15,7 @@ namespace Patapon4TLB.Default
 	public struct FormationChild : IBufferElementData
 	{
 		public Entity Value;
-	} 
+	}
 
 	public struct FormationParent : IComponentData
 	{
@@ -31,5 +31,15 @@ namespace Patapon4TLB.Default
 	public struct UnitFormation : IComponentData
 	{
 		public int MasterServerId;
+	}
+
+	// indicate if this formation is used in-game
+	public struct GameFormationTag : IComponentData
+	{
+	}
+
+	public struct FormationTeam : IComponentData
+	{
+		public int TeamIndex;
 	}
 }

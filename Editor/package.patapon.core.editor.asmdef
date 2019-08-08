@@ -2,6 +2,8 @@
     "name": "package.patapon.core.editor",
     "references": [
         "package.guerro.shared",
+        "package.stormiumteam.gamebase",
+        "Unity.NetCode.Editor",
         "Unity.Entities",
         "Unity.Entities.Hybrid",
         "Unity.Transforms",

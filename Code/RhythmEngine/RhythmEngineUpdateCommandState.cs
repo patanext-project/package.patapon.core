@@ -217,6 +217,8 @@ namespace Patapon4TLB.Default
 			);
 
 			m_RpcQueueClientRecoverSystem = World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcClientRecover>>();
+			
+			RequireForUpdate(m_ProcessQuery);
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)

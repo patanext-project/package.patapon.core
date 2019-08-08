@@ -9,6 +9,12 @@ namespace Patapon4TLB.GameModes
 
 		public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
 		{
+			if (TeamDefine == null)
+			{
+				Debug.LogError("No 'TeamDefine'!");
+				return;
+			}
+
 			dstManager.AddComponentData(entity, TeamDefine.FindOrCreate(dstManager));
 		}
 	}

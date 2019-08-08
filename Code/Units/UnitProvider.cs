@@ -16,7 +16,7 @@ namespace Patapon4TLB.Core
 		public struct Create
 		{
 			public BlobAssetReference<Collider> MovableCollider;
-			public UnitBaseSettings?            Settings;
+			public UnitStatistics?            Settings;
 			public PhysicsMass?                 Mass;
 			public UnitDirection                Direction;
 		}
@@ -29,7 +29,7 @@ namespace Patapon4TLB.Core
 				typeof(MovableDescription),
 				typeof(UnitDescription),
 
-				typeof(UnitBaseSettings),
+				typeof(UnitStatistics),
 				typeof(UnitPlayState),
 				typeof(UnitControllerState),
 				typeof(UnitDirection),
@@ -44,7 +44,9 @@ namespace Patapon4TLB.Core
 				typeof(Velocity),
 				typeof(GroundState),
 
+				typeof(LivableHealth),
 				typeof(ActionContainer),
+				typeof(HealthContainer),
 				
 				typeof(PlayEntityTag),
 			};

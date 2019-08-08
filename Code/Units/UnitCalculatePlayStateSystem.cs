@@ -15,11 +15,11 @@ namespace Patapon4TLB.Core
 	[UpdateInGroup(typeof(UnitInitStateSystemGroup))]
 	public class UnitCalculatePlayStateSystem : JobComponentSystem
 	{
-		private struct JobUpdate : IJobForEach<UnitBaseSettings, UnitPlayState, Relative<RhythmEngineDescription>>
+		private struct JobUpdate : IJobForEach<UnitStatistics, UnitPlayState, Relative<RhythmEngineDescription>>
 		{
 			[ReadOnly] public ComponentDataFromEntity<GameComboState> ComboStateFromEntity;
 
-			public void Execute(ref UnitBaseSettings settings, ref UnitPlayState state, ref Relative<RhythmEngineDescription> rhythmEngineRelative)
+			public void Execute(ref UnitStatistics settings, ref UnitPlayState state, ref Relative<RhythmEngineDescription> rhythmEngineRelative)
 			{
 				var comboState = ComboStateFromEntity[rhythmEngineRelative.Target];
 

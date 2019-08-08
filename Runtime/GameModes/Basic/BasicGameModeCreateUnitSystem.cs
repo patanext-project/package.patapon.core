@@ -69,7 +69,7 @@ namespace Patapon4TLB.GameModes.Basic
 				{
 					MovableCollider = capsuleColl,
 					Direction       = UnitDirection.Left,
-					Settings = new UnitBaseSettings
+					Settings = new UnitStatistics
 					{
 						AttackSpeed = 1.75f,
 
@@ -108,7 +108,7 @@ namespace Patapon4TLB.GameModes.Basic
 						{
 							MovableCollider = capsuleColl,
 							Direction       = UnitDirection.Right,
-							Settings = new UnitBaseSettings
+							Settings = new UnitStatistics
 							{
 								AttackSpeed = 1.75f,
 

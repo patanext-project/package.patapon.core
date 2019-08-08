@@ -1,3 +1,4 @@
+using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase.Components;
 using Unity.Entities;
 using UnityEngine;
@@ -26,10 +27,10 @@ namespace package.patapon.core
 
 				camera.transform.position = new Vector3(0, 0, -100);
 
-				PostUpdateCommands.AddComponent(e, new CameraTargetAnchor());
-				PostUpdateCommands.AddComponent(e, new AnchorOrthographicCameraData());
-				PostUpdateCommands.AddComponent(e, new AnchorOrthographicCameraOutput());
-				PostUpdateCommands.AddComponent(e, new Component());
+				EntityManager.SetOrAddComponentData(e, new CameraTargetAnchor());
+				EntityManager.SetOrAddComponentData(e, new AnchorOrthographicCameraData());
+				EntityManager.SetOrAddComponentData(e, new AnchorOrthographicCameraOutput());
+				EntityManager.SetOrAddComponentData(e, new Component());
 			});
 		}
 	}

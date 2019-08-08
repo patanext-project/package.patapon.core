@@ -9,7 +9,5 @@ namespace Patapon4TLB.Default
 {
 	public struct RhythmEngineDescription : IEntityDescription
 	{
-		public class Sync : SynchronizeRelativeSystem<RhythmEngineDescription>
-		{}
 	}
 }

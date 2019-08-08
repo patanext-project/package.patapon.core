@@ -67,12 +67,10 @@ namespace Patapon4TLB.Core.MasterServer
 
 		protected override void OnUpdate()
 		{
-			if (!m_MasterServer.HasClient<AuthenticationService.AuthenticationServiceClient>())
+			if (m_MasterServer.channel != null
+			    && !m_MasterServer.HasClient<AuthenticationService.AuthenticationServiceClient>())
 			{
-				m_MasterServer.AddClient(() =>
-				{
-					return Client = new AuthenticationService.AuthenticationServiceClient(m_MasterServer.channel);
-				});
+				m_MasterServer.AddClient(() => { return Client = new AuthenticationService.AuthenticationServiceClient(m_MasterServer.channel); });
 			}
 		}
 	}

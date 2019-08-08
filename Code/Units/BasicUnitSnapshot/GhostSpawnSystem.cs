@@ -33,7 +33,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				typeof(BasicUnitSnapshotTarget),
 				typeof(UnitDescription),
 
-				typeof(UnitBaseSettings),
+				typeof(UnitStatistics),
 				typeof(UnitPlayState),
 				typeof(UnitControllerState),
 				typeof(UnitDirection),
@@ -66,7 +66,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				typeof(BasicUnitSnapshotTarget),
 				typeof(UnitDescription),
 
-				typeof(UnitBaseSettings),
+				typeof(UnitStatistics),
 				typeof(UnitControllerState),
 				typeof(UnitDirection),
 				typeof(UnitTargetPosition),
@@ -176,8 +176,6 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				{
 					translation.Value.y = 0;
 				}
-				
-				Debug.Log($"{translation.Value} {target.Position}");
 			});
 			
 			Entities.ForEach((UnitVisualBackend backend) =>

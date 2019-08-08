@@ -33,7 +33,7 @@ namespace Patapon4TLB.Default
 			[ReadOnly] public float DeltaTime;
 
 			[ReadOnly] public ComponentDataFromEntity<Translation>      TranslationFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<UnitBaseSettings> UnitSettingsFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<UnitStatistics> UnitSettingsFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<UnitDirection>    UnitDirectionFromEntity;
 
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitControllerState> UnitControllerStateFromEntity;
@@ -109,7 +109,7 @@ namespace Patapon4TLB.Default
 			{
 				DeltaTime                     = World.GetExistingSystem<ServerSimulationSystemGroup>().UpdateDeltaTime,
 				TranslationFromEntity         = GetComponentDataFromEntity<Translation>(true),
-				UnitSettingsFromEntity        = GetComponentDataFromEntity<UnitBaseSettings>(true),
+				UnitSettingsFromEntity        = GetComponentDataFromEntity<UnitStatistics>(true),
 				UnitDirectionFromEntity       = GetComponentDataFromEntity<UnitDirection>(true),
 				UnitControllerStateFromEntity = GetComponentDataFromEntity<UnitControllerState>(),
 				VelocityFromEntity            = GetComponentDataFromEntity<Velocity>()
