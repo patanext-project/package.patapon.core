@@ -26,7 +26,7 @@ namespace Patapon4TLB.Default
 		private struct Job : IJobForEach<Owner, RhythmAbilityState, JumpAbility>
 		{
 			[ReadOnly] public float DeltaTime;
-			
+
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitControllerState> UnitControllerStateFromEntity;
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Velocity>            VelocityFromEntity;
 
@@ -44,10 +44,10 @@ namespace Patapon4TLB.Default
 					if (ability.IsJumping)
 					{
 						var temp = VelocityFromEntity[owner.Target];
-						temp.Value.y = math.max(0, temp.Value.y - 20 * (ability.ActiveTime * 2));
+						temp.Value.y                     = math.max(0, temp.Value.y - 20 * (ability.ActiveTime * 2));
 						VelocityFromEntity[owner.Target] = temp;
 					}
-					
+
 					ability.ActiveTime = 0;
 					ability.IsJumping  = false;
 					return;
@@ -55,14 +55,15 @@ namespace Patapon4TLB.Default
 
 				var wasJumping = ability.IsJumping;
 				ability.IsJumping = ability.ActiveTime <= 0.5f;
-				
-				var velocity      = VelocityFromEntity[owner.Target];
+
+				var velocity = VelocityFromEntity[owner.Target];
 				if (!wasJumping && ability.IsJumping)
 				{
 					velocity.Value.y = math.max(velocity.Value.y + 20, 20);
 				}
 
-				velocity.Value.x = math.lerp(velocity.Value.x, 0, DeltaTime * (ability.ActiveTime + 1));
+				if (ability.ActiveTime < 3.25f)
+					velocity.Value.x = math.lerp(velocity.Value.x, 0, DeltaTime * (ability.ActiveTime + 1));
 
 				if (!ability.IsJumping && wasJumping)
 					velocity.Value.y = 0;
@@ -72,7 +73,7 @@ namespace Patapon4TLB.Default
 				VelocityFromEntity[owner.Target] = velocity;
 
 				var controllerState = UnitControllerStateFromEntity[owner.Target];
-				controllerState.ControlOverVelocity.x       = true;
+				controllerState.ControlOverVelocity.x       = ability.ActiveTime < 3.25f;
 				controllerState.ControlOverVelocity.y       = ability.ActiveTime < 2.5f;
 				UnitControllerStateFromEntity[owner.Target] = controllerState;
 			}

@@ -56,13 +56,13 @@ namespace Patapon4TLB.UI
 			Events.Clear();
 
 			PressureEvent ev = default;
-			/*foreach (var _ in this.ToEnumerator_D(m_Query, ref ev))
+			foreach (var _ in this.ToEnumerator_D(m_Query, ref ev))
 			{
 				if (!EntityManager.HasComponent<RhythmEngineSimulateTag>(ev.Engine))
 					continue;
 
 				Events.Add(ev);			
-			}*/
+			}
 		}
 
 		protected override void OnStopRunning()
@@ -97,7 +97,7 @@ namespace Patapon4TLB.UI
 			m_Canvas = World.GetOrCreateSystem<UIClientCanvasSystem>().CreateCanvas(out _, "UIDrumCanvas");
 			m_Canvas.renderMode = RenderMode.WorldSpace;
 			m_Canvas.sortingOrder = (int) UICanvasOrder.Drums;
-			m_Canvas.sortingLayerName = "UI";
+			m_Canvas.sortingLayerName = "OverlayUI";
 			m_Canvas.transform.localScale = new Vector3() * 0.05f;
 
 			m_CameraQuery = GetEntityQuery(typeof(GameCamera));
@@ -146,7 +146,8 @@ namespace Patapon4TLB.UI
 			else
 			{
 				m_Canvas.transform.position = Vector3.zero;
-				m_Canvas.renderMode         = RenderMode.ScreenSpaceOverlay;
+				m_Canvas.renderMode         = RenderMode.ScreenSpaceCamera;
+				m_Canvas.worldCamera        = EntityManager.GetComponentObject<Camera>(cameraEntity);
 			}
 
 			var internalSystem = World.GetExistingSystem<UIDrumPressureSystemClientInternal>();
@@ -155,6 +156,8 @@ namespace Patapon4TLB.UI
 			UIDrumPressureBackend backend = null;
 			foreach (var ev in internalSystem.Events)
 			{
+				Debug.Log("event!");
+				
 				var keyRange = new float2();
 				if (ev.Key <= 2)
 				{
@@ -191,7 +194,7 @@ namespace Patapon4TLB.UI
 					beGameObject.transform.SetParent(m_Canvas.transform, false);
 					beGameObject.transform.localScale = m_Canvas.renderMode == RenderMode.WorldSpace
 						? Vector3.one * 0.7f
-						: 0.005f * math.min(width, height) * Vector3.one;
+						: 0.008f * math.min(width, height) * Vector3.one;
 					beGameObject.transform.localPosition = new Vector3(keyPos.x, keyPos.y, 0);
 					beGameObject.transform.rotation      = Quaternion.Euler(0, 0, Random.Range(-12.5f, 12.5f));
 				}
@@ -199,7 +202,7 @@ namespace Patapon4TLB.UI
 				backend = beGameObject.GetComponent<UIDrumPressureBackend>();
 				backend.OnReset();
 				backend.SetTarget(EntityManager);
-				backend.SetPresentation(DrumPresentationPools[ev.Key]);
+				backend.SetPresentationFromPool(DrumPresentationPools[ev.Key]);
 
 				var prevRand = backend.rand;
 
@@ -241,8 +244,11 @@ namespace Patapon4TLB.UI
 
 				if (backend.endTime > Time.time)
 					continue;
-
-				disable = RuntimeAssetDisable.AllAndIgnoreParent;
+				
+				disable.IgnoreParent = true;
+				disable.ReturnPresentation = true;
+				disable.DisableGameObject = true;
+				disable.ReturnToPool = true;
 			}
 		}
 

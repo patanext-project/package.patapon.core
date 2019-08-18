@@ -13,8 +13,8 @@ namespace DefaultNamespace
 		public static void GetRpc<TDescription>(List<Type> types) where TDescription : struct, IEntityDescription
 		{
 			types.Add(typeof(SynchronizeRelativeSystem<TDescription>.SendAllRpc));
+			types.Add(typeof(SynchronizeRelativeSystem<TDescription>.SendUpdateRpc));
 			types.Add(typeof(SynchronizeRelativeSystem<TDescription>.SendDeltaRpc));
-			Debug.Log($"Added!");
 		}
 		
 		[GenerateAdditionalRpc]

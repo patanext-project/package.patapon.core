@@ -17,6 +17,8 @@ namespace Patapon4TLB.Default
 	{
 		internal int PreviousActiveStartTime;
 
+		public GameComboState Combo;
+		
 		public Entity Command;
 		public bool   IsActive;
 		public int    ActiveId;
@@ -33,7 +35,7 @@ namespace Patapon4TLB.Default
 		{
 			if (ActiveId == 0)
 				ActiveId++;
-
+			
 			if (currCommand.CommandTarget != Command)
 			{
 				IsActive        = IsActive && commandState.StartTime > process.Milliseconds && currCommand.Previous == Command;
@@ -50,6 +52,8 @@ namespace Patapon4TLB.Default
 				PreviousActiveStartTime = commandState.StartTime;
 				ActiveId++;
 			}
+
+			Combo = combo;
 
 			StartTime = commandState.StartTime;
 
@@ -80,8 +84,8 @@ namespace Patapon4TLB.Default
 			{
 				if (owner == default)
 					Debug.LogError($"Default owner found on " + entity);
-				else
-					Debug.LogError($"No RhythmEngine found on owner({owner}) of ability({entity})");
+				/*else
+					Debug.LogError($"No RhythmEngine found on owner({owner}) of ability({entity})");*/
 			}
 
 			[BurstDiscard]

@@ -1,3 +1,4 @@
+using P4.Core;
 using package.StormiumTeam.GameBase;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
@@ -16,7 +17,7 @@ namespace Patapon4TLB.Core
 		public struct Create
 		{
 			public BlobAssetReference<Collider> MovableCollider;
-			public UnitStatistics?            Settings;
+			public UnitStatistics?              Settings;
 			public PhysicsMass?                 Mass;
 			public UnitDirection                Direction;
 		}
@@ -33,7 +34,9 @@ namespace Patapon4TLB.Core
 				typeof(UnitPlayState),
 				typeof(UnitControllerState),
 				typeof(UnitDirection),
-				typeof(UnitTargetPosition),
+				typeof(UnitTargetOffset),
+
+				typeof(TeamAgainstMovable),
 
 				typeof(Translation),
 				typeof(Rotation),
@@ -47,6 +50,7 @@ namespace Patapon4TLB.Core
 				typeof(LivableHealth),
 				typeof(ActionContainer),
 				typeof(HealthContainer),
+				typeof(HitShapeContainer),
 				
 				typeof(PlayEntityTag),
 			};
@@ -62,6 +66,12 @@ namespace Patapon4TLB.Core
 			EntityManager.SetComponentData(entity, data.Settings.Value);
 			EntityManager.SetComponentData(entity, data.Direction);
 			EntityManager.SetComponentData(entity, new GroundState(true));
+			EntityManager.SetComponentData(entity, new TeamAgainstMovable {Size = data.MovableCollider.Value.CalculateAabb().Extents.x});
+
+			// Create a temporary hitshape
+			var hitShape = EntityManager.CreateEntity(typeof(LocalToWorld), typeof(Translation), typeof(PhysicsCollider), typeof(HitShapeDescription), typeof(HitShapeFollowParentTag));
+			EntityManager.SetComponentData(hitShape, new PhysicsCollider {Value = data.MovableCollider});
+			EntityManager.AddComponentData(hitShape, new Owner {Target          = entity});
 		}
 	}
 }

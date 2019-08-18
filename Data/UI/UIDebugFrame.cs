@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using package.patapon.core;
 using P4.Core;
-using P4.Core.Code.Networking;
 using Patapon4TLB.Default.Snapshot;
 using StormiumTeam.GameBase;
 using StormiumTeam.ThirdParty;
@@ -173,8 +172,6 @@ namespace Patapon4TLB.UI
 						foreach (var world in ClientServerBootstrap.clientWorld)
 						{
 							var ent = world.GetExistingSystem<NetworkStreamReceiveSystem>().Connect(ep);
-
-							world.GetExistingSystem<TestSetPlayerName>().Name = debugFrame.UsernameField.text;
 						}
 					}
 				}
@@ -206,16 +203,6 @@ namespace Patapon4TLB.UI
 							var ep = NetworkEndPoint.LoopbackIpv4;
 							ep.Port = port;
 							var ent = world.GetExistingSystem<NetworkStreamReceiveSystem>().Connect(ep);
-
-							var setPlayerNameSystem = world.GetExistingSystem<TestSetPlayerName>();
-							if (setPlayerNameSystem != null)
-							{
-								setPlayerNameSystem.Name = debugFrame.UsernameField.text;
-							}
-							else
-							{
-								Debug.LogError("????????????? " + world);
-							}
 						}
 					}
 				}

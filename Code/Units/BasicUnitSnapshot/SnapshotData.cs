@@ -16,7 +16,6 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 		public byte GroundFlags;
 
 		public int             Direction;
-		public QuantizedFloat3 TargetPosition;
 		public QuantizedFloat3 Position;
 		public QuantizedFloat3 Velocity;
 
@@ -26,8 +25,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			var dimension = Direction == 0 ? 3 : 2;
 			for (var i = 0; i < dimension; i++)
 			{
-				Position[i]       = predict.PredictInt(Position[i], baseline1.Position[i], baseline2.Position[i]);
-				TargetPosition[i] = predict.PredictInt(TargetPosition[i], baseline1.TargetPosition[i], baseline2.TargetPosition[i]);
+				Position[i] = predict.PredictInt(Position[i], baseline1.Position[i], baseline2.Position[i]);
 			}
 		}
 
@@ -43,7 +41,6 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			{
 				writer.WritePackedIntDelta(Position[i], baseline.Position[i], compressionModel);
 				writer.WritePackedIntDelta(Velocity[i], baseline.Velocity[i], compressionModel);
-				writer.WritePackedIntDelta(TargetPosition[i], baseline.TargetPosition[i], compressionModel);
 			}
 		}
 
@@ -59,9 +56,8 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			var dimension = Direction == 0 ? 3 : 2;
 			for (var i = 0; i < dimension; i++)
 			{
-				Position[i]       = reader.ReadPackedIntDelta(ref ctx, baseline.Position[i], compressionModel);
-				Velocity[i]       = reader.ReadPackedIntDelta(ref ctx, baseline.Velocity[i], compressionModel);
-				TargetPosition[i] = reader.ReadPackedIntDelta(ref ctx, baseline.TargetPosition[i], compressionModel);
+				Position[i] = reader.ReadPackedIntDelta(ref ctx, baseline.Position[i], compressionModel);
+				Velocity[i] = reader.ReadPackedIntDelta(ref ctx, baseline.Velocity[i], compressionModel);
 			}
 		}
 

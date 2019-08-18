@@ -10,7 +10,6 @@ using UnityEngine.Rendering;
 
 namespace P4.Core
 {
-    [BurstCompile]
     public class Bootstrap : CModBootstrap
     {
         protected override void OnRegister()
@@ -25,14 +24,7 @@ namespace P4.Core
 
         protected override void OnUnregister()
         {
-            BurstCompiler.CompileFunctionPointer<Action>(Test);
-        }
-
-        [BurstCompile]
-        public static void Test()
-        {
-            var i = 0;
-            i++;
+            
         }
     }
 

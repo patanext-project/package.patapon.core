@@ -1,6 +1,8 @@
 using package.stormiumteam.shared;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -30,12 +32,21 @@ namespace P4.Core
 		}
 
 		[BurstCompile]
-		private struct Job : IJobForEach<Translation, TeamAgainstMovable, Relative<TeamDescription>>
+		private struct Job : IJobForEachWithEntity<Translation, TeamAgainstMovable, Relative<TeamDescription>>
 		{
 			public ComponentDataFromEntity<TeamBlockMovableArea> BlockMovableAreaFromEntity;
 
-			public void Execute(ref Translation translation, ref TeamAgainstMovable ag, ref Relative<TeamDescription> teamRelative)
+			[ReadOnly]
+			public ComponentDataFromEntity<LivableHealth> LivableHealthFromEntity;
+
+			public void Execute(Entity entity, int index, ref Translation translation, ref TeamAgainstMovable ag, [ReadOnly] ref Relative<TeamDescription> teamRelative)
 			{
+				if (ag.Ignore)
+					return;
+
+				if (LivableHealthFromEntity.Exists(entity) && LivableHealthFromEntity[entity].IsDead)
+					return;
+
 				if (!BlockMovableAreaFromEntity.Exists(teamRelative.Target))
 					return;
 
@@ -43,7 +54,7 @@ namespace P4.Core
 				if (data.NeedUpdate)
 				{
 					data.NeedUpdate = false;
-					data.LeftX      = translation.Value.x - ag.Size + ag.Center;
+					data.LeftX      = translation.Value.x - ag.Size - ag.Center;
 					data.RightX     = translation.Value.x + ag.Size + ag.Center;
 
 					BlockMovableAreaFromEntity[teamRelative.Target] = data;
@@ -51,7 +62,7 @@ namespace P4.Core
 					return;
 				}
 
-				data.LeftX  = math.min(translation.Value.x - ag.Size + ag.Center, data.LeftX);
+				data.LeftX  = math.min(translation.Value.x - ag.Size - ag.Center, data.LeftX);
 				data.RightX = math.max(translation.Value.x + ag.Size + ag.Center, data.RightX);
 
 				BlockMovableAreaFromEntity[teamRelative.Target] = data;
@@ -63,6 +74,7 @@ namespace P4.Core
 			inputDeps = new CleanJob().Schedule(this, inputDeps);
 			inputDeps = new Job
 			{
+				LivableHealthFromEntity    = GetComponentDataFromEntity<LivableHealth>(),
 				BlockMovableAreaFromEntity = GetComponentDataFromEntity<TeamBlockMovableArea>()
 			}.ScheduleSingle(this, inputDeps);
 			return inputDeps;

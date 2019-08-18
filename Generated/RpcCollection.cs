@@ -1,9 +1,9 @@
 using System;
-using P4.Core.Code.Networking;
 using Patapon4TLB.Core;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
+using StormiumTeam.GameBase.Data;
 using Unity.Entities;
 using Unity.Networking.Transport;
 using Unity.NetCode;
@@ -17,30 +17,46 @@ public struct RpcCollection : IRpcCollection
         typeof(RhythmRpcPressureFromClient),
         typeof(RhythmRpcPressureFromServer),
         typeof(RhythmRpcServerSendCommandChain),
-        typeof(SetPlayerNameRpc),
         typeof(SynchronizeRelativeSystem<RhythmEngineDescription>.SendAllRpc),
+        typeof(SynchronizeRelativeSystem<RhythmEngineDescription>.SendUpdateRpc),
         typeof(SynchronizeRelativeSystem<RhythmEngineDescription>.SendDeltaRpc),
+        typeof(SynchronizeRelativeSystem<UnitTargetDescription>.SendAllRpc),
+        typeof(SynchronizeRelativeSystem<UnitTargetDescription>.SendUpdateRpc),
+        typeof(SynchronizeRelativeSystem<UnitTargetDescription>.SendDeltaRpc),
         typeof(SynchronizeRelativeSystem<UnitDescription>.SendAllRpc),
+        typeof(SynchronizeRelativeSystem<UnitDescription>.SendUpdateRpc),
         typeof(SynchronizeRelativeSystem<UnitDescription>.SendDeltaRpc),
+        typeof(SynchronizeRelativeSystem<HitShapeDescription>.SendAllRpc),
+        typeof(SynchronizeRelativeSystem<HitShapeDescription>.SendUpdateRpc),
+        typeof(SynchronizeRelativeSystem<HitShapeDescription>.SendDeltaRpc),
+        typeof(SynchronizeRelativeSystem<MovableDescription>.SendAllRpc),
+        typeof(SynchronizeRelativeSystem<MovableDescription>.SendUpdateRpc),
+        typeof(SynchronizeRelativeSystem<MovableDescription>.SendDeltaRpc),
+        typeof(SynchronizeRelativeSystem<LivableDescription>.SendAllRpc),
+        typeof(SynchronizeRelativeSystem<LivableDescription>.SendUpdateRpc),
+        typeof(SynchronizeRelativeSystem<LivableDescription>.SendDeltaRpc),
+        typeof(SynchronizeRelativeSystem<CharacterDescription>.SendAllRpc),
+        typeof(SynchronizeRelativeSystem<CharacterDescription>.SendUpdateRpc),
+        typeof(SynchronizeRelativeSystem<CharacterDescription>.SendDeltaRpc),
+        typeof(SynchronizeRelativeSystem<PlayerDescription>.SendAllRpc),
+        typeof(SynchronizeRelativeSystem<PlayerDescription>.SendUpdateRpc),
+        typeof(SynchronizeRelativeSystem<PlayerDescription>.SendDeltaRpc),
+        typeof(SynchronizeRelativeSystem<ActionDescription>.SendAllRpc),
+        typeof(SynchronizeRelativeSystem<ActionDescription>.SendUpdateRpc),
+        typeof(SynchronizeRelativeSystem<ActionDescription>.SendDeltaRpc),
+        typeof(SynchronizeRelativeSystem<ProjectileDescription>.SendAllRpc),
+        typeof(SynchronizeRelativeSystem<ProjectileDescription>.SendUpdateRpc),
+        typeof(SynchronizeRelativeSystem<ProjectileDescription>.SendDeltaRpc),
+        typeof(SynchronizeRelativeSystem<TeamDescription>.SendAllRpc),
+        typeof(SynchronizeRelativeSystem<TeamDescription>.SendUpdateRpc),
+        typeof(SynchronizeRelativeSystem<TeamDescription>.SendDeltaRpc),
+        typeof(SynchronizeRelativeSystem<ClubDescription>.SendAllRpc),
+        typeof(SynchronizeRelativeSystem<ClubDescription>.SendUpdateRpc),
+        typeof(SynchronizeRelativeSystem<ClubDescription>.SendDeltaRpc),
         typeof(ClientLoadedRpc),
         typeof(PlayerConnectedRpc),
         typeof(TargetDamageEventRpc),
-        typeof(SynchronizeRelativeSystem<ColliderDescription>.SendAllRpc),
-        typeof(SynchronizeRelativeSystem<ColliderDescription>.SendDeltaRpc),
-        typeof(SynchronizeRelativeSystem<MovableDescription>.SendAllRpc),
-        typeof(SynchronizeRelativeSystem<MovableDescription>.SendDeltaRpc),
-        typeof(SynchronizeRelativeSystem<LivableDescription>.SendAllRpc),
-        typeof(SynchronizeRelativeSystem<LivableDescription>.SendDeltaRpc),
-        typeof(SynchronizeRelativeSystem<CharacterDescription>.SendAllRpc),
-        typeof(SynchronizeRelativeSystem<CharacterDescription>.SendDeltaRpc),
-        typeof(SynchronizeRelativeSystem<PlayerDescription>.SendAllRpc),
-        typeof(SynchronizeRelativeSystem<PlayerDescription>.SendDeltaRpc),
-        typeof(SynchronizeRelativeSystem<ActionDescription>.SendAllRpc),
-        typeof(SynchronizeRelativeSystem<ActionDescription>.SendDeltaRpc),
-        typeof(SynchronizeRelativeSystem<ProjectileDescription>.SendAllRpc),
-        typeof(SynchronizeRelativeSystem<ProjectileDescription>.SendDeltaRpc),
-        typeof(SynchronizeRelativeSystem<TeamDescription>.SendAllRpc),
-        typeof(SynchronizeRelativeSystem<TeamDescription>.SendDeltaRpc),
+        typeof(UpdateServerMapRpc),
 
     };
     public void ExecuteRpc(int type, DataStreamReader reader, ref DataStreamReader.Context ctx, Entity connection, EntityCommandBuffer.Concurrent commandBuffer, int jobIndex)
@@ -84,14 +100,14 @@ public struct RpcCollection : IRpcCollection
             }
             case 5:
             {
-                var tmp = new SetPlayerNameRpc();
+                var tmp = new SynchronizeRelativeSystem<RhythmEngineDescription>.SendAllRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 6:
             {
-                var tmp = new SynchronizeRelativeSystem<RhythmEngineDescription>.SendAllRpc();
+                var tmp = new SynchronizeRelativeSystem<RhythmEngineDescription>.SendUpdateRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
@@ -105,147 +121,259 @@ public struct RpcCollection : IRpcCollection
             }
             case 8:
             {
-                var tmp = new SynchronizeRelativeSystem<UnitDescription>.SendAllRpc();
+                var tmp = new SynchronizeRelativeSystem<UnitTargetDescription>.SendAllRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 9:
             {
-                var tmp = new SynchronizeRelativeSystem<UnitDescription>.SendDeltaRpc();
+                var tmp = new SynchronizeRelativeSystem<UnitTargetDescription>.SendUpdateRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 10:
             {
-                var tmp = new ClientLoadedRpc();
+                var tmp = new SynchronizeRelativeSystem<UnitTargetDescription>.SendDeltaRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 11:
             {
-                var tmp = new PlayerConnectedRpc();
+                var tmp = new SynchronizeRelativeSystem<UnitDescription>.SendAllRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 12:
             {
-                var tmp = new TargetDamageEventRpc();
+                var tmp = new SynchronizeRelativeSystem<UnitDescription>.SendUpdateRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 13:
             {
-                var tmp = new SynchronizeRelativeSystem<ColliderDescription>.SendAllRpc();
+                var tmp = new SynchronizeRelativeSystem<UnitDescription>.SendDeltaRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 14:
             {
-                var tmp = new SynchronizeRelativeSystem<ColliderDescription>.SendDeltaRpc();
+                var tmp = new SynchronizeRelativeSystem<HitShapeDescription>.SendAllRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 15:
             {
-                var tmp = new SynchronizeRelativeSystem<MovableDescription>.SendAllRpc();
+                var tmp = new SynchronizeRelativeSystem<HitShapeDescription>.SendUpdateRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 16:
             {
-                var tmp = new SynchronizeRelativeSystem<MovableDescription>.SendDeltaRpc();
+                var tmp = new SynchronizeRelativeSystem<HitShapeDescription>.SendDeltaRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 17:
             {
-                var tmp = new SynchronizeRelativeSystem<LivableDescription>.SendAllRpc();
+                var tmp = new SynchronizeRelativeSystem<MovableDescription>.SendAllRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 18:
             {
-                var tmp = new SynchronizeRelativeSystem<LivableDescription>.SendDeltaRpc();
+                var tmp = new SynchronizeRelativeSystem<MovableDescription>.SendUpdateRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 19:
             {
-                var tmp = new SynchronizeRelativeSystem<CharacterDescription>.SendAllRpc();
+                var tmp = new SynchronizeRelativeSystem<MovableDescription>.SendDeltaRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 20:
             {
-                var tmp = new SynchronizeRelativeSystem<CharacterDescription>.SendDeltaRpc();
+                var tmp = new SynchronizeRelativeSystem<LivableDescription>.SendAllRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 21:
             {
-                var tmp = new SynchronizeRelativeSystem<PlayerDescription>.SendAllRpc();
+                var tmp = new SynchronizeRelativeSystem<LivableDescription>.SendUpdateRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 22:
             {
-                var tmp = new SynchronizeRelativeSystem<PlayerDescription>.SendDeltaRpc();
+                var tmp = new SynchronizeRelativeSystem<LivableDescription>.SendDeltaRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 23:
             {
-                var tmp = new SynchronizeRelativeSystem<ActionDescription>.SendAllRpc();
+                var tmp = new SynchronizeRelativeSystem<CharacterDescription>.SendAllRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 24:
             {
-                var tmp = new SynchronizeRelativeSystem<ActionDescription>.SendDeltaRpc();
+                var tmp = new SynchronizeRelativeSystem<CharacterDescription>.SendUpdateRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 25:
             {
-                var tmp = new SynchronizeRelativeSystem<ProjectileDescription>.SendAllRpc();
+                var tmp = new SynchronizeRelativeSystem<CharacterDescription>.SendDeltaRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 26:
             {
-                var tmp = new SynchronizeRelativeSystem<ProjectileDescription>.SendDeltaRpc();
+                var tmp = new SynchronizeRelativeSystem<PlayerDescription>.SendAllRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 27:
             {
-                var tmp = new SynchronizeRelativeSystem<TeamDescription>.SendAllRpc();
+                var tmp = new SynchronizeRelativeSystem<PlayerDescription>.SendUpdateRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
             }
             case 28:
             {
+                var tmp = new SynchronizeRelativeSystem<PlayerDescription>.SendDeltaRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 29:
+            {
+                var tmp = new SynchronizeRelativeSystem<ActionDescription>.SendAllRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 30:
+            {
+                var tmp = new SynchronizeRelativeSystem<ActionDescription>.SendUpdateRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 31:
+            {
+                var tmp = new SynchronizeRelativeSystem<ActionDescription>.SendDeltaRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 32:
+            {
+                var tmp = new SynchronizeRelativeSystem<ProjectileDescription>.SendAllRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 33:
+            {
+                var tmp = new SynchronizeRelativeSystem<ProjectileDescription>.SendUpdateRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 34:
+            {
+                var tmp = new SynchronizeRelativeSystem<ProjectileDescription>.SendDeltaRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 35:
+            {
+                var tmp = new SynchronizeRelativeSystem<TeamDescription>.SendAllRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 36:
+            {
+                var tmp = new SynchronizeRelativeSystem<TeamDescription>.SendUpdateRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 37:
+            {
                 var tmp = new SynchronizeRelativeSystem<TeamDescription>.SendDeltaRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 38:
+            {
+                var tmp = new SynchronizeRelativeSystem<ClubDescription>.SendAllRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 39:
+            {
+                var tmp = new SynchronizeRelativeSystem<ClubDescription>.SendUpdateRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 40:
+            {
+                var tmp = new SynchronizeRelativeSystem<ClubDescription>.SendDeltaRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 41:
+            {
+                var tmp = new ClientLoadedRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 42:
+            {
+                var tmp = new PlayerConnectedRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 43:
+            {
+                var tmp = new TargetDamageEventRpc();
+                tmp.Deserialize(reader, ref ctx);
+                tmp.Execute(connection, commandBuffer, jobIndex);
+                break;
+            }
+            case 44:
+            {
+                var tmp = new UpdateServerMapRpc();
                 tmp.Deserialize(reader, ref ctx);
                 tmp.Execute(connection, commandBuffer, jobIndex);
                 break;
@@ -268,39 +396,55 @@ public struct RpcCollection : IRpcCollection
 
 public class P4ExperimentRpcSystem : RpcSystem<RpcCollection>
 {
-    protected override void OnCreateManager()
+    protected override void OnCreate()
     {
-        base.OnCreateManager();
+        base.OnCreate();
 
         World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcClientRecover>>().SetTypeIndex(0);
         World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcNewClientCommand>>().SetTypeIndex(1);
         World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcPressureFromClient>>().SetTypeIndex(2);
         World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcPressureFromServer>>().SetTypeIndex(3);
         World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcServerSendCommandChain>>().SetTypeIndex(4);
-        World.GetOrCreateSystem<RpcQueueSystem<SetPlayerNameRpc>>().SetTypeIndex(5);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<RhythmEngineDescription>.SendAllRpc>>().SetTypeIndex(6);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<RhythmEngineDescription>.SendAllRpc>>().SetTypeIndex(5);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<RhythmEngineDescription>.SendUpdateRpc>>().SetTypeIndex(6);
         World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<RhythmEngineDescription>.SendDeltaRpc>>().SetTypeIndex(7);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<UnitDescription>.SendAllRpc>>().SetTypeIndex(8);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<UnitDescription>.SendDeltaRpc>>().SetTypeIndex(9);
-        World.GetOrCreateSystem<RpcQueueSystem<ClientLoadedRpc>>().SetTypeIndex(10);
-        World.GetOrCreateSystem<RpcQueueSystem<PlayerConnectedRpc>>().SetTypeIndex(11);
-        World.GetOrCreateSystem<RpcQueueSystem<TargetDamageEventRpc>>().SetTypeIndex(12);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<ColliderDescription>.SendAllRpc>>().SetTypeIndex(13);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<ColliderDescription>.SendDeltaRpc>>().SetTypeIndex(14);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<MovableDescription>.SendAllRpc>>().SetTypeIndex(15);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<MovableDescription>.SendDeltaRpc>>().SetTypeIndex(16);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<LivableDescription>.SendAllRpc>>().SetTypeIndex(17);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<LivableDescription>.SendDeltaRpc>>().SetTypeIndex(18);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<CharacterDescription>.SendAllRpc>>().SetTypeIndex(19);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<CharacterDescription>.SendDeltaRpc>>().SetTypeIndex(20);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<PlayerDescription>.SendAllRpc>>().SetTypeIndex(21);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<PlayerDescription>.SendDeltaRpc>>().SetTypeIndex(22);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<ActionDescription>.SendAllRpc>>().SetTypeIndex(23);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<ActionDescription>.SendDeltaRpc>>().SetTypeIndex(24);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<ProjectileDescription>.SendAllRpc>>().SetTypeIndex(25);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<ProjectileDescription>.SendDeltaRpc>>().SetTypeIndex(26);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<TeamDescription>.SendAllRpc>>().SetTypeIndex(27);
-        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<TeamDescription>.SendDeltaRpc>>().SetTypeIndex(28);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<UnitTargetDescription>.SendAllRpc>>().SetTypeIndex(8);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<UnitTargetDescription>.SendUpdateRpc>>().SetTypeIndex(9);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<UnitTargetDescription>.SendDeltaRpc>>().SetTypeIndex(10);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<UnitDescription>.SendAllRpc>>().SetTypeIndex(11);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<UnitDescription>.SendUpdateRpc>>().SetTypeIndex(12);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<UnitDescription>.SendDeltaRpc>>().SetTypeIndex(13);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<HitShapeDescription>.SendAllRpc>>().SetTypeIndex(14);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<HitShapeDescription>.SendUpdateRpc>>().SetTypeIndex(15);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<HitShapeDescription>.SendDeltaRpc>>().SetTypeIndex(16);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<MovableDescription>.SendAllRpc>>().SetTypeIndex(17);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<MovableDescription>.SendUpdateRpc>>().SetTypeIndex(18);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<MovableDescription>.SendDeltaRpc>>().SetTypeIndex(19);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<LivableDescription>.SendAllRpc>>().SetTypeIndex(20);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<LivableDescription>.SendUpdateRpc>>().SetTypeIndex(21);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<LivableDescription>.SendDeltaRpc>>().SetTypeIndex(22);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<CharacterDescription>.SendAllRpc>>().SetTypeIndex(23);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<CharacterDescription>.SendUpdateRpc>>().SetTypeIndex(24);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<CharacterDescription>.SendDeltaRpc>>().SetTypeIndex(25);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<PlayerDescription>.SendAllRpc>>().SetTypeIndex(26);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<PlayerDescription>.SendUpdateRpc>>().SetTypeIndex(27);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<PlayerDescription>.SendDeltaRpc>>().SetTypeIndex(28);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<ActionDescription>.SendAllRpc>>().SetTypeIndex(29);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<ActionDescription>.SendUpdateRpc>>().SetTypeIndex(30);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<ActionDescription>.SendDeltaRpc>>().SetTypeIndex(31);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<ProjectileDescription>.SendAllRpc>>().SetTypeIndex(32);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<ProjectileDescription>.SendUpdateRpc>>().SetTypeIndex(33);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<ProjectileDescription>.SendDeltaRpc>>().SetTypeIndex(34);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<TeamDescription>.SendAllRpc>>().SetTypeIndex(35);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<TeamDescription>.SendUpdateRpc>>().SetTypeIndex(36);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<TeamDescription>.SendDeltaRpc>>().SetTypeIndex(37);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<ClubDescription>.SendAllRpc>>().SetTypeIndex(38);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<ClubDescription>.SendUpdateRpc>>().SetTypeIndex(39);
+        World.GetOrCreateSystem<RpcQueueSystem<SynchronizeRelativeSystem<ClubDescription>.SendDeltaRpc>>().SetTypeIndex(40);
+        World.GetOrCreateSystem<RpcQueueSystem<ClientLoadedRpc>>().SetTypeIndex(41);
+        World.GetOrCreateSystem<RpcQueueSystem<PlayerConnectedRpc>>().SetTypeIndex(42);
+        World.GetOrCreateSystem<RpcQueueSystem<TargetDamageEventRpc>>().SetTypeIndex(43);
+        World.GetOrCreateSystem<RpcQueueSystem<UpdateServerMapRpc>>().SetTypeIndex(44);
 
     }
 }

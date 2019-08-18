@@ -2,6 +2,7 @@ using Patapon4TLB.Core;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.NetCode;
+using Unity.Transforms;
 using UnityEngine;
 
 namespace Patapon4TLB.UI.InGame
@@ -54,7 +55,7 @@ namespace Patapon4TLB.UI.InGame
 		{
 			Entities.ForEach((UIPlayerTargetCursorBackend backend) =>
 			{
-				var targetPosition = EntityManager.GetComponentData<UnitTargetPosition>(backend.DstEntity);
+				var targetPosition = EntityManager.GetComponentData<Translation>(backend.DstEntity);
 
 				backend.transform.position = new Vector3
 				(

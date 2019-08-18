@@ -12,6 +12,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
 using Unity.Networking.Transport;
+using UnityEngine;
 
 namespace Patapon4TLB.Default.Attack
 {
@@ -121,10 +122,11 @@ namespace Patapon4TLB.Default.Attack
 			var attackAbility = chunk.GetNativeArray(GhostAttackAbilityType.Archetype)[ent];
 			var owner         = chunk.GetNativeArray(GhostOwnerType.Archetype)[ent];
 
-			snapshot.IsActive        = abilityState.IsActive;
-			snapshot.CommandId       = abilityState.Command == default ? 0 : CommandIdFromEntity[abilityState.Command].Value;
-			snapshot.StartAttackTick = attackAbility.AttackStartTick;
-			snapshot.OwnerGhostId    = GhostStateFromEntity.GetGhostId(owner.Target);
+			snapshot.IsActive           = abilityState.IsActive;
+			snapshot.CommandId          = abilityState.Command == default ? 0 : CommandIdFromEntity[abilityState.Command].Value;
+			snapshot.StartAttackTick    = attackAbility.AttackStartTick;
+			snapshot.OwnerGhostId       = GhostStateFromEntity.GetGhostId(owner.Target);
+			snapshot.ClientPredictState = false;
 		}
 	}
 
@@ -137,7 +139,6 @@ namespace Patapon4TLB.Default.Attack
 			return EntityManager.CreateArchetype(baseArchetype.Union(new ComponentType[]
 			{
 				typeof(BasicTaterazayAttackAbilitySnapshotData),
-
 				typeof(ReplicatedEntityComponent)
 			}).ToArray());
 		}
@@ -187,12 +188,7 @@ namespace Patapon4TLB.Default.Attack
 						state.Calculate(result.CurrentCommand, result.CommandState, result.ComboState, result.EngineProcess);
 					}
 				}
-
-				if (predict)
-				{
-					// not implemented rn
-				}
-
+				
 				if (!predict)
 				{
 					var startAttackTick = UTick.CopyDelta(TargetTick, snapshot.StartAttackTick);
@@ -223,7 +219,7 @@ namespace Patapon4TLB.Default.Attack
 		{
 			inputDeps = new Job
 			{
-				TargetTick             = m_NetworkTimeSystem.GetTickInterpolated(),
+				TargetTick             = m_NetworkTimeSystem.GetTickPredicted(),
 				SnapshotDataFromEntity = GetBufferFromEntity<BasicTaterazayAttackAbilitySnapshotData>(),
 
 				CommandIdToEntity = m_CommandManager.CommandIdToEntity,

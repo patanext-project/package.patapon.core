@@ -112,11 +112,11 @@ namespace Patapon4TLB.Default.Snapshot
 				comboState = new GameComboState
 				{
 					Score         = snapshotData.ComboScore,
-					Chain         = snapshotData.ComboChain,
-					ChainToFever  = snapshotData.ComboChainToFever,
+					Chain         = (int) snapshotData.ComboChain,
+					ChainToFever  = (int) snapshotData.ComboChainToFever,
 					IsFever       = snapshotData.ComboIsFever,
-					JinnEnergy    = snapshotData.ComboJinnEnergy,
-					JinnEnergyMax = snapshotData.ComboJinnEnergyMax
+					JinnEnergy    = (int) snapshotData.ComboJinnEnergy,
+					JinnEnergyMax = (int) snapshotData.ComboJinnEnergyMax
 				};
 
 				ComboStateFromEntity[entity]     = comboState;

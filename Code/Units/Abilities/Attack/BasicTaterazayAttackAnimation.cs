@@ -123,7 +123,7 @@ namespace Patapon4TLB.Default.Attack
 			UnitVisualBackend   backend   = null;
 			UnitVisualAnimation animation = null;
 
-			var serverTick = ServerTick;
+			var serverTick = GetTick(false);
 			foreach (var _ in this.ToEnumerator_CC(m_BackendQuery, ref backend, ref animation))
 			{
 				var currAnim = animation.CurrAnimation;
@@ -158,7 +158,8 @@ namespace Patapon4TLB.Default.Attack
 					continue;
 				}
 
-				var aheadStartDifference = UTick.CopyDelta(gameTick, gameTick.Value - attackAbility.AttackStartTick);
+				var aheadStartDifference = UTick.CopyDelta(gameTick, math.max(gameTick.Value - attackAbility.AttackStartTick, 0));
+				Debug.Log($"{attackAbility.AttackStartTick} {gameTick.Value} {GetTick(true).Value} --> {aheadStartDifference.Value}");
 
 				systemData.PreviousAttackTick  = attackAbility.AttackStartTick;
 				systemData.Behaviour.StartTime = animation.RootTime - math.clamp(aheadStartDifference.Seconds, -0.2, 0.2);

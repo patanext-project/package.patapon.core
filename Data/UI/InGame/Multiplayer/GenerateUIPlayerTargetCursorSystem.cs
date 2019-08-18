@@ -42,7 +42,7 @@ namespace Patapon4TLB.UI.InGame
 			
 			GetModule(out m_GetAllBackendModule);
 
-			m_ControlledUnitQuery = GetEntityQuery(typeof(UnitTargetPosition));
+			m_ControlledUnitQuery = GetEntityQuery(typeof(UnitTargetDescription));
 		}
 
 		protected override void OnUpdate()
@@ -82,11 +82,11 @@ namespace Patapon4TLB.UI.InGame
 					backend.gameObject.SetActive(true);
 
 					var sortingGroup = backend.GetComponent<SortingGroup>();
-					sortingGroup.sortingLayerName = "UI";
+					sortingGroup.sortingLayerName = "OverlayUI";
 					sortingGroup.sortingOrder     = (int) UICanvasOrder.UnitCursor;
 
 					backend.SetTarget(EntityManager, missingEntities[i]);
-					backend.SetPresentation(m_PresentationPool);
+					backend.SetPresentationFromPool(m_PresentationPool);
 				}
 			}
 		}

@@ -17,50 +17,87 @@ namespace Patapon4TLB.Default
 	public struct BackwardAbility : IComponentData
 	{
 		public float AccelerationFactor;
+		public float Delta;
 	}
 
 	[UpdateInGroup(typeof(ActionSystemGroup))]
 	public class BackwardAbilitySystem : JobGameBaseSystem
 	{
-		private struct JobProcess : IJobForEachWithEntity<Owner, RhythmAbilityState, BackwardAbility>
+		private struct JobProcess : IJobForEachWithEntity<Owner, RhythmAbilityState, BackwardAbility, Relative<UnitTargetDescription>>
 		{
 			public float DeltaTime;
 
-			[ReadOnly] public ComponentDataFromEntity<Translation>        TranslationFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<GroundState>        GroundStateFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<UnitPlayState>      UnitPlayStateFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<UnitTargetPosition> UnitTargetPositionFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<UnitTargetControlTag> UnitTargetControlFromEntity;
+
+			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Translation>   TranslationFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<UnitPlayState> UnitPlayStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<GroundState>   GroundStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<UnitDirection> UnitDirectionFromEntity;
+
+			[ReadOnly] public ComponentDataFromEntity<UnitTargetOffset> TargetOffsetFromEntity;
 
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitControllerState> UnitControllerStateFromEntity;
 			[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Velocity>            VelocityFromEntity;
 
-			public void Execute(Entity entity, int _, [ReadOnly] ref Owner owner, [ReadOnly] ref RhythmAbilityState state, [ReadOnly] ref BackwardAbility BackwardAbility)
+			public void Execute(Entity                                         entity, int                 _, [ReadOnly] ref Owner owner,
+			                    [ReadOnly] ref RhythmAbilityState              state,  ref BackwardAbility backwardAbility,
+			                    [ReadOnly] ref Relative<UnitTargetDescription> relativeTarget)
 			{
 				if (!state.IsActive)
+				{
+					backwardAbility.Delta = 0.0f;
 					return;
+				}
 
-				var targetPosition = UnitTargetPositionFromEntity[owner.Target];
-				var groundState    = GroundStateFromEntity[owner.Target];
+				var targetOffset  = TargetOffsetFromEntity[owner.Target];
+				var groundState   = GroundStateFromEntity[owner.Target];
+				var unitPlayState = UnitPlayStateFromEntity[owner.Target];
 
 				if (!groundState.Value)
 					return;
 
-				var unitPlayState = UnitPlayStateFromEntity[owner.Target];
-				var velocity      = VelocityFromEntity[owner.Target];
+				if (state.Combo.IsFever && state.Combo.Score >= 50)
+				{
+					unitPlayState.MovementSpeed *= 1.2f;
+				}
+
+				backwardAbility.Delta += DeltaTime;
+
+				var   targetPosition = TranslationFromEntity[relativeTarget.Target].Value;
+				float acceleration, walkSpeed;
+				int   direction;
+
+				if (UnitTargetControlFromEntity.Exists(owner.Target))
+				{
+					direction = UnitDirectionFromEntity[owner.Target].Value;
+
+					// a different acceleration (not using the unit weight)
+					acceleration = backwardAbility.AccelerationFactor;
+					acceleration = math.min(acceleration * DeltaTime, 1);
+
+					backwardAbility.Delta += DeltaTime;
+
+					walkSpeed      =  unitPlayState.MovementSpeed * -0.5f;
+					targetPosition += walkSpeed * direction * (backwardAbility.Delta > 0.5f ? 1 : math.lerp(4, 1, backwardAbility.Delta + 0.5f)) * acceleration;
+
+					TranslationFromEntity[relativeTarget.Target] = new Translation {Value = targetPosition};
+				}
+
+				var velocity = VelocityFromEntity[owner.Target];
 
 				// to not make tanks op, we need to get the weight from entity and use it as an acceleration factor
-				var acceleration = math.clamp(math.rcp(unitPlayState.Weight), 0, 1) * BackwardAbility.AccelerationFactor * 50;
+				acceleration = math.clamp(math.rcp(unitPlayState.Weight), 0, 1) * backwardAbility.AccelerationFactor * 50;
 				acceleration = math.min(acceleration * DeltaTime, 1);
 
-				var walkSpeed = unitPlayState.MovementSpeed;
+				walkSpeed = unitPlayState.MovementSpeed * 0.5f;
 				// if we're near, let's slow down
-				var dist = math.distance(targetPosition.Value.x, TranslationFromEntity[owner.Target].Value.x);
-				if (dist < 2f)
+				var dist = math.distance(targetPosition.x, TranslationFromEntity[owner.Target].Value.x);
+				if (dist < 0.5f)
 				{
 					walkSpeed *= math.clamp(dist * 0.5f, 0.5f, 1.0f);
 				}
 
-				var direction = System.Math.Sign(targetPosition.Value.x - TranslationFromEntity[owner.Target].Value.x);
+				direction = System.Math.Sign(targetPosition.x + targetOffset.Value - TranslationFromEntity[owner.Target].Value.x);
 
 				velocity.Value.x                 = math.lerp(velocity.Value.x, walkSpeed * direction, acceleration);
 				VelocityFromEntity[owner.Target] = velocity;
@@ -79,10 +116,12 @@ namespace Patapon4TLB.Default
 			return new JobProcess
 			{
 				DeltaTime                     = World.GetExistingSystem<ServerSimulationSystemGroup>().UpdateDeltaTime,
+				UnitTargetControlFromEntity   = GetComponentDataFromEntity<UnitTargetControlTag>(true),
+				UnitDirectionFromEntity       = GetComponentDataFromEntity<UnitDirection>(true),
 				UnitPlayStateFromEntity       = GetComponentDataFromEntity<UnitPlayState>(true),
-				TranslationFromEntity         = GetComponentDataFromEntity<Translation>(true),
+				TranslationFromEntity         = GetComponentDataFromEntity<Translation>(),
 				GroundStateFromEntity         = GetComponentDataFromEntity<GroundState>(true),
-				UnitTargetPositionFromEntity  = GetComponentDataFromEntity<UnitTargetPosition>(true),
+				TargetOffsetFromEntity        = GetComponentDataFromEntity<UnitTargetOffset>(true),
 				UnitControllerStateFromEntity = GetComponentDataFromEntity<UnitControllerState>(),
 				VelocityFromEntity            = GetComponentDataFromEntity<Velocity>()
 			}.Schedule(this, inputDeps);

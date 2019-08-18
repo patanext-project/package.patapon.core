@@ -3,6 +3,7 @@ using Patapon4TLB.Default;
 using Patapon4TLB.UI.InGame;
 using Runtime.Systems;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -37,8 +38,8 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				typeof(UnitPlayState),
 				typeof(UnitControllerState),
 				typeof(UnitDirection),
-				typeof(UnitTargetPosition),
-
+				typeof(UnitTargetOffset),
+				
 				typeof(Translation),
 				typeof(Rotation),
 				//typeof(LocalToWorld),
@@ -48,12 +49,15 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				typeof(PhysicsMass),
 				typeof(Velocity),
 				typeof(GroundState),
+				
+				typeof(LivableHealth),
 
 				typeof(GhostOwner),
 				typeof(Owner),
 
 				typeof(ActionContainer),
-
+				typeof(HealthContainer),
+				
 				typeof(ReplicatedEntityComponent)
 			);
 		}
@@ -69,7 +73,6 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				typeof(UnitStatistics),
 				typeof(UnitControllerState),
 				typeof(UnitDirection),
-				typeof(UnitTargetPosition),
 
 				typeof(Translation),
 				typeof(Rotation),
@@ -80,15 +83,11 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 				typeof(PhysicsMass),
 				typeof(Velocity),
 				typeof(GroundState),
-
-				typeof(GhostRelative<PlayerDescription>),
-				typeof(Relative<PlayerDescription>),
-				typeof(GhostRelative<RhythmEngineDescription>),
-				typeof(Relative<RhythmEngineDescription>),
-				typeof(GhostRelative<TeamDescription>),
-				typeof(Relative<TeamDescription>),
-
+				
+				typeof(LivableHealth),
+				
 				typeof(ActionContainer),
+				typeof(HealthContainer),
 
 				typeof(ReplicatedEntityComponent),
 				typeof(PredictedEntityComponent)
@@ -100,7 +99,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 	public class BasicUnitUpdateSystem : JobComponentSystem
 	{
 		[BurstCompile]
-		private struct Job : IJobForEachWithEntity<UnitDirection, BasicUnitSnapshotTarget, UnitTargetPosition, Translation, Velocity>
+		private struct Job : IJobForEachWithEntity<UnitDirection, BasicUnitSnapshotTarget, Translation, Velocity>
 		{
 			public uint InterpolateTick;
 			public uint PredictTick;
@@ -108,11 +107,10 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			[ReadOnly] public BufferFromEntity<BasicUnitSnapshotData> SnapshotDataFromEntity;
 			[ReadOnly] public NativeHashMap<int, Entity>              GhostEntityMap;
 			
-			public void Execute(Entity entity, int jobIndex, ref UnitDirection unitDirection, ref BasicUnitSnapshotTarget target, ref UnitTargetPosition unitTargetPosition, ref Translation translation, ref Velocity velocity)
+			public void Execute(Entity entity, int jobIndex, ref UnitDirection unitDirection, ref BasicUnitSnapshotTarget target, ref Translation translation, ref Velocity velocity)
 			{
 				SnapshotDataFromEntity[entity].GetDataAtTick(PredictTick, out var snapshot);
 
-				unitTargetPosition.Value = snapshot.TargetPosition.Get(BasicUnitSnapshotData.DeQuantization);
 				unitDirection.Value      = (sbyte) snapshot.Direction;
 				velocity.Value           = snapshot.Velocity.Get(BasicUnitSnapshotData.DeQuantization);
 

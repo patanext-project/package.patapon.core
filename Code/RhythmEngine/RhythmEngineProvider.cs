@@ -13,6 +13,8 @@ namespace Patapon4TLB.Default
 	{
 		public struct Create
 		{
+			public bool UseClientSimulation;
+			
 			/// <summary>
 			/// Default '500ms'
 			/// </summary>
@@ -28,8 +30,6 @@ namespace Patapon4TLB.Default
 		{
 			entityComponents = new[]
 			{
-				ComponentType.ReadWrite<Owner>(),
-				ComponentType.ReadWrite<NetworkOwner>(),
 				ComponentType.ReadWrite<RhythmEngineDescription>(),
 				ComponentType.ReadWrite<RhythmEngineSettings>(),
 				ComponentType.ReadWrite<RhythmEngineState>(),
@@ -42,15 +42,14 @@ namespace Patapon4TLB.Default
 				ComponentType.ReadWrite<GameCommandState>(),
 				ComponentType.ReadWrite<GameComboState>(),
 				ComponentType.ReadWrite<RhythmCurrentCommand>(),
-				ComponentType.ReadWrite<DestroyChainReaction>(),
-				ComponentType.ReadWrite<GhostComponent>(),
 				typeof(PlayEntityTag)
 			};
 		}
 
 		public override void SetEntityData(Entity entity, Create data)
 		{
-			EntityManager.SetComponentData(entity, new RhythmEngineSettings {MaxBeats = data.MaxBeats ?? 4, BeatInterval = data.BeatInterval ?? 500});
+			EntityManager.SetComponentData(entity, new RhythmEngineSettings {MaxBeats = data.MaxBeats ?? 4, BeatInterval = data.BeatInterval ?? 500, UseClientSimulation = data.UseClientSimulation});
+			EntityManager.SetComponentData(entity, new RhythmCurrentCommand {CustomEndTime = -1, ActiveAtTime = -1, Power = 0});
 		}
 	}
 }

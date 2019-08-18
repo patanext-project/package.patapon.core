@@ -65,6 +65,8 @@ namespace Patapon4TLB.UI
 
 		protected override void OnUpdate()
 		{
+			return;
+			
 			var selfGamePlayer = GetFirstSelfGamePlayer();
 			var cameraState    = GetCurrentCameraState(selfGamePlayer);
 			if (cameraState.Target == default)
@@ -156,7 +158,7 @@ namespace Patapon4TLB.UI
 
 					backend.transform.SetParent(m_UIRoot.transform, false);
 					backend.SetTarget(EntityManager, missingEntities[i]);
-					backend.SetPresentation(m_PresentationPool);
+					backend.SetPresentationFromPool(m_PresentationPool);
 				}
 			}
 		}

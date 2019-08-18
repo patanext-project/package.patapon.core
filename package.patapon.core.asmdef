@@ -13,6 +13,7 @@
         "Unity.Addressables",
         "Unity.ResourceManager",
         "Unity.Physics",
+        "Unity.Physics.Hybrid",
         "Unity.Entities",
         "Unity.Entities.Hybrid",
         "Unity.Transforms",

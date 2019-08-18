@@ -1,3 +1,4 @@
+using package.patapon.core;
 using Patapon4TLB.Core;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
@@ -10,12 +11,11 @@ using Unity.NetCode;
 using Unity.Physics;
 using Unity.Transforms;
 using UnityEngine;
-using BoxCollider = Unity.Physics.BoxCollider;
 using Collider = Unity.Physics.Collider;
 using SphereCollider = Unity.Physics.SphereCollider;
 
 namespace Patapon4TLB.Default.Attack
-{
+{ 
 	public struct BasicTaterazayAttackAbility : IComponentData
 	{
 		public const int DelaySlashMs = 100;
@@ -28,132 +28,122 @@ namespace Patapon4TLB.Default.Attack
 		[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 		public class Process : JobGameBaseSystem
 		{
-			private struct Job : IJobForEach<RhythmAbilityState, BasicTaterazayAttackAbility, Owner>
+			private struct Job : IJobForEach<RhythmAbilityState, BasicTaterazayAttackAbility, Relative<TeamDescription>, Relative<UnitTargetDescription>, Owner>
 			{
 				public UTick Tick;
-				public float DeltaTime;
 
 				public NativeList<TargetDamageEvent> DamageEventList;
 
+				[ReadOnly] public ComponentDataFromEntity<LivableHealth> LivableHealthFromEntity;
+
 				[ReadOnly] public ComponentDataFromEntity<UnitStatistics> UnitSettingsFromEntity;
-				[ReadOnly] public ComponentDataFromEntity<UnitPlayState>    UnitPlayStateFromEntity;
+				[ReadOnly] public ComponentDataFromEntity<UnitPlayState>  UnitPlayStateFromEntity;
 
 				public ComponentDataFromEntity<Translation>         TranslationFromEntity;
-				public ComponentDataFromEntity<UnitTargetPosition>  TargetFromEntity;
 				public ComponentDataFromEntity<UnitControllerState> ControllerFromEntity;
 				public ComponentDataFromEntity<Velocity>            VelocityFromEntity;
 
-				[DeallocateOnJobCompletion]
-				public NativeArray<ArchetypeChunk> LivableChunks;
-
-				public ArchetypeChunkEntityType                     EntityType;
-				public ArchetypeChunkComponentType<LocalToWorld>    LtwType;
-				public ArchetypeChunkComponentType<PhysicsCollider> ColliderType;
+				[ReadOnly] public ComponentDataFromEntity<PhysicsCollider> PhysicsColliderFromEntity;
+				[ReadOnly] public BufferFromEntity<TeamEnemies>            EnemiesFromTeam;
 
 				public JobPhysicsQuery HitQuery;
+				public SeekEnemies     SeekEnemies;
 
-				private unsafe void Slash(Entity origin)
+				private unsafe void Slash(Entity origin, GameComboState comboState, DynamicBuffer<TeamEnemies> teamEnemies)
 				{
-					var boxCollider = (SphereCollider*) HitQuery.Ptr;
-					boxCollider->Radius = 3;
+					var sphereCollider = (SphereCollider*) HitQuery.Ptr;
+					sphereCollider->Radius = 2.6f;
 
 					var distanceInput = new ColliderDistanceInput
 					{
-						Collider    = (Collider*) boxCollider,
-						MaxDistance = 0.1f,
-						Transform   = new RigidTransform(quaternion.identity, TranslationFromEntity[origin].Value)
+						Collider    = (Collider*) sphereCollider,
+						MaxDistance = 0f,
+						// remove z depth
+						Transform = new RigidTransform(quaternion.identity, TranslationFromEntity[origin].Value * new float3(1, 1, 0))
 					};
 
-					for (var ch = 0; ch != LivableChunks.Length; ch++)
+					var damage = 0;
+					if (UnitSettingsFromEntity.Exists(origin))
 					{
-						var chunk       = LivableChunks[ch];
-						var entityArray = chunk.GetNativeArray(EntityType);
-						var ltwArray    = chunk.GetNativeArray(LtwType);
-						var collArray   = chunk.GetNativeArray(ColliderType);
+						var unitStatistics = UnitSettingsFromEntity[origin];
+						damage = unitStatistics.Attack;
 
-						var count = chunk.Count;
-						for (var ent = 0; ent != count; ent++)
+						float dmgF = damage;
+						if (comboState.IsFever)
 						{
-							var entity = entityArray[ent];
-							if (origin == entity)
-								continue; // lol no
+							dmgF *= 1.2f;
+							if (comboState.Score >= 50)
+								dmgF *= 1.2f;
 
-							var transform = ltwArray[ent];
-							var collider  = collArray[ent];
+							damage += (int) dmgF - damage;
+						}
+					}
 
-							var collection = new CustomCollideCollection(new CustomCollide(collider, transform));
-							var collector  = new ClosestHitCollector<DistanceHit>(1.0f);
-							if (!collection.CalculateDistance(distanceInput, ref collector))
+					for (var team = 0; team != teamEnemies.Length; team++)
+					{
+						var entities = SeekEnemies.EntitiesFromTeam[teamEnemies[team].Target];
+						for (var ent = 0; ent != entities.Length; ent++)
+						{
+							var entity = entities[ent].Value;
+							if (LivableHealthFromEntity.Exists(entity) && LivableHealthFromEntity[entity].IsDead)
+								continue;
+							if (!SeekEnemies.HitShapeContainerFromEntity.Exists(entity))
 								continue;
 
-							DamageEventList.Add(new TargetDamageEvent
+							var hitShapeBuffer = SeekEnemies.HitShapeContainerFromEntity[entity];
+							for (int i = 0, length = hitShapeBuffer.Length; i != length; i++)
 							{
-								Position    = collector.ClosestHit.Position,
-								Origin      = origin,
-								Destination = entity,
-								Damage      = 42
-							});
+								var hitShape  = hitShapeBuffer[i];
+								var transform = SeekEnemies.LocalToWorldFromEntity[hitShape.Value];
+								var collider  = PhysicsColliderFromEntity[hitShape.Value];
+
+								var cc = new CustomCollide(collider, transform);
+								if (hitShape.AttachedToParent) 
+									cc.WorldFromMotion.pos   += SeekEnemies.LocalToWorldFromEntity[entity].Position;
+								// remove z depth
+								cc.WorldFromMotion.pos.z =  0;
+
+								var collection = new CustomCollideCollection(cc);
+								var collector  = new ClosestHitCollector<DistanceHit>(1.0f);
+
+								if (!collection.CalculateDistance(distanceInput, ref collector))
+									continue;
+
+								DamageEventList.Add(new TargetDamageEvent
+								{
+									Position    = cc.WorldFromMotion.pos + collider.ColliderPtr->CalculateAabb().Center,
+									Origin      = origin,
+									Destination = entity,
+									Damage      = -damage
+								});
+								break;
+							}
 						}
 					}
 				}
 
-				public void SeekNearestEnemy(Entity origin, float seekRange, out Entity nearestEnemy, out float3 target, out float targetDistance)
+				public void Execute(ref            RhythmAbilityState              state, ref BasicTaterazayAttackAbility ability,
+				                    [ReadOnly] ref Relative<TeamDescription>       teamRelative,
+				                    [ReadOnly] ref Relative<UnitTargetDescription> targetRelative,
+				                    [ReadOnly] ref Owner                           owner)
 				{
-					nearestEnemy   = Entity.Null;
-					target         = float3.zero;
-					targetDistance = default;
+					const float attackRange = 3f;
 
-					var shortestDistance = float.MaxValue;
-					var originPos        = TargetFromEntity[origin].Value;
-					for (var ch = 0; ch != LivableChunks.Length; ch++)
-					{
-						var chunk       = LivableChunks[ch];
-						var entityArray = chunk.GetNativeArray(EntityType);
-						var ltwArray    = chunk.GetNativeArray(LtwType);
+					var teamEnemies = EnemiesFromTeam[teamRelative.Target];
+					var statistics  = UnitSettingsFromEntity[owner.Target];
+					var playState   = UnitPlayStateFromEntity[owner.Target];
 
-						var count = chunk.Count;
-						for (var ent = 0; ent != count; ent++)
-						{
-							var entity = entityArray[ent];
-							if (origin == entity)
-								continue; // lol no
+					SeekEnemies.Execute
+					(
+						TranslationFromEntity[targetRelative.Target].Value, statistics.AttackSeekRange, teamEnemies,
+						out var nearestEnemy, out var targetPosition, out var enemyDistance
+					);
 
-							var enemyTransform = ltwArray[ent];
-							var distance       = math.distance(originPos, enemyTransform.Position);
-							if (distance > seekRange)
-								continue;
-
-							if (distance > shortestDistance)
-								continue;
-
-							target           = enemyTransform.Position;
-							targetDistance   = distance;
-							shortestDistance = distance;
-							nearestEnemy     = entity;
-						}
-					}
-				}
-
-				public void Execute(ref RhythmAbilityState state, ref BasicTaterazayAttackAbility ability, [ReadOnly] ref Owner owner)
-				{
-					const float seekRange   = 20f;
-					const float attackRange = 3.5f;
-
-					SeekNearestEnemy(owner.Target, seekRange, out var nearestEnemy, out var targetPosition, out var enemyDistance);
-					if (nearestEnemy != default && TranslationFromEntity[owner.Target].Value.x > targetPosition.x)
-					{
-						var tr = TranslationFromEntity[owner.Target];
-						tr.Value.x                          = targetPosition.x;
-						TranslationFromEntity[owner.Target] = tr;
-					}
-
-					var settings  = UnitSettingsFromEntity[owner.Target];
-					var playState = UnitPlayStateFromEntity[owner.Target];
 					if (state.IsStillChaining && !state.IsActive && nearestEnemy != default)
 					{
 						var velocity     = VelocityFromEntity[owner.Target];
 						var acceleration = math.clamp(math.rcp(playState.Weight), 0, 1) * 50;
-						acceleration = math.min(acceleration * DeltaTime, 1);
+						acceleration = math.min(acceleration * Tick.Delta, 1);
 
 						velocity.Value.x = math.lerp(velocity.Value.x, 0, acceleration);
 
@@ -169,15 +159,14 @@ namespace Patapon4TLB.Default.Attack
 
 					var attackStartTick = UTick.CopyDelta(Tick, ability.AttackStartTick);
 
-					ability.NextAttackDelay -= DeltaTime;
+					ability.NextAttackDelay -= Tick.Delta;
 					if (ability.AttackStartTick > 0)
 					{
 						if (Tick >= UTick.AddMs(attackStartTick, DelaySlashMs) && !ability.HasSlashed)
 						{
 							ability.HasSlashed = true;
-							Debug.Log(Tick + " >  slash!");
 
-							Slash(owner.Target);
+							Slash(owner.Target, state.Combo, teamEnemies);
 						}
 
 						// stop moving
@@ -185,7 +174,7 @@ namespace Patapon4TLB.Default.Attack
 						{
 							var velocity     = VelocityFromEntity[owner.Target];
 							var acceleration = math.clamp(math.rcp(playState.Weight), 0, 1) * 150;
-							acceleration = math.min(acceleration * DeltaTime, 1);
+							acceleration = math.min(acceleration * Tick.Delta, 1);
 
 							velocity.Value.x = math.lerp(velocity.Value.x, 0, acceleration);
 
@@ -197,22 +186,30 @@ namespace Patapon4TLB.Default.Attack
 							ability.AttackStartTick = 0;
 					}
 
-					if (!state.IsActive)
+					// if inactive or no enemy are present, continue...
+					if (!state.IsActive || nearestEnemy == default)
 						return;
 
-					// if no enemy are present, continue...
-					if (nearestEnemy == default)
-						return;
+					if (state.Combo.IsFever)
+					{
+						playState.MovementAttackSpeed *= 1.8f;
+						if (state.Combo.Score >= 50)
+							playState.MovementAttackSpeed *= 1.2f;
+					}
 
 					// if all conditions are ok, start attacking.
 					enemyDistance = math.distance(TranslationFromEntity[owner.Target].Value.x, targetPosition.x);
 					if (enemyDistance <= attackRange && ability.NextAttackDelay <= 0.0f && ability.AttackStartTick <= 0)
 					{
-						ability.NextAttackDelay = settings.AttackSpeed;
-						ability.AttackStartTick = Tick.Value;
-						ability.HasSlashed      = false;
+						var atkSpeed = playState.AttackSpeed;
+						if (state.Combo.IsFever && state.Combo.Score >= 50)
+						{
+							atkSpeed *= 0.75f;
+						}
 
-						Debug.Log(Tick + " >  start attack!");
+						ability.NextAttackDelay = atkSpeed;
+						ability.AttackStartTick = (uint) Tick.Value;
+						ability.HasSlashed      = false;
 					}
 					else if (Tick >= UTick.AddMs(attackStartTick, DelaySlashMs))
 					{
@@ -223,9 +220,10 @@ namespace Patapon4TLB.Default.Attack
 
 						var velocity     = VelocityFromEntity[owner.Target];
 						var acceleration = math.clamp(math.rcp(playState.Weight), 0, 1) * 50;
-						acceleration = math.min(acceleration * DeltaTime, 1);
+						acceleration = math.min(acceleration * Tick.Delta, 1);
 
-						velocity.Value.x = math.lerp(velocity.Value.x, playState.MovementAttackSpeed, acceleration);
+						var direction = math.sign(targetPosition.x - TranslationFromEntity[owner.Target].Value.x);
+						velocity.Value.x = math.lerp(velocity.Value.x, playState.MovementAttackSpeed * direction, acceleration);
 
 						VelocityFromEntity[owner.Target] = velocity;
 					}
@@ -233,8 +231,6 @@ namespace Patapon4TLB.Default.Attack
 			}
 
 			private TargetDamageEvent.Provider m_DamageEventProvider;
-			private EntityQuery                m_LivableQuery;
-
 			private JobPhysicsQuery m_HitQuery;
 
 			protected override void OnCreate()
@@ -242,7 +238,6 @@ namespace Patapon4TLB.Default.Attack
 				base.OnCreate();
 
 				m_DamageEventProvider = World.GetOrCreateSystem<TargetDamageEvent.Provider>();
-				m_LivableQuery        = GetEntityQuery(typeof(LivableDescription), typeof(PhysicsCollider), typeof(LocalToWorld));
 				m_HitQuery            = new JobPhysicsQuery(() => SphereCollider.Create(0, 3f));
 			}
 
@@ -253,20 +248,20 @@ namespace Patapon4TLB.Default.Attack
 					Tick            = World.GetExistingSystem<ServerSimulationSystemGroup>().GetTick(),
 					DamageEventList = m_DamageEventProvider.GetEntityDelayedList(),
 
+					LivableHealthFromEntity = GetComponentDataFromEntity<LivableHealth>(true),
+
+					EnemiesFromTeam           = GetBufferFromEntity<TeamEnemies>(true),
+					PhysicsColliderFromEntity = GetComponentDataFromEntity<PhysicsCollider>(true),
+
 					UnitSettingsFromEntity  = GetComponentDataFromEntity<UnitStatistics>(true),
 					UnitPlayStateFromEntity = GetComponentDataFromEntity<UnitPlayState>(true),
 					ControllerFromEntity    = GetComponentDataFromEntity<UnitControllerState>(),
-					TargetFromEntity        = GetComponentDataFromEntity<UnitTargetPosition>(),
 					TranslationFromEntity   = GetComponentDataFromEntity<Translation>(),
 					VelocityFromEntity      = GetComponentDataFromEntity<Velocity>(),
 
-					LivableChunks = m_LivableQuery.CreateArchetypeChunkArray(Allocator.TempJob, out var dep1),
-					EntityType    = GetArchetypeChunkEntityType(),
-					LtwType       = GetArchetypeChunkComponentType<LocalToWorld>(),
-					ColliderType  = GetArchetypeChunkComponentType<PhysicsCollider>(),
-
-					HitQuery = m_HitQuery
-				}.ScheduleSingle(this, JobHandle.CombineDependencies(inputDeps, dep1));
+					HitQuery    = m_HitQuery,
+					SeekEnemies = new SeekEnemies(this)
+				}.ScheduleSingle(this, inputDeps);
 
 				m_DamageEventProvider.AddJobHandleForProducer(inputDeps);
 

@@ -158,7 +158,7 @@ namespace package.patapon.core.Animation
 			m_PlayableGraph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
 			m_PlayableGraph.Play();
 			m_Playable = ScriptPlayable<VisualAnimationPlayable>.Create(m_PlayableGraph).GetBehaviour();
-			m_AnimationPlayableOutput = AnimationPlayableOutput.Create(m_PlayableGraph, m_PlayableGraph.GetEditorName(), null);
+			m_AnimationPlayableOutput = AnimationPlayableOutput.Create(m_PlayableGraph, "Output", null);
 			m_AnimationPlayableOutput.SetSourcePlayable(m_Playable.Playable, 0);
 		}
 

@@ -85,11 +85,11 @@ namespace Patapon4TLB.UI.InGame
 					backend.gameObject.SetActive(true);
 
 					var sortingGroup = backend.GetComponent<SortingGroup>();
-					sortingGroup.sortingLayerName = "UI";
+					sortingGroup.sortingLayerName = "OverlayUI";
 					sortingGroup.sortingOrder     = (int) UICanvasOrder.UnitName;
 
 					backend.SetTarget(EntityManager, missingEntities[i]);
-					backend.SetPresentation(m_PresentationPool);
+					backend.SetPresentationFromPool(m_PresentationPool);
 				}
 			}
 		}

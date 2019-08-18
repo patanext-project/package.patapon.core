@@ -6,5 +6,7 @@ namespace Patapon4TLB.UI
 		UnitName,
 		UnitStatus,
 		Drums,
+		HudBase,
+		HudHeadOnInterface,
 	}
 }

@@ -167,7 +167,7 @@ namespace Patapon4TLB.Default
 
 			public void Execute(Entity entity, int index, ref RhythmAbilityState state, ref MarchAbility marchAbility, ref Owner owner)
 			{
-				SnapshotDataFromEntity[entity].GetDataAtTick(ServerTick.Value, out var snapshot);
+				SnapshotDataFromEntity[entity].GetDataAtTick(ServerTick.AsUInt, out var snapshot);
 
 				GhostEntityMap.TryGetValue((int) snapshot.OwnerGhostId, out owner.Target);
 				CommandIdToEntity.TryGetValue(snapshot.CommandId, out state.Command);

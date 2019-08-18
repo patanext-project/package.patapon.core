@@ -257,7 +257,7 @@ namespace Patapon4TLB.Core
 				var pool = World.GetExistingSystem<UnitVisualArchetypeManager>().GetArchetypePool(archetype);
 
 				be.ReturnPresentation();
-				be.SetPresentation(pool);
+				be.SetPresentationFromPool(pool);
 			}
 		}
 	}

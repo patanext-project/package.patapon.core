@@ -21,17 +21,20 @@ namespace Patapon4TLB.Default
 		private struct ClearJob : IJob
 		{
 			public NativeHashMap<Entity, ValueAbility> HashMap;
+			public int TargetCapacity;
 
 			public void Execute()
 			{
 				HashMap.Clear();
+				if (HashMap.Capacity < TargetCapacity)
+					HashMap.Capacity = TargetCapacity;
 			}
 		}
 
 		[BurstCompile]
 		private struct SearchJob : IJobForEachWithEntity<Owner>
 		{
-			public NativeHashMap<Entity, ValueAbility>.Concurrent OwnerToAbilityMap;
+			public NativeHashMap<Entity, ValueAbility>.ParallelWriter OwnerToAbilityMap;
 
 			public void Execute(Entity e, int _, ref Owner owner)
 			{
@@ -52,9 +55,14 @@ namespace Patapon4TLB.Default
 			if (Query == null)
 				return;
 
+			jobHandle = new ClearJob
+			{
+				HashMap = m_OwnerToAbilityMap,
+				TargetCapacity = Query.CalculateEntityCount() + 32
+			}.Schedule(jobHandle);
 			jobHandle = new SearchJob
 			{
-				OwnerToAbilityMap = m_OwnerToAbilityMap.ToConcurrent()
+				OwnerToAbilityMap = m_OwnerToAbilityMap.AsParallelWriter()
 			}.Schedule(Query, jobHandle);
 		}
 

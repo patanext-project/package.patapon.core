@@ -1,5 +1,3 @@
-using P4.Core.Code.Networking;
-using Patapon4TLB.Core;
 using StormiumTeam.GameBase;
 using TMPro;
 using Unity.Entities;
@@ -64,14 +62,7 @@ namespace Patapon4TLB.UI.InGame
 				}
 
 				var nativeStr = new NativeString64();
-				if (EntityManager.HasComponent<PlayerName>(playerRelative))
-				{
-					nativeStr = EntityManager.GetComponentData<PlayerName>(playerRelative).Value;
-				}
-				else
-				{
-					nativeStr.CopyFrom("NoName");
-				}
+				nativeStr.CopyFrom("NoName");
 
 				if (backend.PreviousName.Equals(nativeStr))
 					return;

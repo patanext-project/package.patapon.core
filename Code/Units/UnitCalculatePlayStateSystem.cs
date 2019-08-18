@@ -10,34 +10,31 @@ namespace Patapon4TLB.Core
 	[UpdateAfter(typeof(RhythmEngineGroup))]
 	[UpdateAfter(typeof(ActionSystemGroup))]
 	public class UnitInitStateSystemGroup : ComponentSystemGroup
-	{}
-	
+	{
+	}
+
 	[UpdateInGroup(typeof(UnitInitStateSystemGroup))]
 	public class UnitCalculatePlayStateSystem : JobComponentSystem
 	{
-		private struct JobUpdate : IJobForEach<UnitStatistics, UnitPlayState, Relative<RhythmEngineDescription>>
+		private struct JobUpdate : IJobForEachWithEntity<UnitStatistics, UnitPlayState>
 		{
-			[ReadOnly] public ComponentDataFromEntity<GameComboState> ComboStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<Relative<RhythmEngineDescription>> RhythmEngineRelativeFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<GameComboState>                    ComboStateFromEntity;
 
-			public void Execute(ref UnitStatistics settings, ref UnitPlayState state, ref Relative<RhythmEngineDescription> rhythmEngineRelative)
+			public void Execute(Entity entity, int index, [ReadOnly] ref UnitStatistics settings, ref UnitPlayState state)
 			{
-				var comboState = ComboStateFromEntity[rhythmEngineRelative.Target];
+				GameComboState comboState = default;
+
+				var hasRhythmEngine = RhythmEngineRelativeFromEntity.Exists(entity);
+				if (hasRhythmEngine)
+				{
+					comboState = ComboStateFromEntity[RhythmEngineRelativeFromEntity[entity].Target];
+				}
 
 				state.MovementSpeed = comboState.IsFever ? settings.FeverWalkSpeed : settings.BaseWalkSpeed;
-				if (comboState.IsFever && comboState.Score >= 50)
-				{
-					state.MovementSpeed += state.MovementSpeed * 0.2f;
-				}
-
+				state.AttackSpeed = settings.AttackSpeed;
 				state.MovementAttackSpeed = settings.MovementAttackSpeed;
-				if (comboState.IsFever)
-				{
-					state.MovementAttackSpeed += state.MovementAttackSpeed * 0.8f;
-					if (comboState.Score >= 50)
-						state.MovementAttackSpeed += state.MovementAttackSpeed * 0.2f;
-				}
-				
-				state.Weight              = settings.Weight;
+				state.Weight = settings.Weight;
 			}
 		}
 
@@ -45,7 +42,8 @@ namespace Patapon4TLB.Core
 		{
 			return new JobUpdate
 			{
-				ComboStateFromEntity = GetComponentDataFromEntity<GameComboState>(true)
+				RhythmEngineRelativeFromEntity = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(true),
+				ComboStateFromEntity           = GetComponentDataFromEntity<GameComboState>(true)
 			}.Schedule(this, inputDeps);
 		}
 	}

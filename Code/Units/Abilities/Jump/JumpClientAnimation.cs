@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using package.patapon.core;
 using package.patapon.core.Animation;
 using Patapon4TLB.Core;
 using StormiumTeam.GameBase;
@@ -42,6 +43,8 @@ namespace Patapon4TLB.Default
 			public double StartTime;
 			public Phase  Phase;
 
+			public bool Predicted;
+			
 			private Phase m_PreviousPhase;
 
 			public float Weight;
@@ -106,8 +109,17 @@ namespace Patapon4TLB.Default
 				switch (Phase)
 				{
 					case Phase.Jumping:
-						Mixer.SetInputWeight((int) AnimationType.Start, StartTransition.Evaluate(global));
-						Mixer.SetInputWeight((int) AnimationType.Jump, JumpTransition.Evaluate(global, 0, 1));
+						if (Predicted)
+						{
+							Mixer.SetInputWeight((int) AnimationType.Start, StartTransition.Evaluate(global));
+							Mixer.SetInputWeight((int) AnimationType.Jump, JumpTransition.Evaluate(global, 0, 1));
+						}
+						else
+						{
+							Mixer.SetInputWeight((int) AnimationType.Start, 0);
+							Mixer.SetInputWeight((int) AnimationType.Jump, 1);
+						}
+
 						break;
 					case Phase.Idle:
 						Mixer.SetInputWeight((int) AnimationType.Jump, IdleAirTransition1.Evaluate(global));
@@ -282,23 +294,24 @@ namespace Patapon4TLB.Default
 
 			if (abilityState.WillBeActive && data.StartAt < 0 && abilityState.ActiveId >= data.ActiveId && !abilityState.IsActive)
 			{
-				var serverTime = ServerTick.Ms;
-				var delay      = math.max(abilityState.StartTime - 200 - serverTime, 0) * 0.001f;
+				var process = EntityManager.GetComponentData<RhythmEngineProcess>(EntityManager.GetComponentData<Relative<RhythmEngineDescription>>(backend.DstEntity).Target);
+				var delay   = math.max(abilityState.StartTime - 200 - process.Milliseconds, 0) * 0.001f;
 				// StartTime - StartJump Animation Approx Length in ms - Time, aka delay 0.2s before the command
-				
-				Debug.Log($"{abilityState.StartTime - serverTime} {delay}");
- 
-				data.StartAt  = animation.RootTime + delay;
-				data.ActiveId = abilityState.ActiveId + 1;
+
+				Debug.Log($"{abilityState.StartTime - process.Milliseconds} {delay} activeId:{abilityState.ActiveId + 1}");
+
+				data.StartAt             = animation.RootTime + delay;
+				data.ActiveId            = abilityState.ActiveId + 1;
+				data.Behaviour.Predicted = true;
 			}
 
 			// Start animation if Behavior.ActiveId and Jump.ActiveId is different... or if we need to start now
-			if (abilityState.IsActive && abilityState.ActiveId != data.ActiveId || data.StartAt > 0 && data.StartAt < data.Behaviour.Root.GetTime())
+			if (abilityState.IsActive && abilityState.ActiveId > data.ActiveId || data.StartAt > 0 && data.StartAt < data.Behaviour.Root.GetTime())
 			{
 				var stopAt = animation.RootTime + 3.5f;
 				animation.SetTargetAnimation(new TargetAnimation(m_SystemType, false, false, stopAt: stopAt));
 				
-				Debug.Log("Start Animation");
+				Debug.Log($"Start Animation [{abilityState.ActiveId} > {data.ActiveId}] || [0 < {data.StartAt} < {data.Behaviour.Root.GetTime()}]");
 
 
 				data.StartAt = -1;
@@ -307,6 +320,7 @@ namespace Patapon4TLB.Default
 				data.Behaviour.StartTime = animation.RootTime;
 				data.Behaviour.Mixer.SetTime(0);
 				data.Behaviour.Weight = 1;
+				//data.Behaviour.Predicted = false;
 			}
 
 			var targetPhase = Phase.Idle;

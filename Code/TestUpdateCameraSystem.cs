@@ -1,5 +1,6 @@
 using package.patapon.core;
 using package.stormiumteam.shared;
+using Patapon4TLB.Default;
 using Patapon4TLB.UI.InGame;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
@@ -15,20 +16,46 @@ namespace Patapon4TLB.Core
 	[UpdateBefore(typeof(ClientPresentationTransformSystemGroup))]
 	public class TestUpdateCameraSystem : ComponentSystem
 	{
-		public int OrthographicSize = 8;
+		public int OrthographicSize = 7;
+		public bool Seek;
 
 		private void ForEachCameraState(ref ServerCameraState cameraState)
 		{
 			if (cameraState.Target == default)
 				return;
+
+			UnitDirection direction = default;
 			
 			var translation = EntityManager.GetComponentData<Translation>(cameraState.Target);
+			if (EntityManager.HasComponent<UnitDirection>(cameraState.Target))
+			{
+				direction = EntityManager.GetComponentData<UnitDirection>(cameraState.Target);
+			}
 
-			translation.Value.x += World.GetExistingSystem<CameraInputSystem>().CurrentPanning * (OrthographicSize + 2.5f);
-			translation.Value.x += OrthographicSize * 0.25f;
+			var orthoSize = OrthographicSize;
+			var target = cameraState.Target;
+			Entities.WithAll<UnitDescription>().ForEach((Entity e, ref Translation otherTr) =>
+			{
+				if (e == target || Seek)
+					return;
+
+				if (math.abs(otherTr.Value.x - translation.Value.x) < 20)
+				{
+					orthoSize += 2;
+					Seek = true;
+				}
+			});
+
+			translation.Value.x += World.GetExistingSystem<CameraInputSystem>().CurrentPanning * (orthoSize + 2.5f * direction.Value);
+			translation.Value.x += orthoSize * 0.25f * direction.Value;
 
 			var previousTarget = EntityManager.GetComponentData<CameraTargetPosition>(m_CameraTarget).Value.x;
 			var result         = math.lerp(previousTarget, translation.Value.x, Time.deltaTime * 2.5f);
+			
+			if (math.isnan(result) || math.abs(result) > 4000.0f)
+			{
+				result = 0;
+			}
 
 			EntityManager.SetComponentData(m_CameraTarget, new CameraTargetPosition
 			{
@@ -70,11 +97,12 @@ namespace Patapon4TLB.Core
 			if (Input.GetKeyDown(KeyCode.KeypadMinus))
 				OrthographicSize--;
 
-			camera.orthographicSize = math.lerp(camera.orthographicSize, OrthographicSize, Time.deltaTime * 5);
-
 			Entities.WithAll<GamePlayerLocalTag>().ForEach(m_ForEach);
+			camera.orthographicSize = math.lerp(camera.orthographicSize, OrthographicSize + (Seek ? 2 : 0), Time.deltaTime * 2.5f);
 
 			World.GetOrCreateSystem<AnchorOrthographicCameraSystem>().Update();
+
+			Seek = false;
 		}
 	}
 }

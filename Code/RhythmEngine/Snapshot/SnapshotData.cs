@@ -24,10 +24,10 @@ namespace Patapon4TLB.Default.Snapshot
 		public int  Recovery;
 
 		public int  ComboScore;
-		public int  ComboChain;
-		public int  ComboChainToFever;
-		public int  ComboJinnEnergy;
-		public int  ComboJinnEnergyMax;
+		public uint  ComboChain;
+		public uint  ComboChainToFever;
+		public uint  ComboJinnEnergy;
+		public uint  ComboJinnEnergyMax;
 		public bool ComboIsFever;
 
 		public void PredictDelta(uint tick, ref RhythmEngineSnapshotData baseline1, ref RhythmEngineSnapshotData baseline2)
@@ -48,7 +48,7 @@ namespace Patapon4TLB.Default.Snapshot
 			writer.WritePackedUIntDelta(BeatInterval, baseline.BeatInterval, compressionModel);
 
 			// 7
-			writer.WritePackedIntDelta(OwnerGhostId, baseline.OwnerGhostId, compressionModel);
+			writer.WritePackedUIntDelta((uint) OwnerGhostId, (uint) baseline.OwnerGhostId, compressionModel);
 			writer.WritePackedIntDelta(StartTime, baseline.StartTime, compressionModel);
 			writer.WritePackedIntDelta(CommandTypeId, baseline.CommandTypeId, compressionModel);
 			writer.WritePackedIntDelta(CommandStartTime, baseline.CommandStartTime, compressionModel);
@@ -58,10 +58,10 @@ namespace Patapon4TLB.Default.Snapshot
 
 			// 5
 			writer.WritePackedIntDelta(ComboScore, baseline.ComboScore, compressionModel);
-			writer.WritePackedIntDelta(ComboChain, baseline.ComboChain, compressionModel);
-			writer.WritePackedIntDelta(ComboChainToFever, baseline.ComboChainToFever, compressionModel);
-			writer.WritePackedIntDelta(ComboJinnEnergy, baseline.ComboJinnEnergy, compressionModel);
-			writer.WritePackedIntDelta(ComboJinnEnergyMax, baseline.ComboJinnEnergyMax, compressionModel);
+			writer.WritePackedUIntDelta(ComboChain, baseline.ComboChain, compressionModel);
+			writer.WritePackedUIntDelta(ComboChainToFever, baseline.ComboChainToFever, compressionModel);
+			writer.WritePackedUIntDelta(ComboJinnEnergy, baseline.ComboJinnEnergy, compressionModel);
+			writer.WritePackedUIntDelta(ComboJinnEnergyMax, baseline.ComboJinnEnergyMax, compressionModel);
 		}
 
 		public void Deserialize(uint tick, ref RhythmEngineSnapshotData baseline, DataStreamReader reader, ref DataStreamReader.Context ctx, NetworkCompressionModel compressionModel)
@@ -75,7 +75,7 @@ namespace Patapon4TLB.Default.Snapshot
 			BeatInterval = reader.ReadPackedUIntDelta(ref ctx, baseline.BeatInterval, compressionModel);
 
 			// 7
-			OwnerGhostId        = reader.ReadPackedIntDelta(ref ctx, baseline.OwnerGhostId, compressionModel);
+			OwnerGhostId        = (int) reader.ReadPackedUIntDelta(ref ctx, (uint) baseline.OwnerGhostId, compressionModel);
 			StartTime           = reader.ReadPackedIntDelta(ref ctx, baseline.StartTime, compressionModel);
 			CommandTypeId       = reader.ReadPackedIntDelta(ref ctx, baseline.CommandTypeId, compressionModel);
 			CommandStartTime    = reader.ReadPackedIntDelta(ref ctx, baseline.CommandStartTime, compressionModel);
@@ -85,10 +85,10 @@ namespace Patapon4TLB.Default.Snapshot
 
 			// 5
 			ComboScore         = reader.ReadPackedIntDelta(ref ctx, baseline.ComboScore, compressionModel);
-			ComboChain         = reader.ReadPackedIntDelta(ref ctx, baseline.ComboChain, compressionModel);
-			ComboChainToFever  = reader.ReadPackedIntDelta(ref ctx, baseline.ComboChainToFever, compressionModel);
-			ComboJinnEnergy    = reader.ReadPackedIntDelta(ref ctx, baseline.ComboJinnEnergy, compressionModel);
-			ComboJinnEnergyMax = reader.ReadPackedIntDelta(ref ctx, baseline.ComboJinnEnergyMax, compressionModel);
+			ComboChain         = reader.ReadPackedUIntDelta(ref ctx, baseline.ComboChain, compressionModel);
+			ComboChainToFever  = reader.ReadPackedUIntDelta(ref ctx, baseline.ComboChainToFever, compressionModel);
+			ComboJinnEnergy    = reader.ReadPackedUIntDelta(ref ctx, baseline.ComboJinnEnergy, compressionModel);
+			ComboJinnEnergyMax = reader.ReadPackedUIntDelta(ref ctx, baseline.ComboJinnEnergyMax, compressionModel);
 
 			IsPaused            = MainBit.GetBitAt(boolBitFields, 0) == 1;
 			UseClientSimulation = MainBit.GetBitAt(boolBitFields, 1) == 1;
@@ -115,7 +115,7 @@ namespace Patapon4TLB.Default.Snapshot
 			ComboScore         = target.ComboScore;
 			ComboChain         = target.ComboChain;
 			ComboChainToFever  = target.ComboChainToFever;
-			ComboJinnEnergy    = (int) math.lerp(ComboJinnEnergy, target.ComboJinnEnergy, factor);
+			ComboJinnEnergy    = (uint) math.lerp(ComboJinnEnergy, target.ComboJinnEnergy, factor);
 			ComboJinnEnergyMax = target.ComboJinnEnergyMax;
 		}
 	}

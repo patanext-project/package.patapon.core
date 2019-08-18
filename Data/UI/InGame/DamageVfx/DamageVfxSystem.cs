@@ -20,9 +20,9 @@ namespace Patapon4TLB.UI.InGame.DamageVfx
 			public  List<(uint, TargetDamageEvent)> DamageEvents = new List<(uint, TargetDamageEvent)>();
 			private EntityQuery                     m_DamageEventQuery;
 
-			protected override void OnCreateManager()
+			protected override void OnCreate()
 			{
-				base.OnCreateManager();
+				base.OnCreate();
 
 				m_DamageEventQuery = GetEntityQuery(typeof(GameEvent), typeof(TargetDamageEvent));
 			}
@@ -92,7 +92,7 @@ namespace Patapon4TLB.UI.InGame.DamageVfx
 				var textPopBackend = textPopBackendGameObject.GetComponent<DamagePopTextVfxBackend>();
 
 				textPopBackend.SetTarget(EntityManager);
-				textPopBackend.SetPresentation(m_PopTextPool.Presentation);
+				textPopBackend.SetPresentationFromPool(m_PopTextPool.Presentation);
 				textPopBackend.Play(ev);
 				textPopBackend.SetToPoolAt          = Time.time + 2f;
 				textPopBackend.transform.localScale = Vector3.one * 0.5f;

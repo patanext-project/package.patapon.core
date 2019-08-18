@@ -171,11 +171,13 @@ namespace Patapon4TLB.Default
 
 			public void Execute(Entity entity, int index, ref RhythmAbilityState state, ref JumpAbility jumpAbility, ref Owner owner)
 			{
-				SnapshotDataFromEntity[entity].GetDataAtTick(ServerTick.Value, out var snapshot);
+				SnapshotDataFromEntity[entity].GetDataAtTick(ServerTick.AsUInt, out var snapshot);
 
 				GhostEntityMap.TryGetValue((int) snapshot.OwnerGhostId, out owner.Target);
 				CommandIdToEntity.TryGetValue(snapshot.CommandId, out state.Command);
 
+				RhythmEngineDataGroup.Result result = default;
+				
 				var predict = snapshot.ClientPredictState && RelativeRhythmEngineFromEntity.Exists(owner.Target);
 				if (predict)
 				{
@@ -184,8 +186,7 @@ namespace Patapon4TLB.Default
 						predict = false;
 					else
 					{
-						var result = RhythmEngineDataGroup.GetResult(rhythmEngine);
-
+						result = RhythmEngineDataGroup.GetResult(rhythmEngine);
 						state.Calculate(result.CurrentCommand, result.CommandState, result.ComboState, result.EngineProcess);
 					}
 				}
@@ -194,7 +195,7 @@ namespace Patapon4TLB.Default
 				{
 					if (state.IsActive || state.IsStillChaining)
 					{
-						jumpAbility.ActiveTime = (ServerTick.Ms - state.StartTime) * 0.001f;
+						jumpAbility.ActiveTime = (result.EngineProcess.Milliseconds - state.StartTime) * 0.001f;
 						jumpAbility.IsJumping  = jumpAbility.ActiveTime <= 0.5f;
 					}
 					else

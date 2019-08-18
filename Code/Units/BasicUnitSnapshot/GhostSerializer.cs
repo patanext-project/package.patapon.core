@@ -29,13 +29,11 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 			GhostStateFromEntity = system.GetComponentDataFromEntity<GhostSystemStateComponent>();
 
 			system.GetGhostComponentType(out UnitDirectionGhostType);
-			system.GetGhostComponentType(out UnitTargetPositionGhostType);
 			system.GetGhostComponentType(out TranslationGhostType);
 			system.GetGhostComponentType(out VelocityGhostType);
 		}
 
 		public GhostComponentType<UnitDirection>                     UnitDirectionGhostType;
-		public GhostComponentType<UnitTargetPosition>                UnitTargetPositionGhostType;
 		public GhostComponentType<Translation>                       TranslationGhostType;
 		public GhostComponentType<Velocity>                          VelocityGhostType;
 
@@ -61,10 +59,7 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 			var unitDirection = chunk.GetNativeArray(UnitDirectionGhostType.Archetype)[ent];
 			snapshot.Direction = unitDirection.Value;
-
-			var targetPosition = chunk.GetNativeArray(UnitTargetPositionGhostType.Archetype)[ent];
-			snapshot.TargetPosition.Set(BasicUnitSnapshotData.Quantization, targetPosition.Value);
-
+			
 			var translation = chunk.GetNativeArray(TranslationGhostType.Archetype)[ent];
 			snapshot.Position.Set(BasicUnitSnapshotData.Quantization, translation.Value);
 

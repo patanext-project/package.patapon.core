@@ -6,11 +6,10 @@ using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
-using UnityEditor;
 using UnityEngine;
 
 #if UNITY_EDITOR
-
+using UnityEditor;
 #endif
 
 namespace package.patapon.core
@@ -65,7 +64,7 @@ namespace package.patapon.core
 
         public EActivationType RefreshType;
         public float           RefreshBoundsOutline = 1f;
-
+        
         [SerializeField]
         internal Transform[]  points;
 

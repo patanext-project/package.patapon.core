@@ -94,10 +94,10 @@ namespace Patapon4TLB.Default.Snapshot
 			var comboState = chunk.GetNativeArray(GhostComboStateType.Archetype)[ent];
 			snapshot.ComboIsFever       = comboState.IsFever;
 			snapshot.ComboScore         = comboState.Score;
-			snapshot.ComboChain         = comboState.Chain;
-			snapshot.ComboChainToFever  = comboState.ChainToFever;
-			snapshot.ComboJinnEnergy    = comboState.JinnEnergy;
-			snapshot.ComboJinnEnergyMax = comboState.JinnEnergyMax;
+			snapshot.ComboChain         = (uint) comboState.Chain;
+			snapshot.ComboChainToFever  = (uint) comboState.ChainToFever;
+			snapshot.ComboJinnEnergy    = (uint) comboState.JinnEnergy;
+			snapshot.ComboJinnEnergyMax = (uint) comboState.JinnEnergyMax;
 		}
 	}
 }

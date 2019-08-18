@@ -95,7 +95,7 @@ namespace Patapon4TLB.UI.InGame.DamageVfx
 							var offset = (sourceTopLeft + sourceBottomRight) * 0.5f;
 
 							var wave = math.max((t - (Time.time - backend.StartTime) * 15) * 1.33f, 0) + 1;
-							var matrix = Matrix4x4.TRS(Vector3.one, Quaternion.identity, wave * Vector3.one);
+							var matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, wave * Vector3.one);
 
 							var destinationTopLeft     = matrix.MultiplyPoint3x4(sourceTopLeft - offset) + offset;
 							var destinationTopRight    = matrix.MultiplyPoint3x4(sourceTopRight - offset) + offset;
@@ -115,7 +115,7 @@ namespace Patapon4TLB.UI.InGame.DamageVfx
 
 				foreach (var label in presentation.DamageLabels)
 				{
-					label.text = backend.Event.Damage.ToString();
+					label.text = math.abs(backend.Event.Damage).ToString();
 					label.maxVisibleCharacters = 0;
 				}
 
