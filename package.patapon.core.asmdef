@@ -26,13 +26,7 @@
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
-    "overrideReferences": true,
-    "precompiledReferences": [
-        "Newtonsoft.Json.dll",
-        "Google.Protobuf.dll",
-        "Grpc.Core.Api.dll",
-        "Grpc.Core.dll"
-    ],
+    "overrideReferences": false,
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": []

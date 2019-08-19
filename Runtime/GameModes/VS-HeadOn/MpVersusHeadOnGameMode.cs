@@ -65,14 +65,15 @@ namespace Patapon4TLB.GameModes
 		private EntityQuery m_PlayerWithoutGameModeDataQuery;
 		private EntityQuery m_PlayerQuery;
 		private EntityQuery m_UnitQuery;
+		private EntityQuery m_LivableQuery;
 
 		private EntityQuery m_EventOnCaptureQuery;
 
 		private EntityQuery m_GameFormationQuery;
 
 		protected Team[]   Teams;
-		protected Entity[] Structures;
-		
+		protected int[] TowerBaseHealth;
+
 		protected int WinningTeam;
 
 		private UnitProvider m_UnitProvider;
@@ -81,14 +82,44 @@ namespace Patapon4TLB.GameModes
 		{
 			base.OnCreate();
 
-			m_UpdateTeamQuery                = GetEntityQuery(typeof(HeadOnTeamTarget), ComponentType.Exclude<Relative<TeamDescription>>());
-			m_SpawnPointQuery                = GetEntityQuery(typeof(LocalToWorld), typeof(HeadOnSpawnPoint), typeof(HeadOnTeamTarget));
-			m_FlagQuery                      = GetEntityQuery(typeof(LocalToWorld), typeof(HeadOnFlag), typeof(HeadOnTeamTarget));
-			m_GameFormationQuery             = GetEntityQuery(typeof(GameFormationTag), typeof(FormationRoot));
-			m_PlayerWithoutGameModeDataQuery = GetEntityQuery(typeof(GamePlayer), typeof(GamePlayerReadyTag), ComponentType.Exclude<GameModePlayer>());
-			m_PlayerQuery                    = GetEntityQuery(typeof(GamePlayer), typeof(GamePlayerReadyTag));
-			m_UnitQuery                      = GetEntityQuery(typeof(Translation), typeof(LivableHealth), typeof(GameModeUnit));
-			m_EventOnCaptureQuery = GetEntityQuery(typeof(HeadOnStructureOnCapture));
+			m_UpdateTeamQuery = GetEntityQuery(new EntityQueryDesc
+			{
+				All  = new ComponentType[] {typeof(HeadOnTeamTarget)},
+				None = new ComponentType[] {typeof(Relative<TeamDescription>)}
+			});
+			m_SpawnPointQuery = GetEntityQuery(new EntityQueryDesc
+			{
+				All = new ComponentType[] {typeof(LocalToWorld), typeof(HeadOnSpawnPoint), typeof(HeadOnTeamTarget)}
+			});
+			m_FlagQuery = GetEntityQuery(new EntityQueryDesc
+			{
+				All = new ComponentType[] {typeof(LocalToWorld), typeof(HeadOnFlag), typeof(HeadOnTeamTarget)}
+			});
+			m_GameFormationQuery = GetEntityQuery(new EntityQueryDesc
+			{
+				All = new ComponentType[] {typeof(GameFormationTag), typeof(FormationRoot)}
+			});
+			m_PlayerWithoutGameModeDataQuery = GetEntityQuery(new EntityQueryDesc
+			{
+				All  = new ComponentType[] {typeof(GamePlayer), typeof(GamePlayerReadyTag)},
+				None = new ComponentType[] {typeof(GameModePlayer)}
+			});
+			m_PlayerQuery = GetEntityQuery(new EntityQueryDesc
+			{
+				All = new ComponentType[] {typeof(GamePlayer), typeof(GamePlayerReadyTag)}
+			});
+			m_UnitQuery = GetEntityQuery(new EntityQueryDesc
+			{
+				All = new ComponentType[] {typeof(Translation), typeof(LivableHealth), typeof(GameModeUnit)}
+			});
+			m_LivableQuery = GetEntityQuery(new EntityQueryDesc
+			{
+				All = new ComponentType[] {typeof(LivableHealth)}
+			});
+			m_EventOnCaptureQuery = GetEntityQuery(new EntityQueryDesc
+			{
+				All = new ComponentType[] {typeof(HeadOnStructureOnCapture)}
+			});
 
 			m_UnitProvider = World.GetOrCreateSystem<UnitProvider>();
 		}
@@ -107,6 +138,7 @@ namespace Patapon4TLB.GameModes
 				// ----------------------------- //
 				// Create teams
 				Teams = new Team[2];
+				TowerBaseHealth = new int[2];
 
 				var teamProvider = World.GetOrCreateSystem<GameModeTeamProvider>();
 				var clubProvider = World.GetOrCreateSystem<ClubProvider>();
@@ -236,7 +268,7 @@ namespace Patapon4TLB.GameModes
 							team.Flag = entities[ent];
 						}
 					}
-
+					
 					// ----------------------------- //
 					// Destroy previous rhythm engines
 					EntityManager.DestroyEntity(Entities.WithAll<RhythmEngineDescription, Relative<PlayerDescription>>().ToEntityQuery());
@@ -269,6 +301,11 @@ namespace Patapon4TLB.GameModes
 
 					// ----------------------------- //
 					// Create units from formations
+					//Span<int> teamAttackMedium = stackalloc int[2];
+					var teamAttackMedium = stackalloc int[2]; // we need to wait for unity to update a dll
+					var teamHealthMedium = stackalloc int[2]; // we need to wait for unity to update a dll
+					var playerCount = stackalloc int[2];
+
 					using (var spawnedUnits = new NativeList<Entity>(Allocator.TempJob))
 					using (var entities = m_GameFormationQuery.ToEntityArray(Allocator.TempJob))
 					{
@@ -315,11 +352,12 @@ namespace Patapon4TLB.GameModes
 										EntityManager.SetComponentData(player, cameraState);
 									}
 
+									var stat = EntityManager.GetComponentData<UnitStatistics>(units[unt].Value);
+									
 									// create health entities...
 									var healthProvider = World.GetExistingSystem<DefaultHealthData.InstanceProvider>();
 									using (var healthEntities = new NativeList<Entity>(Allocator.TempJob))
 									{
-										var stat = EntityManager.GetComponentData<UnitStatistics>(units[unt].Value);
 										healthProvider.SpawnLocalEntityWithArguments(new DefaultHealthData.CreateInstance
 										{
 											max   = stat.Health,
@@ -331,6 +369,17 @@ namespace Patapon4TLB.GameModes
 
 									EntityManager.AddComponent(ent, typeof(UnitTargetControlTag));
 
+									var ti = team.TeamIndex - 1;
+									if (teamAttackMedium[ti] > 0)
+										teamAttackMedium[ti] = (int) math.lerp(teamAttackMedium[ti], stat.Attack, 0.5f);
+									else
+										teamAttackMedium[ti] = stat.Attack;
+									if (teamHealthMedium[ti] > 0)
+										teamHealthMedium[ti]  = (int) math.lerp(teamHealthMedium[ti], stat.Health, 0.5f);
+									else teamHealthMedium[ti] = stat.Health;
+
+									playerCount[ti]++;
+									
 									// create abilities...
 									MasterServerAbilities.Convert(this, ent, EntityManager.GetBuffer<UnitDefinedAbilities>(units[unt].Value));
 								}
@@ -340,7 +389,33 @@ namespace Patapon4TLB.GameModes
 
 							armies.Dispose();
 						}
+
+						// ----------------------------- //
+						// Create towers/walls health data (based on medium strengh of opposite team)
+						for (var i = 0; i != 2; i++)
+						{
+							TowerBaseHealth[i] = (teamHealthMedium[1 - i] * playerCount[1 - i]) - (teamAttackMedium[i] * playerCount[i]);
+						}
 					}
+					
+					// ----------------------------- //
+					// Create towers
+					Entities.ForEach((Entity entity, ref HeadOnStructure headOnStructure) =>
+					{
+						// create health entity
+						var healthProvider = World.GetExistingSystem<DefaultHealthData.InstanceProvider>();
+						var healthEntity = healthProvider.SpawnLocalEntityWithArguments(new DefaultHealthData.CreateInstance
+						{
+							max   = 0,
+							value = 0,
+							owner = entity
+						});
+						EntityManager.AddComponent(healthEntity, typeof(GhostComponent));
+						EntityManager.SetOrAddComponentData(entity, new LivableHealth
+						{
+							IsDead = false
+						});
+					});
 
 					gameMode.PlayState = MpVersusHeadOn.State.RoundStart;
 					break;
@@ -390,16 +465,26 @@ namespace Patapon4TLB.GameModes
 				{
 					World.GetExistingSystem<GameEventRuleSystemGroup>().Process();
 					
-					using (var entityArray = m_UnitQuery.ToEntityArray(Allocator.TempJob))
-					using (var translationArray = m_UnitQuery.ToComponentDataArray<Translation>(Allocator.TempJob))
-					using (var gmUnitArray = m_UnitQuery.ToComponentDataArray<GameModeUnit>(Allocator.TempJob))
-					using (var healthArray = m_UnitQuery.ToComponentDataArray<LivableHealth>(Allocator.TempJob))
+					using (var entityArray = m_LivableQuery.ToEntityArray(Allocator.TempJob))
+					using (var healthArray = m_LivableQuery.ToComponentDataArray<LivableHealth>(Allocator.TempJob))
 					{
-						for (var ent = 0; ent != entityArray.Length; ent++)
+						for (var ent = 0; ent != healthArray.Length; ent++)
 						{
-							ref var translation = ref UnsafeUtilityEx.ArrayElementAsRef<Translation>(translationArray.GetUnsafePtr(), ent);
-							ref var gameModeUnit = ref UnsafeUtilityEx.ArrayElementAsRef<GameModeUnit>(gmUnitArray.GetUnsafePtr(), ent);
 							ref var health = ref UnsafeUtilityEx.ArrayElementAsRef<LivableHealth>(healthArray.GetUnsafePtr(), ent);
+
+							int team = 0;
+
+							GameModeUnit? gameModeUnit = null;
+							if (EntityManager.HasComponent<GameModeUnit>(entityArray[ent]))
+							{
+								gameModeUnit = EntityManager.GetComponentData<GameModeUnit>(entityArray[ent]);
+								team = gameModeUnit.Value.Team;
+							}
+							else if (EntityManager.HasComponent<Relative<TeamDescription>>(entityArray[ent])
+							         && EntityManager.HasComponent<HeadOnStructure>(entityArray[ent]))
+							{
+								team = EntityManager.GetComponentData<Relative<TeamDescription>>(entityArray[ent]).Target == gameMode.Team0 ? 0 : 1;
+							}
 
 							// ----------------------------- //
 							// Update Units health state
@@ -408,12 +493,8 @@ namespace Patapon4TLB.GameModes
 							{
 								health.IsDead = true;
 
-								ref var points = ref gameMode.GetPoints(1 - gameModeUnit.Team);
+								ref var points = ref gameMode.GetPoints(1 - team);
 								points += 25;
-
-								var vel = EntityManager.GetComponentData<Velocity>(entityArray[ent]);
-								vel.Value += new float3(8 * (gameModeUnit.Team == 0 ? -1 : 1), 5, 0);
-								EntityManager.SetComponentData(entityArray[ent], vel);
 
 								// We only add an elimination if there was an instigator in the damage history
 								var history       = EntityManager.GetBuffer<HealthModifyingHistory>(entityArray[ent]);
@@ -426,12 +507,37 @@ namespace Patapon4TLB.GameModes
 
 								if (hasInstigator)
 								{
-									ref var eliminations = ref gameMode.GetEliminations(1 - gameModeUnit.Team);
+									ref var eliminations = ref gameMode.GetEliminations(1 - team);
 									eliminations++;
 								}
 
-								gameModeUnit.TickBeforeSpawn = UTick.AddMsNextFrame(ServerTick, GetSingleton<MpVersusHeadOnRule.Data>().RespawnTime);
+								if (gameModeUnit != null)
+								{
+									var vel = EntityManager.GetComponentData<Velocity>(entityArray[ent]);
+									vel.Value += new float3(8 * (team == 0 ? -1 : 1), 5, 0);
+									EntityManager.SetComponentData(entityArray[ent], vel);
+									
+									var nonNull = gameModeUnit.Value;
+									nonNull.TickBeforeSpawn = UTick.AddMsNextFrame(ServerTick, GetSingleton<MpVersusHeadOnRule.Data>().RespawnTime);
+
+									EntityManager.SetComponentData(entityArray[ent], nonNull);
+								}
 							}
+						}
+
+						m_LivableQuery.CopyFromComponentDataArray(healthArray);
+					}
+
+					using (var entityArray = m_UnitQuery.ToEntityArray(Allocator.TempJob))
+					using (var translationArray = m_UnitQuery.ToComponentDataArray<Translation>(Allocator.TempJob))
+					using (var gmUnitArray = m_UnitQuery.ToComponentDataArray<GameModeUnit>(Allocator.TempJob))
+					using (var healthArray = m_UnitQuery.ToComponentDataArray<LivableHealth>(Allocator.TempJob))
+					{
+						for (var ent = 0; ent != entityArray.Length; ent++)
+						{
+							ref var translation = ref UnsafeUtilityEx.ArrayElementAsRef<Translation>(translationArray.GetUnsafePtr(), ent);
+							ref var gameModeUnit = ref UnsafeUtilityEx.ArrayElementAsRef<GameModeUnit>(gmUnitArray.GetUnsafePtr(), ent);
+							ref var health = ref UnsafeUtilityEx.ArrayElementAsRef<LivableHealth>(healthArray.GetUnsafePtr(), ent);
 
 							// If the unit should respawn, then respawn him
 							if (health.IsDead && gameModeUnit.TickBeforeSpawn <= ServerTick)
@@ -476,6 +582,28 @@ namespace Patapon4TLB.GameModes
 							points += structure.Type == HeadOnStructure.EType.TowerControl ? 50 :
 								structure.Type == HeadOnStructure.EType.Tower              ? 25 :
 								                                                             10;
+
+							// Get structure and set health...
+							var healthContainer = EntityManager.GetBuffer<HealthContainer>(onCaptureArray[ent].Source);
+							for (var i = 0; i != healthContainer.Length; i++)
+							{
+								var target = healthContainer[i].Target;
+								if (!EntityManager.HasComponent<DefaultHealthData>(target))
+									continue;
+
+								EntityManager.SetComponentData(target, new DefaultHealthData
+								{
+									Value = TowerBaseHealth[team],
+									Max   = TowerBaseHealth[team]
+								});
+							}
+
+							var healthEvent = EntityManager.CreateEntity(typeof(ModifyHealthEvent));
+							EntityManager.SetComponentData(healthEvent, new ModifyHealthEvent(ModifyHealthType.SetMax, 0, onCaptureArray[ent].Source));
+							EntityManager.SetComponentData(onCaptureArray[ent].Source, new LivableHealth
+							{
+								IsDead = false
+							});
 						}
 
 						EntityManager.DestroyEntity(m_EventOnCaptureQuery);

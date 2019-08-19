@@ -15,7 +15,8 @@ namespace Patapon4TLB.GameModes
 	public class HeadOnStructureAuthoring : MonoBehaviour, IConvertGameObjectToEntity
 	{
 		public HeadOnStructure.EType Type;
-		
+
+		public int HealthPercentage;
 		public int CaptureTime;
 		public HeadOnDefineTeamAuthoring TeamDefine;
 
@@ -42,6 +43,7 @@ namespace Patapon4TLB.GameModes
 		}
 
 		public EType Type;
+		public int HealthPercentage;
 		
 		public int TimeToCapture;
 		public fixed int CaptureProgress[2];

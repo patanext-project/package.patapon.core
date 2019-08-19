@@ -44,8 +44,6 @@ namespace Patapon4TLB.GameModes
 
 		protected override void OnUpdate()
 		{
-			Debug.Log($"{StaticSceneResourceHolder.Get("versus:wall/wood")}");
-			
 			// Check if we need to load the map...
 			NativeString512 serverMapKey = default, clientMapKey = default;
 			if (m_ServerMapQuery.CalculateEntityCount() > 0)
