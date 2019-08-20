@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DefaultNamespace;
+using MonoComponents;
 using Patapon4TLB.Core.BasicUnitSnapshot;
 using Patapon4TLB.GameModes;
 using Runtime.Misc;
@@ -8,6 +9,9 @@ using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Modules;
 using Unity.Entities;
+using Unity.Mathematics;
+using Unity.NetCode;
+using Unity.Transforms;
 using UnityEngine;
 
 namespace Patapon4TLB.Default.Test.Structures
@@ -19,12 +23,16 @@ namespace Patapon4TLB.Default.Test.Structures
 		public List<Renderer>        rendererWithTeamColorArray;
 		public float                 reintegrationProgress;
 
+		public Animator animator;
+
 		private static readonly int TintPropertyId     = Shader.PropertyToID("_Color");
 		private static readonly int ProgressPropertyId = Shader.PropertyToID("_Progress");
+		private static readonly int DeadPropertyId = Animator.StringToHash("Dead");
 
 		private void OnEnable()
 		{
 			mpb = new MaterialPropertyBlock();
+			reintegrationProgress = float.NegativeInfinity;
 		}
 
 		private void OnDisable()
@@ -33,17 +41,43 @@ namespace Patapon4TLB.Default.Test.Structures
 			mpb = null;
 		}
 
-		private void Update()
+		private float m_Reintegration;
+
+		internal void OnUpdate(StructureWallBackend backend, bool teamUpdate, bool hasTeam, bool healthUpdate, bool isDead)
 		{
-			reintegrationProgress += Time.deltaTime;
-			if (Input.GetKeyDown(KeyCode.R))
+			if (teamUpdate)
 			{
-				GetComponent<Animator>().SetTrigger("Create");
-				reintegrationProgress = 0;
+				if (hasTeam)
+				{
+					OnCreate();
+					m_Reintegration = 0.0f;
+				}
 			}
 
-			SetReintegrationProgress(reintegrationProgress, true);
-			SetTeamColor(Color.Lerp(Color.cyan, Color.black, 0.25f));
+			if (healthUpdate && isDead)
+			{
+				m_Reintegration = 0.0f;
+			}
+			
+			animator.SetBool(DeadPropertyId, isDead);
+
+			m_Reintegration += Time.deltaTime;
+			
+			if (!hasTeam)
+			{
+				SetReintegrationProgress(0, true);
+			}
+			else
+			{
+				if (isDead)
+				{
+					SetReintegrationProgress(math.clamp(1 - m_Reintegration, 0, 1), true);
+				}
+				else
+				{
+					SetReintegrationProgress(m_Reintegration * 3f, true);	
+				}
+			}
 		}
 
 		public void SetTeamColor(Color color)
@@ -73,10 +107,19 @@ namespace Patapon4TLB.Default.Test.Structures
 				rendererArray[i].SetPropertyBlock(mpb);
 			}
 		}
+
+		public void OnCreate()
+		{
+			animator.SetTrigger("Create");
+		}
 	}
 
+	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	public class StructureWallBackend : RuntimeAssetBackend<StructureWallPresentation>
 	{
+		public bool IsDead;
+		public bool HasTeam;
+
 		public class Process : GameBaseSystem
 		{
 			private ModuleGetAssetFromGuid m_ModuleGetAssetFromGuid;
@@ -96,10 +139,25 @@ namespace Patapon4TLB.Default.Test.Structures
 					{
 						backend.Return(true, true);
 						return;
-					}					
+					}
+
+					if (!backend.HasIncomingPresentation)
+					{
+						var targetPool = StaticSceneResourceHolder.GetPool("versus:wall/wood");
+						if (targetPool != null)
+						{
+							backend.SetPresentationFromPool(targetPool);
+						}
+
+						return;
+					}
 
 					if (backend.Presentation == null)
 						return;
+
+					var hadTeam   = backend.HasTeam;
+					var wasDead   = backend.IsDead;
+					var direction = 1;
 
 					var presentation = backend.Presentation;
 					var chunk        = EntityManager.GetChunk(backend.DstEntity);
@@ -110,17 +168,38 @@ namespace Patapon4TLB.Default.Test.Structures
 						{
 							var teamDesc = EntityManager.GetComponentData<Relative<TeamDescription>>(backend.DstEntity);
 							if (teamDesc.Target == default || !EntityManager.HasComponent<Relative<ClubDescription>>(teamDesc.Target))
+							{
+								backend.HasTeam = false;
 								continue;
+							}
 
 							var clubInfo = EntityManager.GetComponentData<ClubInformation>(EntityManager.GetComponentData<Relative<ClubDescription>>(teamDesc.Target).Target);
 							presentation.SetTeamColor(clubInfo.PrimaryColor);
+
+							if (EntityManager.HasComponent<TeamDirection>(teamDesc.Target))
+							{
+								var teamDir = EntityManager.GetComponentData<TeamDirection>(teamDesc.Target);
+								direction = teamDir.Value;
+							}
+
+							backend.HasTeam = true;
 						}
 					}
+
+					var health = EntityManager.GetComponentData<LivableHealth>(backend.DstEntity);
+					presentation.OnUpdate(backend, hadTeam != backend.HasTeam, backend.HasTeam, wasDead != health.ShouldBeDead(), health.ShouldBeDead());
+
+					var pos = EntityManager.GetComponentData<Translation>(backend.DstEntity).Value;
+					pos.z += 200;
+
+					backend.transform.position   = pos;
+					backend.transform.localScale = new Vector3(direction, 1, 1);
 				});
 			}
 		}
 	}
 
+	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	public class StructureWallGenerateSystem : GameBaseSystem
 	{
 		public struct ToModel : IComponentData
@@ -144,7 +223,7 @@ namespace Patapon4TLB.Default.Test.Structures
 			{
 				var gameObject = new GameObject("Wall Backend", typeof(StructureWallBackend), typeof(GameObjectEntity));
 				gameObject.SetActive(false);
-
+				
 				return gameObject;
 			}, World);
 		}
@@ -161,6 +240,7 @@ namespace Patapon4TLB.Default.Test.Structures
 					var backendGameObject = m_BackendPool.Dequeue();
 					var backend           = backendGameObject.GetComponent<StructureWallBackend>();
 
+					backend.SetTarget(EntityManager, entity);
 					backendGameObject.SetActive(true);
 					
 					EntityManager.AddComponentData(entity, new ToModel {Target = backend.DstEntity});

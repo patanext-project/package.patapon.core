@@ -159,8 +159,6 @@ namespace Patapon4TLB.Default.Attack
 				}
 
 				var aheadStartDifference = UTick.CopyDelta(gameTick, math.max(gameTick.Value - attackAbility.AttackStartTick, 0));
-				Debug.Log($"{attackAbility.AttackStartTick} {gameTick.Value} {GetTick(true).Value} --> {aheadStartDifference.Value}");
-
 				systemData.PreviousAttackTick  = attackAbility.AttackStartTick;
 				systemData.Behaviour.StartTime = animation.RootTime - math.clamp(aheadStartDifference.Seconds, -0.2, 0.2);
 

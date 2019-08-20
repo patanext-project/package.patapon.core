@@ -16,6 +16,7 @@ namespace Patapon4TLB.UI.GameMode.VSHeadOn
 		}
 		
 		public RectTransform Drawer;
+		public RectTransform StructureFrame;
 		public RectTransform UnitStatusFrame;
 
 		public TeamFlagSide[] FlagSides;

@@ -1,5 +1,6 @@
 using System;
 using DefaultNamespace;
+using P4.Core;
 using package.patapon.core;
 using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
@@ -32,6 +33,9 @@ namespace Patapon4TLB.GameModes
 		{
 			public int Team;
 			public int FormationIndex;
+
+			public int KillStreak;
+			public int DeadCount;
 
 			public UTick TickBeforeSpawn;
 		}
@@ -351,6 +355,15 @@ namespace Patapon4TLB.GameModes
 										cameraState.Data.Target = ent;
 										EntityManager.SetComponentData(player, cameraState);
 									}
+									else
+									{
+										EntityManager.AddComponentData(ent, new BotControlledUnit());
+										
+										var unitTarget = EntityManager.CreateEntity(typeof(UnitTargetDescription), typeof(Translation), typeof(LocalToWorld), typeof(Relative<PlayerDescription>));
+										EntityManager.AddComponent(unitTarget, typeof(GhostComponent));
+										EntityManager.ReplaceOwnerData(unitTarget, ent);
+										EntityManager.AddComponentData(ent, new Relative<UnitTargetDescription> {Target = unitTarget});
+									}
 
 									var stat = EntityManager.GetComponentData<UnitStatistics>(units[unt].Value);
 									
@@ -446,7 +459,7 @@ namespace Patapon4TLB.GameModes
 						if (EntityManager.HasComponent<Relative<UnitTargetDescription>>(e))
 						{
 							var targetRelative = EntityManager.GetComponentData<Relative<UnitTargetDescription>>(e);
-							EntityManager.SetComponentData(targetRelative.Target, new Translation {Value = new float3(spawnPosition.x, float2.zero)});
+							EntityManager.SetComponentData(targetRelative.Target, new Translation {Value = new float3(0, float2.zero)});
 						}
 
 						livableHealth.IsDead = false;
@@ -472,7 +485,7 @@ namespace Patapon4TLB.GameModes
 						{
 							ref var health = ref UnsafeUtilityEx.ArrayElementAsRef<LivableHealth>(healthArray.GetUnsafePtr(), ent);
 
-							int team = 0;
+							int team = -1;
 
 							GameModeUnit? gameModeUnit = null;
 							if (EntityManager.HasComponent<GameModeUnit>(entityArray[ent]))
@@ -483,26 +496,56 @@ namespace Patapon4TLB.GameModes
 							else if (EntityManager.HasComponent<Relative<TeamDescription>>(entityArray[ent])
 							         && EntityManager.HasComponent<HeadOnStructure>(entityArray[ent]))
 							{
-								team = EntityManager.GetComponentData<Relative<TeamDescription>>(entityArray[ent]).Target == gameMode.Team0 ? 0 : 1;
+								var target = EntityManager.GetComponentData<Relative<TeamDescription>>(entityArray[ent]).Target;
+
+								team = target == gameMode.Team0
+									? 0
+									: target == gameMode.Team1
+										? 1
+										: -1;
 							}
+
+							if (team < 0)
+								continue;
 
 							// ----------------------------- //
 							// Update Units health state
 							// If the unit should be dead, then set it dead
-							if (health.Value <= 0 && !health.IsDead)
+							if (health.ShouldBeDead() && !health.IsDead)
 							{
+								Debug.Log($"ded -> {entityArray[ent]} <- ded [team#{team}]");
 								health.IsDead = true;
 
 								ref var points = ref gameMode.GetPoints(1 - team);
-								points += 25;
+								{
+									var bonus = 0;
+									if (gameModeUnit != null && gameModeUnit.Value.KillStreak > 1)
+									{
+										bonus += (gameModeUnit.Value.KillStreak - 1) * 5;
+									}
+									
+									points += 25 + bonus;
+								}
 
 								// We only add an elimination if there was an instigator in the damage history
 								var history       = EntityManager.GetBuffer<HealthModifyingHistory>(entityArray[ent]);
 								var hasInstigator = false;
+								Entity lastInstigator = default;
 								for (var story = 0; !hasInstigator && story != history.Length; story++)
 								{
 									if (history[story].Instigator != default && history[story].Value < 0)
+									{
 										hasInstigator = true;
+										if (lastInstigator == default
+										    && EntityManager.HasComponent<GameModeUnit>(history[story].Instigator))
+										{
+											lastInstigator = history[story].Instigator;
+
+											var gmUnit = EntityManager.GetComponentData<GameModeUnit>(lastInstigator);
+											gmUnit.KillStreak++;
+											EntityManager.SetComponentData(lastInstigator, gmUnit);
+										}
+									}
 								}
 
 								if (hasInstigator)
@@ -518,7 +561,10 @@ namespace Patapon4TLB.GameModes
 									EntityManager.SetComponentData(entityArray[ent], vel);
 									
 									var nonNull = gameModeUnit.Value;
-									nonNull.TickBeforeSpawn = UTick.AddMsNextFrame(ServerTick, GetSingleton<MpVersusHeadOnRule.Data>().RespawnTime);
+									var ruleData = GetSingleton<MpVersusHeadOnRule.Data>();
+									nonNull.TickBeforeSpawn = UTick.AddMsNextFrame(ServerTick, ruleData.RespawnTime + (nonNull.DeadCount * ruleData.IncrementRespawnTime));
+									nonNull.DeadCount++;
+									nonNull.KillStreak = 0;
 
 									EntityManager.SetComponentData(entityArray[ent], nonNull);
 								}
@@ -557,7 +603,7 @@ namespace Patapon4TLB.GameModes
 							if ((oppositeFlagTr.x - translation.Value.x) * side >= 0)
 							{
 								Debug.Log($"{gameModeUnit.Team} captured the flag!");
-								WinningTeam = gameModeUnit.Team;
+								WinningTeam = gameModeUnit.Team + 1;
 							}
 						}
 						
@@ -579,10 +625,15 @@ namespace Patapon4TLB.GameModes
 							var team      = relativeTeam == gameMode.Team0 ? 0 : 1;
 
 							ref var points = ref gameMode.GetPoints(team);
+
+							var before = points;
+							
 							points += structure.Type == HeadOnStructure.EType.TowerControl ? 50 :
 								structure.Type == HeadOnStructure.EType.Tower              ? 25 :
 								                                                             10;
 
+							Debug.Log($"gain points {team} -> before={before} now={points}");
+							
 							// Get structure and set health...
 							var healthContainer = EntityManager.GetBuffer<HealthContainer>(onCaptureArray[ent].Source);
 							for (var i = 0; i != healthContainer.Length; i++)
@@ -629,6 +680,8 @@ namespace Patapon4TLB.GameModes
 				}
 				case MpVersusHeadOn.State.RoundEnd:
 					Debug.Log($"Winner! {WinningTeam}");
+					gameMode.EndTime = -1;
+					
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();

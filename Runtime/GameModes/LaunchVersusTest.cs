@@ -42,7 +42,7 @@ namespace Patapon4TLB.GameModes
 						// taterazay
 						EntityManager.SetComponentData(unitEntity, new UnitStatistics
 						{
-							Health  = 10,
+							Health  = 225,
 							Attack  = 24,
 							Defense = 7,
 
@@ -54,9 +54,9 @@ namespace Patapon4TLB.GameModes
 							AttackSeekRange     = 20f
 						});
 						// yarida
-						EntityManager.SetComponentData(unitEntity, new UnitStatistics
+						/*EntityManager.SetComponentData(unitEntity, new UnitStatistics
 						{
-							Health  = 160,
+							Health  = 175,
 							Attack  = 30,
 							Defense = 0,
 
@@ -66,7 +66,7 @@ namespace Patapon4TLB.GameModes
 							MovementAttackSpeed = 2.22f,
 							Weight              = 6f,
 							AttackSeekRange     = 20f
-						});
+						});*/
 
 						var definedAbilities = EntityManager.GetBuffer<UnitDefinedAbilities>(unitEntity);
 						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_march"), 0));

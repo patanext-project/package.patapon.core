@@ -1,6 +1,8 @@
 using System;
+using Patapon4TLB.Default;
 using Patapon4TLB.GameModes.Authoring;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
 using StormiumTeam.Networking.Utilities;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
@@ -15,7 +17,7 @@ namespace Patapon4TLB.GameModes.Snapshot
 	public struct HeadOnStructureSnapshot : ISnapshotData<HeadOnStructureSnapshot>
 	{
 		public const int Quantization    = 1000;
-		public const int InvQuantization = 1 / 1000;
+		public const float InvQuantization = 1f / 1000f;
 
 		public uint Tick { get; set; }
 
@@ -53,6 +55,8 @@ namespace Patapon4TLB.GameModes.Snapshot
 
 		public void Deserialize(uint tick, ref HeadOnStructureSnapshot baseline, DataStreamReader reader, ref DataStreamReader.Context ctx, NetworkCompressionModel compressionModel)
 		{
+			Tick = tick;
+			
 			for (var i = 0; i < 2; i++)
 				Position[i] = reader.ReadPackedIntDelta(ref ctx, baseline.Position[i], compressionModel);
 
@@ -129,7 +133,9 @@ namespace Patapon4TLB.GameModes.Snapshot
 			return EntityManager.CreateArchetype
 			(
 				typeof(HeadOnStructureSnapshot),
+				typeof(Translation),
 				typeof(HeadOnStructure),
+				typeof(LivableHealth),
 				typeof(CaptureAreaComponent),
 				typeof(ReplicatedEntityComponent)
 			);
@@ -141,7 +147,7 @@ namespace Patapon4TLB.GameModes.Snapshot
 		}
 	}
 
-	[UpdateInGroup(typeof(GhostUpdateSystemGroup))]
+	[UpdateInGroup(typeof(UpdateGhostSystemGroup))]
 	public class HeadOnStructureUpdateSystem : JobComponentSystem
 	{
 		private struct JobProcess : IJobForEach_BCCC<HeadOnStructureSnapshot, Translation, HeadOnStructure, CaptureAreaComponent>
@@ -150,8 +156,7 @@ namespace Patapon4TLB.GameModes.Snapshot
 
 			public unsafe void Execute(DynamicBuffer<HeadOnStructureSnapshot> snapshotArray, ref Translation translation, ref HeadOnStructure structure, ref CaptureAreaComponent captureArea)
 			{
-				if (!snapshotArray.GetDataAtTick(ServerTick.AsUInt, out var snapshotData))
-					return;
+				snapshotArray.GetDataAtTick(ServerTick.AsUInt, out var snapshotData);
 
 				translation.Value            = snapshotData.Position.Get(HeadOnStructureSnapshot.InvQuantization);
 				structure.Type               = snapshotData.Type;
@@ -159,8 +164,6 @@ namespace Patapon4TLB.GameModes.Snapshot
 				structure.CaptureProgress[1] = snapshotData.Progress1;
 				structure.TimeToCapture      = snapshotData.TimeToCapture;
 				captureArea.CaptureType      = snapshotData.CaptureType;
-				
-				Debug.Log($"{structure.CaptureProgress[0]} - {structure.CaptureProgress[1]}");
 			}
 		}
 

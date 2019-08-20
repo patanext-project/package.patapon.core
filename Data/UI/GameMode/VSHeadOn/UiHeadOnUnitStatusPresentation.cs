@@ -74,6 +74,21 @@ namespace Patapon4TLB.UI
 	[UpdateAfter(typeof(UiHeadOnStatusGenerateList))]
 	public class UiHeadOnUnitStatusPresentationSystem : UIGameSystemBase
 	{
+		private struct SortBackend : IComparable<SortBackend>
+		{
+			public int Team;
+			public LivableHealth Health;
+			
+			public int index;
+
+			public Entity entity;
+
+			public int CompareTo(SortBackend other)
+			{
+				return other.priority - priority;
+			}
+		}
+		
 		private EntityQuery m_Query;
 
 		protected override void OnCreate()
@@ -85,6 +100,26 @@ namespace Patapon4TLB.UI
 
 		protected override void OnUpdate()
 		{
+			var length = m_Query.CalculateEntityCount();
+			var sorted = new NativeArray<SortBackend>(length, Allocator.Temp);
+
+			UiHeadOnUnitStatusBackend backend = null;
+			foreach (var (i, entity) in this.ToEnumerator_C(m_Query, ref backend))
+			{
+				LivableHealth health = default;
+				if (EntityManager.HasComponent<LivableHealth>(backend.DstEntity))
+				{
+					health = EntityManager.GetComponentData<LivableHealth>(backend.DstEntity);
+				}
+
+				if (EntityManager.HasComponent<Relative<TeamDescription>>(backend.DstEntity))
+				{
+					
+				}
+				
+				sorted[i] = new SortBackend {index = i, Health = health, entity = entity};
+			}
+			
 			Entities.With(m_Query).ForEach((UiHeadOnUnitStatusBackend backend) =>
 			{
 				var chunk = EntityManager.GetChunk(backend.DstEntity);

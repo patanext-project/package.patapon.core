@@ -1,4 +1,5 @@
 using MonoComponents;
+using package.stormiumteam.shared.ecs;
 using Patapon4TLB.UI.GameMode.VSHeadOn;
 using Runtime.Systems;
 using Scripts.Utilities;
@@ -14,6 +15,11 @@ using UnityEngine;
 
 namespace Patapon4TLB.GameModes
 {
+	public struct TeamDirection : IComponentData
+	{
+		public sbyte Value;
+	}
+	
 	[UpdateInGroup(typeof(ClientGameModeSystemGroup))]
 	public class MpVersusHeadOnClientGameMode : GameBaseSystem
 	{
@@ -77,6 +83,12 @@ namespace Patapon4TLB.GameModes
 					if (teamArray[ent].Target == gameMode.Team0) flag0      = entities[ent];
 					else if (teamArray[ent].Target == gameMode.Team1) flag1 = entities[ent];
 				}
+			}
+
+			for (var i = 0; i != 2; i++)
+			{
+				var team = i == 0 ? gameMode.Team0 : gameMode.Team1;
+				EntityManager.SetOrAddComponentData(team, new TeamDirection {Value = (sbyte) (i == 0 ? 1 : -1)});
 			}
 
 			var hud = EntityManager.GetComponentObject<UiHeadOnPresentation>(m_InterfaceQuery.GetSingletonEntity());
