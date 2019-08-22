@@ -12,7 +12,6 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
 using Unity.Networking.Transport;
-using UnityEngine;
 
 namespace Patapon4TLB.Default.Attack
 {

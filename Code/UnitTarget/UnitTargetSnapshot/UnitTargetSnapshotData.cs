@@ -1,5 +1,3 @@
-using Patapon4TLB.Default;
-using StormiumTeam.GameBase;
 using StormiumTeam.Networking.Utilities;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;

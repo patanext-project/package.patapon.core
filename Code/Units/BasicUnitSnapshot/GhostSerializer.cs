@@ -1,4 +1,3 @@
-using DefaultNamespace;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using StormiumTeam.Networking.Utilities;
@@ -6,7 +5,6 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Transforms;
-using UnityEngine;
 
 namespace Patapon4TLB.Core.BasicUnitSnapshot
 {

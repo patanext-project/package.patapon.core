@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
 using Unity.Entities;
 using Unity.NetCode;
-using NotImplementedException = System.NotImplementedException;
 
 namespace Patapon4TLB.Default
 {

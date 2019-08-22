@@ -1,5 +1,4 @@
-﻿using StormiumTeam.GameBase;
-using Unity.Entities;
+﻿using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 

@@ -1,11 +1,3 @@
-using package.patapon.core;
-using Runtime.EcsComponents;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Data;
-using Unity.Entities;
-using Unity.Jobs;
-using Unity.NetCode;
-
 namespace Patapon4TLB.Default.Test
 {
 	/*[UpdateInGroup(typeof(ServerSimulationSystemGroup))]

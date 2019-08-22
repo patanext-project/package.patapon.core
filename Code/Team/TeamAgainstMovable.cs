@@ -1,7 +1,6 @@
 using Unity.Entities;
-using Unity.Mathematics;
 
-namespace P4.Core
+namespace Patapon4TLBCore
 {
 	public struct TeamAgainstMovable : IComponentData
 	{

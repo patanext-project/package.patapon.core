@@ -1,7 +1,7 @@
 using package.patapon.core;
 using package.patapon.def.Data;
-using Runtime.EcsComponents;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.EcsComponents;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.NetCode;

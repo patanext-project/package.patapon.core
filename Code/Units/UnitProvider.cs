@@ -1,9 +1,7 @@
-using P4.Core;
-using package.StormiumTeam.GameBase;
 using Patapon4TLB.Default;
+using Patapon4TLBCore;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Data;
 using Unity.Entities;
 using Unity.Physics;
 using Unity.Transforms;

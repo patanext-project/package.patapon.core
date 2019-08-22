@@ -1,7 +1,5 @@
-using package.StormiumTeam.GameBase;
 using Patapon4TLB.Default;
 using Patapon4TLB.UI.InGame;
-using Runtime.Systems;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Burst;

@@ -1,4 +1,3 @@
-using System;
 using package.patapon.core;
 using StormiumTeam.GameBase;
 using Unity.Burst;

@@ -1,6 +1,6 @@
 using Patapon4TLB.Core;
-using Runtime.Misc;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Misc;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;

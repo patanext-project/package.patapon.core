@@ -1,8 +1,5 @@
 ﻿using System;
-using StormiumTeam.GameBase;
-using Unity.Collections;
 using Unity.Entities;
-using Unity.Jobs;
 using UnityEngine;
 
 namespace package.patapon.core

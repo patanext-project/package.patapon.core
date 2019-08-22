@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using Unity.Entities;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace package.patapon.core

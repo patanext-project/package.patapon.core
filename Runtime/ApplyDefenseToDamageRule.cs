@@ -1,13 +1,12 @@
 using Patapon4TLB.Default;
-using Runtime.BaseSystems;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Components;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Unity.Mathematics;
 
-namespace Runtime
+namespace Patapon4TLB.Core
 {
 	[UpdateInGroup(typeof(GameEventRuleSystemGroup))]
 	[UpdateBefore(typeof(DefaultDamageRule))]

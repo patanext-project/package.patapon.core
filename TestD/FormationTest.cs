@@ -4,7 +4,7 @@ using Unity.Entities;
 using Unity.Entities.Tests;
 using UnityEngine;
 
-namespace P4.Core.Tests
+namespace Patapon4TLBCore.Tests
 {
 	[TestFixture]
 	[Category("P4")]

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using package.patapon.core.Animation;
 using package.patapon.core.VisualPresentation;
 using Patapon4TLB.Core.BasicUnitSnapshot;
@@ -8,7 +7,6 @@ using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using StormiumTeam.Shared.Gen;
 using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
@@ -17,7 +15,6 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
-using UnityEngine.Profiling;
 
 namespace Patapon4TLB.Core
 {

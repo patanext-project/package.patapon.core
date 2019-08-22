@@ -5,7 +5,6 @@ using Patapon4TLB.Core;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Animations;

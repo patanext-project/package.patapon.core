@@ -1,4 +1,3 @@
-using package.patapon.core;
 using Patapon4TLB.Core;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
@@ -8,11 +7,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
-using Unity.Physics;
 using Unity.Transforms;
-using UnityEngine;
-using Collider = Unity.Physics.Collider;
-using SphereCollider = Unity.Physics.SphereCollider;
 
 namespace Patapon4TLB.Default.Attack
 { 

@@ -1,6 +1,5 @@
 using package.patapon.core;
 using package.patapon.def.Data;
-using Runtime.Systems;
 using StormiumTeam.GameBase;
 using Unity.Burst;
 using Unity.Collections;

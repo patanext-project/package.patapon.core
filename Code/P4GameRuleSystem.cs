@@ -1,9 +1,9 @@
 using Patapon4TLB.Default.Test;
-using Runtime.BaseSystems;
+using StormiumTeam.GameBase.BaseSystems;
 using Unity.Entities;
 using Unity.Jobs;
 
-namespace P4.Core
+namespace Patapon4TLBCore
 {
 	[AlwaysUpdateSystem]
 	public class P4GameRuleSystem : RuleBaseSystem

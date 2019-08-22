@@ -1,14 +1,10 @@
 ﻿//using P4.Core.RythmEngine;
 
-using System;
 using package.stormiumteam.shared.modding;
 using StormiumTeam.GameBase;
-using Unity.Burst;
 using Unity.Entities;
-using UnityEngine;
-using UnityEngine.Rendering;
 
-namespace P4.Core
+namespace Patapon4TLBCore
 {
     public class Bootstrap : CModBootstrap
     {

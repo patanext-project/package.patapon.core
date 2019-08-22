@@ -1,11 +1,8 @@
 using package.patapon.core;
 using package.patapon.def.Data;
-using Runtime.EcsComponents;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Data;
 using Unity.Entities;
-using Unity.NetCode;
 
 namespace Patapon4TLB.Default
 {

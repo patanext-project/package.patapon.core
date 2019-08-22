@@ -1,5 +1,4 @@
 using System;
-using Patapon4TLB.GameModes;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using TMPro;
@@ -8,7 +7,6 @@ using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.UI;
 
 namespace Patapon4TLB.UI.GameMode.VSHeadOn

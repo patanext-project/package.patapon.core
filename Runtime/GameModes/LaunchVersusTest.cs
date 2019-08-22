@@ -1,13 +1,9 @@
-using System;
 using Patapon4TLB.Core;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Jobs.LowLevel.Unsafe;
 using Unity.NetCode;
-using UnityEngine;
-using Random = Unity.Mathematics.Random;
 
 namespace Patapon4TLB.GameModes
 {

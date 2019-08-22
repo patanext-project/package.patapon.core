@@ -1,21 +1,16 @@
 using System;
-using DefaultNamespace;
-using P4.Core;
 using package.patapon.core;
-using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
 using Patapon4TLB.Core;
-using Patapon4TLB.Core.MasterServer;
 using Patapon4TLB.Default;
-using Runtime.BaseSystems;
-using Runtime.EcsComponents;
+using Patapon4TLBCore;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Components;
-using StormiumTeam.Networking.Utilities;
+using StormiumTeam.GameBase.EcsComponents;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Physics;
@@ -126,6 +121,11 @@ namespace Patapon4TLB.GameModes
 			});
 
 			m_UnitProvider = World.GetOrCreateSystem<UnitProvider>();
+		}
+
+		public void Loop()
+		{
+			
 		}
 
 		public override unsafe void OnGameModeUpdate(Entity gmEntity, ref MpVersusHeadOn gameMode)

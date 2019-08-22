@@ -10,7 +10,6 @@ using Unity.Jobs;
 using Unity.NetCode;
 using Unity.Networking.Transport;
 using Unity.Transforms;
-using UnityEngine;
 
 namespace Patapon4TLB.GameModes.Snapshot
 {

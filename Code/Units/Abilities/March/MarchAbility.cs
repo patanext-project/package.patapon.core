@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using package.patapon.core;
-using package.patapon.core.Animation;
-using package.StormiumTeam.GameBase;
 using Patapon4TLB.Core;
-using Patapon4TLB.UI.InGame;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Data;
@@ -14,12 +8,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
-using Unity.Physics;
 using Unity.Transforms;
-using UnityEngine;
-using UnityEngine.AddressableAssets;
-using UnityEngine.Animations;
-using UnityEngine.Playables;
 
 namespace Patapon4TLB.Default
 {

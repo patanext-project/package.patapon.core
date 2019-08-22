@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using package.patapon.core;
-using P4.Core;
 using Patapon4TLB.Default.Snapshot;
+using Patapon4TLBCore;
 using StormiumTeam.GameBase;
 using StormiumTeam.ThirdParty;
 using TMPro;

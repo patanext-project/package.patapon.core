@@ -1,8 +1,7 @@
 using System.Collections.Generic;
-using package.stormiumteam.shared.ecs;
-using Runtime.Misc;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
+using StormiumTeam.GameBase.Misc;
 using StormiumTeam.Shared.Gen;
 using Unity.Collections;
 using Unity.Entities;

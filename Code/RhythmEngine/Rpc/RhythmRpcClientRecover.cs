@@ -1,8 +1,8 @@
 using package.patapon.core;
 using package.patapon.def.Data;
 using package.stormiumteam.shared;
-using Runtime.EcsComponents;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.EcsComponents;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;

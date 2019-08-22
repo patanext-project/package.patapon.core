@@ -1,4 +1,3 @@
-using package.stormiumteam.shared;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Burst;
@@ -7,9 +6,8 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEngine;
 
-namespace P4.Core
+namespace Patapon4TLBCore
 {
 	public struct TeamBlockMovableArea : IComponentData
 	{

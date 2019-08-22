@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Patapon4TLB.GameModes;
 using Patapon4TLB.UI.InGame;
-using Runtime.Misc;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
+using StormiumTeam.GameBase.Misc;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Transforms;

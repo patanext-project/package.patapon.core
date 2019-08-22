@@ -1,5 +1,4 @@
-using System;
-using P4.Core;
+using Patapon4TLBCore;
 using Unity.Entities;
 using UnityEngine;
 

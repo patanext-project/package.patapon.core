@@ -1,12 +1,12 @@
 using package.patapon.core;
-using package.StormiumTeam.GameBase;
 using Patapon4TLB.Default;
 using Patapon4TLB.Default.Attack;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Entities;
 using Unity.NetCode;
 
-namespace P4.Core
+namespace Patapon4TLBCore
 {
 	public struct BotControlledUnit : IComponentData
 	{

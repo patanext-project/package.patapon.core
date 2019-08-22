@@ -1,5 +1,4 @@
 using System;
-using DefaultNamespace;
 using Patapon4TLB.Default;
 using StormiumTeam.Networking.Utilities;
 using Unity.Collections;

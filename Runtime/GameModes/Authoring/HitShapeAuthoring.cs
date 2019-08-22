@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.NetCode;
-using Unity.Physics;
 using Unity.Physics.Authoring;
 using Unity.Transforms;
 using UnityEngine;

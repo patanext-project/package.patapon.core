@@ -7,7 +7,6 @@ using StormiumTeam.Shared.Gen;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
-using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -85,7 +84,7 @@ namespace Patapon4TLB.UI
 
 			public int CompareTo(SortBackend other)
 			{
-				return other.priority - priority;
+				return other.Team - Team;
 			}
 		}
 		
@@ -100,6 +99,8 @@ namespace Patapon4TLB.UI
 
 		protected override void OnUpdate()
 		{
+			return;
+			
 			var length = m_Query.CalculateEntityCount();
 			var sorted = new NativeArray<SortBackend>(length, Allocator.Temp);
 
@@ -120,7 +121,7 @@ namespace Patapon4TLB.UI
 				sorted[i] = new SortBackend {index = i, Health = health, entity = entity};
 			}
 			
-			Entities.With(m_Query).ForEach((UiHeadOnUnitStatusBackend backend) =>
+			/*Entities.With(m_Query).ForEach((UiHeadOnUnitStatusBackend backend) =>
 			{
 				var chunk = EntityManager.GetChunk(backend.DstEntity);
 				if (!chunk.Has(GetArchetypeChunkComponentType<Translation>()))
@@ -174,7 +175,7 @@ namespace Patapon4TLB.UI
 					y = 0,
 					z = 0
 				};
-			});
+			});*/
 		}
 	}
 }

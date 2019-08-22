@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using package.stormiumteam.shared;
-using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;

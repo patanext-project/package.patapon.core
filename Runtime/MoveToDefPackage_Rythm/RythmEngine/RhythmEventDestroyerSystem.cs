@@ -1,6 +1,4 @@
-﻿using package.patapon.def.Data;
-using Unity.Burst;
-using Unity.Entities;
+﻿using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
 

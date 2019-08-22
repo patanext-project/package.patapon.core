@@ -1,13 +1,11 @@
-using System;
 using System.Collections.Generic;
 using package.patapon.core;
 using Patapon4TLB.Default;
 using Patapon4TLB.UI.InGame;
-using Runtime.Misc;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
+using StormiumTeam.GameBase.Misc;
 using StormiumTeam.Shared.Gen;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;

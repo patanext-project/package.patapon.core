@@ -1,7 +1,6 @@
 using Patapon4TLB.Core;
 using StormiumTeam.GameBase;
 using Unity.Entities;
-using Unity.Mathematics;
 
 [assembly: RegisterGenericComponentType(typeof(Relative<UnitTargetDescription>))]
 

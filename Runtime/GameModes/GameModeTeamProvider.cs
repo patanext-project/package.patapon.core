@@ -1,4 +1,4 @@
-using P4.Core;
+using Patapon4TLBCore;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Entities;

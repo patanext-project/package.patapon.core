@@ -1,15 +1,10 @@
-using System;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.Shared.Gen;
 using TMPro;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.NetCode;
-using Unity.Transforms;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace Patapon4TLB.UI.InGame.DamageVfx
 {

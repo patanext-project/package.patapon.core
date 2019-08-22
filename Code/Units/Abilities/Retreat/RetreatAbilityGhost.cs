@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using package.patapon.core;
 using package.stormiumteam.shared;
-using Runtime.Systems;
 using StormiumTeam.GameBase;
 using StormiumTeam.Networking.Utilities;
 using Unity.Burst;
@@ -10,10 +9,8 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
-using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Networking.Transport;
-using UnityEngine;
 
 namespace Patapon4TLB.Default
 {

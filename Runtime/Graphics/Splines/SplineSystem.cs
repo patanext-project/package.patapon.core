@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using package.stormiumteam.shared;
 using Unity.Burst;
 using Unity.Collections;
@@ -8,7 +7,6 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Jobs;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 
