@@ -6,15 +6,16 @@ using Misc.GmMachine.Contexts;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Data;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
+using Unity.Transforms;
 using UnityEngine;
 
 namespace Patapon4TLB.GameModes
 {
 	// 'Mp' indicate this is a MultiPlayer designed game-mode
-
-	public class MpVersusHeadOnGameModeAsync : GameModeAsyncSystem<MpVersusHeadOn>
+	public partial class MpVersusHeadOnGameModeAsync : GameModeAsyncSystem<MpVersusHeadOn>
 	{
 		public struct GameModeUnit : IComponentData
 		{
@@ -50,6 +51,26 @@ namespace Patapon4TLB.GameModes
 			public Entity Flag;
 		}
 
+		public interface IEntityQueryBuilderGetter
+		{
+			EntityQueryBuilder GetEntityQueryBuilder();
+		}
+
+		public class VersusHeadOnQueriesContext : ExternalContextBase, IEntityQueryBuilderGetter
+		{
+			public MpVersusHeadOnGameModeAsync GameModeSystem;
+
+			public EntityQuery SpawnPoint;
+			public EntityQuery Flag;
+			public EntityQuery PlayerWithoutGameModeData;
+			public EntityQuery Player;
+
+			public EntityQueryBuilder GetEntityQueryBuilder()
+			{
+				return GameModeSystem.Entities;
+			}
+		}
+
 		public class VersusHeadOnContext : ExternalContextBase, ITickGetter
 		{
 			public ServerSimulationSystemGroup ServerSimulationSystemGroup;
@@ -66,10 +87,6 @@ namespace Patapon4TLB.GameModes
 		}
 
 		private EntityQuery m_UpdateTeamQuery;
-		private EntityQuery m_SpawnPointQuery;
-		private EntityQuery m_FlagQuery;
-		private EntityQuery m_PlayerWithoutGameModeDataQuery;
-		private EntityQuery m_PlayerQuery;
 		private EntityQuery m_UnitQuery;
 		private EntityQuery m_LivableQuery;
 
@@ -80,21 +97,62 @@ namespace Patapon4TLB.GameModes
 		{
 			machine.AddContext(new VersusHeadOnContext
 			{
-				ServerSimulationSystemGroup = World.GetOrCreateSystem<ServerSimulationSystemGroup>()
+				ServerSimulationSystemGroup = World.GetOrCreateSystem<ServerSimulationSystemGroup>(),
+				Teams = new Team[2]
+			});
+			machine.AddContext(new VersusHeadOnQueriesContext
+			{
+				GameModeSystem = this,
+				Flag = GetEntityQuery(new EntityQueryDesc
+				{
+					All = new ComponentType[] {typeof(LocalToWorld), typeof(HeadOnFlag), typeof(HeadOnTeamTarget)}
+				}),
+				SpawnPoint = GetEntityQuery(new EntityQueryDesc
+				{
+					All = new ComponentType[] {typeof(LocalToWorld), typeof(HeadOnSpawnPoint), typeof(HeadOnTeamTarget)}
+				}),
+				PlayerWithoutGameModeData = GetEntityQuery(new EntityQueryDesc
+				{
+					All  = new ComponentType[] {typeof(GamePlayer), typeof(GamePlayerReadyTag)},
+					None = new ComponentType[] {typeof(GameModePlayer)}
+				}),
+				Player = GetEntityQuery(new EntityQueryDesc
+				{
+					All = new ComponentType[] {typeof(GamePlayer), typeof(GamePlayerReadyTag)}
+				})
 			});
 			machine.SetCollection(new BlockOnceCollection("Execution", new List<Block>
 			{
+				new SetStateBlock("Set state to Init", MpVersusHeadOn.State.OnInitialization),
 				new InitializationBlock("Init"),
 				new BlockAutoLoopCollection("MapLoop", new List<Block>
 				{
-					new LoadMapBlock("LoadMap"),
-					new StartMapBlock("StartMap"),
+					// -- On Map Load
+					new InstantChainLoopBlock("Don't skip frame", new List<Block>
+					{
+						new SetStateBlock("Set state to map loading", MpVersusHeadOn.State.OnLoadingMap),
+						new LoadMapBlock("LoadMap")
+					}),
+					// -- On Map loaded
+					new InstantChainLoopBlock("Don't skip frame", new List<Block>
+					{
+						new SetStateBlock("Set state to start map", MpVersusHeadOn.State.OnMapStart),
+						new StartMapBlock("StartMap")
+					}),
+					// -- Round Loop
 					new BlockAutoLoopCollection("RoundLoop", new List<Block>
 					{
-						new Block("StartRound"),
+						// -- On round started
+						new InstantChainLoopBlock("Don't skip frame", new List<Block>
+						{
+							new SetStateBlock("Set state to round start", MpVersusHeadOn.State.OnRoundStart),
+							new Block("StartRound")
+						}),
+						// -- Game Loop
 						new BlockAutoLoopCollection("GameLoop", new List<Block>
 						{
-
+							// -- On Loop started
+							new SetStateBlock("Set state to game loop", MpVersusHeadOn.State.Playing)
 						})
 						{
 							ResetOnBeginning = true
@@ -117,51 +175,27 @@ namespace Patapon4TLB.GameModes
 		{
 			Machine.Update();
 			var gmContext = Machine.GetContext<VersusHeadOnContext>();
-			//EntityManager.SetComponentData(gameModeEntity, gmContext.Data);
+			{
+				gmContext.Data.Team0 = gmContext.Teams[0].Target;
+				gmContext.Data.Team1 = gmContext.Teams[1].Target;
+			}
+			EntityManager.SetComponentData(gameModeEntity, gmContext.Data);
 		}
 
-		public class InitializationBlock : Block
+		public class SetStateBlock : Block
 		{
-			public const int TeamCount = 2;
+			private VersusHeadOnContext m_HeadOnCtx;
 
-			public WorldContext        WorldCtx;
-			public VersusHeadOnContext GameModeCtx;
+			public readonly MpVersusHeadOn.State State;
 
-			public InitializationBlock(string name) : base(name)
+			public SetStateBlock(string name, MpVersusHeadOn.State state) : base(name)
 			{
+				State = state;
 			}
 
 			protected override bool OnRun()
 			{
-				// -- get world systems
-				var teamProvider = WorldCtx.GetExistingSystem<GameModeTeamProvider>();
-				var clubProvider = WorldCtx.GetExistingSystem<ClubProvider>();
-
-				// -- Create teams
-				GameModeCtx.Teams = new Team[TeamCount];
-				for (var t = 0; t != TeamCount; t++)
-				{
-					ref var team = ref GameModeCtx.Teams[t];
-					team.Target = teamProvider.SpawnLocalEntityWithArguments(new GameModeTeamProvider.Create());
-
-					// Add club...
-					var club = clubProvider.SpawnLocalEntityWithArguments(new ClubProvider.Create
-					{
-						name           = new NativeString64(t == 0 ? "Blue" : "Red"),
-						primaryColor   = Color.Lerp(t == 0 ? Color.blue : Color.red, Color.white, 0.33f),
-						secondaryColor = Color.Lerp(Color.Lerp(t == 0 ? Color.blue : Color.red, Color.white, 0.15f), Color.black, 0.15f)
-					});
-					WorldCtx.EntityMgr.AddComponentData(team.Target, new Relative<ClubDescription> {Target = club});
-					WorldCtx.EntityMgr.AddComponent(club, typeof(GhostComponent));
-				}
-
-				// -- Set enemies of each team
-				for (var t = 0; t != TeamCount; t++)
-				{
-					var enemies = WorldCtx.EntityMgr.GetBuffer<TeamEnemies>(GameModeCtx.Teams[t].Target);
-					enemies.Add(new TeamEnemies {Target = GameModeCtx.Teams[1 - t].Target});
-				}
-
+				m_HeadOnCtx.Data.PlayState = State;
 				return true;
 			}
 
@@ -169,11 +203,7 @@ namespace Patapon4TLB.GameModes
 			{
 				base.OnReset();
 
-				// -------- -------- -------- -------- //
-				// : Retrieve contexts
-				// -------- -------- -------- -------- //
-				GameModeCtx = Context.GetExternal<VersusHeadOnContext>();
-				WorldCtx    = Context.GetExternal<WorldContext>();
+				m_HeadOnCtx = Context.GetExternal<VersusHeadOnContext>();
 			}
 		}
 
@@ -207,40 +237,6 @@ namespace Patapon4TLB.GameModes
 				m_RequestEntity = Entity.Null;
 				m_WorldCtx      = Context.GetExternal<WorldContext>();
 				m_GameModeCtx   = Context.GetExternal<GameModeContext>();
-			}
-		}
-
-		public class StartMapBlock : BlockCollection
-		{
-			public Block            SpawnBlock;
-			public WaitingTickBlock ShowMapTextBlock;
-
-			public StartMapBlock(string name) : base(name)
-			{
-				Add(SpawnBlock       = new Block("Test block"));
-				Add(ShowMapTextBlock = new WaitingTickBlock("Time to show map start text"));
-			}
-
-			protected override bool OnRun()
-			{
-				if (RunNext(SpawnBlock))
-				{
-					ShowMapTextBlock.SetTicksFromMs(5000);
-
-					return false;
-				}
-
-				if (RunNext(ShowMapTextBlock))
-					return false;
-
-				return true;
-			}
-
-			protected override void OnReset()
-			{
-				base.OnReset();
-
-				ShowMapTextBlock.TickGetter = Context.GetExternal<VersusHeadOnContext>();
 			}
 		}
 	}

@@ -130,6 +130,8 @@ namespace Patapon4TLB.GameModes
 
 		public override unsafe void OnGameModeUpdate(Entity gmEntity, ref MpVersusHeadOn gameMode)
 		{
+			return;
+			
 			// ----------------------------- ----------------------------- //
 			// > INIT PHASE
 			// ----------------------------- ----------------------------- //
@@ -192,7 +194,7 @@ namespace Patapon4TLB.GameModes
 
 				// ----------------------------- //
 				// Set PlayState
-				gameMode.PlayState = MpVersusHeadOn.State.InitMap;
+				gameMode.PlayState = MpVersusHeadOn.State.OnMapStart;
 			}
 
 			// ----------------------------- ----------------------------- //
@@ -236,7 +238,7 @@ namespace Patapon4TLB.GameModes
 				// creating units...
 				// creating rhythm engines...
 				// or placing gimmicks...
-				case MpVersusHeadOn.State.InitMap:
+				case MpVersusHeadOn.State.OnMapStart:
 				{
 					if (!MapManager.IsMapLoaded)
 						return;
@@ -430,7 +432,7 @@ namespace Patapon4TLB.GameModes
 						});
 					});
 
-					gameMode.PlayState = MpVersusHeadOn.State.RoundStart;
+					gameMode.PlayState = MpVersusHeadOn.State.OnRoundStart;
 					break;
 				}
 
@@ -442,7 +444,7 @@ namespace Patapon4TLB.GameModes
 				// - re-spawn players
 				// - recreate map towers (and destructible entities)
 				// - replacing gimmicks...
-				case MpVersusHeadOn.State.RoundStart:
+				case MpVersusHeadOn.State.OnRoundStart:
 				{
 					Entities.With(m_UnitQuery).ForEach((Entity e, ref Translation translation, ref GameModeUnit gameModeUnit, ref UnitDirection direction, ref LivableHealth livableHealth) =>
 					{
@@ -674,11 +676,11 @@ namespace Patapon4TLB.GameModes
 					}
 					
 					if (WinningTeam >= 0)
-						gameMode.PlayState = MpVersusHeadOn.State.RoundEnd;
+						gameMode.PlayState = MpVersusHeadOn.State.OnRoundEnd;
 
 					break;
 				}
-				case MpVersusHeadOn.State.RoundEnd:
+				case MpVersusHeadOn.State.OnRoundEnd:
 					Debug.Log($"Winner! {WinningTeam}");
 					gameMode.EndTime = -1;
 					

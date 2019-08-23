@@ -12,10 +12,13 @@ namespace Patapon4TLB.GameModes
 	{
 		public enum State
 		{
-			InitMap,
-			RoundStart,
+			OnInitialization,
+			OnLoadingMap,
+			OnMapStart,
+			OnRoundStart,
 			Playing,
-			RoundEnd
+			OnRoundEnd,
+			OnMapEnd,
 		}
 
 		public State PlayState;
