@@ -5,6 +5,7 @@ using Misc.GmMachine.Contexts;
 using package.patapon.core;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
 using Unity.Entities;
 using Unity.Mathematics;
 
@@ -88,6 +89,9 @@ namespace Patapon4TLB.GameModes
 					if (m_TeamHealthAverage[ti] > 0)
 						m_TeamHealthAverage[ti]  = (int) math.lerp(m_TeamHealthAverage[ti], stat.Health, 0.5f);
 					else m_TeamAttackAverage[ti] = stat.Health;
+
+					var healthEvent = entityMgr.CreateEntity(typeof(ModifyHealthEvent));
+					entityMgr.SetComponentData(healthEvent, new ModifyHealthEvent(ModifyHealthType.SetMax, 0, unit));
 
 					m_TeamUnitCount[ti]++;
 				}

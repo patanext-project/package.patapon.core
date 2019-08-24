@@ -63,5 +63,32 @@ namespace Patapon4TLB.Default
 				}
 			}
 		}
+
+		public NativeArray<Entity> GetEntitiesInRange(float3 from, float range, DynamicBuffer<TeamEnemies> enemies)
+		{
+			var list = new NativeList<Entity>(enemies.Length * 8, Allocator.Temp);
+			for (var team = 0; team != enemies.Length; team++)
+			{
+				var entities = EntitiesFromTeam[enemies[team].Target];
+				for (var ent = 0; ent != entities.Length; ent++)
+				{
+					var entity = entities[ent].Value;
+					if (LivableHealthFromEntity.Exists(entity) && LivableHealthFromEntity[entity].IsDead)
+						continue;
+					if (!HitShapeContainerFromEntity.Exists(entity))
+						continue;
+					if (LocalToWorldFromEntity.Exists(entity))
+						continue;
+					
+					var transform = LocalToWorldFromEntity[entity];
+					if (math.distance(transform.Position.x, from.x) > range)
+						continue;
+					
+					list.Add(entity);
+				}
+			}
+
+			return list;
+		}
 	}
 }

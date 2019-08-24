@@ -14,7 +14,7 @@ using Collider = Unity.Physics.Collider;
 using SphereCollider = Unity.Physics.SphereCollider;
 
 namespace Patapon4TLB.Default.Attack
-{ 
+{
 	public struct BasicTaterazayAttackAbility : IComponentData
 	{
 		public const int DelaySlashMs = 100;
@@ -27,13 +27,15 @@ namespace Patapon4TLB.Default.Attack
 		[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 		public class Process : JobGameBaseSystem
 		{
-			private struct Job : IJobForEach<RhythmAbilityState, BasicTaterazayAttackAbility, Relative<TeamDescription>, Relative<UnitTargetDescription>, Owner>
+			private struct Job : IJobForEach<RhythmAbilityState, BasicTaterazayAttackAbility, Owner>
 			{
 				public UTick Tick;
 
 				public NativeList<TargetDamageEvent> DamageEventList;
 
-				[ReadOnly] public ComponentDataFromEntity<LivableHealth> LivableHealthFromEntity;
+				[ReadOnly] public ComponentDataFromEntity<LivableHealth>                   LivableHealthFromEntity;
+				[ReadOnly] public ComponentDataFromEntity<Relative<TeamDescription>>       TeamRelativeFromEntity;
+				[ReadOnly] public ComponentDataFromEntity<Relative<UnitTargetDescription>> TargetRelativeFromEntity;
 
 				[ReadOnly] public ComponentDataFromEntity<UnitStatistics> UnitSettingsFromEntity;
 				[ReadOnly] public ComponentDataFromEntity<UnitPlayState>  UnitPlayStateFromEntity;
@@ -62,6 +64,7 @@ namespace Patapon4TLB.Default.Attack
 					};
 
 					var damage = 0;
+					// Calculate damage
 					if (UnitSettingsFromEntity.Exists(origin))
 					{
 						var unitStatistics = UnitSettingsFromEntity[origin];
@@ -78,66 +81,60 @@ namespace Patapon4TLB.Default.Attack
 						}
 					}
 
-					for (var team = 0; team != teamEnemies.Length; team++)
+					var enemies = SeekEnemies.GetEntitiesInRange(distanceInput.Transform.pos, 6f, teamEnemies);
+					for (var ent = 0; ent != enemies.Length; ent++)
 					{
-						var entities = SeekEnemies.EntitiesFromTeam[teamEnemies[team].Target];
-						for (var ent = 0; ent != entities.Length; ent++)
+						var entity         = enemies[ent];
+						var hitShapeBuffer = SeekEnemies.HitShapeContainerFromEntity[entity];
+						for (int i = 0, length = hitShapeBuffer.Length; i != length; i++)
 						{
-							var entity = entities[ent].Value;
-							if (LivableHealthFromEntity.Exists(entity) && LivableHealthFromEntity[entity].IsDead)
-								continue;
-							if (!SeekEnemies.HitShapeContainerFromEntity.Exists(entity))
+							var hitShape  = hitShapeBuffer[i];
+							var transform = SeekEnemies.LocalToWorldFromEntity[hitShape.Value];
+							var collider  = PhysicsColliderFromEntity[hitShape.Value];
+
+							var cc = new CustomCollide(collider, transform);
+							if (hitShape.AttachedToParent)
+								cc.WorldFromMotion.pos += SeekEnemies.LocalToWorldFromEntity[entity].Position;
+							// remove z depth
+							cc.WorldFromMotion.pos.z = 0;
+
+							var collection = new CustomCollideCollection(cc);
+							var collector  = new ClosestHitCollector<DistanceHit>(1.0f);
+
+							if (!collection.CalculateDistance(distanceInput, ref collector))
 								continue;
 
-							var hitShapeBuffer = SeekEnemies.HitShapeContainerFromEntity[entity];
-							for (int i = 0, length = hitShapeBuffer.Length; i != length; i++)
+							DamageEventList.Add(new TargetDamageEvent
 							{
-								var hitShape  = hitShapeBuffer[i];
-								var transform = SeekEnemies.LocalToWorldFromEntity[hitShape.Value];
-								var collider  = PhysicsColliderFromEntity[hitShape.Value];
-
-								var cc = new CustomCollide(collider, transform);
-								if (hitShape.AttachedToParent) 
-									cc.WorldFromMotion.pos   += SeekEnemies.LocalToWorldFromEntity[entity].Position;
-								// remove z depth
-								cc.WorldFromMotion.pos.z =  0;
-
-								var collection = new CustomCollideCollection(cc);
-								var collector  = new ClosestHitCollector<DistanceHit>(1.0f);
-
-								if (!collection.CalculateDistance(distanceInput, ref collector))
-									continue;
-
-								DamageEventList.Add(new TargetDamageEvent
-								{
-									Position    = cc.WorldFromMotion.pos + collider.ColliderPtr->CalculateAabb().Center,
-									Origin      = origin,
-									Destination = entity,
-									Damage      = -damage
-								});
-								break;
-							}
+								Position    = cc.WorldFromMotion.pos + collider.ColliderPtr->CalculateAabb().Center,
+								Origin      = origin,
+								Destination = entity,
+								Damage      = -damage
+							});
+							break;
 						}
 					}
 				}
 
-				public void Execute(ref            RhythmAbilityState              state, ref BasicTaterazayAttackAbility ability,
-				                    [ReadOnly] ref Relative<TeamDescription>       teamRelative,
-				                    [ReadOnly] ref Relative<UnitTargetDescription> targetRelative,
-				                    [ReadOnly] ref Owner                           owner)
+				public void Execute(ref RhythmAbilityState state, ref BasicTaterazayAttackAbility ability, [ReadOnly] ref Owner owner)
 				{
 					const float attackRange = 3f;
 
-					var teamEnemies = EnemiesFromTeam[teamRelative.Target];
+					if (!TeamRelativeFromEntity.Exists(owner.Target) || !TargetRelativeFromEntity.Exists(owner.Target))
+						return;
+
+					var teamEnemies = EnemiesFromTeam[TeamRelativeFromEntity[owner.Target].Target];
 					var statistics  = UnitSettingsFromEntity[owner.Target];
 					var playState   = UnitPlayStateFromEntity[owner.Target];
 
+					// -- Seek enemies from our unit team
 					SeekEnemies.Execute
 					(
-						TranslationFromEntity[targetRelative.Target].Value, statistics.AttackSeekRange, teamEnemies,
+						TranslationFromEntity[TargetRelativeFromEntity[owner.Target].Target].Value, statistics.AttackSeekRange, teamEnemies,
 						out var nearestEnemy, out var targetPosition, out var enemyDistance
 					);
 
+					// -- If we are still chaining the command but it's not active and there is an enemy, stop movements a bit.
 					if (state.IsStillChaining && !state.IsActive && nearestEnemy != default)
 					{
 						var velocity     = VelocityFromEntity[owner.Target];
@@ -149,6 +146,7 @@ namespace Patapon4TLB.Default.Attack
 						VelocityFromEntity[owner.Target] = velocity;
 					}
 
+					// -- If we are chaining the command and there is an enemy, we control the horizontal velocity
 					if (state.IsStillChaining && nearestEnemy != default)
 					{
 						var controller = ControllerFromEntity[owner.Target];
@@ -159,8 +157,10 @@ namespace Patapon4TLB.Default.Attack
 					var attackStartTick = UTick.CopyDelta(Tick, ability.AttackStartTick);
 
 					ability.NextAttackDelay -= Tick.Delta;
+					// -- If we can attack now, do the instructions
 					if (ability.AttackStartTick > 0)
 					{
+						// -- Start the slash attack after some delay
 						if (Tick >= UTick.AddMs(attackStartTick, DelaySlashMs) && !ability.HasSlashed)
 						{
 							ability.HasSlashed = true;
@@ -168,7 +168,7 @@ namespace Patapon4TLB.Default.Attack
 							Slash(owner.Target, state.Combo, teamEnemies);
 						}
 
-						// stop moving
+						// -- Trying to stop moving once we slashed
 						if (ability.HasSlashed)
 						{
 							var velocity     = VelocityFromEntity[owner.Target];
@@ -192,7 +192,7 @@ namespace Patapon4TLB.Default.Attack
 					if (state.Combo.IsFever)
 					{
 						playState.MovementAttackSpeed *= 1.8f;
-						if (state.Combo.Score >= 50)
+						if (state.Combo.IsPerfect)
 							playState.MovementAttackSpeed *= 1.2f;
 					}
 
@@ -201,7 +201,7 @@ namespace Patapon4TLB.Default.Attack
 					if (enemyDistance <= attackRange && ability.NextAttackDelay <= 0.0f && ability.AttackStartTick <= 0)
 					{
 						var atkSpeed = playState.AttackSpeed;
-						if (state.Combo.IsFever && state.Combo.Score >= 50)
+						if (state.Combo.IsFever && state.Combo.IsPerfect)
 						{
 							atkSpeed *= 0.75f;
 						}
@@ -210,6 +210,7 @@ namespace Patapon4TLB.Default.Attack
 						ability.AttackStartTick = (uint) Tick.Value;
 						ability.HasSlashed      = false;
 					}
+					// If the enemy is not in the distance, we need to get near of him
 					else if (Tick >= UTick.AddMs(attackStartTick, DelaySlashMs))
 					{
 						var controller = ControllerFromEntity[owner.Target];
@@ -230,7 +231,7 @@ namespace Patapon4TLB.Default.Attack
 			}
 
 			private TargetDamageEvent.Provider m_DamageEventProvider;
-			private JobPhysicsQuery m_HitQuery;
+			private JobPhysicsQuery            m_HitQuery;
 
 			protected override void OnCreate()
 			{
@@ -247,7 +248,9 @@ namespace Patapon4TLB.Default.Attack
 					Tick            = World.GetExistingSystem<ServerSimulationSystemGroup>().GetTick(),
 					DamageEventList = m_DamageEventProvider.GetEntityDelayedList(),
 
-					LivableHealthFromEntity = GetComponentDataFromEntity<LivableHealth>(true),
+					LivableHealthFromEntity  = GetComponentDataFromEntity<LivableHealth>(true),
+					TeamRelativeFromEntity   = GetComponentDataFromEntity<Relative<TeamDescription>>(true),
+					TargetRelativeFromEntity = GetComponentDataFromEntity<Relative<UnitTargetDescription>>(true),
 
 					EnemiesFromTeam           = GetBufferFromEntity<TeamEnemies>(true),
 					PhysicsColliderFromEntity = GetComponentDataFromEntity<PhysicsCollider>(true),

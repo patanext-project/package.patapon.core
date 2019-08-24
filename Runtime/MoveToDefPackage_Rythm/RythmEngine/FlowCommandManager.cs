@@ -65,6 +65,8 @@ namespace package.patapon.core
 
 	public struct GameComboState : IComponentData
 	{
+		public bool IsPerfect => Score >= 50;
+		
 		/// <summary>
 		/// The score of the current combo. A perfect combo do a +5
 		/// </summary>
