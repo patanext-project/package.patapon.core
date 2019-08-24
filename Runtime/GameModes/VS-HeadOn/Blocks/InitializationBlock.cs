@@ -62,7 +62,7 @@ namespace Patapon4TLB.GameModes
 				// -------- -------- -------- -------- //
 				// : Retrieve contexts
 				// -------- -------- -------- -------- //
-				GameModeCtx = Context.GetExternal<GameModes.MpVersusHeadOnGameModeAsync.VersusHeadOnContext>();
+				GameModeCtx = Context.GetExternal<VersusHeadOnContext>();
 				WorldCtx    = Context.GetExternal<WorldContext>();
 			}
 		}

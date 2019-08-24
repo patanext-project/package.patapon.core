@@ -59,6 +59,9 @@ namespace Patapon4TLB.Default.Test
 				ProcessMs = process.Milliseconds;
 				Interval  = settings.BeatInterval;
 
+				// should we also set it to false for the condition 'process.Milliseconds < 0' ?
+				if (state.IsPaused || process.Milliseconds < 0)
+					return;
 				HasActiveRhythmEngine = true;
 			});
 
@@ -181,13 +184,24 @@ namespace Patapon4TLB.Default.Test
 		private int  m_EndFeverEntranceAt;
 		private int  m_BgmFeverChain;
 
+		private bool m_HadRhythmEngine;
+		
 		private void UpdateBgm(PlaySongClientSystem clientSystem)
 		{
 			if (!clientSystem.HasActiveRhythmEngine)
 			{
+				m_HadRhythmEngine = false;
+				
 				m_BgmSources[0].Stop();
 				m_BgmSources[1].Stop();
 				return;
+			}
+
+			var forceSongChange = false;
+			if (!m_HadRhythmEngine)
+			{
+				m_HadRhythmEngine = true;
+				forceSongChange = true;
 			}
 
 			var score       = 0;
@@ -196,6 +210,7 @@ namespace Patapon4TLB.Default.Test
 			var targetTime  = 0.0f;
 
 			var combo = clientSystem.ComboState;
+			
 			if (clientSystem.ActivationBeat >= CurrentSong.BgmEntranceClips.Count * SongBeatSize || combo.Chain > 0)
 			{
 				if (!combo.IsFever)
@@ -251,7 +266,7 @@ namespace Patapon4TLB.Default.Test
 
 			// Check if we should change clips or if we are requested to...
 			var hasSwitched = false;
-			if (m_LastClip != targetAudio)
+			if (m_LastClip != targetAudio || forceSongChange)
 			{
 				Debug.Log($"Switch from {m_LastClip?.name} to {targetAudio?.name}, delay: {nextBeatDelay} (b: {clientSystem.ActivationBeat}, f: {clientSystem.FlowBeat}, s: {cmdStartActivationBeat})");
 

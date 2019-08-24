@@ -8,6 +8,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace Patapon4TLB.GameModes
 {
@@ -61,6 +62,7 @@ namespace Patapon4TLB.GameModes
 			
 			if (m_GameModeQuery.CalculateEntityCount() <= 0 || m_FlagQuery.CalculateEntityCount() < 2)
 			{
+				Debug.Log($"{m_GameModeQuery.CalculateEntityCount()} :: {m_FlagQuery.CalculateEntityCount()}");
 				m_InterfaceManager.SetEnabled(false);
 				return;
 			}
@@ -68,6 +70,9 @@ namespace Patapon4TLB.GameModes
 			m_InterfaceManager.SetEnabled(true);
 
 			var gameMode   = m_GameModeQuery.GetSingleton<MpVersusHeadOn>();
+			if (gameMode.Team0 == default || gameMode.Team1 == default)
+				return;
+			
 			var serverTick = GetTick(false);
 
 			Entity flag0 = default, flag1 = default;

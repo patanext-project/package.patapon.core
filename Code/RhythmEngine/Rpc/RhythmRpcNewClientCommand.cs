@@ -115,6 +115,12 @@ namespace Patapon4TLB.Default
 
 			public void Execute(Entity entity, int index, ref NetworkOwner netOwner, ref RhythmEngineSettings settings, ref RhythmEngineProcess process, ref RhythmEngineState state)
 			{
+				if (process.Milliseconds < 0)
+				{
+					Debug.LogWarning($"We received a rhythm engine command, but it's not active yet!");
+					return;
+				}
+
 				var executeCommand       = default(RhythmExecuteCommand);
 				var executeCommandEntity = default(Entity);
 				for (var com = 0; executeCommand.Connection == default && com != ExecuteCommandArray.Length; com++)

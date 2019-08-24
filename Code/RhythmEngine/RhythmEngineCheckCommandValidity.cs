@@ -143,7 +143,7 @@ namespace Patapon4TLB.Default
 			                    [ReadOnly] ref RhythmEngineSettings settings, ref RhythmEngineState    state,
 			                    ref            RhythmEngineProcess  process,  ref RhythmCurrentCommand rhythmCurrentCommand)
 			{
-				if (state.IsPaused || (!IsServer && !state.IsNewPressure))
+				if (state.IsPaused || process.Milliseconds < 0 || (!IsServer && !state.IsNewPressure))
 					return;
 
 				if (IsServer && settings.UseClientSimulation && !state.VerifyCommand)

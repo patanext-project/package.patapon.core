@@ -7,6 +7,7 @@ using package.stormiumteam.shared.ecs;
 using Patapon4TLB.Core;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.EcsComponents;
 using Unity.Collections;
 using Unity.Entities;
@@ -96,7 +97,7 @@ namespace Patapon4TLB.GameModes
 							}, spawnEntities);
 
 							entMgr.SetOrAddComponentData(spawnEntities[0], entMgr.GetComponentData<NetworkOwner>(player));
-							entMgr.SetOrAddComponentData(spawnEntities[0], new RhythmEngineProcess {StartTime = worldCtx.World.GetExistingSystem<ServerSimulationSystemGroup>().GetTick().Ms});
+							entMgr.SetOrAddComponentData(spawnEntities[0], new RhythmEngineProcess {StartTime = worldCtx.GetExistingSystem<ServerSimulationSystemGroup>().GetTick().Ms});
 							entMgr.AddComponent(spawnEntities[0], typeof(GhostComponent));
 
 							entMgr.ReplaceOwnerData(spawnEntities[0], player);
@@ -107,6 +108,25 @@ namespace Patapon4TLB.GameModes
 						entMgr.ReplaceOwnerData(unitTarget, player);
 					});
 
+					// ----------------------------- //
+					// Create towers
+					queries.GetEntityQueryBuilder().ForEach((Entity entity, ref HeadOnStructure headOnStructure) =>
+					{
+						// create health entity
+						var healthProvider = worldCtx.GetExistingSystem<DefaultHealthData.InstanceProvider>();
+						var healthEntity = healthProvider.SpawnLocalEntityWithArguments(new DefaultHealthData.CreateInstance
+						{
+							max   = 0,
+							value = 0,
+							owner = entity
+						});
+						worldCtx.EntityMgr.AddComponent(healthEntity, typeof(GhostComponent));
+						worldCtx.EntityMgr.SetOrAddComponentData(entity, new LivableHealth
+						{
+							IsDead = false
+						});
+					});
+					
 					ShowMapTextBlock.SetTicksFromMs(1000);
 
 					return false;

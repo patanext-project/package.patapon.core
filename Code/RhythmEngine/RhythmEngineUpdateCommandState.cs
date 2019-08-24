@@ -44,7 +44,8 @@ namespace Patapon4TLB.Default
 			                    ref GameComboState       comboState)
 			{
 				if (state.IsPaused
-				    || (!IsServer && settings.UseClientSimulation && !SimulateTagFromEntity.Exists(entity)))
+				    || (!IsServer && settings.UseClientSimulation && !SimulateTagFromEntity.Exists(entity))
+				    || process.Milliseconds < 0)
 					return;
 
 				var mercy = 1;
