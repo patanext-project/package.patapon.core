@@ -8,6 +8,22 @@ using UnityEngine;
 
 namespace Patapon4TLB.GameModes
 {
+	public struct VersusHeadOnUnit : IComponentData
+	{
+		public int Team;
+		public int FormationIndex;
+
+		public int KillStreak;
+		public int DeadCount;
+
+		public UTick TickBeforeSpawn;
+	}
+
+	public struct VersusHeadOnPlayer : IComponentData
+	{
+		
+	}
+	
 	public struct MpVersusHeadOn : IGameMode, IComponentFromSnapshot<MpHeadOnGhostSerializer.MpHeadOnGameModeSnapshot>
 	{
 		public enum State

@@ -50,22 +50,9 @@ namespace Patapon4TLB.GameModes
 	}
 
 	// The gamemode will create a better event
-	public struct HeadOnStructureOnCapture : IComponentData
+	public struct HeadOnStructureOnCapture
 	{
 		public Entity Source;
-
-		public class Provider : BaseProviderBatch<HeadOnStructureOnCapture>
-		{
-			public override void GetComponents(out ComponentType[] entityComponents)
-			{
-				entityComponents = new ComponentType[] {typeof(HeadOnStructureOnCapture)};
-			}
-
-			public override void SetEntityData(Entity entity, HeadOnStructureOnCapture data)
-			{
-				EntityManager.SetComponentData(entity, data);
-			}
-		}
 	}
 
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
@@ -75,16 +62,16 @@ namespace Patapon4TLB.GameModes
 		private struct JobCapture : IJobForEachWithEntity<LocalToWorld, HeadOnStructure, CaptureAreaComponent, PhysicsCollider, Relative<TeamDescription>>
 		{
 			public UTick Tick;
-			
+
 			[ReadOnly] public NativeArray<Entity>                         TeamArray;
 			[ReadOnly] public BufferFromEntity<TeamEntityContainer>       EntitiesFromTeam;
 			[ReadOnly] public ComponentDataFromEntity<LocalToWorld>       LtwFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<MovableDescription> MovableDescFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<PhysicsCollider>    PhysicsColliderFromEntity;
-	
+
 			public NativeList<HeadOnStructureOnCapture> CreateEventList;
 
-			public void Execute(Entity entity, int index,
+			public void Execute(Entity                                   entity, int index,
 			                    [ReadOnly] ref LocalToWorld              localToWorld,
 			                    ref            HeadOnStructure           structure, [ReadOnly] ref CaptureAreaComponent captureArea,
 			                    [ReadOnly] ref PhysicsCollider           collider,
@@ -159,11 +146,11 @@ namespace Patapon4TLB.GameModes
 							var collector = new ClosestHitCollector<DistanceHit>(0);
 							if (!collection.CalculateDistance(input, ref collector))
 								continue;
-							
+
 							playerOnPointCount[t]++;
 						}
 					}
-					
+
 					// Apply capture progression...
 					for (var t = 0; t != TeamArray.Length; t++)
 					{
@@ -172,7 +159,7 @@ namespace Patapon4TLB.GameModes
 							continue;
 						structure.CaptureProgress[t] += (int) (Tick.Delta * 1000 * speed);
 					}
-					
+
 					for (var t = 0; t != TeamArray.Length; t++)
 					{
 						if (structure.CaptureProgress[t] >= structure.TimeToCapture
@@ -200,8 +187,6 @@ namespace Patapon4TLB.GameModes
 
 		private NativeArray<Entity> m_TempTeamArray;
 
-		private HeadOnStructureOnCapture.Provider m_OnCaptureEventProvider;
-
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -226,8 +211,6 @@ namespace Patapon4TLB.GameModes
 				}
 			});
 			m_TempTeamArray = new NativeArray<Entity>(2, Allocator.Persistent);
-
-			m_OnCaptureEventProvider = World.GetOrCreateSystem<HeadOnStructureOnCapture.Provider>();
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -240,21 +223,19 @@ namespace Patapon4TLB.GameModes
 
 			m_TempTeamArray[0] = gameModeData.Team0;
 			m_TempTeamArray[1] = gameModeData.Team1;
-			
+
 			inputDeps = new JobCapture
 			{
 				Tick = ServerSimulationSystemGroup.GetTick(),
-				
+
 				TeamArray                 = m_TempTeamArray,
 				EntitiesFromTeam          = GetBufferFromEntity<TeamEntityContainer>(true),
 				LtwFromEntity             = GetComponentDataFromEntity<LocalToWorld>(true),
 				MovableDescFromEntity     = GetComponentDataFromEntity<MovableDescription>(true),
 				PhysicsColliderFromEntity = GetComponentDataFromEntity<PhysicsCollider>(true),
-				CreateEventList = m_OnCaptureEventProvider.GetEntityDelayedList()
+				CreateEventList           = World.GetExistingSystem<MpVersusHeadOnGameMode>().CaptureEvents
 			}.ScheduleSingle(m_StructureQuery, inputDeps);
 
-			m_OnCaptureEventProvider.AddJobHandleForProducer(inputDeps);
-			
 			return inputDeps;
 		}
 	}

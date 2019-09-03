@@ -62,6 +62,7 @@ namespace Patapon4TLB.Default
 	}
 
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
+	[UpdateBefore(typeof(ActionSystemGroup))]
 	public class UpdateRhythmAbilityState : JobComponentSystem
 	{
 		[BurstCompile]

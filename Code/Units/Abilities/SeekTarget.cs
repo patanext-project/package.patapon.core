@@ -5,6 +5,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace Patapon4TLB.Default
 {
@@ -77,7 +78,7 @@ namespace Patapon4TLB.Default
 						continue;
 					if (!HitShapeContainerFromEntity.Exists(entity))
 						continue;
-					if (LocalToWorldFromEntity.Exists(entity))
+					if (!LocalToWorldFromEntity.Exists(entity))
 						continue;
 					
 					var transform = LocalToWorldFromEntity[entity];

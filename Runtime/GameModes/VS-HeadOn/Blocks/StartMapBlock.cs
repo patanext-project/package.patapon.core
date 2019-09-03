@@ -16,7 +16,7 @@ using Unity.Transforms;
 
 namespace Patapon4TLB.GameModes
 {
-	public partial class MpVersusHeadOnGameModeAsync
+	public partial class MpVersusHeadOnGameMode
 	{
 		public class StartMapBlock : BlockCollection
 		{
@@ -79,7 +79,7 @@ namespace Patapon4TLB.GameModes
 
 					// ----------------------------- //
 					// Add players
-					worldCtx.EntityMgr.AddComponent(queries.PlayerWithoutGameModeData, typeof(GameModePlayer));
+					worldCtx.EntityMgr.AddComponent(queries.PlayerWithoutGameModeData, typeof(VersusHeadOnPlayer));
 
 					// ----------------------------- //
 					// Set team of players
@@ -127,7 +127,7 @@ namespace Patapon4TLB.GameModes
 						});
 					});
 					
-					ShowMapTextBlock.SetTicksFromMs(1000);
+					ShowMapTextBlock.SetTicksFromMs(10);
 
 					return false;
 				}

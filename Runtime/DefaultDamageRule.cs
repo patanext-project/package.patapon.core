@@ -4,6 +4,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace StormiumTeam.GameBase
 {
@@ -27,8 +28,7 @@ namespace StormiumTeam.GameBase
 
 		private EntityQuery     m_EntityQuery;
 		private EntityArchetype m_ModifyHealthArchetype;
-
-		[RequireComponentTag(typeof(GameEvent))]
+		
 		struct JobCreateEvents : IJobForEachWithEntity<TargetDamageEvent>
 		{
 			public Data Data;
@@ -82,6 +82,10 @@ namespace StormiumTeam.GameBase
 		{
 			base.OnCreate();
 
+			m_EntityQuery = GetEntityQuery(new EntityQueryDesc
+			{
+				All = new ComponentType[] {typeof(GameEvent), typeof(TargetDamageEvent)}
+			});
 			m_ModifyHealthArchetype = EntityManager.CreateArchetype(typeof(ModifyHealthEvent));
 
 			CustomProperties = AddRule<Data>(out var data);
@@ -103,7 +107,7 @@ namespace StormiumTeam.GameBase
 				ModifyHealthArchetype = m_ModifyHealthArchetype,
 				TeamOwnerFromEntity   = GetComponentDataFromEntity<Relative<TeamDescription>>(),
 				HealthHistoryFromEntity = GetBufferFromEntity<HealthModifyingHistory>()
-			}.Schedule(this, inputDeps);
+			}.Schedule(m_EntityQuery, inputDeps);
 
 			AddJobHandleForProducer(inputDeps);
 

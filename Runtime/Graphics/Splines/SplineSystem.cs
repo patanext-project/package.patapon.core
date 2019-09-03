@@ -109,22 +109,30 @@ namespace package.patapon.core
             var entities      = m_SplineQuery.ToEntityArray(Allocator.TempJob);
 
             Profiler.BeginSample("Loop");
-            for (var i = 0; i < entities.Length; i++)
+            DSplineData                  spline;
+            DynamicBuffer<DSplineResult> result;
+            SplineRendererBehaviour      renderer;
+            int                          resultCount;
+            for (int i = 0, length = entities.Length; i < length; i++)
             {
-                var spline = EntityManager.GetComponentData<DSplineData>(entities[i]);
+                spline = EntityManager.GetComponentData<DSplineData>(entities[i]);
                 if (spline.ActivationType == EActivationType.Bounds && !validSplines[i])
                 {
                     // ignore spline...
                     continue;
                 }
 
-                var result   = EntityManager.GetBuffer<DSplineResult>(entities[i]);
-                var renderer = EntityManager.GetComponentObject<SplineRendererBehaviour>(entities[i]);
+                result   = EntityManager.GetBuffer<DSplineResult>(entities[i]);
+                renderer = EntityManager.GetComponentObject<SplineRendererBehaviour>(entities[i]);
 
-                var resultCount = result.Length;
+                resultCount = result.Length;
                 if (renderer.LastLineRendererPositionCount != resultCount)
                 {
-                    renderer.LineRenderer.positionCount    = resultCount;
+                    foreach (var lr in renderer.lineRendererArray)
+                    {
+                        lr.positionCount = resultCount;
+                    }
+
                     renderer.LastLineRendererPositionCount = resultCount;
                 }
 
@@ -139,13 +147,16 @@ namespace package.patapon.core
 
                 if (array == null)
                     continue;
-                    
+
                 fixed (void* buffer = array)
                 {
                     UnsafeUtility.MemCpy(buffer, result.GetUnsafePtr(), resultCount * sizeof(float3));
                 }
 
-                renderer.LineRenderer.SetPositions(array);
+                foreach (var lr in renderer.lineRendererArray)
+                {
+                    lr.SetPositions(array);
+                }
             }
 
             Profiler.EndSample();

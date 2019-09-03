@@ -18,7 +18,7 @@ namespace Patapon4TLB.Default
 		public float  ActiveTime;
 	}
 
-	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
+	[UpdateInGroup(typeof(ActionSystemGroup))]
 	public class JumpAbilitySystem : JobGameBaseSystem
 	{
 		private struct Job : IJobForEach<Owner, RhythmAbilityState, JumpAbility>

@@ -24,7 +24,7 @@ namespace Patapon4TLB.Default
 		public float  ActiveTime;
 	}
 
-	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
+	[UpdateInGroup(typeof(ActionSystemGroup))]
 	public class RetreatAbilitySystem : JobGameBaseSystem
 	{
 		[BurstCompile]

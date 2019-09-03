@@ -6,7 +6,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
-
+using UnityEngine.Serialization;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -69,8 +69,11 @@ namespace package.patapon.core
 
         private bool m_IsDirty;
         
-        public LineRenderer LineRenderer;
+        [SerializeField, FormerlySerializedAs("LineRenderer")]
+        private LineRenderer lineRenderer;
 
+        public LineRenderer[] lineRendererArray;
+        
 #if UNITY_EDITOR
         private List<Vector3> m_EditorFillerArray;
         private Vector3[] m_EditorResultArray;
@@ -93,6 +96,11 @@ namespace package.patapon.core
 
         private void OnEnable()
         {
+            if (lineRenderer != null)
+            {
+                lineRendererArray = new[] {lineRenderer};
+            }
+            
             var referencable = ReferencableGameObject.GetComponent<ReferencableGameObject>(gameObject);
             var goEntity     = referencable.GetComponentFast<GameObjectEntity>();
             if (!goEntity.HasValue)
@@ -112,10 +120,10 @@ namespace package.patapon.core
             var r = em.AddBuffer<DSplineResult>(e);
             r.ResizeUninitialized(32); // go outside of the chunk memory
 
-            if (LineRenderer == null)
+            if (lineRendererArray == null)
             {
                 Debug.LogWarning("LineRender == null");
-                LineRenderer = GetComponentInChildren<LineRenderer>();
+                lineRendererArray = GetComponentsInChildren<LineRenderer>();
             }
 
             m_GameObjectEntity = goEntity;
@@ -150,7 +158,7 @@ namespace package.patapon.core
             var e  = m_GameObjectEntity.Entity;
 
             var canBeProcessed = points.Length > 0
-                                 && LineRenderer != null;
+                                 && lineRendererArray != null;
 
             if (canBeProcessed && !em.HasComponent<DSplineValidTag>(e))
             {
@@ -172,18 +180,23 @@ namespace package.patapon.core
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
+            if (lineRendererArray == null || lineRendererArray.Length == 0)
+            {
+                lineRendererArray = new[] {lineRenderer};
+            }
+            
             var currCam = Camera.current;
 
             var isSelected = Selection.activeGameObject == gameObject;
             Gizmos.color = isSelected ? Color.blue : Color.magenta;
 
             if (!Application.isPlaying
-                && LineRenderer != null)
+                && lineRendererArray != null)
             {
                 // Render spline
                 m_EditorFillerArray = m_EditorFillerArray ?? new List<Vector3>(points.Length * Step);
                 m_EditorFillerArray.Clear();
-                
+
                 CGraphicalCatmullromSplineUtility.CalculateCatmullromSpline
                 (
                     points, 0, points.Length,
@@ -201,14 +214,17 @@ namespace package.patapon.core
                 {
                     m_EditorResultArray = new Vector3[m_EditorFillerArray.Count];
                 }
-                
+
                 for (int i = 0; i != m_EditorResultArray.Length; i++)
                 {
                     m_EditorResultArray[i] = m_EditorFillerArray[i];
                 }
 
-                LineRenderer.positionCount = m_EditorResultArray.Length;
-                LineRenderer.SetPositions(m_EditorResultArray);
+                foreach (var lr in lineRendererArray)
+                {
+                    lr.positionCount = m_EditorResultArray.Length;
+                    lr.SetPositions(m_EditorResultArray);
+                }
             }
 
             if (RefreshType == EActivationType.Bounds)

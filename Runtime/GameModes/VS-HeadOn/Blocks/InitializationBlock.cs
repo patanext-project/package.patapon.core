@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Patapon4TLB.GameModes
 {
-	public partial class MpVersusHeadOnGameModeAsync
+	public partial class MpVersusHeadOnGameMode
 	{
 		public class InitializationBlock : Block
 		{

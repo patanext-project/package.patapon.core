@@ -24,7 +24,7 @@ namespace Patapon4TLB.Default.Attack
 		public uint  AttackStartTick;
 		public float NextAttackDelay;
 
-		[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
+		[UpdateInGroup(typeof(ActionSystemGroup))]
 		public class Process : JobGameBaseSystem
 		{
 			private struct Job : IJobForEach<RhythmAbilityState, BasicTaterazayAttackAbility, Owner>
