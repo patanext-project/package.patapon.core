@@ -2,7 +2,7 @@
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using Unity.Entities;
-using Unity.NetCode;
+using Revolution.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.UI

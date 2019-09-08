@@ -3,7 +3,7 @@ using Misc.GmMachine.Contexts;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Entities;
-using Unity.NetCode;
+using Revolution.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.GameModes

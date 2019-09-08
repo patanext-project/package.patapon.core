@@ -3,7 +3,7 @@ using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Data;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.NetCode;
+using Revolution.NetCode;
 using UnityEngine;
 using UnityEngine.Profiling;
 

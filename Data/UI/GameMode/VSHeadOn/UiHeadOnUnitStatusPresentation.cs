@@ -6,7 +6,7 @@ using StormiumTeam.GameBase.Components;
 using StormiumTeam.Shared.Gen;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.NetCode;
+using Revolution.NetCode;
 using UnityEngine;
 using UnityEngine.UI;
 

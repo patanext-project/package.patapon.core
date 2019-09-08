@@ -7,7 +7,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Unity.NetCode;
+using Revolution.NetCode;
 using Unity.Networking.Transport;
 
 namespace Patapon4TLB.Default
@@ -17,10 +17,11 @@ namespace Patapon4TLB.Default
 		public bool ForceRecover;
 		public bool LooseChain;
 
-		public void Execute(Entity connection, EntityCommandBuffer.Concurrent commandBuffer, int jobIndex)
+		public void Execute(Entity connection, World world)
 		{
-			var ent = commandBuffer.CreateEntity(jobIndex);
-			commandBuffer.AddComponent(jobIndex, ent, new RhythmServerExecuteClientRecover
+			var entMgr = world.EntityManager;
+			var ent    = entMgr.CreateEntity();
+			entMgr.AddComponentData(ent, new RhythmServerExecuteClientRecover
 			{
 				Connection   = connection,
 				ForceRecover = ForceRecover,
@@ -28,7 +29,7 @@ namespace Patapon4TLB.Default
 			});
 		}
 
-		public void Serialize(DataStreamWriter writer)
+		public void WriteTo(DataStreamWriter writer)
 		{
 			byte mask = 0, pos = 0;
 			MainBit.SetBitAt(ref mask, pos++, ForceRecover);
@@ -37,7 +38,7 @@ namespace Patapon4TLB.Default
 			writer.Write(mask);
 		}
 
-		public void Deserialize(DataStreamReader reader, ref DataStreamReader.Context ctx)
+		public void ReadFrom(DataStreamReader reader, ref DataStreamReader.Context ctx)
 		{
 			var mask = reader.ReadByte(ref ctx);
 			{

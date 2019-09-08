@@ -1,5 +1,5 @@
 using Unity.Entities;
-using Unity.NetCode;
+using Revolution.NetCode;
 using Unity.Transforms;
 
 namespace Patapon4TLB.UI.InGame

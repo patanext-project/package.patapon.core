@@ -8,7 +8,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
-using Unity.NetCode;
+using Revolution.NetCode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -22,7 +22,7 @@ namespace Patapon4TLB.Default
 		private struct SendLocalEventToEngine : IJobForEachWithEntity<RhythmEngineSettings, RhythmEngineProcess, RhythmEngineState, GamePredictedCommandState>
 		{
 			public NativeArray<RhythmRpcPressureFromClient> PressureEventSingleArray;
-			public NativeArray<bool> ShouldRecoverSingleArray;
+			public NativeArray<bool>                        ShouldRecoverSingleArray;
 
 			[NativeDisableParallelForRestriction]
 			public BufferFromEntity<RhythmEngineCurrentCommand> CommandSequenceFromEntity;
@@ -53,15 +53,15 @@ namespace Patapon4TLB.Default
 				// check for inputs that were done after the current command chain
 				var failFlag2 = pressureData.RenderBeat >= cmdChainEndFlow
 				                && cmdChainEndFlow > 0;
-				
+
 				if (state.IsRecovery(flowBeat))
 				{
 					predictedCommand.State.ChainEndTime = default;
 				}
 				else if (cmdEndFlow > flowBeat || failFlag1 || failFlag2 || failFlag3 || pressureData.GetAbsoluteScore() > RhythmPressureData.Error)
 				{
-					pressureEvent.ShouldStartRecovery             = true;
-					state.NextBeatRecovery                        = flowBeat + 1;
+					pressureEvent.ShouldStartRecovery   = true;
+					state.NextBeatRecovery              = flowBeat + 1;
 					predictedCommand.State.ChainEndTime = default;
 
 					ShouldRecoverSingleArray[0] = true;
@@ -94,10 +94,10 @@ namespace Patapon4TLB.Default
 		private struct SendRpcEvent : IJobForEachWithEntity<NetworkIdComponent>
 		{
 			[DeallocateOnJobCompletion] public NativeArray<RhythmRpcPressureFromClient> PressureEventSingleArray;
-			[DeallocateOnJobCompletion] public NativeArray<bool> ShouldRecover;
-			
-			public                             RpcQueue<RhythmRpcPressureFromClient>    RpcPressureQueue;
-			public                             RpcQueue<RhythmRpcClientRecover>    RpcRecoverQueue;
+			[DeallocateOnJobCompletion] public NativeArray<bool>                        ShouldRecover;
+
+			public RpcQueue<RhythmRpcPressureFromClient> RpcPressureQueue;
+			public RpcQueue<RhythmRpcClientRecover>      RpcRecoverQueue;
 
 			[NativeDisableParallelForRestriction]
 			public BufferFromEntity<OutgoingRpcDataStreamBufferComponent> OutgoingDataBufferFromEntity;
@@ -170,8 +170,8 @@ namespace Patapon4TLB.Default
 			if (pressureEvent.Key < 0)
 				return inputDeps;
 
-			var rpcPressureQueue = World.GetExistingSystem<RpcQueueSystem<RhythmRpcPressureFromClient>>().GetRpcQueue();
-			var rpcRecoverQueue = World.GetExistingSystem<RpcQueueSystem<RhythmRpcClientRecover>>().GetRpcQueue();
+			var rpcPressureQueue = World.GetExistingSystem<DefaultRpcProcessSystem<RhythmRpcPressureFromClient>>().RpcQueue;
+			var rpcRecoverQueue  = World.GetExistingSystem<DefaultRpcProcessSystem<RhythmRpcClientRecover>>().RpcQueue;
 			var pressureEventSingleArray = new NativeArray<RhythmRpcPressureFromClient>(1, Allocator.TempJob, NativeArrayOptions.UninitializedMemory)
 			{
 				[0] = pressureEvent
@@ -182,7 +182,7 @@ namespace Patapon4TLB.Default
 			{
 				PressureEventSingleArray  = pressureEventSingleArray,
 				CommandSequenceFromEntity = GetBufferFromEntity<RhythmEngineCurrentCommand>(),
-				
+
 				ShouldRecoverSingleArray = shouldRecoverSingleArray,
 
 				CreatePressureEventList = m_PressureEventProvider.GetEntityDelayedList()
@@ -192,11 +192,11 @@ namespace Patapon4TLB.Default
 
 			inputDeps = new SendRpcEvent
 			{
-				PressureEventSingleArray     = pressureEventSingleArray,
-				ShouldRecover = shouldRecoverSingleArray,
-				
-				RpcPressureQueue                     = rpcPressureQueue,
-				RpcRecoverQueue = rpcRecoverQueue,
+				PressureEventSingleArray = pressureEventSingleArray,
+				ShouldRecover            = shouldRecoverSingleArray,
+
+				RpcPressureQueue             = rpcPressureQueue,
+				RpcRecoverQueue              = rpcRecoverQueue,
 				OutgoingDataBufferFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>()
 			}.Schedule(this, inputDeps);
 

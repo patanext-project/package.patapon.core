@@ -1,6 +1,6 @@
 ﻿using Unity.Entities;
 using Unity.Jobs;
-using Unity.NetCode;
+using Revolution.NetCode;
 
 namespace package.patapon.core
 {

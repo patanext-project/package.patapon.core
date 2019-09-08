@@ -5,7 +5,7 @@ using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.NetCode;
+using Revolution.NetCode;
 using Unity.Networking.Transport;
 using UnityEngine;
 
@@ -39,15 +39,16 @@ namespace Patapon4TLB.Default
 
 		public NetworkCompressionModel CompressionModel;
 
-		public void Execute(Entity connection, EntityCommandBuffer.Concurrent commandBuffer, int jobIndex)
+		public void Execute(Entity connection, World world)
 		{
 			if (!IsValid || !ResultBuffer.IsCreated)
 			{
 				throw new Exception();
 			}
 
-			var ent = commandBuffer.CreateEntity(jobIndex);
-			commandBuffer.AddComponent(jobIndex, ent, new RequestCreateCommand
+			var entMgr = world.EntityManager;
+			var ent    = entMgr.CreateEntity();
+			entMgr.AddComponentData(ent, new RequestCreateCommand
 			{
 				ChainId = ChainId,
 				TypeId  = TypeId,
@@ -55,12 +56,12 @@ namespace Patapon4TLB.Default
 				CommandData = CommandData
 			});
 
-			var buffer = commandBuffer.AddBuffer<RhythmCommandSequenceContainer>(jobIndex, ent);
+			var buffer = entMgr.AddBuffer<RhythmCommandSequenceContainer>(ent);
 
 			buffer.Reinterpret<RhythmCommandSequence>().CopyFrom(ResultBuffer);
 		}
 
-		public void Serialize(DataStreamWriter writer)
+		public void WriteTo(DataStreamWriter writer)
 		{
 			using (CompressionModel = new NetworkCompressionModel(Allocator.Temp))
 			{
@@ -82,10 +83,11 @@ namespace Patapon4TLB.Default
 
 				writer.WritePackedInt(CommandData.BeatLength, CompressionModel);
 			}
+
 			writer.Flush();
 		}
 
-		public void Deserialize(DataStreamReader reader, ref DataStreamReader.Context ctx)
+		public void ReadFrom(DataStreamReader reader, ref DataStreamReader.Context ctx)
 		{
 			using (CompressionModel = new NetworkCompressionModel(Allocator.Temp))
 			{
@@ -163,7 +165,7 @@ namespace Patapon4TLB.Default
 		private int m_LastChainId;
 
 		private List<RhythmRpcServerSendCommandChain> m_RpcGroup;
-		private RhythmCommandManager m_CommandManager;
+		private RhythmCommandManager                  m_CommandManager;
 
 		protected override void OnCreate()
 		{
@@ -180,7 +182,7 @@ namespace Patapon4TLB.Default
 
 		private void SendToConnections(NativeArray<Entity> connections, RhythmRpcServerSendCommandChain rpc)
 		{
-			var queue = World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcServerSendCommandChain>>().GetRpcQueue();
+			var queue = World.GetOrCreateSystem<DefaultRpcProcessSystem<RhythmRpcServerSendCommandChain>>().RpcQueue;
 			for (var ent = 0; ent != connections.Length; ent++)
 			{
 				queue.Schedule(EntityManager.GetBuffer<OutgoingRpcDataStreamBufferComponent>(connections[ent]), rpc);
@@ -189,7 +191,7 @@ namespace Patapon4TLB.Default
 
 		private void SendToConnections(NativeArray<CreateGamePlayer> connections, RhythmRpcServerSendCommandChain rpc)
 		{
-			var queue = World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcServerSendCommandChain>>().GetRpcQueue();
+			var queue = World.GetOrCreateSystem<DefaultRpcProcessSystem<RhythmRpcServerSendCommandChain>>().RpcQueue;
 			for (var ent = 0; ent != connections.Length; ent++)
 			{
 				queue.Schedule(EntityManager.GetBuffer<OutgoingRpcDataStreamBufferComponent>(connections[ent].Connection), rpc);
@@ -234,7 +236,7 @@ namespace Patapon4TLB.Default
 					m_RpcGroup.Add(rpc);
 					SendToConnections(connections, rpc);
 				}
-				
+
 				// Update Rhythm Command Manager
 				m_CommandManager.UpdateCommands(commands);
 
@@ -261,14 +263,14 @@ namespace Patapon4TLB.Default
 		private EntityQuery m_CurrentCommands;
 
 		private RhythmCommandManager m_CommandManager;
-		
+
 		private int m_LastChainId;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			m_CommandManager = World.GetOrCreateSystem<RhythmCommandManager>();
+			m_CommandManager  = World.GetOrCreateSystem<RhythmCommandManager>();
 			m_CommandRequest  = GetEntityQuery(typeof(RequestCreateCommand));
 			m_CurrentCommands = GetEntityQuery(typeof(RhythmCommandId), typeof(RhythmCommandData), typeof(RhythmCommandSequenceContainer), typeof(CommandChainGroup));
 			m_LastChainId     = -1;
@@ -309,7 +311,7 @@ namespace Patapon4TLB.Default
 				}
 			}
 
-			var builder = World.GetOrCreateSystem<RhythmCommandBuilder>();
+			var builder        = World.GetOrCreateSystem<RhythmCommandBuilder>();
 			var cmdEntityArray = new NativeArray<Entity>(validEntities.Length, Allocator.Temp);
 			for (var ent = 0; ent != validEntities.Length; ent++)
 			{
@@ -332,7 +334,7 @@ namespace Patapon4TLB.Default
 
 				cmdEntityArray[ent] = cmdEntity;
 			}
-			
+
 			// Update Rhythm Command Manager
 			m_CommandManager.UpdateCommands(cmdEntityArray);
 

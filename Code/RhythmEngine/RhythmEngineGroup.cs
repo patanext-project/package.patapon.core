@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using package.patapon.core;
 using Unity.Entities;
-using Unity.NetCode;
+using Revolution.NetCode;
 
 namespace Patapon4TLB.Default
 {

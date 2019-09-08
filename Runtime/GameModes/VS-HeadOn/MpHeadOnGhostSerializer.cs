@@ -3,7 +3,7 @@ using DefaultNamespace;
 using StormiumTeam.Networking.Utilities;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
-using Unity.NetCode;
+using Revolution.NetCode;
 using Unity.Networking.Transport;
 
 namespace Patapon4TLB.GameModes

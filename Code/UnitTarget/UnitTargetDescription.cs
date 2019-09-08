@@ -1,5 +1,7 @@
 using Patapon4TLB.Core;
+using Revolution;
 using StormiumTeam.GameBase;
+using Unity.Collections;
 using Unity.Entities;
 
 [assembly: RegisterGenericComponentType(typeof(Relative<UnitTargetDescription>))]
@@ -26,5 +28,13 @@ namespace Patapon4TLB.Core
 
 	public struct UnitTargetDescription : IEntityDescription
 	{
+		public struct Exclude : IComponentData
+		{
+		}
+
+		public class SynchronizeSnapshot : ComponentSnapshotSystem_Empty<UnitTargetDescription>
+		{
+			public override ComponentType ExcludeComponent => typeof(Exclude);
+		}
 	}
 }

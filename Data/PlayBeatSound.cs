@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using package.patapon.core;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.NetCode;
+using Revolution.NetCode;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using Random = UnityEngine.Random;

@@ -6,7 +6,7 @@ using Patapon4TLB.Default.Attack;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.NetCode;
+using Revolution.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.Core

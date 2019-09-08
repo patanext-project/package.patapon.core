@@ -6,7 +6,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
-using Unity.NetCode;
+using Revolution.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.Default
@@ -166,8 +166,8 @@ namespace Patapon4TLB.Default
 
 				state.IsNewPressure = false;
 
-				var targetBeat  = process.GetFlowBeat(settings.BeatInterval) + 1;
-				
+				var targetBeat = process.GetFlowBeat(settings.BeatInterval) + 1;
+
 				if (IsServer)
 				{
 					var clientPressureBeat = RhythmEngineProcess.CalculateFlowBeat(currCommandArray[currCommandArray.Length - 1].Data.Time, settings.BeatInterval) + 1;
@@ -179,9 +179,9 @@ namespace Patapon4TLB.Default
 				}
 
 				rhythmCurrentCommand.ActiveAtTime  = targetBeat * settings.BeatInterval;
-				rhythmCurrentCommand.Previous = rhythmCurrentCommand.CommandTarget;
+				rhythmCurrentCommand.Previous      = rhythmCurrentCommand.CommandTarget;
 				rhythmCurrentCommand.CommandTarget = result;
-				
+
 				state.VerifyCommand        = false;
 				state.ApplyCommandNextBeat = true;
 
@@ -222,7 +222,7 @@ namespace Patapon4TLB.Default
 		private EntityQuery m_ProcessQuery;
 		private EntityQuery m_AvailableCommandQuery;
 
-		private RpcQueueSystem<RhythmRpcNewClientCommand> m_RpcQueueNewClientCommand;
+		private DefaultRpcProcessSystem<RhythmRpcNewClientCommand> m_RpcQueueNewClientCommand;
 
 		protected override void OnCreate()
 		{
@@ -230,14 +230,14 @@ namespace Patapon4TLB.Default
 
 			m_RpcTargetQuery = GetEntityQuery(typeof(NetworkStreamConnection), typeof(OutgoingRpcDataStreamBufferComponent), ComponentType.Exclude<NetworkStreamDisconnected>());
 			m_ProcessQuery = GetEntityQuery(
-				typeof(RhythmEngineSettings), 
-				typeof(RhythmEngineState), 
+				typeof(RhythmEngineSettings),
+				typeof(RhythmEngineState),
 				typeof(RhythmEngineProcess),
 				typeof(RhythmCurrentCommand),
 				typeof(RhythmEngineSimulateTag)
-				);
-			m_AvailableCommandQuery = GetEntityQuery(typeof(RhythmCommandSequenceContainer));
-			m_RpcQueueNewClientCommand = World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcNewClientCommand>>();
+			);
+			m_AvailableCommandQuery    = GetEntityQuery(typeof(RhythmCommandSequenceContainer));
+			m_RpcQueueNewClientCommand = World.GetOrCreateSystem<DefaultRpcProcessSystem<RhythmRpcNewClientCommand>>();
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -265,7 +265,7 @@ namespace Patapon4TLB.Default
 				CurrentCommandFromEntity = GetBufferFromEntity<RhythmEngineCurrentCommand>(),
 
 				OutgoingDataFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>(),
-				RpcClientCommandQueue  = m_RpcQueueNewClientCommand.GetRpcQueue()
+				RpcClientCommandQueue  = m_RpcQueueNewClientCommand.RpcQueue
 			}.Schedule(m_ProcessQuery, JobHandle.CombineDependencies(inputDeps, queryHandle));
 
 			return inputDeps;

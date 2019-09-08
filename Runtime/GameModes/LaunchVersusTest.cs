@@ -3,7 +3,7 @@ using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.NetCode;
+using Revolution.NetCode;
 
 namespace Patapon4TLB.GameModes
 {

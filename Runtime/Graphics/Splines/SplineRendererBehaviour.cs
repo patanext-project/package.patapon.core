@@ -4,7 +4,7 @@ using System.Linq;
 using package.stormiumteam.shared;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.NetCode;
+using Revolution.NetCode;
 using UnityEngine;
 using UnityEngine.Serialization;
 #if UNITY_EDITOR

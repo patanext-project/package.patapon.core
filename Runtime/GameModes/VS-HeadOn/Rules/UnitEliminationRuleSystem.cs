@@ -3,7 +3,7 @@ using StormiumTeam.GameBase.Components;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Unity.NetCode;
+using Revolution.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.GameModes.Rules

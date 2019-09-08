@@ -5,7 +5,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
-using Unity.NetCode;
+using Revolution.NetCode;
 
 namespace Patapon4TLB.Default
 {
@@ -166,7 +166,7 @@ namespace Patapon4TLB.Default
 		[BurstCompile]
 		private struct SendRpcRecoverEvent : IJobForEachWithEntity<NetworkIdComponent>
 		{
-			public NativeArray<bool>                   SendEvent; 
+			public NativeArray<bool>                   SendEvent;
 			public NativeArray<RhythmRpcClientRecover> RecoverEvent;
 
 			public RpcQueue<RhythmRpcClientRecover> RpcRecoverQueue;
@@ -187,17 +187,18 @@ namespace Patapon4TLB.Default
 		{
 			[DeallocateOnJobCompletion] public NativeArray<bool>                   SendEvent;
 			[DeallocateOnJobCompletion] public NativeArray<RhythmRpcClientRecover> RecoverEvent;
+
 			public void Execute()
 			{
-				
+
 			}
 		}
 
 		private EntityQuery m_ProcessQuery;
 		private EntityQuery m_NetworkQuery;
 
-		private RpcQueueSystem<RhythmRpcClientRecover> m_RpcQueueClientRecoverSystem;
-		
+		private DefaultRpcProcessSystem<RhythmRpcClientRecover> m_RpcQueueClientRecoverSystem;
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -216,8 +217,8 @@ namespace Patapon4TLB.Default
 				typeof(NetworkIdComponent)
 			);
 
-			m_RpcQueueClientRecoverSystem = World.GetOrCreateSystem<RpcQueueSystem<RhythmRpcClientRecover>>();
-			
+			m_RpcQueueClientRecoverSystem = World.GetOrCreateSystem<DefaultRpcProcessSystem<RhythmRpcClientRecover>>();
+
 			RequireForUpdate(m_ProcessQuery);
 		}
 
@@ -241,7 +242,7 @@ namespace Patapon4TLB.Default
 
 			if (!IsServer)
 			{
-				var rpcQueue = m_RpcQueueClientRecoverSystem.GetRpcQueue();
+				var rpcQueue = m_RpcQueueClientRecoverSystem.RpcQueue;
 
 				inputDeps = new SendRpcRecoverEvent
 				{
@@ -256,7 +257,7 @@ namespace Patapon4TLB.Default
 
 			inputDeps = new DisposeJob
 			{
-				SendEvent = sendEventSingleArray,
+				SendEvent    = sendEventSingleArray,
 				RecoverEvent = rpcEventSingleArray
 			}.Schedule(inputDeps);
 

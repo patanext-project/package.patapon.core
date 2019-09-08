@@ -5,7 +5,7 @@ using StormiumTeam.GameBase.Misc;
 using StormiumTeam.Shared.Gen;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.NetCode;
+using Revolution.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.UI.InGame.DamageVfx

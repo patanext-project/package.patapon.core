@@ -1,8 +1,9 @@
 using Patapon4TLBCore;
+using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Entities;
-using Unity.NetCode;
+using Revolution.NetCode;
 
 namespace Patapon4TLB.GameModes
 {
@@ -10,7 +11,7 @@ namespace Patapon4TLB.GameModes
 	{
 		public struct Create
 		{
-			
+
 		}
 
 		public override void GetComponents(out ComponentType[] entityComponents)
@@ -21,14 +22,14 @@ namespace Patapon4TLB.GameModes
 				typeof(TeamAllies),
 				typeof(TeamEnemies),
 				typeof(TeamBlockMovableArea),
-				typeof(GhostComponent),
+				typeof(GhostEntity),
 				typeof(PlayEntityTag),
 			};
 		}
 
 		public override void SetEntityData(Entity entity, Create data)
 		{
-			
+
 		}
 	}
 }

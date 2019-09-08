@@ -8,7 +8,7 @@ using Patapon4TLB.Core.json;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.NetCode;
+using Revolution.NetCode;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 

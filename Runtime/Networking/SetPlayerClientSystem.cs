@@ -4,7 +4,7 @@ using System.Text;
 using P4TLB.MasterServer;
 using Patapon4TLB.Core.MasterServer;
 using Unity.Entities;
-using Unity.NetCode;
+using Revolution.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.Core

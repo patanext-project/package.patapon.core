@@ -3,7 +3,7 @@ using StormiumTeam.GameBase;
 using StormiumTeam.Networking.Utilities;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
-using Unity.NetCode;
+using Revolution.NetCode;
 using Unity.Transforms;
 
 namespace Patapon4TLB.Core.BasicUnitSnapshot

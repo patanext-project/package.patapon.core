@@ -1,10 +1,11 @@
 using package.patapon.core;
 using package.patapon.def.Data;
+using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.EcsComponents;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using Unity.NetCode;
+using Revolution.NetCode;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Networking.Transport;
@@ -18,25 +19,25 @@ namespace Patapon4TLB.Default
 		public int  FlowBeat;
 		public bool ShouldStartRecovery;
 
-		public void Serialize(DataStreamWriter data)
+		public void WriteTo(DataStreamWriter data)
 		{
 			data.Write(Key);
 			data.Write(FlowBeat);
 			data.Write(ShouldStartRecovery ? 1 : 0);
 		}
 
-		public void Deserialize(DataStreamReader reader, ref DataStreamReader.Context ctx)
+		public void ReadFrom(DataStreamReader reader, ref DataStreamReader.Context ctx)
 		{
 			Key                 = reader.ReadInt(ref ctx);
 			FlowBeat            = reader.ReadInt(ref ctx);
 			ShouldStartRecovery = reader.ReadInt(ref ctx) == 1;
 		}
 
-		public void Execute(Entity connection, EntityCommandBuffer.Concurrent commandBuffer, int jobIndex)
+		public void Execute(Entity connection, World world)
 		{
-			var ent = commandBuffer.CreateEntity(jobIndex);
+			var ent = world.EntityManager.CreateEntity();
 
-			commandBuffer.AddComponent(jobIndex, ent, new RhythmServerExecutePressure {Connection = connection, RpcData = this});
+			world.EntityManager.AddComponentData(ent, new RhythmServerExecutePressure {Connection = connection, RpcData = this});
 		}
 	}
 
@@ -45,17 +46,17 @@ namespace Patapon4TLB.Default
 		public int   Key;
 		public int   Beat;
 		public float Score;
-		public int   EngineGhostId;
+		public uint   EngineGhostId;
 		public bool  DoLocalEventOnSelf;
 
-		public void Execute(Entity connection, EntityCommandBuffer.Concurrent commandBuffer, int jobIndex)
+		public void Execute(Entity connection, World world)
 		{
-			var ent = commandBuffer.CreateEntity(jobIndex);
+			var ent = world.EntityManager.CreateEntity();
 
-			commandBuffer.AddComponent(jobIndex, ent, new RhythmClientExecutePressure {Connection = connection, RpcData = this});
+			world.EntityManager.AddComponentData(ent, new RhythmClientExecutePressure {Connection = connection, RpcData = this});
 		}
 
-		public void Serialize(DataStreamWriter writer)
+		public void WriteTo(DataStreamWriter writer)
 		{
 			writer.Write(Key);
 			writer.Write(Beat);
@@ -64,12 +65,12 @@ namespace Patapon4TLB.Default
 			writer.Write(DoLocalEventOnSelf ? (byte) 1 : (byte) 0);
 		}
 
-		public void Deserialize(DataStreamReader reader, ref DataStreamReader.Context ctx)
+		public void ReadFrom(DataStreamReader reader, ref DataStreamReader.Context ctx)
 		{
 			Key                = reader.ReadInt(ref ctx);
 			Beat               = reader.ReadInt(ref ctx);
 			Score              = reader.ReadFloat(ref ctx);
-			EngineGhostId      = reader.ReadInt(ref ctx);
+			EngineGhostId      = reader.ReadUInt(ref ctx);
 			DoLocalEventOnSelf = reader.ReadByte(ref ctx) == 1;
 		}
 	}
@@ -97,7 +98,7 @@ namespace Patapon4TLB.Default
 			public ComponentDataFromEntity<RhythmEngineSimulateTag> SimulateTagFromEntity;
 
 			[ReadOnly, NativeDisableContainerSafetyRestriction]
-			public NativeHashMap<int, GhostEntity> GhostEntityMap;
+			public NativeHashMap<uint, Entity> GhostEntityMap;
 
 			public EntityCommandBuffer.Concurrent CommandBuffer;
 
@@ -109,21 +110,21 @@ namespace Patapon4TLB.Default
 				if (GhostEntityMap.TryGetValue(executePressure.RpcData.EngineGhostId, out var ghostEntity)
 				    // if we allow events on our engines, accept this condition
 				    // if we don't allow events on our engine, but it's not an engine simulated by us, accept this condition
-				    && (executePressure.RpcData.DoLocalEventOnSelf || !SimulateTagFromEntity.Exists(ghostEntity.entity)))
+				    && (executePressure.RpcData.DoLocalEventOnSelf || !SimulateTagFromEntity.Exists(ghostEntity)))
 				{
 					CreatePressureList.Add(new FlowRhythmPressureEventProvider.Create
 					{
 						Ev = new PressureEvent
 						{
-							Engine     = ghostEntity.entity,
-							TimeMs       = -1, // find the time
+							Engine     = ghostEntity,
+							TimeMs     = -1, // find the time
 							RenderBeat = executePressure.RpcData.Beat,
 							Key        = executePressure.RpcData.Key,
 							Score      = executePressure.RpcData.Score
 						}
 					});
 				}
-				else if (ghostEntity.entity == default)
+				else if (ghostEntity == default)
 				{
 					Debug.LogWarning("No ghost entity found with id=" + executePressure.RpcData.EngineGhostId);
 				}
@@ -150,7 +151,7 @@ namespace Patapon4TLB.Default
 			inputDeps = new Job
 			{
 				SimulateTagFromEntity = GetComponentDataFromEntity<RhythmEngineSimulateTag>(),
-				GhostEntityMap        = World.GetExistingSystem<GhostReceiveSystemGroup>().GhostEntityMap,
+				GhostEntityMap        = World.GetExistingSystem<SnapshotReceiveSystem>().JobData.GhostToEntityMap,
 				CommandBuffer         = m_Barrier.CreateCommandBuffer().ToConcurrent(),
 				CreatePressureList    = m_PressureEventProvider.GetEntityDelayedList()
 			}.Schedule(this, inputDeps);
@@ -173,7 +174,7 @@ namespace Patapon4TLB.Default
 			[ReadOnly] public ArchetypeChunkEntityType                           EntityType;
 			[ReadOnly] public ArchetypeChunkComponentType<Owner>                 OwnerType;
 			[ReadOnly] public ComponentDataFromEntity<NetworkOwner>              NetworkOwnerFromEntity;
-			[ReadOnly] public ComponentDataFromEntity<GhostSystemStateComponent> GhostStateFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<GhostIdentifier> GhostStateFromEntity;
 
 			[NativeDisableParallelForRestriction]
 			public BufferFromEntity<OutgoingRpcDataStreamBufferComponent> OutgoingDataFromEntity;
@@ -238,7 +239,7 @@ namespace Patapon4TLB.Default
 							{
 								Beat               = -1,
 								DoLocalEventOnSelf = false,
-								EngineGhostId      = GhostStateFromEntity[EngineChunks[chunk].GetNativeArray(EntityType)[ent]].ghostId,
+								EngineGhostId      = GhostStateFromEntity[EngineChunks[chunk].GetNativeArray(EntityType)[ent]].Value,
 								Key                = executePressure.RpcData.Key
 							});
 						}
@@ -277,7 +278,7 @@ namespace Patapon4TLB.Default
 				EntityType             = GetArchetypeChunkEntityType(),
 				OwnerType              = GetArchetypeChunkComponentType<Owner>(true),
 				NetworkOwnerFromEntity = GetComponentDataFromEntity<NetworkOwner>(true),
-				GhostStateFromEntity   = GetComponentDataFromEntity<GhostSystemStateComponent>(true),
+				GhostStateFromEntity   = GetComponentDataFromEntity<GhostIdentifier>(true),
 				ProcessFromEntity      = GetComponentDataFromEntity<RhythmEngineProcess>(true),
 				SettingsFromEntity     = GetComponentDataFromEntity<RhythmEngineSettings>(true),
 				CommandStateFromEntity = GetComponentDataFromEntity<GameCommandState>(true),
@@ -286,7 +287,7 @@ namespace Patapon4TLB.Default
 
 				ConnectionEntities     = m_ConnectionQuery.ToEntityArray(Allocator.TempJob, out var queryHandle),
 				OutgoingDataFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>(),
-				RpcQueue               = World.GetExistingSystem<RpcQueueSystem<RhythmRpcPressureFromServer>>().GetRpcQueue()
+				RpcQueue               = World.GetExistingSystem<DefaultRpcProcessSystem<RhythmRpcPressureFromServer>>().RpcQueue
 			}.Schedule(this, JobHandle.CombineDependencies(inputDeps, queryHandle));
 
 			m_Barrier.AddJobHandleForProducer(inputDeps);

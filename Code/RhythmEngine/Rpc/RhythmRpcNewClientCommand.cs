@@ -5,7 +5,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Unity.NetCode;
+using Revolution.NetCode;
 using Unity.Networking.Transport;
 using UnityEngine;
 
@@ -16,7 +16,7 @@ namespace Patapon4TLB.Default
 		public bool                                            IsValid;
 		public NativeArray<RhythmEngineClientRequestedCommand> ResultBuffer;
 
-		public void Execute(Entity connection, EntityCommandBuffer.Concurrent commandBuffer, int jobIndex)
+		public void Execute(Entity connection, World world)
 		{
 			if (!IsValid)
 			{
@@ -24,13 +24,14 @@ namespace Patapon4TLB.Default
 				return;
 			}
 
-			var ent = commandBuffer.CreateEntity(jobIndex);
-			commandBuffer.AddComponent(jobIndex, ent, new RhythmExecuteCommand
+			var entMgr = world.EntityManager;
+			var ent    = entMgr.CreateEntity();
+			entMgr.AddComponentData(ent, new RhythmExecuteCommand
 			{
 				Connection = connection
 			});
 
-			var b = commandBuffer.AddBuffer<RhythmEngineClientRequestedCommand>(jobIndex, ent);
+			var b = entMgr.AddBuffer<RhythmEngineClientRequestedCommand>(ent);
 			b.CopyFrom(ResultBuffer);
 
 			ResultBuffer.Dispose();
@@ -42,7 +43,7 @@ namespace Patapon4TLB.Default
 			Debug.LogError($"We tried to send an invalid '{nameof(ResultBuffer)}'!");
 		}
 
-		public void Serialize(DataStreamWriter writer)
+		public void WriteTo(DataStreamWriter writer)
 		{
 			if (!ResultBuffer.IsCreated)
 			{
@@ -61,7 +62,7 @@ namespace Patapon4TLB.Default
 			}
 		}
 
-		public void Deserialize(DataStreamReader reader, ref DataStreamReader.Context ctx)
+		public void ReadFrom(DataStreamReader reader, ref DataStreamReader.Context ctx)
 		{
 			IsValid = reader.ReadByte(ref ctx) == 1;
 			if (!IsValid)
