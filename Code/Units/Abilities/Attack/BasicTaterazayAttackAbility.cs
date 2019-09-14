@@ -104,13 +104,13 @@ namespace Patapon4TLB.Default.Attack
 							if (!collection.CalculateDistance(distanceInput, ref collector))
 								continue;
 
-							DamageEventList.Add(new TargetDamageEvent
+							/*DamageEventList.Add(new TargetDamageEvent
 							{
 								Position    = cc.WorldFromMotion.pos + collider.ColliderPtr->CalculateAabb().Center,
 								Origin      = origin,
 								Destination = entity,
 								Damage      = -damage
-							});
+							});*/
 							break;
 						}
 					}

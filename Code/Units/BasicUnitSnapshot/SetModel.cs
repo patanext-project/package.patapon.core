@@ -42,13 +42,18 @@ namespace Patapon4TLB.Core.BasicUnitSnapshot
 
 			m_UnitQuery = GetEntityQuery(new EntityQueryDesc
 			{
-				All  = new ComponentType[] {typeof(BasicUnitSnapshotData), typeof(ReplicatedEntityComponent), typeof(Translation)},
+				All = new ComponentType[]
+				{
+					/*typeof(BasicUnitSnapshotData), typeof(ReplicatedEntityComponent), */typeof(Translation)
+				},
 				None = new ComponentType[] {typeof(ToModel)}
 			});
 		}
 
 		protected override void OnUpdate()
 		{
+			return;
+			
 			var entities = m_UnitQuery.ToEntityArray(Allocator.TempJob);
 			for (var ent = 0; ent != entities.Length; ent++)
 			{

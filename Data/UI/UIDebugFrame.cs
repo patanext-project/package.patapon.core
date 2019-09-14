@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using package.patapon.core;
-using Patapon4TLB.Default.Snapshot;
+using Patapon4TLB.Default;
 using Patapon4TLBCore;
 using StormiumTeam.GameBase;
 using StormiumTeam.ThirdParty;

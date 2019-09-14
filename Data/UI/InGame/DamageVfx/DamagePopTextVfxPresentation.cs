@@ -118,12 +118,12 @@ namespace Patapon4TLB.UI.InGame.DamageVfx
 
 				backend.IsPlayQueued = false;
 				backend.StartTime = Time.time;
-				backend.transform.position = new Vector3
+				/*backend.transform.position = new Vector3
 				{
 					x = backend.Event.Position.x,
 					y = backend.Event.Position.y,
 					z = -10
-				};
+				};*/
 			}
 		}
 	}

@@ -1,5 +1,4 @@
 using package.patapon.core;
-using Patapon4TLB.Default.Snapshot;
 using StormiumTeam.GameBase;
 using Unity.Burst;
 using Unity.Entities;
