@@ -1,10 +1,8 @@
 using System;
 using System.Linq;
-using DefaultNamespace;
 using package.patapon.core;
 using package.stormiumteam.shared;
 using StormiumTeam.GameBase;
-using StormiumTeam.Networking.Utilities;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;

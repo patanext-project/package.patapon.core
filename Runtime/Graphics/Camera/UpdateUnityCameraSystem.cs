@@ -64,11 +64,8 @@ namespace package.patapon.core
             Profiler.EndSample();
 
             Profiler.BeginSample("ForEach3");
-            Entities.ForEach((ref GamePlayer player, ref ServerCameraState cameraState) =>
+            Entities.WithAll<GamePlayerLocalTag>().ForEach((ref GamePlayer player, ref ServerCameraState cameraState) =>
             {
-                if (!player.IsSelf)
-                    return;
-
                 if (m_DataToSet.LastSuperiorMode > cameraState.Mode)
                     return;
 

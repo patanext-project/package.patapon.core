@@ -8,11 +8,11 @@ using Misc.GmMachine.Contexts;
 using Patapon4TLB.Core;
 using Patapon4TLB.Default;
 using Patapon4TLBCore;
+using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Data;
-using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -370,7 +370,7 @@ namespace Patapon4TLB.GameModes
 									Settings        = entityMgr.GetComponentData<UnitStatistics>(units[unt].Value)
 								});
 
-								entityMgr.AddComponent(spawnedUnit, typeof(GhostComponent));
+								entityMgr.AddComponent(spawnedUnit, typeof(GhostEntity));
 								if (entityMgr.HasComponent<Relative<PlayerDescription>>(units[unt].Value))
 								{
 									entityMgr.ReplaceOwnerData(spawnedUnit, entityMgr.GetComponentData<Relative<PlayerDescription>>(units[unt].Value).Target);
@@ -387,7 +387,7 @@ namespace Patapon4TLB.GameModes
 									value = stat.Health,
 									owner = spawnedUnit
 								});
-								entityMgr.AddComponent(healthEntity, typeof(GhostComponent));
+								entityMgr.AddComponent(healthEntity, typeof(GhostEntity));
 								MasterServerAbilities.Convert(dummySystem, spawnedUnit, entityMgr.GetBuffer<UnitDefinedAbilities>(units[unt].Value));
 
 								onEntityCreated(entities[form], form, armies[arm].Value, arm, spawnedUnit, worldOrigin);

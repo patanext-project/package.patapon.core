@@ -1,12 +1,12 @@
 using package.stormiumteam.shared.ecs;
 using Patapon4TLB.UI.GameMode.VSHeadOn;
+using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Data;
 using StormiumTeam.GameBase.Systems;
 using Unity.Collections;
 using Unity.Entities;
-using Revolution.NetCode;
 using Unity.Transforms;
 using UnityEngine;
 
@@ -34,7 +34,7 @@ namespace Patapon4TLB.GameModes
 		{
 			base.OnCreate();
 
-			m_GameModeQuery     = GetEntityQuery(typeof(ReplicatedEntityComponent), typeof(MpVersusHeadOn));
+			m_GameModeQuery     = GetEntityQuery(typeof(ReplicatedEntity), typeof(MpVersusHeadOn));
 			m_ExecutingMapQuery = GetEntityQuery(typeof(ExecutingMapData));
 			m_ServerMapQuery    = GetEntityQuery(typeof(ExecutingServerMap));
 

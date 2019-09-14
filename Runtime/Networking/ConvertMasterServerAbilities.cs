@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using P4TLB.MasterServer.GamePlay;
 using Patapon4TLB.Default;
 using Patapon4TLB.Default.Attack;
+using Revolution;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
-using Revolution.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.Core
@@ -15,7 +15,7 @@ namespace Patapon4TLB.Core
 	{
 		private const string InternalFormat = "p4:{0}";
 
-		private static void _c(ComponentSystemBase system, Entity entity, string typeId, IGhostSerializerCollection collection)
+		private static void _c(ComponentSystemBase system, Entity entity, string typeId)
 		{
 			Entity FindCommand(Type type)
 			{
@@ -43,24 +43,7 @@ namespace Patapon4TLB.Core
 					var provider = system.World.GetOrCreateSystem<TProvider>();
 					provider.SpawnLocalEntityWithArguments(create, entities);
 
-					// Temporary. For now, we check if the entity can be serialized or not.
-					// TODO: In future, all abilities should be able to be serialized.
-					bool success;
-					try
-					{
-						collection.FindSerializer(system.EntityManager.GetChunk(entities[0]).Archetype);
-						success = true;
-					}
-					catch
-					{
-						success = false;
-					}
-
-					if (success)
-					{
-						system.EntityManager.AddComponent(entities[0], typeof(GhostComponent));
-						system.EntityManager.AddComponent(entities[0], typeof(ExcludeRelativeSynchronization));
-					}
+					system.EntityManager.AddComponent(entities[0], typeof(GhostEntity));
 				}
 			}
 
@@ -116,25 +99,20 @@ namespace Patapon4TLB.Core
 
 		public static void Convert(ComponentSystemBase system, Entity entity, DynamicBuffer<UnitDefinedAbilities> abilities)
 		{
-			var collection = new GhostSerializerCollection();
-			collection.BeginSerialize(system);
-
 			var array = abilities.ToNativeArray(Allocator.TempJob);
 			foreach (var ab in array)
 			{
-				_c(system, entity, ab.Type.ToString(), collection);
+				_c(system, entity, ab.Type.ToString());
 			}
+
 			array.Dispose();
 		}
 
 		public static void Convert(ComponentSystemBase system, Entity entity, List<Ability> abilities)
 		{
-			var collection = new GhostSerializerCollection();
-			collection.BeginSerialize(system);
-
 			foreach (var ab in abilities)
 			{
-				_c(system, entity, ab.Type, collection);
+				_c(system, entity, ab.Type);
 			}
 		}
 

@@ -1,4 +1,5 @@
 using Patapon4TLB.GameModes.Authoring;
+using Revolution;
 using StormiumTeam.GameBase;
 using Unity.Burst;
 using Unity.Collections;
@@ -26,7 +27,7 @@ namespace Patapon4TLB.GameModes
 			dstManager.AddComponentData(entity, new Relative<TeamDescription>());
 			if (TeamDefine != null)
 				dstManager.AddComponentData(entity, TeamDefine.FindOrCreate(dstManager));
-			dstManager.AddComponent(entity, typeof(GhostComponent));
+			dstManager.AddComponent(entity, typeof(GhostEntity));
 		}
 	}
 	

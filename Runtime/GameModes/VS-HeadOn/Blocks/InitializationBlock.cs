@@ -1,9 +1,9 @@
 using GmMachine;
 using Misc.GmMachine.Contexts;
+using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Entities;
-using Revolution.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.GameModes
@@ -42,7 +42,7 @@ namespace Patapon4TLB.GameModes
 						secondaryColor = Color.Lerp(Color.Lerp(t == 0 ? Color.blue : Color.red, Color.white, 0.15f), Color.black, 0.15f)
 					});
 					WorldCtx.EntityMgr.AddComponentData(team.Target, new Relative<ClubDescription> {Target = club});
-					WorldCtx.EntityMgr.AddComponent(club, typeof(GhostComponent));
+					WorldCtx.EntityMgr.AddComponent(club, typeof(GhostEntity));
 				}
 
 				// -- Set enemies of each team

@@ -1,9 +1,9 @@
-using DefaultNamespace;
+using Revolution;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
-using Revolution.NetCode;
+using Unity.Networking.Transport;
 using UnityEngine;
 
 namespace Patapon4TLB.GameModes
@@ -21,10 +21,10 @@ namespace Patapon4TLB.GameModes
 
 	public struct VersusHeadOnPlayer : IComponentData
 	{
-		
+
 	}
-	
-	public struct MpVersusHeadOn : IGameMode, IComponentFromSnapshot<MpHeadOnGhostSerializer.MpHeadOnGameModeSnapshot>
+
+	public struct MpVersusHeadOn : IGameMode, IReadWriteComponentSnapshot<MpVersusHeadOn, GhostSetup>
 	{
 		public enum State
 		{
@@ -48,29 +48,12 @@ namespace Patapon4TLB.GameModes
 		public int Team0Eliminations;
 		public int Team1Eliminations;
 
-		public unsafe void Set(MpHeadOnGhostSerializer.MpHeadOnGameModeSnapshot snapshot, NativeHashMap<int, GhostEntity> ghostMap)
-		{
-			PlayState = snapshot.PlayState;
-			EndTime   = snapshot.EndTime;
-
-			Team0Points       = snapshot.Team0Score;
-			Team1Points       = snapshot.Team1Score;
-			Team0Eliminations = snapshot.Team0Elimination;
-			Team1Eliminations = snapshot.Team1Elimination;
-
-			ghostMap.TryGetValue((int) snapshot.Team0GhostId, out var team0GhostEntity);
-			Team0 = team0GhostEntity.entity;
-
-			ghostMap.TryGetValue((int) snapshot.Team1GhostId, out var team1GhostEntity);
-			Team1 = team1GhostEntity.entity;
-		}
-
 		public int GetPointReadOnly(int team)
 		{
 			if (team == 0) return Team0Points;
 			return Team1Points;
 		}
-		
+
 		public int GetEliminationReadOnly(int team)
 		{
 			if (team == 0) return Team0Eliminations;
@@ -83,11 +66,6 @@ namespace Patapon4TLB.GameModes
 			Debug.Assert(team >= 0 && team <= 1, "team >= 0 && team <= 1");
 #endif
 			return ref UnsafeUtilityEx.ArrayElementAsRef<int>(UnsafeUtility.AddressOf(ref Team0Points), team);
-			
-			fixed (int* t = &this.Team0Points)
-			{
-				return ref t[team];
-			}
 		}
 
 		public unsafe ref int GetEliminations(int team)
@@ -96,10 +74,41 @@ namespace Patapon4TLB.GameModes
 			Debug.Assert(team >= 0 && team <= 1, "team >= 0 && team <= 1");
 #endif
 			return ref UnsafeUtilityEx.ArrayElementAsRef<int>(UnsafeUtility.AddressOf(ref Team0Eliminations), team);
-			
-			fixed (int* t = &this.Team0Eliminations)
+		}
+
+		public uint Tick { get; set; }
+
+		public void WriteTo(DataStreamWriter writer, ref MpVersusHeadOn baseline, GhostSetup setup, SerializeClientData jobData)
+		{
+			var compression = jobData.NetworkCompressionModel;
+
+			writer.WritePackedUIntDelta((uint) PlayState, (uint) baseline.PlayState, compression);
+			writer.WritePackedIntDelta(EndTime, baseline.EndTime, compression);
+
+			writer.WritePackedUInt(setup[Team0], jobData.NetworkCompressionModel);
+			writer.WritePackedUInt(setup[Team1], jobData.NetworkCompressionModel);
+
+			for (var i = 0; i != 2; i++)
 			{
-				return ref t[team];
+				writer.WritePackedIntDelta(GetPointReadOnly(i), baseline.GetPointReadOnly(i), compression);
+				writer.WritePackedIntDelta(GetEliminationReadOnly(i), baseline.GetEliminationReadOnly(i), compression);
+			}
+		}
+
+		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref MpVersusHeadOn baseline, DeserializeClientData jobData)
+		{
+			var compression = jobData.NetworkCompressionModel;
+
+			PlayState = (MpVersusHeadOn.State) reader.ReadPackedUIntDelta(ref ctx, (uint) baseline.PlayState, compression);
+			EndTime   = reader.ReadPackedIntDelta(ref ctx, baseline.EndTime, compression);
+
+			jobData.GhostToEntityMap.TryGetValue(reader.ReadPackedUInt(ref ctx, compression), out Team0);
+			jobData.GhostToEntityMap.TryGetValue(reader.ReadPackedUInt(ref ctx, compression), out Team1);
+
+			for (var i = 0; i != 2; i++)
+			{
+				GetPoints(i)       = reader.ReadPackedIntDelta(ref ctx, baseline.GetPointReadOnly(i), compression);
+				GetEliminations(i) = reader.ReadPackedIntDelta(ref ctx, baseline.GetEliminationReadOnly(i), compression);
 			}
 		}
 	}

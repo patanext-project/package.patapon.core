@@ -1,7 +1,6 @@
 using Patapon4TLB.Core;
 using Revolution;
 using StormiumTeam.GameBase;
-using Unity.Collections;
 using Unity.Entities;
 
 [assembly: RegisterGenericComponentType(typeof(Relative<UnitTargetDescription>))]

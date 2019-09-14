@@ -6,6 +6,7 @@ using package.patapon.core;
 using package.stormiumteam.shared.ecs;
 using Patapon4TLB.Core;
 using Patapon4TLB.Default;
+using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.EcsComponents;
@@ -98,13 +99,13 @@ namespace Patapon4TLB.GameModes
 
 							entMgr.SetOrAddComponentData(spawnEntities[0], entMgr.GetComponentData<NetworkOwner>(player));
 							entMgr.SetOrAddComponentData(spawnEntities[0], new RhythmEngineProcess {StartTime = worldCtx.GetExistingSystem<ServerSimulationSystemGroup>().GetTick().Ms});
-							entMgr.AddComponent(spawnEntities[0], typeof(GhostComponent));
+							entMgr.AddComponent(spawnEntities[0], typeof(GhostEntity));
 
 							entMgr.ReplaceOwnerData(spawnEntities[0], player);
 						}
 
 						var unitTarget = entMgr.CreateEntity(typeof(UnitTargetDescription), typeof(Translation), typeof(LocalToWorld), typeof(Relative<PlayerDescription>));
-						entMgr.AddComponent(unitTarget, typeof(GhostComponent));
+						entMgr.AddComponent(unitTarget, typeof(GhostEntity));
 						entMgr.ReplaceOwnerData(unitTarget, player);
 					});
 
@@ -120,13 +121,13 @@ namespace Patapon4TLB.GameModes
 							value = 0,
 							owner = entity
 						});
-						worldCtx.EntityMgr.AddComponent(healthEntity, typeof(GhostComponent));
+						worldCtx.EntityMgr.AddComponent(healthEntity, typeof(GhostEntity));
 						worldCtx.EntityMgr.SetOrAddComponentData(entity, new LivableHealth
 						{
 							IsDead = false
 						});
 					});
-					
+
 					ShowMapTextBlock.SetTicksFromMs(10);
 
 					return false;
