@@ -26,6 +26,14 @@ namespace Patapon4TLB.GameModes
 
 	public struct MpVersusHeadOn : IGameMode, IReadWriteComponentSnapshot<MpVersusHeadOn, GhostSetup>
 	{
+		public struct Exclude : IComponentData
+		{}
+		
+		public class Synchronizer : MixedComponentSnapshotSystem<MpVersusHeadOn, GhostSetup>
+		{
+			public override ComponentType ExcludeComponent => typeof(Exclude);
+		}
+		
 		public enum State
 		{
 			OnInitialization,

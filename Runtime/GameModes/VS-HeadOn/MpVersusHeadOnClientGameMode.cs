@@ -69,7 +69,7 @@ namespace Patapon4TLB.GameModes
 
 			m_InterfaceManager.SetEnabled(true);
 
-			var gameMode   = m_GameModeQuery.GetSingleton<MpVersusHeadOn>();
+			var gameMode = EntityManager.GetComponentData<MpVersusHeadOn>(m_GameModeQuery.GetSingletonEntity());
 			if (gameMode.Team0 == default || gameMode.Team1 == default)
 				return;
 			

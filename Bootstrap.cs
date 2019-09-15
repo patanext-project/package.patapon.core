@@ -38,11 +38,21 @@ namespace Patapon4TLBCore
         {
             World.GetOrCreateSystem<SnapshotManager>().SetFixedSystemsFromBuilder((world, builder) =>
             {
+                var i = 1;
                 foreach (var type in GetTypes(typeof(ISystemDelegateForSnapshot), typeof(ComponentSystemBase))
                     .OrderBy(t => t.FullName))
                 {
-                    Debug.Log($"snapshot:{type}");
+                    Debug.Log($"{i}-snapshot:{type}");
                     builder.Add(world.GetOrCreateSystem(type));
+                    i++;
+                }
+
+                foreach (var type in GetTypes(typeof(IEntityDescription), null)
+                    .OrderBy(t => t.FullName))
+                {
+                    Debug.Log($"{i}-snapshot:desc:{type}");
+                    builder.Add(world.GetOrCreateSystem(typeof(ComponentSnapshotSystemTag<>).MakeGenericType(type)));
+                    i++;
                 }
             });
             World.GetOrCreateSystem<RpcCollectionSystem>().SetFixedCollection((world, builder) =>
@@ -103,7 +113,7 @@ namespace Patapon4TLBCore
     {
         protected override void OnCreate()
         {
-            GameStatic.Version = 1;
+            GameStatic.Version = 2;
         }
 
         protected override void OnUpdate()

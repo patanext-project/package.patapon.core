@@ -37,7 +37,7 @@ namespace Patapon4TLB.UI.InGame.ComboWorm
 			selfTr.position   = pos;
 			selfTr.localScale = scale * cam.orthographicSize;
 
-			Debug.Log(clientWorld.GetOrCreateSystem<Sys>().TIME);
+			//Debug.Log(clientWorld.GetOrCreateSystem<Sys>().TIME);
 			animator.Play("score_m_25", -1, clientWorld.GetOrCreateSystem<Sys>().TIME * 2);	
 		}
 

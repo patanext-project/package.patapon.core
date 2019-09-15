@@ -54,50 +54,26 @@ namespace Patapon4TLB.GameModes
 		}
 	}
 
-	public struct HeadOnFlag : IComponentData
+	public struct HeadOnFlag : IComponentData, IReadWriteComponentSnapshot<HeadOnFlag>
 	{
-	}
-
-	public struct HeadOnFlagSnapshotData : ISnapshotData<HeadOnFlagSnapshotData>
-	{
-		public const int   Quantization   = 100;
-		public const float DeQuantization = 1 / 100f;
-
-		public uint            Style;
-		public uint            DefinedTeam;
-		public QuantizedFloat3 Position;
-		public uint            Tick { get; set; }
-
-		public void PredictDelta(uint tick, ref HeadOnFlagSnapshotData baseline1, ref HeadOnFlagSnapshotData baseline2)
+		public struct Exclude : IComponentData
+		{}
+		
+		public int foo;
+		
+		public void WriteTo(DataStreamWriter writer, ref HeadOnFlag baseline, DefaultSetup setup, SerializeClientData jobData)
 		{
-			throw new NotImplementedException();
+			writer.WritePackedInt(foo, jobData.NetworkCompressionModel);
 		}
 
-		public void Serialize(ref HeadOnFlagSnapshotData baseline, DataStreamWriter writer, NetworkCompressionModel compressionModel)
+		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref HeadOnFlag baseline, DeserializeClientData jobData)
 		{
-			writer.WritePackedUIntDelta(Style, baseline.Style, compressionModel);
-			writer.WritePackedUIntDelta(DefinedTeam, baseline.DefinedTeam, compressionModel);
-			for (var i = 0; i != 2; i++)
-			{
-				writer.WritePackedIntDelta(Position[i], baseline.Position[i], compressionModel);
-			}
+			foo = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
 		}
-
-		public void Deserialize(uint tick, ref HeadOnFlagSnapshotData baseline, DataStreamReader reader, ref DataStreamReader.Context ctx, NetworkCompressionModel compressionModel)
+		
+		public class Synchronize : MixedComponentSnapshotSystem<HeadOnFlag, DefaultSetup>
 		{
-			Tick = tick;
-
-			Style       = reader.ReadPackedUIntDelta(ref ctx, baseline.Style, compressionModel);
-			DefinedTeam = reader.ReadPackedUIntDelta(ref ctx, baseline.DefinedTeam, compressionModel);
-			for (var i = 0; i != 2; i++)
-			{
-				Position[i] = reader.ReadPackedIntDelta(ref ctx, baseline.Position[i], compressionModel);
-			}
-		}
-
-		public void Interpolate(ref HeadOnFlagSnapshotData target, float factor)
-		{
-			this = target;
+			public override ComponentType ExcludeComponent => typeof(Exclude);
 		}
 	}
 }
