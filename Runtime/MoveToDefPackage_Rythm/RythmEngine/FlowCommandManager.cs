@@ -1,5 +1,7 @@
-﻿using Unity.Entities;
+﻿using Revolution;
+using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Networking.Transport;
 using UnityEngine;
 
 namespace package.patapon.core
@@ -10,7 +12,7 @@ namespace package.patapon.core
 
 	}
 
-	public struct RhythmCurrentCommand : IComponentData
+	public struct RhythmCurrentCommand : IReadWriteComponentSnapshot<RhythmCurrentCommand, GhostSetup>
 	{
 		public Entity Previous;
 		public Entity CommandTarget;
@@ -46,6 +48,16 @@ namespace package.patapon.core
 		public int Power;
 
 		public bool HasPredictedCommands;
+
+		public void WriteTo(DataStreamWriter writer, ref RhythmCurrentCommand baseline, GhostSetup setup, SerializeClientData jobData)
+		{
+			writer.WritePackedUInt(setup[CommandTarget], jobData.NetworkCompressionModel);
+		}
+
+		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref RhythmCurrentCommand baseline, DeserializeClientData jobData)
+		{
+			jobData.GhostToEntityMap.TryGetValue(reader.ReadPackedUInt(ref ctx, jobData.NetworkCompressionModel), out CommandTarget);
+		}
 	}
 
 	public struct GamePredictedCommandState : IComponentData
@@ -63,10 +75,10 @@ namespace package.patapon.core
 		public GameComboState State;
 	}
 
-	public struct GameComboState : IComponentData
+	public struct GameComboState : IReadWriteComponentSnapshot<GameComboState>
 	{
 		public bool IsPerfect => Score >= 50;
-		
+
 		/// <summary>
 		/// The score of the current combo. A perfect combo do a +5
 		/// </summary>
@@ -128,6 +140,26 @@ namespace package.patapon.core
 				IsFever = true;
 			}
 		}
+
+		public void WriteTo(DataStreamWriter writer, ref GameComboState baseline, DefaultSetup setup, SerializeClientData jobData)
+		{
+			writer.WritePackedIntDelta(Score, baseline.Score, jobData.NetworkCompressionModel);
+			writer.WritePackedIntDelta(Chain, baseline.Chain, jobData.NetworkCompressionModel);
+			writer.WritePackedIntDelta(ChainToFever, baseline.ChainToFever, jobData.NetworkCompressionModel);
+			writer.WritePackedUIntDelta(IsFever ? 1u : 0u, baseline.IsFever ? 1u : 0u, jobData.NetworkCompressionModel);
+			writer.WritePackedIntDelta(JinnEnergy, baseline.JinnEnergy, jobData.NetworkCompressionModel);
+			writer.WritePackedIntDelta(JinnEnergyMax, baseline.JinnEnergyMax, jobData.NetworkCompressionModel);
+		}
+
+		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref GameComboState baseline, DeserializeClientData jobData)
+		{
+			Score         = reader.ReadPackedIntDelta(ref ctx, baseline.Score, jobData.NetworkCompressionModel);
+			Chain         = reader.ReadPackedIntDelta(ref ctx, baseline.Chain, jobData.NetworkCompressionModel);
+			ChainToFever  = reader.ReadPackedIntDelta(ref ctx, baseline.ChainToFever, jobData.NetworkCompressionModel);
+			IsFever       = reader.ReadPackedUIntDelta(ref ctx, baseline.IsFever ? 1u : 0u, jobData.NetworkCompressionModel) == 1;
+			JinnEnergy    = reader.ReadPackedIntDelta(ref ctx, baseline.JinnEnergy, jobData.NetworkCompressionModel);
+			JinnEnergyMax = reader.ReadPackedIntDelta(ref ctx, baseline.JinnEnergyMax, jobData.NetworkCompressionModel);
+		}
 	}
 
 	public struct GameComboChain : IBufferElementData
@@ -135,7 +167,7 @@ namespace package.patapon.core
 
 	}
 
-	public struct GameCommandState : IComponentData
+	public struct GameCommandState : IReadWriteComponentSnapshot<GameCommandState>
 	{
 		public int StartTime;
 		public int EndTime;
@@ -155,6 +187,20 @@ namespace package.patapon.core
 		{
 			return IsGamePlayActive(milliseconds)
 			       || IsInputActive(milliseconds, beatInterval);
+		}
+
+		public void WriteTo(DataStreamWriter writer, ref GameCommandState baseline, DefaultSetup setup, SerializeClientData jobData)
+		{
+			writer.WritePackedIntDelta(StartTime, baseline.StartTime, jobData.NetworkCompressionModel);
+			writer.WritePackedIntDelta(EndTime, baseline.EndTime, jobData.NetworkCompressionModel);
+			writer.WritePackedIntDelta(ChainEndTime, baseline.ChainEndTime, jobData.NetworkCompressionModel);
+		}
+
+		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref GameCommandState baseline, DeserializeClientData jobData)
+		{
+			StartTime    = reader.ReadPackedIntDelta(ref ctx, baseline.StartTime, jobData.NetworkCompressionModel);
+			EndTime      = reader.ReadPackedIntDelta(ref ctx, baseline.EndTime, jobData.NetworkCompressionModel);
+			ChainEndTime = reader.ReadPackedIntDelta(ref ctx, baseline.ChainEndTime, jobData.NetworkCompressionModel);
 		}
 	}
 

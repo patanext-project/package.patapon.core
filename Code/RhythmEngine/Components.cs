@@ -1,9 +1,11 @@
 using package.patapon.core;
+using Revolution;
 using Unity.Entities;
+using Unity.Networking.Transport;
 
 namespace Patapon4TLB.Default
 {
-	public struct RhythmEngineState : IComponentData
+	public struct RhythmEngineState : IReadWriteComponentSnapshot<RhythmEngineState>
 	{
 		public bool IsPaused;
 		public bool IsNewBeat;
@@ -22,9 +24,21 @@ namespace Patapon4TLB.Default
 		{
 			return NextBeatRecovery > processBeat;
 		}
+
+		public void WriteTo(DataStreamWriter writer, ref RhythmEngineState baseline, DefaultSetup setup, SerializeClientData jobData)
+		{
+			writer.WritePackedUIntDelta(IsPaused ? 1u : 0u, baseline.IsPaused ? 1u : 0u, jobData.NetworkCompressionModel);
+			writer.WritePackedIntDelta(NextBeatRecovery, baseline.NextBeatRecovery, jobData.NetworkCompressionModel);
+		}
+
+		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref RhythmEngineState baseline, DeserializeClientData jobData)
+		{
+			IsPaused = reader.ReadPackedUIntDelta(ref ctx, baseline.IsPaused ? 1u : 0u, jobData.NetworkCompressionModel) == 1;
+			NextBeatRecovery = reader.ReadPackedIntDelta(ref ctx, baseline.NextBeatRecovery, jobData.NetworkCompressionModel);
+		}
 	}
 
-	public struct RhythmEngineSettings : IComponentData
+	public struct RhythmEngineSettings : IReadWriteComponentSnapshot<RhythmEngineSettings>
 	{
 		public int MaxBeats;
 		public int BeatInterval; // in ms
@@ -35,6 +49,21 @@ namespace Patapon4TLB.Default
 		/// used instead of 'RhythmEngineCurrentCommand'.
 		/// </summary>
 		public bool UseClientSimulation;
+
+		public void WriteTo(DataStreamWriter writer, ref RhythmEngineSettings baseline, DefaultSetup setup, SerializeClientData jobData)
+		{
+			writer.WritePackedIntDelta(MaxBeats, baseline.MaxBeats, jobData.NetworkCompressionModel);
+			writer.WritePackedIntDelta(BeatInterval, baseline.BeatInterval, jobData.NetworkCompressionModel);
+			writer.WritePackedUIntDelta(UseClientSimulation ? 1u : 0u, baseline.UseClientSimulation ? 1u : 0u, jobData.NetworkCompressionModel);
+		}
+
+		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref RhythmEngineSettings baseline, DeserializeClientData jobData)
+		{
+			MaxBeats     = reader.ReadPackedIntDelta(ref ctx, baseline.MaxBeats, jobData.NetworkCompressionModel);
+			BeatInterval = reader.ReadPackedIntDelta(ref ctx, baseline.BeatInterval, jobData.NetworkCompressionModel);
+
+			UseClientSimulation = reader.ReadPackedUIntDelta(ref ctx, baseline.UseClientSimulation ? 1u : 0u, jobData.NetworkCompressionModel) == 1;
+		}
 	}
 
 	public struct PressureEvent : IComponentData

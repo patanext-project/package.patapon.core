@@ -1,4 +1,6 @@
+using Revolution;
 using Unity.Entities;
+using Unity.Networking.Transport;
 
 namespace Patapon4TLB.Default
 {

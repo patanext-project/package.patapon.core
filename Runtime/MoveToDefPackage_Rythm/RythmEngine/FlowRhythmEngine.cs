@@ -1,5 +1,7 @@
 ﻿using System;
+using Revolution;
 using Unity.Entities;
+using Unity.Networking.Transport;
 using UnityEngine;
 
 namespace package.patapon.core
@@ -37,7 +39,7 @@ namespace package.patapon.core
 
     }
 
-    public struct RhythmEngineProcess : IComponentData
+    public struct RhythmEngineProcess : IReadWriteComponentSnapshot<RhythmEngineProcess>
     {
         public int Milliseconds;
         public int StartTime;
@@ -83,6 +85,16 @@ namespace package.patapon.core
         public static int CalculateFlowBeat(int ms, int interval)
         {
             return new RhythmEngineProcess {Milliseconds = ms}.GetFlowBeat(interval);
+        }
+
+        public void WriteTo(DataStreamWriter writer, ref RhythmEngineProcess baseline, DefaultSetup setup, SerializeClientData jobData)
+        {
+            writer.WritePackedIntDelta(StartTime, baseline.StartTime, jobData.NetworkCompressionModel);
+        }
+
+        public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref RhythmEngineProcess baseline, DeserializeClientData jobData)
+        {
+            StartTime = reader.ReadPackedIntDelta(ref ctx, baseline.StartTime, jobData.NetworkCompressionModel);
         }
     }
 
