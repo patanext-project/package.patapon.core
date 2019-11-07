@@ -1,1 +1,9 @@
 *.png
+
+# Ignore folders that are currently being upgraded...
+ObsoleteRuntime/
+Snapshots/
+TestD/
+MoveToDefault/
+Data/
+Code/
