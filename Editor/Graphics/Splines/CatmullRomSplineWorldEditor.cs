@@ -1,15 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEditor;
-using P4Main.Graphics;
-using Unity.Collections;
-using Unity.Mathematics;
-using UnityEngine;
-
-namespace P4Main.Graphics.Editor
+﻿namespace P4Main.Graphics.Editor
 {
 #if UNITY_EDITOR && false == true
     [CustomEditor(typeof(SplineRendererBehaviour)), CanEditMultipleObjects]

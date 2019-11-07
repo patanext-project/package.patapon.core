@@ -1,3 +1,4 @@
+#if USE_OBSOLETE
 using NUnit.Framework;
 using Patapon4TLB.Default;
 using Unity.Entities;
@@ -57,3 +58,4 @@ namespace Patapon4TLBCore.Tests
 		}
 	}
 }
+#endif
