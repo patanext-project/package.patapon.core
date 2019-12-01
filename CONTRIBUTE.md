@@ -1,10 +1,10 @@
-**NOTE: Current contributions are not accepted until the refactoring is complete**
-**NOTE: This file is not yet finished**
+**NOTE: Current contributions are not accepted until the refactoring is complete**  
+**NOTE: This file is not yet finished** 
 
 For contributing new features to the game, please check the project Trello to see which feature you can develop.
 
 # Guidelines
-Please check https://docs.microsoft.com/fr-fr/dotnet/standard/design-guidelines/    
+Please check https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/    
 It's possible that the project iself don't follow some of the guideline, if  that the case, report an issue.
 (It may also be possible that there are some exceptions, that I'll need to add later here)
 
