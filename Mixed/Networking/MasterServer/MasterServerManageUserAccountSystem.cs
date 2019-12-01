@@ -54,9 +54,9 @@ namespace Patapon4TLB.Core.MasterServer
 		protected override void OnCreate()
 		{
 			base.OnCreate();
-
-			if (World != BootWorld.World)
-				throw new InvalidOperationException();
+ 
+			/* todo: if (World != BootWorld.World)
+				throw new InvalidOperationException();*/
 
 			GetModule(out m_RequestUserLoginModule);
 

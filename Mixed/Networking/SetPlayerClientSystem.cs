@@ -5,6 +5,7 @@ using P4TLB.MasterServer;
 using Patapon4TLB.Core.MasterServer;
 using Unity.Entities;
 using Revolution.NetCode;
+using Unity.Collections;
 using UnityEngine;
 
 namespace Patapon4TLB.Core

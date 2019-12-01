@@ -1,4 +1,5 @@
 using package.stormiumteam.shared.ecs;
+using Patapon.Mixed.GameModes.VSHeadOn;
 using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
@@ -19,7 +20,7 @@ namespace Patapon4TLB.GameModes
 	[UpdateInGroup(typeof(ClientGameModeSystemGroup))]
 	public class MpVersusHeadOnClientGameMode : GameBaseSystem
 	{
-		private EntityQuery m_GameModeQuery;
+		/*private EntityQuery m_GameModeQuery;
 		private EntityQuery m_ExecutingMapQuery;
 		private EntityQuery m_ServerMapQuery;
 
@@ -124,6 +125,10 @@ namespace Patapon4TLB.GameModes
 				hud.SetScore(0, i, gameMode.GetPoints(i));
 				hud.SetScore(1, i, gameMode.GetEliminations(i));
 			}
+		}*/
+		protected override void OnUpdate()
+		{
+			throw new System.NotImplementedException();
 		}
 	}
 }

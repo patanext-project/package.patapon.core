@@ -53,7 +53,7 @@ namespace Patapon.Mixed.GamePlay.Authoring
 				var parentWithoutCollider = authoring.transform.parent;
 				while (parentWithoutCollider != null)
 				{
-					if (parentWithoutCollider.GetComponent<PhysicsShape>() == null)
+					if (parentWithoutCollider.GetComponent<PhysicsShapeAuthoring>() == null)
 						break;
 					parentWithoutCollider = parentWithoutCollider.parent;
 				}

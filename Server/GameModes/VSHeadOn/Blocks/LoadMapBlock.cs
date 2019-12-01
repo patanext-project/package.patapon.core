@@ -2,6 +2,7 @@ using GmMachine;
 using Misc.GmMachine.Contexts;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Data;
+using Unity.Collections;
 using Unity.Entities;
 
 namespace Patapon.Server.GameModes.VSHeadOn

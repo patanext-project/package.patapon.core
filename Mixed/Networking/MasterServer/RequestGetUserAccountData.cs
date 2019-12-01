@@ -1,6 +1,7 @@
 using P4TLB.MasterServer;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
+using Unity.Collections;
 using Unity.Entities;
 
 namespace Patapon4TLB.Core.MasterServer
@@ -52,7 +53,7 @@ namespace Patapon4TLB.Core.MasterServer
 		{
 			base.OnCreate();
 
-			m_MasterServer = BootWorld.GetOrCreateSystem<MasterServerSystem>();
+			// todo: m_MasterServer = BootWorld.GetOrCreateSystem<MasterServerSystem>();
 		}
 
 		protected override void OnUpdate()

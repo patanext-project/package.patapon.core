@@ -1,4 +1,5 @@
 using Patapon4TLB.Default;
+using Unity.Collections;
 using Unity.Entities;
 
 namespace Patapon.Mixed.Units

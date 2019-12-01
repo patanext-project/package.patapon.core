@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using P4TLB.MasterServer.GamePlay;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.Units;
-using Patapon4TLB.Default;
-using Patapon4TLB.Default.Attack;
 using Revolution;
 using StormiumTeam.GameBase;
 using Unity.Collections;
@@ -51,7 +49,7 @@ namespace Patapon4TLB.Core
 
 			switch (typeId)
 			{
-				case string _ when string.IsNullOrEmpty(typeId):
+				/*case string _ when string.IsNullOrEmpty(typeId):
 					throw new InvalidOperationException();
 				case string _ when typeId == GetInternal("tate/basic_march"):
 				case string _ when typeId == GetInternal("basic_march"):
@@ -95,7 +93,7 @@ namespace Patapon4TLB.Core
 					break;
 				default:
 					Debug.LogError("No ability found with type: " + typeId);
-					break;
+					break;*/
 			}
 		}
 
@@ -118,7 +116,7 @@ namespace Patapon4TLB.Core
 			}
 		}
 
-		public static string GetInternal(string ability)
+		public static string GetInternal(string ability)	
 		{
 			return string.Format(InternalFormat, ability);
 		}

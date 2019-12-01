@@ -1,5 +1,6 @@
 using System;
 using Patapon.Mixed.Units;
+using Patapon4TLB.Core;
 using Patapon4TLB.Default;
 using Revolution;
 using StormiumTeam.GameBase;
@@ -59,7 +60,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 							}
 							else
 							{
-								entityMgr.AddComponent(spawnedUnit, typeof(BotControlledUnit));
+								// todo: entityMgr.AddComponent(spawnedUnit, typeof(BotControlledUnit));
 							}
 
 							var stat = entityMgr.GetComponentData<UnitStatistics>(units[unt].Value);
