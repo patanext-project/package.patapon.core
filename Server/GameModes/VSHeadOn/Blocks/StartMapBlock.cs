@@ -13,7 +13,7 @@ using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.EcsComponents;
 using Unity.Collections;
 using Unity.Entities;
-using Revolution.NetCode;
+using Unity.NetCode;
 using Unity.Transforms;
 
 namespace Patapon.Server.GameModes.VSHeadOn
@@ -97,7 +97,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 						}, spawnEntities);
 
 						entMgr.SetOrAddComponentData(spawnEntities[0], entMgr.GetComponentData<NetworkOwner>(player));
-						entMgr.SetOrAddComponentData(spawnEntities[0], new FlowEngineProcess {StartTime = worldCtx.GetExistingSystem<ServerSimulationSystemGroup>().GetTick().Ms});
+						entMgr.SetOrAddComponentData(spawnEntities[0], new FlowEngineProcess {StartTime = gmContext.GetTick().Ms});
 						entMgr.AddComponent(spawnEntities[0], typeof(GhostEntity));
 
 						entMgr.ReplaceOwnerData(spawnEntities[0], player);

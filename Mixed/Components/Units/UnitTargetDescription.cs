@@ -31,7 +31,7 @@ namespace Patapon.Mixed.Units
 		{
 		}
 
-		public class SynchronizeSnapshot : ComponentSnapshotSystem_Empty<UnitTargetDescription>
+		public class SynchronizeSnapshot : ComponentSnapshotSystemEmpty<UnitTargetDescription>
 		{
 			public override ComponentType ExcludeComponent => typeof(Exclude);
 		}

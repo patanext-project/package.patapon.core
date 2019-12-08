@@ -4,13 +4,13 @@ using System.Text;
 using P4TLB.MasterServer;
 using Patapon4TLB.Core.MasterServer;
 using Unity.Entities;
-using Revolution.NetCode;
 using Unity.Collections;
+using Unity.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.Core
 {
-	[NotClientServerSystem]
+	[UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
 	public class SetPlayerClientSystem : ComponentSystem
 	{
 		private string m_Login;
@@ -51,8 +51,12 @@ namespace Patapon4TLB.Core
 			EntityManager.DestroyEntity(m_PreviousRequest);
 			m_PreviousRequest = default;
 
-			foreach (var world in ClientServerBootstrap.clientWorld)
+			foreach (var world in World.AllWorlds)
 			{
+				// Only get client worlds
+				if (world.GetExistingSystem<ClientSimulationSystemGroup>() == null)
+					continue;
+				
 				var query = world.EntityManager.CreateEntityQuery(typeof(ConnectedMasterServerClient));
 				if (query.CalculateEntityCount() == 0)
 				{

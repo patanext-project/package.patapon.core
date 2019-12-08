@@ -7,7 +7,7 @@ using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Revolution.NetCode;
+using Unity.NetCode;
 using UnityEngine;
 using ILogger = Grpc.Core.Logging.ILogger;
 
@@ -17,7 +17,7 @@ namespace Patapon4TLB.Core.MasterServer
 	{
 	}
 
-	[NotClientServerSystem]
+	[UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
 	public class MasterServerSystem : ComponentSystem
 	{
 		public delegate void ShutDownEvent();

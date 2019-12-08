@@ -10,7 +10,7 @@ using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using Unity.Collections;
 using Unity.Entities;
-using Revolution.NetCode;
+using Unity.NetCode;
 using Unity.Transforms;
 
 namespace Patapon.Server.GameModes.VSHeadOn
@@ -59,7 +59,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 			public UTick GetTick()
 			{
-				return ServerSimulationSystemGroup.GetTick();
+				return ServerSimulationSystemGroup.GetServerTick();
 			}
 		}
 

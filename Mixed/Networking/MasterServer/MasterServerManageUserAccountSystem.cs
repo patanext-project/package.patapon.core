@@ -4,7 +4,7 @@ using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
-using Revolution.NetCode;
+using Unity.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.Core.MasterServer
@@ -41,7 +41,7 @@ namespace Patapon4TLB.Core.MasterServer
 	}
 
 	[UpdateInGroup(typeof(MasterServerProcessRpcSystem))]
-	[NotClientServerSystem]
+	[UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
 	[AlwaysUpdateSystem]
 	public class MasterServerManageUserAccountSystem : GameBaseSystem
 	{
