@@ -7,6 +7,7 @@
         "Revolution.NetCode",
         "Revolution.Snapshot",
         "Unity.ugui",
+        "package.guerro.shared",
         "Unity.TextMeshPro",
         "Unity.InputSystem",
         "Unity.Networking.Transport",

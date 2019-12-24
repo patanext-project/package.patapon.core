@@ -54,7 +54,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			var movableDescFromEntity     = GetComponentDataFromEntity<MovableDescription>(true);
 			var physicsColliderFromEntity = GetComponentDataFromEntity<PhysicsCollider>(true);
 			var createEventsList          = World.GetExistingSystem<MpVersusHeadOnGameMode>().CaptureEvents;
-			inputDeps = Entities.ForEach((Entity entity, ref HeadOnStructure structure, ref Relative<TeamDescription> relativeTeam, in CaptureAreaComponent captureArea, in LocalToWorld ltw, in PhysicsCollider collider) =>
+			/*inputDeps = Entities.ForEach((Entity entity, ref HeadOnStructure structure, ref Relative<TeamDescription> relativeTeam, in CaptureAreaComponent captureArea, in LocalToWorld ltw, in PhysicsCollider collider) =>
 			{
 				if (relativeTeam.Target != default)
 					return;
@@ -159,7 +159,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 							structure.CaptureProgress[1 - t] = math.min(structure.CaptureProgress[1 - t], structure.TimeToCapture - structure.CaptureProgress[t]);
 					}
 				}
-			}).Schedule(inputDeps);
+			}).Schedule(inputDeps);*/
 
 			return inputDeps;
 		}

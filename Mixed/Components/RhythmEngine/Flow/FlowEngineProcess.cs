@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.Contracts;
 using Revolution;
 using Unity.Entities;
 using Unity.Networking.Transport;
@@ -20,6 +21,7 @@ namespace Patapon.Mixed.RhythmEngine.Flow
         /// </summary>
         /// <param name="beatInterval"></param>
         /// <returns></returns>
+        [Pure]
         public int GetActivationBeat(int beatInterval)
         {
             if (Milliseconds == 0 || beatInterval == 0)
@@ -35,6 +37,7 @@ namespace Patapon.Mixed.RhythmEngine.Flow
         /// </summary>
         /// <param name="beatInterval"></param>
         /// <returns></returns>
+        [Pure]
         public int GetFlowBeat(int beatInterval)
         {
             if (Milliseconds == 0 || beatInterval == 0)
