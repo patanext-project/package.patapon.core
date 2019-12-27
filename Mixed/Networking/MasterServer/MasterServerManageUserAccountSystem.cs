@@ -1,6 +1,4 @@
-using System;
 using P4TLB.MasterServer;
-using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;

@@ -44,7 +44,12 @@ namespace Patapon.Server.GameModes.VSHeadOn
 						var units = entityMgr.GetBuffer<FormationChild>(armies[arm].Value).ToNativeArray(Allocator.TempJob);
 						for (var unt = 0; unt != units.Length; unt++)
 						{
-							var capsuleColl = Unity.Physics.CapsuleCollider.Create(0, math.up() * 2, 0.5f);
+							var capsuleColl = CapsuleCollider.Create(new CapsuleGeometry
+							{
+								Radius  = 0.5f,
+								Vertex0 = 0,
+								Vertex1 = math.up() * 2
+							});
 							var spawnedUnit = unitProvider.SpawnLocalEntityWithArguments(new UnitProvider.Create
 							{
 								Direction       = team.TeamIndex <= 1 ? UnitDirection.Right : UnitDirection.Left,

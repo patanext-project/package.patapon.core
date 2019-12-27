@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using P4TLB.MasterServer.GamePlay;
-using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.Units;
 using Revolution;
 using StormiumTeam.GameBase;

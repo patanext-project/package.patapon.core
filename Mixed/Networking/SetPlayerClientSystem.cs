@@ -82,7 +82,7 @@ namespace Patapon4TLB.Core
 		/// </summary>
 		/// <returns>The request entity</returns>
 		public Entity RequestConnection()
-		{
+		{ 
 			if (m_Login == null || m_HashedPassword == null)
 				throw new ArgumentNullException();
 

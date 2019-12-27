@@ -4,9 +4,12 @@ using StormiumTeam.GameBase.Components;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.NetCode;
 
 namespace Patapon.Server.GameModes.VSHeadOn
 {
+	[UpdateInGroup(typeof(GameEventRuleSystemGroup))]
+	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	public class VersusHeadOnEliminationRuleSystem : RuleBaseSystem
 	{
 		private struct UpdateJob : IJobForEachWithEntity_EBCC<HealthModifyingHistory, LivableHealth, VersusHeadOnUnit>

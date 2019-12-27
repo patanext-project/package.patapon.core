@@ -3,7 +3,7 @@
     "references": [
         "package.patapon.mixed",
         "package.guerro.shared",
-        "package.patapon.masterserver.shared",
+        "patapon.masterserver.shared",
         "package.stormiumteam.gamebase",
         "package.stormiumteam.networking",
         "Revolution.NetCode",

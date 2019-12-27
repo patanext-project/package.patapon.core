@@ -1,14 +1,5 @@
-using package.stormiumteam.shared.ecs;
-using Patapon.Mixed.GameModes.VSHeadOn;
-using Revolution;
 using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Data;
-using StormiumTeam.GameBase.Systems;
-using Unity.Collections;
 using Unity.Entities;
-using Unity.Transforms;
-using UnityEngine;
 
 namespace Patapon4TLB.GameModes
 {
@@ -128,7 +119,7 @@ namespace Patapon4TLB.GameModes
 		}*/
 		protected override void OnUpdate()
 		{
-			throw new System.NotImplementedException();
+
 		}
 	}
 }

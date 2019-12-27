@@ -1,5 +1,4 @@
 using P4TLB.MasterServer;
-using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
@@ -58,11 +57,11 @@ namespace Patapon4TLB.Core.MasterServer
 
 		protected override void OnUpdate()
 		{
-			if (m_MasterServer.channel != null
+			/*if (m_MasterServer.channel != null
 			    && !m_MasterServer.HasClient<AuthenticationService.AuthenticationServiceClient>())
 			{
 				m_MasterServer.AddClient(() => { return Client = new AuthenticationService.AuthenticationServiceClient(m_MasterServer.channel); });
-			}
+			}*/
 		}
 	}
 }

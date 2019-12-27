@@ -4,7 +4,6 @@ using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Collections;
-using Unity.Entities;
 using UnityEngine;
 
 namespace Patapon.Server.GameModes.VSHeadOn

@@ -86,7 +86,7 @@ namespace StormiumTeam.GameBase
 				All = new ComponentType[] {typeof(GameEvent), typeof(TargetDamageEvent)}
 			});
 			m_ModifyHealthArchetype = EntityManager.CreateArchetype(typeof(ModifyHealthEvent));
-
+			
 			CustomProperties = AddRule<Data>(out var data);
 
 			SelfDamageFactorProperty        = CustomProperties.Add("Self damage factor", ref data, ref data.SelfDamageFactor);

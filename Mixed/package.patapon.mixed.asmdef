@@ -1,7 +1,7 @@
 {
     "name": "package.patapon.mixed",
     "references": [
-        "package.patapon.masterserver.shared",
+        "patapon.masterserver.shared",
         "package.stormiumteam.gamebase",
         "package.stormiumteam.networking",
         "Revolution.NetCode",
