@@ -1,15 +1,20 @@
 using System;
 using System.IO;
+using Systems;
 using Misc.Extensions;
 using package.stormiumteam.shared.ecs;
 using Patapon4TLB.Default.Player;
 using StormiumTeam.GameBase.Systems;
+using Unity.Entities;
 using Unity.Jobs;
+using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace DefaultNamespace
 {
+	[UpdateInGroup(typeof(ClientInitializationSystemGroup))]
+	[UpdateAfter(typeof(UpdateInputSystem))]
 	public class GrabInputSystem : BaseSyncInputSystem
 	{
 		public const string AssetFileName = "input_pressurekeys.inputactions";

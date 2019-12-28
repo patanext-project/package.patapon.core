@@ -58,6 +58,7 @@ namespace Patapon.Mixed.RhythmEngine.Flow
 
         public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref FlowEngineProcess baseline, DeserializeClientData jobData)
         {
+            this = baseline;
             StartTime = reader.ReadPackedIntDelta(ref ctx, baseline.StartTime, jobData.NetworkCompressionModel);
         }
 

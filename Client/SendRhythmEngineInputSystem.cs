@@ -53,6 +53,7 @@ namespace Systems.RhythmEngine
 			                              ref DynamicBuffer<RhythmEngineCommandProgression> progression,
 			                              in  RhythmEngineSettings                          settings, in FlowEngineProcess process) =>
 			{
+				Entity rpcEnt;
 				PressureEventFromClientRpc pressureEvent = default;
 
 				var flowBeat = process.GetFlowBeat(settings.BeatInterval);
@@ -85,7 +86,13 @@ namespace Systems.RhythmEngine
 					state.NextBeatRecovery              = flowBeat + 1;
 					predictedCommand.State.ChainEndTime = default;
 
-					// RECOVER EVENT HERE
+					rpcEnt = ecb.CreateEntity(nativeThreadIndex);
+					ecb.AddComponent(nativeThreadIndex, rpcEnt, new SendRpcCommandRequestComponent());
+					ecb.AddComponent(nativeThreadIndex, rpcEnt, new RhythmRpcClientRecover
+					{
+						ForceRecover = true,
+						RecoverBeat = state.NextBeatRecovery
+					});
 				}
 				else
 				{
@@ -97,7 +104,7 @@ namespace Systems.RhythmEngine
 
 				state.LastPressureBeat = math.max(state.LastPressureBeat, pressureData.RenderBeat);
 
-				var rpcEnt = ecb.CreateEntity(nativeThreadIndex);
+				rpcEnt = ecb.CreateEntity(nativeThreadIndex);
 				ecb.AddComponent(nativeThreadIndex, rpcEnt, new SendRpcCommandRequestComponent());
 				ecb.AddComponent(nativeThreadIndex, rpcEnt, pressureEvent);
 

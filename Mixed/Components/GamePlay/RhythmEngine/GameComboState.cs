@@ -94,6 +94,7 @@ namespace Patapon.Mixed.GamePlay.RhythmEngine
 
 		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref GameComboState baseline, DeserializeClientData jobData)
 		{
+			this = baseline;
 			Score         = reader.ReadPackedIntDelta(ref ctx, baseline.Score, jobData.NetworkCompressionModel);
 			Chain         = reader.ReadPackedIntDelta(ref ctx, baseline.Chain, jobData.NetworkCompressionModel);
 			ChainToFever  = reader.ReadPackedIntDelta(ref ctx, baseline.ChainToFever, jobData.NetworkCompressionModel);

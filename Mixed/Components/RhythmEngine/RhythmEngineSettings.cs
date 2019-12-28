@@ -25,6 +25,7 @@ namespace Patapon.Mixed.RhythmEngine
 
 		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref RhythmEngineSettings baseline, DeserializeClientData jobData)
 		{
+			this = baseline;
 			MaxBeats     = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
 			BeatInterval = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
 

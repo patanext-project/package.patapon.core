@@ -75,7 +75,8 @@ namespace Bootstraps
 					});
 
 					EntityManager.AddComponent(rhythmEnt, typeof(GhostEntity));
-					EntityManager.AddComponentData(rhythmEnt, new OwnerServerId {Value = connected.ServerId});
+					EntityManager.AddComponentData(rhythmEnt, new OwnerServerId { Value = connected.ServerId});
+					EntityManager.ReplaceOwnerData(rhythmEnt, connected.Player);
 
 					var process = EntityManager.GetComponentData<FlowEngineProcess>(rhythmEnt);
 					process.StartTime = GetTick(true).Ms;
