@@ -1,9 +1,13 @@
+using package.stormiumteam.shared.ecs;
 using Revolution;
+using Unity.Entities;
+using Unity.Jobs;
+using Unity.NetCode;
 using Unity.Networking.Transport;
 
 namespace Patapon.Mixed.RhythmEngine
 {
-	public struct RhythmEngineState : IReadWriteComponentSnapshot<RhythmEngineState>
+	public struct RhythmEngineState : IComponentData
 	{
 		public bool IsPaused;
 		public bool IsNewBeat;
@@ -14,25 +18,90 @@ namespace Patapon.Mixed.RhythmEngine
 		/// </summary>
 		public int NextBeatRecovery;
 
+		/// <summary>
+		/// Used on client side since a client could have set a custom recovery.
+		/// </summary>
+		public int RecoveryTick;
+
 		public bool ApplyCommandNextBeat;
 		public bool VerifyCommand;
-		public int LastPressureBeat;
+		public int  LastPressureBeat;
 
-		public bool IsRecovery(int processBeat)
+		public bool IsRecovery(int processBeat) => NextBeatRecovery > processBeat;
+
+		public struct Snapshot : IReadWriteSnapshot<Snapshot>, ISnapshotDelta<Snapshot>, ISynchronizeImpl<RhythmEngineState, DefaultSetup>
 		{
-			return NextBeatRecovery > processBeat;
+			public bool IsPaused;
+			public int  NextBeatRecovery;
+			public int  RecoveryTick;
+
+			public void WriteTo(DataStreamWriter writer, ref Snapshot baseline, NetworkCompressionModel compressionModel)
+			{
+				writer.WriteBitBool(IsPaused);
+				writer.WritePackedIntDelta(NextBeatRecovery, baseline.NextBeatRecovery, compressionModel);
+				writer.WritePackedIntDelta(RecoveryTick, baseline.RecoveryTick, compressionModel);
+			}
+
+			public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref Snapshot baseline, NetworkCompressionModel compressionModel)
+			{
+				IsPaused         = reader.ReadBitBool(ref ctx);
+				NextBeatRecovery = reader.ReadPackedIntDelta(ref ctx, baseline.NextBeatRecovery, compressionModel);
+				RecoveryTick     = reader.ReadPackedIntDelta(ref ctx, baseline.RecoveryTick, compressionModel);
+			}
+
+			public uint Tick { get; set; }
+
+			public bool DidChange(Snapshot baseline)
+			{
+				return IsPaused != baseline.IsPaused
+				       || NextBeatRecovery != baseline.NextBeatRecovery
+				       || RecoveryTick != baseline.RecoveryTick;
+			}
+
+			public void SynchronizeFrom(in RhythmEngineState component, in DefaultSetup setup, in SerializeClientData serializeData)
+			{
+				IsPaused         = component.IsPaused;
+				NextBeatRecovery = component.NextBeatRecovery;
+				RecoveryTick     = component.RecoveryTick;
+			}
+
+			public void SynchronizeTo(ref RhythmEngineState component, in DeserializeClientData deserializeData)
+			{
+				throw new System.NotImplementedException();
+			}
 		}
 
-		public void WriteTo(DataStreamWriter writer, ref RhythmEngineState baseline, DefaultSetup setup, SerializeClientData jobData)
+		public struct Exclude : IComponentData
 		{
-			writer.WritePackedUIntDelta(IsPaused ? 1u : 0u, baseline.IsPaused ? 1u : 0u, jobData.NetworkCompressionModel);
-			writer.WritePackedIntDelta(NextBeatRecovery, baseline.NextBeatRecovery, jobData.NetworkCompressionModel);
 		}
 
-		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref RhythmEngineState baseline, DeserializeClientData jobData)
+		public class NetSynchronize : ComponentSnapshotSystemDelta<RhythmEngineState, Snapshot>
 		{
-			IsPaused = reader.ReadPackedUIntDelta(ref ctx, baseline.IsPaused ? 1u : 0u, jobData.NetworkCompressionModel) == 1;
-			NextBeatRecovery = reader.ReadPackedIntDelta(ref ctx, baseline.NextBeatRecovery, jobData.NetworkCompressionModel);
+			public override ComponentType ExcludeComponent => typeof(Exclude);
+		}
+
+		[UpdateInGroup(typeof(GhostUpdateSystemGroup))]
+		public class UpdateSystem : JobComponentSystem
+		{
+			private LazySystem<ClientSimulationSystemGroup> m_ClientGroup;
+
+			protected override JobHandle OnUpdate(JobHandle inputDeps)
+			{
+				inputDeps = Entities.ForEach((ref RhythmEngineState component, in DynamicBuffer<Snapshot> snapshots) =>
+				{
+					if (snapshots.Length == 0)
+						return;
+					var last = snapshots.GetLastBaseline();
+					component.IsPaused = last.IsPaused;
+					if (component.RecoveryTick < last.RecoveryTick || component.NextBeatRecovery < last.NextBeatRecovery)
+					{
+						component.RecoveryTick     = last.RecoveryTick;
+						component.NextBeatRecovery = last.NextBeatRecovery;
+					}
+				}).Schedule(inputDeps);
+
+				return inputDeps;
+			}
 		}
 	}
 }

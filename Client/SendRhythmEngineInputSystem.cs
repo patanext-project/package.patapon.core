@@ -9,6 +9,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
+using UnityEngine;
 
 namespace Systems.RhythmEngine
 {
@@ -56,6 +57,7 @@ namespace Systems.RhythmEngine
 
 				var flowBeat = process.GetFlowBeat(settings.BeatInterval);
 
+				pressureEvent.Key = targetKey;
 				pressureEvent.FlowBeat = flowBeat;
 				state.IsNewPressure    = true;
 
@@ -108,6 +110,8 @@ namespace Systems.RhythmEngine
 					RenderBeat = pressureData.RenderBeat,
 					Score      = pressureData.Score
 				});
+				
+				Debug.Log($"key={pressureEvent.Key} beat={pressureData.RenderBeat} score={pressureData.Score}");
 			}).Schedule(inputDeps);
 
 			m_EndBarrier.Value.AddJobHandleForProducer(inputDeps);

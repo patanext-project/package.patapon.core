@@ -101,5 +101,13 @@ namespace Patapon.Mixed.GamePlay.RhythmEngine
 			JinnEnergy    = reader.ReadPackedIntDelta(ref ctx, baseline.JinnEnergy, jobData.NetworkCompressionModel);
 			JinnEnergyMax = reader.ReadPackedIntDelta(ref ctx, baseline.JinnEnergyMax, jobData.NetworkCompressionModel);
 		}
+		
+		public struct Exclude : IComponentData
+		{}
+		
+		public class Synchronize : MixedComponentSnapshotSystem<GameComboState, DefaultSetup>
+		{
+			public override ComponentType ExcludeComponent => typeof(Exclude);
+		}
 	}
 }

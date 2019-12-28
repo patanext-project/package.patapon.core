@@ -11,7 +11,7 @@ namespace Patapon.Mixed.RhythmEngine.Flow
 
     }
 
-    public struct FlowEngineProcess : IReadWriteComponentSnapshot<FlowEngineProcess>
+    public struct FlowEngineProcess : IReadWriteComponentSnapshot<FlowEngineProcess>, ISnapshotDelta<FlowEngineProcess>
     {
         public int Milliseconds;
         public int StartTime;
@@ -60,11 +60,25 @@ namespace Patapon.Mixed.RhythmEngine.Flow
         {
             StartTime = reader.ReadPackedIntDelta(ref ctx, baseline.StartTime, jobData.NetworkCompressionModel);
         }
-        
+
+        public bool DidChange(FlowEngineProcess baseline)
+        {
+            return StartTime != baseline.StartTime;
+        }
+
+        public struct Exclude : IComponentData
+        {
+        }
+
+        public class NetSynchronize : MixedComponentSnapshotSystemDelta<FlowEngineProcess>
+        {
+            public override ComponentType ExcludeComponent => typeof(Exclude);
+        }
+
         // ------------------------------------------------------------------ //
         // -------- STATIC -------
         // ------------------------------------------------------------------ //
-        
+
         public static int CalculateActivationBeat(int ms, int interval)
         {
             return new FlowEngineProcess {Milliseconds = ms}.GetActivationBeat(interval);
@@ -74,7 +88,7 @@ namespace Patapon.Mixed.RhythmEngine.Flow
         {
             return new FlowEngineProcess {Milliseconds = ms}.GetFlowBeat(interval);
         }
-        
+
         /// <summary>
         /// Compute the score from a beat and time.
         /// </summary>

@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using Misc.Extensions;
+using package.stormiumteam.shared.ecs;
 using Patapon4TLB.Default.Player;
 using StormiumTeam.GameBase.Systems;
 using Unity.Jobs;
@@ -8,20 +10,20 @@ using UnityEngine.InputSystem;
 
 namespace DefaultNamespace
 {
-	public class GrabInputSystem : JobSyncInputSystem
+	public class GrabInputSystem : BaseSyncInputSystem
 	{
 		public const string AssetFileName = "input_pressurekeys.inputactions";
 		public const int    ActionLength  = 4;
 
 		private InputAction[] m_Actions;
 
-		private UserCommand m_LocalCommand;
+		private    UserCommand m_LocalCommand;
 		public ref UserCommand LocalCommand => ref m_LocalCommand;
-		
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
-			
+
 			var path = Application.streamingAssetsPath + "/" + AssetFileName;
 			if (File.Exists(path))
 			{
@@ -44,31 +46,42 @@ namespace DefaultNamespace
 			}
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var actions = m_LocalCommand.GetRhythmActions();
+			foreach (ref var ac in actions)
+			{
+				ac.flags = 0;
+			}
+
 			foreach (var ev in InputEvents)
 			{
-				var targetKey = Array.IndexOf(m_Actions, ev.action);
+				var targetKey = Array.IndexOf(m_Actions, ev.Context.action);
 				if (targetKey != -1)
 				{
 					ref var ac = ref actions[targetKey];
-					ac.FrameUpdate = ev.started || ev.canceled;
-					ac.IsActive    = ev.started || ev.performed;
+					ac.FrameUpdate |= ev.Phase == InputActionPhase.Started || ev.Phase == InputActionPhase.Canceled;
+					ac.IsActive    =  ev.Phase == InputActionPhase.Started || ev.Phase == InputActionPhase.Performed;
 				}
 			}
 
 			InputEvents.Clear();
+			
+			var gamePlayer = this.GetFirstSelfGamePlayer();
+			if (gamePlayer == default || !EntityManager.HasComponent<UserCommand>(gamePlayer))
+				return;
 
-			return inputDeps;
+			var commands = EntityManager.GetBuffer<UserCommand>(gamePlayer);
+			m_LocalCommand.Tick = ServerTick.AsUInt;
+			commands.Add(m_LocalCommand);
 		}
 
 		protected override void OnAssetRefresh()
 		{
 			var actionMap = Asset.FindActionMap("Pressures", true);
-			
+
 			m_Actions = new InputAction[ActionLength];
-			
+
 			for (var i = 0; i != ActionLength; i++)
 			{
 				// we add +1 so it can match RhythmKeys constants

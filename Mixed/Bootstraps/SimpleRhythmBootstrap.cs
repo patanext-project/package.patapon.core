@@ -1,3 +1,6 @@
+using Patapon.Mixed.RhythmEngine;
+using Patapon.Mixed.RhythmEngine.Flow;
+using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Bootstraping;
 using Unity.Entities;
@@ -48,19 +51,40 @@ namespace Bootstraps
 		}
 	}
 
-	[UpdateInGroup(typeof(ClientAndServerInitializationSystemGroup))]
+	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
 	public class SimpleRhythmTestSystem : GameBaseSystem
 	{
 		protected override void OnCreate()
 		{
 			base.OnCreate();
-			
+
 			RequireSingletonForUpdate<SimpleRhythmBootstrap.IsActive>();
 		}
 
 		protected override void OnUpdate()
 		{
-			
+			if (IsServer)
+			{
+				Entities.ForEach((ref PlayerConnectedEvent connected) =>
+				{
+					// Create RhythmEngine
+					var provider = World.GetOrCreateSystem<RhythmEngineProvider>();
+					var rhythmEnt = provider.SpawnLocalEntityWithArguments(new RhythmEngineProvider.Create
+					{
+						UseClientSimulation = true
+					});
+
+					EntityManager.AddComponent(rhythmEnt, typeof(GhostEntity));
+
+					var process = EntityManager.GetComponentData<FlowEngineProcess>(rhythmEnt);
+					process.StartTime = GetTick(true).Ms;
+					EntityManager.SetComponentData(rhythmEnt, process);
+				});
+			}
+			else
+			{
+
+			}
 		}
 	}
 }

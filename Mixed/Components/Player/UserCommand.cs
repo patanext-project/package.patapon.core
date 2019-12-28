@@ -1,7 +1,10 @@
 using System;
 using package.stormiumteam.shared;
+using StormiumTeam.GameBase;
+using Unity.Entities;
 using Unity.NetCode;
 using Unity.Networking.Transport;
+using UnityEngine;
 
 namespace Patapon4TLB.Default.Player
 {
@@ -69,6 +72,15 @@ namespace Patapon4TLB.Default.Player
 			{
 				writer.WritePackedUIntDelta(action.flags, baselineActions[i++].flags, compressionModel);
 			}
+		}
+	}
+
+	[UpdateInGroup(typeof(ClientAndServerInitializationSystemGroup))]
+	public class SpawnUserCommand : ComponentSystem
+	{
+		protected override void OnUpdate()
+		{
+			EntityManager.AddComponent(Entities.WithNone<UserCommand>().WithAll<GamePlayer>().ToEntityQuery(), typeof(UserCommand));
 		}
 	}
 }

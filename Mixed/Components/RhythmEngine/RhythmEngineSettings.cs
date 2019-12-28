@@ -1,9 +1,10 @@
 using Revolution;
+using Unity.Entities;
 using Unity.Networking.Transport;
 
 namespace Patapon.Mixed.RhythmEngine
 {
-	public struct RhythmEngineSettings : IReadWriteComponentSnapshot<RhythmEngineSettings>
+	public struct RhythmEngineSettings : IReadWriteComponentSnapshot<RhythmEngineSettings>, ISnapshotDelta<RhythmEngineSettings>
 	{
 		public int MaxBeats;
 		public int BeatInterval; // in ms
@@ -17,17 +18,32 @@ namespace Patapon.Mixed.RhythmEngine
 
 		public void WriteTo(DataStreamWriter writer, ref RhythmEngineSettings baseline, DefaultSetup setup, SerializeClientData jobData)
 		{
-			writer.WritePackedIntDelta(MaxBeats, baseline.MaxBeats, jobData.NetworkCompressionModel);
-			writer.WritePackedIntDelta(BeatInterval, baseline.BeatInterval, jobData.NetworkCompressionModel);
-			writer.WritePackedUIntDelta(UseClientSimulation ? 1u : 0u, baseline.UseClientSimulation ? 1u : 0u, jobData.NetworkCompressionModel);
+			writer.WritePackedInt(MaxBeats, jobData.NetworkCompressionModel);
+			writer.WritePackedInt(BeatInterval, jobData.NetworkCompressionModel);
+			writer.WriteBitBool(UseClientSimulation);
 		}
 
 		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref RhythmEngineSettings baseline, DeserializeClientData jobData)
 		{
-			MaxBeats     = reader.ReadPackedIntDelta(ref ctx, baseline.MaxBeats, jobData.NetworkCompressionModel);
-			BeatInterval = reader.ReadPackedIntDelta(ref ctx, baseline.BeatInterval, jobData.NetworkCompressionModel);
+			MaxBeats     = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
+			BeatInterval = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
 
-			UseClientSimulation = reader.ReadPackedUIntDelta(ref ctx, baseline.UseClientSimulation ? 1u : 0u, jobData.NetworkCompressionModel) == 1;
+			UseClientSimulation = reader.ReadBitBool(ref ctx);
+		}
+		
+		public bool DidChange(RhythmEngineSettings baseline)
+		{
+			return MaxBeats != baseline.MaxBeats
+			       || BeatInterval != baseline.BeatInterval
+			       || UseClientSimulation != baseline.UseClientSimulation;
+		}
+		
+		public struct Exclude : IComponentData
+		{}
+
+		public class Sync : MixedComponentSnapshotSystemDelta<RhythmEngineSettings>
+		{
+			public override ComponentType ExcludeComponent => typeof(Exclude);
 		}
 	}
 }

@@ -4,7 +4,7 @@ using Unity.Networking.Transport;
 
 namespace Patapon.Mixed.GamePlay.Units
 {
-	public struct RhythmCurrentCommand : IReadWriteComponentSnapshot<RhythmCurrentCommand, GhostSetup>
+	public struct RhythmCurrentCommand : IComponentData
 	{
 		public Entity Previous;
 		public Entity CommandTarget;
@@ -41,14 +41,69 @@ namespace Patapon.Mixed.GamePlay.Units
 
 		public bool HasPredictedCommands;
 
-		public void WriteTo(DataStreamWriter writer, ref RhythmCurrentCommand baseline, GhostSetup setup, SerializeClientData jobData)
+		public struct Exclude : IComponentData
 		{
-			writer.WritePackedUInt(setup[CommandTarget], jobData.NetworkCompressionModel);
 		}
 
-		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref RhythmCurrentCommand baseline, DeserializeClientData jobData)
+		public class Synchronize : ComponentSnapshotSystemDelta<RhythmCurrentCommand, Snapshot, GhostSetup>
 		{
-			jobData.GhostToEntityMap.TryGetValue(reader.ReadPackedUInt(ref ctx, jobData.NetworkCompressionModel), out CommandTarget);
+			public override ComponentType ExcludeComponent => typeof(Exclude);
+		}
+
+		public struct Snapshot : IReadWriteSnapshot<Snapshot>, ISynchronizeImpl<RhythmCurrentCommand, GhostSetup>, ISnapshotDelta<Snapshot>
+		{
+			public uint CommandTarget;
+			public int  ActiveAtTime;
+			public int  CustomEndTime;
+			public int  Power;
+			public bool HasPredictedCommand;
+
+			public void WriteTo(DataStreamWriter writer, ref Snapshot baseline, NetworkCompressionModel compressionModel)
+			{
+				writer.WritePackedUIntDelta(CommandTarget, baseline.CommandTarget, compressionModel);
+				writer.WritePackedIntDelta(ActiveAtTime, baseline.ActiveAtTime, compressionModel);
+				writer.WritePackedIntDelta(CustomEndTime, baseline.CustomEndTime, compressionModel);
+				writer.WritePackedIntDelta(Power, baseline.Power, compressionModel);
+				writer.WriteBitBool(HasPredictedCommand);
+			}
+
+			public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref Snapshot baseline, NetworkCompressionModel compressionModel)
+			{
+				CommandTarget       = reader.ReadPackedUIntDelta(ref ctx, baseline.CommandTarget, compressionModel);
+				ActiveAtTime        = reader.ReadPackedIntDelta(ref ctx, baseline.ActiveAtTime, compressionModel);
+				CustomEndTime       = reader.ReadPackedIntDelta(ref ctx, baseline.CustomEndTime, compressionModel);
+				Power               = reader.ReadPackedIntDelta(ref ctx, baseline.Power, compressionModel);
+				HasPredictedCommand = reader.ReadBitBool(ref ctx);
+			}
+
+			public uint Tick { get; set; }
+
+			public void SynchronizeFrom(in RhythmCurrentCommand component, in GhostSetup setup, in SerializeClientData serializeData)
+			{
+				CommandTarget       = setup[component.CommandTarget];
+				ActiveAtTime        = component.ActiveAtTime;
+				CustomEndTime       = component.CustomEndTime;
+				Power               = component.Power;
+				HasPredictedCommand = component.HasPredictedCommands;
+			}
+
+			public void SynchronizeTo(ref RhythmCurrentCommand component, in DeserializeClientData deserializeData)
+			{
+				deserializeData.GhostToEntityMap.TryGetValue(CommandTarget, out component.CommandTarget);
+				component.ActiveAtTime         = ActiveAtTime;
+				component.CustomEndTime        = CustomEndTime;
+				component.Power                = Power;
+				component.HasPredictedCommands = HasPredictedCommand;
+			}
+
+			public bool DidChange(Snapshot baseline)
+			{
+				return CommandTarget != baseline.CommandTarget
+				       || ActiveAtTime != baseline.ActiveAtTime
+				       || CustomEndTime != baseline.CustomEndTime
+				       || Power != baseline.Power
+				       || HasPredictedCommand != baseline.HasPredictedCommand;
+			}
 		}
 	}
 }
