@@ -42,8 +42,9 @@ namespace Patapon.Mixed.Systems
 
 			destroyEcb.DestroyEntity(m_DestroyEventQuery);
 
+			// Originally, it was only tasked for systems with 'FlowProcessTag'
+			// I don't remember why this tag was needed
 			inputDeps = Entities
-			            .WithAll<FlowSimulateProcess>()
 			            .ForEach((Entity entity, int nativeThreadIndex, ref FlowEngineProcess process, ref RhythmEngineState state, in RhythmEngineSettings settings) =>
 			            {
 				            var previousBeat = process.GetActivationBeat(settings.BeatInterval);
