@@ -83,4 +83,13 @@ namespace Patapon4TLB.Default.Player
 			EntityManager.AddComponent(Entities.WithNone<UserCommand>().WithAll<GamePlayer>().ToEntityQuery(), typeof(UserCommand));
 		}
 	}
+	
+	[UpdateInGroup(typeof(ServerInitializationSystemGroup))]
+	public class SpawnGamePlayerUserCommand : ComponentSystem
+	{
+		protected override void OnUpdate()
+		{
+			EntityManager.AddComponent(Entities.WithNone<GamePlayerCommand>().WithAll<GamePlayer>().ToEntityQuery(), typeof(GamePlayerCommand));
+		}
+	}
 }

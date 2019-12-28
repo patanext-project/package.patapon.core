@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Misc.Extensions;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.RhythmEngine;
@@ -17,21 +18,28 @@ namespace RhythmEngine
 	{
 		private enum DataType
 		{
-			OnNewBeat
+			Beat,
+			Pressure,
 		}
 
 		private struct Data
 		{
 			public DataType Type;
+			public int      PressureIndex;
 		}
 
 		public bool IsNewBeat;
+		public bool IsNewPressure;
 
 		private EntityQuery m_EngineQuery;
 
 		private AudioSource m_AudioSourceOnNewBeat;
+		private AudioSource m_AudioSourceOnNewPressureDrum;
+		private AudioSource m_AudioSourceOnNewPressureVoice;
 
 		private AudioClip m_AudioOnNewBeat;
+		private Dictionary<int, Dictionary<int, AudioClip>> m_AudioOnPressureDrum;
+		private Dictionary<int, Dictionary<int, AudioClip>> m_AudioOnPressureVoice;
 
 		private AsyncOperationModule m_AsyncOpModule;
 
@@ -55,7 +63,7 @@ namespace RhythmEngine
 
 			GetModule(out m_AsyncOpModule);
 
-			m_AsyncOpModule.Add(Addressables.LoadAssetAsync<AudioClip>("core://Client/Sounds/Rhythm/Effects/on_new_beat.ogg"), new Data {Type = DataType.OnNewBeat});
+			m_AsyncOpModule.Add(Addressables.LoadAssetAsync<AudioClip>("core://Client/Sounds/Rhythm/Effects/on_new_beat.ogg"), new Data {Type = DataType.Beat});
 		}
 
 		protected override void OnUpdate()
@@ -70,7 +78,7 @@ namespace RhythmEngine
 				{
 					switch (data.Type)
 					{
-						case DataType.OnNewBeat:
+						case DataType.Beat:
 							m_AudioOnNewBeat = handle.Result;
 							break;
 					}
