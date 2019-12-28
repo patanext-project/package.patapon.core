@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using package.stormiumteam.shared.ecs;
 using Revolution;
 using Unity.Entities;
@@ -27,6 +28,7 @@ namespace Patapon.Mixed.RhythmEngine
 		public bool VerifyCommand;
 		public int  LastPressureBeat;
 
+		[Pure]
 		public bool IsRecovery(int processBeat) => NextBeatRecovery > processBeat;
 
 		public struct Snapshot : IReadWriteSnapshot<Snapshot>, ISnapshotDelta<Snapshot>, ISynchronizeImpl<RhythmEngineState, DefaultSetup>
