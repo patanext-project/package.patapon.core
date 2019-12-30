@@ -4,6 +4,7 @@ using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
 using Patapon.Mixed.RhythmEngine.Rpc;
+using Revolution;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Jobs;
@@ -13,7 +14,8 @@ using UnityEngine;
 
 namespace Systems.RhythmEngine
 {
-	[UpdateInGroup(typeof(ClientInitializationSystemGroup))]
+	[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
+	[UpdateAfter(typeof(GrabInputSystem))]
 	public class SendRhythmEngineInputSystem : JobGameBaseSystem
 	{
 		private LazySystem<EndSimulationEntityCommandBufferSystem> m_EndBarrier;
@@ -51,13 +53,15 @@ namespace Systems.RhythmEngine
 			inputDeps = Entities.ForEach((Entity                                            entity, int                           nativeThreadIndex,
 			                              ref RhythmEngineState                             state,  ref GamePredictedCommandState predictedCommand,
 			                              ref DynamicBuffer<RhythmEngineCommandProgression> progression,
-			                              in  RhythmEngineSettings                          settings, in FlowEngineProcess process) =>
+			                              in  RhythmEngineSettings                          settings, in FlowEngineProcess process,
+			                              in ReplicatedEntity replicatedEntity) =>
 			{
 				Entity rpcEnt;
 				PressureEventFromClientRpc pressureEvent = default;
 
 				var flowBeat = process.GetFlowBeat(settings.BeatInterval);
 
+				pressureEvent.EngineGhostId = replicatedEntity.GhostId;
 				pressureEvent.Key = targetKey;
 				pressureEvent.FlowBeat = flowBeat;
 				state.IsNewPressure    = true;
@@ -90,6 +94,7 @@ namespace Systems.RhythmEngine
 					ecb.AddComponent(nativeThreadIndex, rpcEnt, new SendRpcCommandRequestComponent());
 					ecb.AddComponent(nativeThreadIndex, rpcEnt, new RhythmRpcClientRecover
 					{
+						EngineGhostId = replicatedEntity.GhostId,
 						ForceRecover = true,
 						RecoverBeat = state.NextBeatRecovery
 					});
@@ -102,6 +107,7 @@ namespace Systems.RhythmEngine
 					});
 				}
 
+				pressureEvent.Score = pressureData.Score;
 				state.LastPressureBeat = math.max(state.LastPressureBeat, pressureData.RenderBeat);
 
 				rpcEnt = ecb.CreateEntity(nativeThreadIndex);
@@ -117,8 +123,6 @@ namespace Systems.RhythmEngine
 					RenderBeat = pressureData.RenderBeat,
 					Score      = pressureData.Score
 				});
-				
-				Debug.Log($"key={pressureEvent.Key} beat={pressureData.RenderBeat} score={pressureData.Score}");
 			}).Schedule(inputDeps);
 
 			m_EndBarrier.Value.AddJobHandleForProducer(inputDeps);

@@ -16,6 +16,20 @@ namespace package.patapon.core.FeverWorm
 		public TextMeshPro comboCountLabel;
 		public TextMeshPro comboInfoLabel;
 
+		public TextMeshPro    feverLabel;
+		public VertexGradient feverLabelGradientNormal;
+		public VertexGradient feverLabelGradientHighlighted;
+		public Color          feverLabelOutlineNormal;
+		public Color          feverLabelOutlineHighlighted;
+
+		public GameObject comboFrame;
+		public GameObject feverFrame;
+
+		public Transform[] ranges;
+		
+		// set from animator
+		public float currentPulse;
+
 		public Color[] infoColors = new Color[]
 		{
 			new Color32(184, 208, 130, 255),
@@ -26,15 +40,17 @@ namespace package.patapon.core.FeverWorm
 			new Color32(208, 150, 54, 255),
 		};
 
-		private static readonly int Progression = Shader.PropertyToID("_SummonPercentage");
-		private static readonly int IsFever     = Shader.PropertyToID("_IsFever");
+		private static readonly int Progression    = Shader.PropertyToID("_SummonPercentage");
+		private static readonly int IsFever        = Shader.PropertyToID("_IsFever");
+		private static readonly int SummonPosition = Shader.PropertyToID("_SummonPosition");
 
-		public float progression;
-		public bool  fever;
+		private static readonly int OutlineColor = Shader.PropertyToID("_OutlineColor");
 
 		private StringBuilder m_ComboCountStrBuilder;
 		private StringBuilder m_ComboInfoStrBuilder;
 		private string[]      m_ComputedColorStrings;
+
+		public Animator Animator { get; private set; }
 
 		private void OnEnable()
 		{
@@ -49,6 +65,8 @@ namespace package.patapon.core.FeverWorm
 			}
 
 			SetComboString("Combo!");
+
+			Animator = GetComponent<Animator>();
 		}
 
 		private void OnDisable()
@@ -82,7 +100,7 @@ namespace package.patapon.core.FeverWorm
 				{
 					mpb.SetFloat(Progression, specialProgression);
 					mpb.SetInt(IsFever, isFever ? 1 : 0);
-
+					mpb.SetVector(SummonPosition, new Vector4(ranges[0].position.x, ranges[1].position.x, 0, 0));
 				}
 				r.SetPropertyBlock(mpb);
 			}
@@ -90,6 +108,25 @@ namespace package.patapon.core.FeverWorm
 			m_ComboCountStrBuilder.Clear();
 			m_ComboCountStrBuilder.Append(combo);
 			comboCountLabel.SetText(m_ComboCountStrBuilder);
+
+			comboFrame.SetActive(!isFever);
+			feverFrame.SetActive(isFever);
+		}
+
+		public void SetColors(float factor)
+		{
+			Color          outline;
+			VertexGradient gradient;
+
+			outline = Color.Lerp(feverLabelOutlineNormal, feverLabelOutlineHighlighted, factor);
+
+			gradient.topLeft     = Color.Lerp(feverLabelGradientNormal.topLeft, feverLabelGradientHighlighted.topLeft, factor);
+			gradient.topRight    = Color.Lerp(feverLabelGradientNormal.topRight, feverLabelGradientHighlighted.topRight, factor);
+			gradient.bottomLeft  = Color.Lerp(feverLabelGradientNormal.bottomLeft, feverLabelGradientHighlighted.bottomLeft, factor);
+			gradient.bottomRight = Color.Lerp(feverLabelGradientNormal.bottomRight, feverLabelGradientHighlighted.bottomRight, factor);
+
+			feverLabel.outlineColor = outline;
+			feverLabel.colorGradient = gradient;
 		}
 	}
 }

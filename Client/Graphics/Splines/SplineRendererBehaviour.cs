@@ -245,10 +245,10 @@ namespace package.patapon.core
         {
             void Pop()
             {
-                if (m_EntityManager == null)
+                // kinda weird to do a check on World, but there were some problems with it
+                if (m_EntityManager?.World == null)
                     return;
                 
-                Debug.Log($"disable on {m_EntityManager.World.Name}");
                 if (!m_EntityManager.Exists(m_Entity))
                     return;
             

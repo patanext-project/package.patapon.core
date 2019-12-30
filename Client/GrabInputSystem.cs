@@ -13,10 +13,20 @@ using UnityEngine.InputSystem;
 
 namespace DefaultNamespace
 {
-	[UpdateInGroup(typeof(ClientInitializationSystemGroup))]
+	[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
 	[UpdateAfter(typeof(UpdateInputSystem))]
-	public class GrabInputSystem : BaseSyncInputSystem
+	public class GrabInputSystem : BaseSyncInputSystem<GrabInputSystem.Data>
 	{
+		public struct Data : IInitializeInputEventData
+		{
+			public bool IsActive;
+
+			public void Initialize(InputAction.CallbackContext ctx)
+			{
+				IsActive = ctx.action.ReadValue<float>() > 0;
+			}
+		}
+
 		public const string AssetFileName = "input_pressurekeys.inputactions";
 		public const int    ActionLength  = 4;
 
@@ -64,21 +74,27 @@ namespace DefaultNamespace
 				var targetKey = Array.IndexOf(m_Actions, ev.Context.action);
 				if (targetKey != -1)
 				{
-					ref var ac = ref actions[targetKey];
+					ref var ac = ref actions.AsRef(targetKey);
 					ac.FrameUpdate |= ev.Phase == InputActionPhase.Started || ev.Phase == InputActionPhase.Canceled;
-					ac.IsActive    =  ev.Phase == InputActionPhase.Started || ev.Phase == InputActionPhase.Performed;
+					ac.IsActive    =  ev.Data.IsActive;
 				}
 			}
 
 			InputEvents.Clear();
-			
+
 			var gamePlayer = this.GetFirstSelfGamePlayer();
 			if (gamePlayer == default || !EntityManager.HasComponent<UserCommand>(gamePlayer))
 				return;
 
 			var commands = EntityManager.GetBuffer<UserCommand>(gamePlayer);
 			m_LocalCommand.Tick = ServerTick.AsUInt;
-			commands.Add(m_LocalCommand);
+			commands.AddCommandData(m_LocalCommand);
+
+			if (!EntityManager.TryGetComponentData(gamePlayer, out GamePlayerCommand command))
+				return;
+
+			command.Base = m_LocalCommand;
+			EntityManager.SetComponentData(gamePlayer, command);
 		}
 
 		protected override void OnAssetRefresh()

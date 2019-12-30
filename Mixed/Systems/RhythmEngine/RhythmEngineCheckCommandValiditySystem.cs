@@ -194,7 +194,7 @@ namespace Patapon.Mixed.Systems
 						for (var i = 0; i != commandProgression.Length; i++)
 						{
 							// perfect
-							if (commandProgression[i].Data.GetAbsoluteScore() <= 0.15f)
+							if (commandProgression[i].Data.GetAbsoluteScore() <= FlowPressure.Perfect)
 							{
 								power += 1.0f;
 							}

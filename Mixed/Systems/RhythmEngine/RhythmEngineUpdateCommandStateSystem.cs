@@ -4,6 +4,7 @@ using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Definitions;
 using Patapon.Mixed.RhythmEngine.Flow;
 using Patapon.Mixed.RhythmEngine.Rpc;
+using Revolution;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Jobs;
@@ -39,6 +40,7 @@ namespace Patapon.Mixed.Systems
 			var predictedCommandFromEntity  = GetComponentDataFromEntity<GamePredictedCommandState>();
 			var commandDefinitionFromEntity = GetComponentDataFromEntity<RhythmCommandDefinition>(true);
 			var outgoingDataFromEntity      = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>();
+			var replicatedDataFromEntity = GetComponentDataFromEntity<ReplicatedEntity>(true);
 
 			inputDeps =
 				Entities
@@ -55,17 +57,25 @@ namespace Patapon.Mixed.Systems
 						if (isServer)
 							mercy++; // we allow a mercy offset on a server in case the client is a bit laggy
 
+						var cmdMercy = 0;
+						if (isServer)
+							cmdMercy++;
+
 						var rhythmActiveAtFlowBeat = FlowEngineProcess.CalculateFlowBeat(rhythm.ActiveAtTime, settings.BeatInterval);
 						var rhythmEndAtFlowBeat    = FlowEngineProcess.CalculateFlowBeat(rhythm.CustomEndTime, settings.BeatInterval);
 
-						var checkStopBeat = math.max(state.LastPressureBeat, FlowEngineProcess.CalculateFlowBeat(commandState.EndTime, settings.BeatInterval) + 1);
+						var checkStopBeat = math.max(state.LastPressureBeat, FlowEngineProcess.CalculateFlowBeat(commandState.EndTime, settings.BeatInterval) + cmdMercy);
 						if (!isServer && simulateTagFromEntity.Exists(entity))
 						{
-							checkStopBeat = math.max(checkStopBeat, FlowEngineProcess.CalculateFlowBeat(predictedCommandFromEntity[entity].State.EndTime, settings.BeatInterval) + 1);
+							checkStopBeat = math.max(checkStopBeat, FlowEngineProcess.CalculateFlowBeat(predictedCommandFromEntity[entity].State.EndTime, settings.BeatInterval) + cmdMercy);
 						}
-
+						
+						if (commandState.StartTime > 0)
+							Debug.Log($"curr = {process.GetFlowBeat(settings.BeatInterval)}, {checkStopBeat} against {FlowEngineProcess.CalculateFlowBeat(commandState.EndTime, settings.BeatInterval)}");
+						
 						var flowBeat = process.GetFlowBeat(settings.BeatInterval);
-						if (state.IsRecovery(flowBeat) || (!commandState.HasActivity(process.Milliseconds, settings.BeatInterval) && rhythmActiveAtFlowBeat < flowBeat && checkStopBeat + mercy < flowBeat)
+						var activationBeat = process.GetActivationBeat(settings.BeatInterval);
+						if (state.IsRecovery(flowBeat) || (!commandState.HasActivity(process.Milliseconds, settings.BeatInterval) && rhythmActiveAtFlowBeat < flowBeat && checkStopBeat + mercy < activationBeat)
 						                               || (rhythm.CommandTarget == default && rhythm.HasPredictedCommands && rhythmActiveAtFlowBeat < state.LastPressureBeat))
 						{
 							comboState.Chain        = 0;
@@ -89,7 +99,11 @@ namespace Patapon.Mixed.Systems
 								    || p.Chain != comboState.Chain
 								    || p.ChainToFever != comboState.ChainToFever)
 								{
-									rpcQueue.Schedule(outgoingDataFromEntity[targetConnection], new RhythmRpcClientRecover {LooseChain = true});
+									rpcQueue.Schedule(outgoingDataFromEntity[targetConnection], new RhythmRpcClientRecover
+									{
+										EngineGhostId = replicatedDataFromEntity[entity].GhostId,
+										LooseChain = true
+									});
 								}
 							}
 						}
@@ -165,6 +179,7 @@ namespace Patapon.Mixed.Systems
 					})
 					.WithReadOnly(simulateTagFromEntity)
 					.WithReadOnly(commandDefinitionFromEntity)
+					.WithReadOnly(replicatedDataFromEntity)
 					.WithNativeDisableParallelForRestriction(predictedComboFromEntity)
 					.WithNativeDisableParallelForRestriction(predictedCommandFromEntity)
 					.WithNativeDisableParallelForRestriction(outgoingDataFromEntity)

@@ -47,6 +47,7 @@ namespace Patapon.Mixed.RhythmEngine
 		{
 			EntityManager.SetComponentData(entity, new RhythmEngineSettings {MaxBeats = data.MaxBeats ?? 4, BeatInterval = data.BeatInterval ?? 500, UseClientSimulation = data.UseClientSimulation});
 			EntityManager.SetComponentData(entity, new RhythmCurrentCommand {CustomEndTime = -1, ActiveAtTime = -1, Power = 0});
+			EntityManager.SetComponentData(entity, new GameComboState {JinnEnergyMax = 500});
 		}
 	}
 }

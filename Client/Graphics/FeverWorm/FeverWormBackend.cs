@@ -1,8 +1,10 @@
 using Systems;
+using Misc;
 using Misc.Extensions;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.RhythmEngine;
+using Patapon.Mixed.RhythmEngine.Flow;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Misc;
@@ -19,6 +21,16 @@ namespace package.patapon.core.FeverWorm
 {
 	public class FeverWormBackend : RuntimeAssetBackend<FeverWormPresentation>
 	{
+		private bool? m_IsEnabled;
+
+		public void SetEnabled(bool value)
+		{
+			if (m_IsEnabled == null || m_IsEnabled.Value != value)
+			{
+				m_IsEnabled = value;
+				Presentation.gameObject.SetActive(value);
+			}
+		}
 	}
 
 	public struct CreateFeverWormData : IComponentData
@@ -30,7 +42,8 @@ namespace package.patapon.core.FeverWorm
 	{
 	}
 
-	public class FeverWormRenderSystem : BaseRenderSystem<FeverWormPresentation>
+	// we do process on the backend instead of presentation since we do disable/enabled the presentation (aka removing it from the entity list)
+	public class FeverWormRenderSystem : BaseRenderSystem<FeverWormBackend>
 	{
 		private Localization m_LocalTextDb;
 
@@ -42,6 +55,8 @@ namespace package.patapon.core.FeverWorm
 		public int ComboCount;
 
 		public bool IsFever;
+
+		public float Pulsation;
 
 		private float real(int v, int m)
 		{
@@ -62,27 +77,51 @@ namespace package.patapon.core.FeverWorm
 
 			ComboString = m_LocalTextDb["ComboText", "FWorm"];
 
-			var gamePlayer = this.GetFirstSelfGamePlayer();
-			if (gamePlayer == default)
+			var player = this.GetFirstSelfGamePlayer();
+			if (player == default)
 				return;
 
-			if (!this.TryGetCurrentCameraState(gamePlayer, out var cameraState))
+			Entity engine;
+			if (this.TryGetCurrentCameraState(player, out var camState))
+				engine = PlayerComponentFinder.GetComponentFromPlayer<RhythmEngineDescription>(EntityManager, m_EngineQuery, camState.Target, player);
+			else
+				engine = PlayerComponentFinder.FindPlayerComponent(m_EngineQuery, player);
+
+			if (engine == default)
 				return;
 
-			if (EntityManager.TryGetComponentData(cameraState.Target, out Relative<RhythmEngineDescription> rhythmEngineRelative))
-			{
-				var comboState = EntityManager.GetComponentData<GameComboState>(rhythmEngineRelative.Target);
-				SummonEnergyReal = real(comboState.JinnEnergy, comboState.JinnEnergyMax);
-				ComboScoreReal   = real(comboState.Score, 50); // todo: the magic number need to be removed!
-				ComboCount       = comboState.Chain;
-				IsFever          = comboState.IsFever;
-			}
+			var comboState = EntityManager.GetComponentData<GameComboState>(engine);
+			SummonEnergyReal = real(comboState.JinnEnergy, comboState.JinnEnergyMax);
+			ComboScoreReal   = real(comboState.Score, 50); // todo: the magic number need to be removed!
+			ComboCount       = comboState.Chain;
+			IsFever          = comboState.IsFever;
+
+			var process  = EntityManager.GetComponentData<FlowEngineProcess>(engine);
+			var settings = EntityManager.GetComponentData<RhythmEngineSettings>(engine);
+			Pulsation = real(process.Milliseconds % settings.BeatInterval, settings.BeatInterval);
 		}
 
-		protected override void Render(FeverWormPresentation definition)
+		protected override void Render(FeverWormBackend backend)
 		{
+			if (backend.Presentation == null)
+				return;
+
+			var definition = backend.Presentation;
+
+			// hide the worm
+			if (ComboCount < 2)
+			{
+				backend.SetEnabled(false);
+				return;
+			}
+
+			backend.SetEnabled(true);
 			definition.SetComboString(ComboString);
 			definition.SetProgression(ComboScoreReal, ComboCount, SummonEnergyReal, IsFever);
+			definition.SetColors(definition.currentPulse);
+			
+			definition.Animator.enabled = false;
+			definition.Animator.Update(Time.DeltaTime);
 		}
 
 		protected override void ClearValues()
@@ -90,18 +129,22 @@ namespace package.patapon.core.FeverWorm
 			// not used
 		}
 
+		private EntityQuery m_EngineQuery;
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
 			EntityManager.CreateEntity(typeof(CreateFeverWormData));
+			
+			m_EngineQuery = GetEntityQuery(typeof(RhythmEngineDescription), typeof(Relative<PlayerDescription>));
 		}
 	}
 
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class FeverWormCreate : PoolingSystem<FeverWormBackend, FeverWormPresentation>
 	{
-		protected override string AddressableAsset => "core://Client/Interface/InGame/FeverWorm/FeverWorm.prefab";
+		protected override string AddressableAsset => "core://Client/Interface/InGame/RhythmEngine/FeverWorm/FeverWorm.prefab";
 
 		private Canvas m_Canvas;
 
@@ -119,9 +162,10 @@ namespace package.patapon.core.FeverWorm
 
 				m_Canvas               = canvasSystem.CreateCanvas(out _, "FeverWormCanvas");
 				m_Canvas.renderMode    = RenderMode.ScreenSpaceCamera;
-				m_Canvas.sortingOrder  = interfaceOrder;
 				m_Canvas.worldCamera   = World.GetExistingSystem<ClientCreateCameraSystem>().Camera;
 				m_Canvas.planeDistance = 1;
+				m_Canvas.sortingLayerID = SortingLayer.NameToID("OverlayUI");
+				m_Canvas.sortingOrder   = interfaceOrder;
 
 				var scaler = m_Canvas.GetComponent<CanvasScaler>();
 				scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;

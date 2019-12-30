@@ -65,7 +65,7 @@ namespace Patapon.Mixed.GamePlay.RhythmEngine
 				// add jinn energy
 				if (Score >= 50) // we have a little bonus when doing a perfect command
 				{
-					JinnEnergy += 10;
+					JinnEnergy += 20;
 				}
 			}
 

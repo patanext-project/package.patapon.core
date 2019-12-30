@@ -177,8 +177,6 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 									var lastCmdTime  = commandProgression[commandProgression.Length - 1].Time;
 									var currFlowBeat = process.GetFlowBeat(settingsArray[ent].BeatInterval);
 									var offset       = currFlowBeat - (commandProgression[0].RenderBeat + (settingsArray[ent].MaxBeats - 1));
-
-									Debug.Log($"Difference: {process.Milliseconds - lastCmdTime}\t o: {offset}");
 								}
 								else
 								{

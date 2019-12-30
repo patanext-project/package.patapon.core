@@ -1,6 +1,7 @@
 using System;
 using package.stormiumteam.shared;
 using StormiumTeam.GameBase;
+using Unity.Burst;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Networking.Transport;
@@ -35,12 +36,12 @@ namespace Patapon4TLB.Default.Player
 		public const int MaxActionCount = 4;
 		
 		private fixed byte m_RhythmActions[sizeof(byte) * 4];
-
-		public Span<RhythmAction> GetRhythmActions()
+		
+		public UnsafeAllocationLength<RhythmAction> GetRhythmActions()
 		{
 			fixed (byte* fx = m_RhythmActions)
 			{
-				return new Span<RhythmAction>(fx, 4);
+				return new UnsafeAllocationLength<RhythmAction>(fx, 4);
 			}
 		}
 
