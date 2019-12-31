@@ -41,6 +41,7 @@ namespace package.patapon.core.FeverWorm
 		};
 
 		private static readonly int Progression    = Shader.PropertyToID("_SummonPercentage");
+		private static readonly int DirectProgression    = Shader.PropertyToID("_SummonDirectPercentage");
 		private static readonly int IsFever        = Shader.PropertyToID("_IsFever");
 		private static readonly int SummonPosition = Shader.PropertyToID("_SummonPosition");
 
@@ -95,7 +96,7 @@ namespace package.patapon.core.FeverWorm
 			}
 		}
 
-		public void SetProgression(float comboScore, int combo, float specialProgression, bool isFever)
+		public void SetProgression(float comboScore, int combo, float interpolatedProgression, float directProgression, bool isFever)
 		{
 			if (mpb == null)
 				return;
@@ -104,7 +105,8 @@ namespace package.patapon.core.FeverWorm
 			{
 				r.GetPropertyBlock(mpb);
 				{
-					mpb.SetFloat(Progression, specialProgression);
+					mpb.SetFloat(Progression, interpolatedProgression);
+					mpb.SetFloat(DirectProgression, directProgression);
 					mpb.SetInt(IsFever, isFever ? 1 : 0);
 					mpb.SetVector(SummonPosition, new Vector4(ranges[0].position.x, ranges[1].position.x, 0, 0));
 				}

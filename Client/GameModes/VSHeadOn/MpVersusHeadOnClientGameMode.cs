@@ -1,5 +1,11 @@
+using Patapon.Mixed.GameModes.VSHeadOn;
+using Revolution;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Data;
+using StormiumTeam.GameBase.Systems;
+using Unity.Collections;
 using Unity.Entities;
+using UnityEngine;
 
 namespace Patapon4TLB.GameModes
 {
@@ -11,14 +17,14 @@ namespace Patapon4TLB.GameModes
 	[UpdateInGroup(typeof(ClientGameModeSystemGroup))]
 	public class MpVersusHeadOnClientGameMode : GameBaseSystem
 	{
-		/*private EntityQuery m_GameModeQuery;
+		private EntityQuery m_GameModeQuery;
 		private EntityQuery m_ExecutingMapQuery;
 		private EntityQuery m_ServerMapQuery;
 
 		private EntityQuery m_InterfaceQuery;
 		private EntityQuery m_FlagQuery;
 
-		private UiHeadOnPresentation.Manager m_InterfaceManager;
+		//private UiHeadOnPresentation.Manager m_InterfaceManager;
 		private MapManager                   m_MapManager;
 
 		protected override void OnCreate()
@@ -29,8 +35,8 @@ namespace Patapon4TLB.GameModes
 			m_ExecutingMapQuery = GetEntityQuery(typeof(ExecutingMapData));
 			m_ServerMapQuery    = GetEntityQuery(typeof(ExecutingServerMap));
 
-			m_InterfaceManager = World.GetOrCreateSystem<UiHeadOnPresentation.Manager>();
-			m_InterfaceQuery   = GetEntityQuery(typeof(UiHeadOnPresentation));
+			/*m_InterfaceManager = World.GetOrCreateSystem<UiHeadOnPresentation.Manager>();
+			m_InterfaceQuery   = GetEntityQuery(typeof(UiHeadOnPresentation));*/
 			m_FlagQuery        = GetEntityQuery(typeof(HeadOnFlag), typeof(Relative<TeamDescription>));
 
 			m_MapManager = World.GetOrCreateSystem<MapManager>();
@@ -44,14 +50,14 @@ namespace Patapon4TLB.GameModes
 				serverMapKey = m_ServerMapQuery.GetSingleton<ExecutingServerMap>().Key;
 			if (m_ExecutingMapQuery.CalculateEntityCount() > 0)
 				clientMapKey = m_ExecutingMapQuery.GetSingleton<ExecutingMapData>().Key;
-
+			
 			if (!serverMapKey.Equals(clientMapKey) && !m_MapManager.AnyOperation)
 			{
 				var request = EntityManager.CreateEntity(typeof(RequestMapLoad));
 				EntityManager.SetComponentData(request, new RequestMapLoad {Key = serverMapKey});
 			}
 			
-			if (m_GameModeQuery.CalculateEntityCount() <= 0 || m_FlagQuery.CalculateEntityCount() < 2)
+			/*if (m_GameModeQuery.CalculateEntityCount() <= 0 || m_FlagQuery.CalculateEntityCount() < 2)
 			{
 				Debug.Log($"{m_GameModeQuery.CalculateEntityCount()} :: {m_FlagQuery.CalculateEntityCount()}");
 				m_InterfaceManager.SetEnabled(false);
@@ -115,11 +121,7 @@ namespace Patapon4TLB.GameModes
 			{
 				hud.SetScore(0, i, gameMode.GetPoints(i));
 				hud.SetScore(1, i, gameMode.GetEliminations(i));
-			}
-		}*/
-		protected override void OnUpdate()
-		{
-
+			}*/
 		}
 	}
 }

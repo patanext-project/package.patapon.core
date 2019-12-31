@@ -123,7 +123,7 @@ namespace package.patapon.core.FeverWorm
 			backend.SetEnabled(ComboCount >= 2);
 
 			definition.SetComboString(ComboString);
-			definition.SetProgression(ComboScoreReal, ComboCount, InterpolatedEnergyReal, IsFever);
+			definition.SetProgression(ComboScoreReal, ComboCount, InterpolatedEnergyReal, SummonEnergyReal, IsFever);
 			definition.SetColors(definition.currentPulse);
 
 			definition.Animator.enabled = false;
