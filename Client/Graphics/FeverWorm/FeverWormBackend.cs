@@ -53,6 +53,7 @@ namespace package.patapon.core.FeverWorm
 		public string ComboString;
 
 		public float SummonEnergyReal;
+		public float InterpolatedEnergyReal;
 		public float ComboScoreReal;
 
 		public int ComboCount;
@@ -103,6 +104,8 @@ namespace package.patapon.core.FeverWorm
 			var settings = EntityManager.GetComponentData<RhythmEngineSettings>(engine);
 			Pulsation = real(process.Milliseconds % settings.BeatInterval, settings.BeatInterval);
 
+			InterpolatedEnergyReal = Mathf.MoveTowards(math.lerp(InterpolatedEnergyReal, SummonEnergyReal, Time.DeltaTime), SummonEnergyReal, Time.DeltaTime * 0.25f);
+			
 			if (m_PlaySongSystem.Score != m_PreviousScore)
 			{
 				m_PreviousScoreInterpol = m_PreviousScore;
@@ -120,7 +123,7 @@ namespace package.patapon.core.FeverWorm
 			backend.SetEnabled(ComboCount >= 2);
 
 			definition.SetComboString(ComboString);
-			definition.SetProgression(ComboScoreReal, ComboCount, SummonEnergyReal, IsFever);
+			definition.SetProgression(ComboScoreReal, ComboCount, InterpolatedEnergyReal, IsFever);
 			definition.SetColors(definition.currentPulse);
 
 			definition.Animator.enabled = false;

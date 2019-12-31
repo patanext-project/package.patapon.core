@@ -13,10 +13,10 @@ namespace package.patapon.core.FeverWorm
 		[Header("Properties")]
 		public List<Renderer> rendererArray;
 
-		public TextMeshPro comboCountLabel;
-		public TextMeshPro comboInfoLabel;
+		public TextMeshPro[] comboCountLabels;
+		public TextMeshPro[] comboInfoLabels;
 
-		public TextMeshPro    feverLabel;
+		public TextMeshPro[]    feverLabels;
 		public VertexGradient feverLabelGradientNormal;
 		public VertexGradient feverLabelGradientHighlighted;
 		public Color          feverLabelOutlineNormal;
@@ -88,8 +88,11 @@ namespace package.patapon.core.FeverWorm
 				m_ComboInfoStrBuilder.Append(xmlColorCloseKey);
 				m_ComboInfoStrBuilder.Append(str[i]);
 			}
-
-			comboInfoLabel.SetText(m_ComboInfoStrBuilder);
+			
+			foreach (var label in comboInfoLabels)
+			{
+				label.SetText(m_ComboInfoStrBuilder);
+			}
 		}
 
 		public void SetProgression(float comboScore, int combo, float specialProgression, bool isFever)
@@ -110,7 +113,10 @@ namespace package.patapon.core.FeverWorm
 
 			m_ComboCountStrBuilder.Clear();
 			m_ComboCountStrBuilder.Append(combo);
-			comboCountLabel.SetText(m_ComboCountStrBuilder);
+			foreach (var label in comboCountLabels)
+			{
+				label.SetText(m_ComboCountStrBuilder);
+			}
 
 			comboFrame.SetActive(!isFever);
 			feverFrame.SetActive(isFever);
@@ -131,8 +137,12 @@ namespace package.patapon.core.FeverWorm
 			gradient.bottomLeft  = Color.Lerp(feverLabelGradientNormal.bottomLeft, feverLabelGradientHighlighted.bottomLeft, factor);
 			gradient.bottomRight = Color.Lerp(feverLabelGradientNormal.bottomRight, feverLabelGradientHighlighted.bottomRight, factor);
 
-			feverLabel.outlineColor = outline;
-			feverLabel.colorGradient = gradient;
+			foreach (var label in feverLabels)
+			{
+				label.outlineColor  = outline;
+				label.colorGradient = gradient;
+			}
+
 		}
 	}
 }
