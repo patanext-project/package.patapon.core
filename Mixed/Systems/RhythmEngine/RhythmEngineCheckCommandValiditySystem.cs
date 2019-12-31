@@ -1,3 +1,4 @@
+using System.Linq;
 using JetBrains.Annotations;
 using package.stormiumteam.shared;
 using Patapon.Mixed.GamePlay.Units;
@@ -41,7 +42,7 @@ namespace Patapon.Mixed.Systems
 			}
 		}
 		
-		public static bool SameAsSequence(DynamicBuffer<RhythmCommandDefinitionSequence> commandSequence, DynamicBuffer<FlowPressure> currentCommand, bool predict)
+		public static bool SameAsSequence(DynamicBuffer<RhythmCommandDefinitionSequence> commandSequence, DynamicBuffer<FlowPressure> currentCommand)
 		{
 			if (currentCommand.Length <= 0)
 				return false;
@@ -51,7 +52,7 @@ namespace Patapon.Mixed.Systems
 			var startBeat       = lastCommandBeat - commandLength;
 
 			// disable prediction for now (how should we do it? we should start by CurrentCommand instead of CommandSequence for the for-loop?)
-			if (predict || currentCommand.Length < commandSequence.Length)
+			if (currentCommand.Length < commandSequence.Length)
 				return false;
 
 			var comDiff = currentCommand.Length - commandSequence.Length;
@@ -75,6 +76,25 @@ namespace Patapon.Mixed.Systems
 			return true;
 		}
 
+		public static bool CanBePredicted(DynamicBuffer<RhythmCommandDefinitionSequence> commandSequence, DynamicBuffer<FlowPressure> currentCommand)
+		{
+			if (currentCommand.Length == 0)
+				return true; // an empty command is valid
+
+			var firstBeat = currentCommand[0].RenderBeat;
+			for (int seq = 0, curr = 0; curr < currentCommand.Length; curr++)
+			{
+				if (!commandSequence[seq].ContainsInRange(currentCommand[curr].RenderBeat - firstBeat))
+					return false;
+				if (commandSequence[seq].Key != currentCommand[curr].KeyId)
+					return false;
+
+				seq++;
+			}
+
+			return true;
+		}
+
 		public static void GetCommand(DynamicBuffer<FlowPressure> currentCommand, NativeList<Entity>       commandsOutput, bool                                                      isPredicted,
 		                              NativeArray<ArchetypeChunk> chunks,         ArchetypeChunkEntityType entityType,     ArchetypeChunkBufferType<RhythmCommandDefinitionSequence> commandSequenceType)
 		{
@@ -87,11 +107,14 @@ namespace Patapon.Mixed.Systems
 				for (var ent = 0; ent != count; ent++)
 				{
 					var container = containerArray[ent].Reinterpret<RhythmCommandDefinitionSequence>();
-					if (SameAsSequence(container, currentCommand, isPredicted))
+					if (!isPredicted && SameAsSequence(container, currentCommand))
 					{
 						commandsOutput.Add(entityArray[ent]);
-						if (!isPredicted)
-							return;
+						return;
+					}
+					else if (isPredicted && CanBePredicted(container, currentCommand))
+					{
+						commandsOutput.Add(entityArray[ent]);
 					}
 				}
 			}
@@ -122,6 +145,8 @@ namespace Patapon.Mixed.Systems
 			var targetConnection       = GetSingletonEntity<NetworkIdComponent>();
 			var outgoingDataFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>();
 
+			//var commandDefinition = GetComponentDataFromEntity<RhythmCommandDefinition>(true); // debug only
+
 			var rpcQueue            = m_RpcQueue;
 			var isServer            = IsServer;
 			var availableCommands   = m_AvailableCommandQuery.CreateArchetypeChunkArray(Allocator.TempJob, out var queryHandle);
@@ -145,13 +170,25 @@ namespace Patapon.Mixed.Systems
 						GetCommand(commandProgression.Reinterpret<FlowPressure>(), cmdOutput, false,
 							availableCommands, entityType, commandSequenceType);
 
-						rhythmCurrentCommand.HasPredictedCommands = false;
+						rhythmCurrentCommand.HasPredictedCommands = cmdOutput.Length == 1;
 						if (cmdOutput.Length == 0)
 						{
 							GetCommand(commandProgression.Reinterpret<FlowPressure>(), cmdOutput, true,
 								availableCommands, entityType, commandSequenceType);
 							if (cmdOutput.Length > 0)
 								rhythmCurrentCommand.HasPredictedCommands = true;
+
+							/*if (!isServer) // debug only
+							{
+								var str = "";
+								for (var index = 0; index < cmdOutput.Length; index++)
+								{
+									var cmd = cmdOutput[index];
+									str += commandDefinition[cmd].Identifier.ToString() + ", ";
+								}
+
+								Debug.Log($"commands = {str}");
+							}*/
 
 							return;
 						}
@@ -213,6 +250,7 @@ namespace Patapon.Mixed.Systems
 					.WithNativeDisableParallelForRestriction(availableCommands)
 					.WithReadOnly(entityType)
 					.WithReadOnly(commandSequenceType)
+					//.WithReadOnly(commandDefinition) // debug only
 					.Schedule(JobHandle.CombineDependencies(inputDeps, queryHandle));
 
 			m_SpawnBarrier.AddJobHandleForProducer(inputDeps);

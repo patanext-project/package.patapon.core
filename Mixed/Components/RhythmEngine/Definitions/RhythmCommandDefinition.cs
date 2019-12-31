@@ -22,6 +22,11 @@ namespace Patapon.Mixed.RhythmEngine.Definitions
 		}
 
 		public int BeatEnd => BeatRange.end;
+
+		public bool ContainsInRange(int beatVal)
+		{
+			return BeatRange.start >= beatVal && BeatRange.end <= beatVal;
+		}
 	}
 
 	public struct RhythmCommandDefinition : IComponentData

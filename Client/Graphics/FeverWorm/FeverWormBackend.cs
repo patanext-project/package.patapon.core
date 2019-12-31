@@ -2,9 +2,11 @@ using Systems;
 using Misc;
 using Misc.Extensions;
 using package.stormiumteam.shared.ecs;
+using Patapon.Client.RhythmEngine;
 using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
+using RhythmEngine;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Misc;
@@ -15,6 +17,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
 
 namespace package.patapon.core.FeverWorm
@@ -99,6 +102,13 @@ namespace package.patapon.core.FeverWorm
 			var process  = EntityManager.GetComponentData<FlowEngineProcess>(engine);
 			var settings = EntityManager.GetComponentData<RhythmEngineSettings>(engine);
 			Pulsation = real(process.Milliseconds % settings.BeatInterval, settings.BeatInterval);
+
+			if (m_PlaySongSystem.Score != m_PreviousScore)
+			{
+				m_PreviousScoreInterpol = m_PreviousScore;
+				m_PreviousScore = m_PlaySongSystem.Score;
+			}
+			m_PreviousScoreInterpol = Mathf.MoveTowards(math.lerp(m_PreviousScoreInterpol, m_PlaySongSystem.Score, Time.DeltaTime * 5), m_PlaySongSystem.Score, Time.DeltaTime);
 		}
 
 		protected override void Render(FeverWormBackend backend)
@@ -107,22 +117,22 @@ namespace package.patapon.core.FeverWorm
 				return;
 
 			var definition = backend.Presentation;
+			backend.SetEnabled(ComboCount >= 2);
 
-			// hide the worm
-			if (ComboCount < 2)
-			{
-				backend.SetEnabled(false);
-				return;
-			}
-
-			backend.SetEnabled(true);
 			definition.SetComboString(ComboString);
 			definition.SetProgression(ComboScoreReal, ComboCount, SummonEnergyReal, IsFever);
 			definition.SetColors(definition.currentPulse);
-			
+
 			definition.Animator.enabled = false;
+			definition.Animator.SetFloat(_NtDoubleBeat, Pulsation);
+			definition.Animator.SetFloat(_NtOneBeat, Pulsation);
+			definition.Animator.SetFloat(_Score, m_PreviousScoreInterpol);
+			definition.Animator.SetBool(_IsFever, IsFever);
 			definition.Animator.Update(Time.DeltaTime);
 		}
+
+		private int m_PreviousScore;
+		private float m_PreviousScoreInterpol;
 
 		protected override void ClearValues()
 		{
@@ -130,6 +140,11 @@ namespace package.patapon.core.FeverWorm
 		}
 
 		private EntityQuery m_EngineQuery;
+		private RhythmEnginePlaySong m_PlaySongSystem;
+		private static readonly int _NtOneBeat = Animator.StringToHash("_NT1.0");
+		private static readonly int _NtDoubleBeat = Animator.StringToHash("_NT0.5");
+		private static readonly int _Score = Animator.StringToHash("_Score");
+		private static readonly int _IsFever = Animator.StringToHash("_IsFever");
 
 		protected override void OnCreate()
 		{
@@ -138,6 +153,7 @@ namespace package.patapon.core.FeverWorm
 			EntityManager.CreateEntity(typeof(CreateFeverWormData));
 			
 			m_EngineQuery = GetEntityQuery(typeof(RhythmEngineDescription), typeof(Relative<PlayerDescription>));
+			m_PlaySongSystem = World.GetOrCreateSystem<RhythmEnginePlaySong>();
 		}
 	}
 

@@ -102,6 +102,8 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 							combo.JinnEnergy += 20;
 						}
 
+						state.LastPressureBeat = math.min(ev.Key, process.GetFlowBeat(process.Milliseconds));
+
 						comboFromEntity[ghostEntity] = combo;
 						stateFromEntity[ghostEntity] = state;
 					})

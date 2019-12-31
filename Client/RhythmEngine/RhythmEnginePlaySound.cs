@@ -241,7 +241,7 @@ namespace RhythmEngine
 
 					m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPressureDrum[key][score]);
 
-					if (true) // voiceoverlay
+					if (false) // voiceoverlay
 					{
 						var id = score;
 						if (id > 0)

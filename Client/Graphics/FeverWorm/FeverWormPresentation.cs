@@ -94,6 +94,9 @@ namespace package.patapon.core.FeverWorm
 
 		public void SetProgression(float comboScore, int combo, float specialProgression, bool isFever)
 		{
+			if (mpb == null)
+				return;
+			
 			foreach (var r in rendererArray)
 			{
 				r.GetPropertyBlock(mpb);
@@ -115,6 +118,9 @@ namespace package.patapon.core.FeverWorm
 
 		public void SetColors(float factor)
 		{
+			if (mpb == null)
+				return;
+			
 			Color          outline;
 			VertexGradient gradient;
 

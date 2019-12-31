@@ -12,6 +12,9 @@ namespace Patapon.Client.RhythmEngine
 	public partial class RhythmEnginePlaySong
 	{
 		private const int SongBeatSize = 8;
+
+		// It's normally private, but it is used for RhythmEngineFeverWormRenderSystem
+		public int Score;
 		
 		public int CommandStartTime;
 		public int CommandEndTime;
@@ -53,6 +56,8 @@ namespace Patapon.Client.RhythmEngine
 
 		private void RenderBgm()
 		{
+			Score = 0;
+			
 			if (!HasEngineTarget)
 			{
 				m_HadRhythmEngine = false;
@@ -88,16 +93,27 @@ namespace Patapon.Client.RhythmEngine
 					else
 					{
 						score = ComboState.ChainToFever;
-						if (ComboState.ChainToFever >= 25)
+						if (ComboState.Score >= 33)
 						{
 							score += 2;
 						}
 					}
 
-					var part          = CurrentSong.BgmComboParts[score];
-					var commandLength = ComboState.Chain;
+					if (score < 0)
+						score = 0;
 
-					targetAudio = part.Clips[commandLength % part.Clips.Count];
+					try
+					{
+						var part          = CurrentSong.BgmComboParts[math.clamp(score, 0, CurrentSong.BgmComboParts.Count - 1)];
+						var commandLength = ComboState.Chain;
+						targetAudio = part.Clips[commandLength % part.Clips.Count];
+
+						Score = score;
+					}
+					catch
+					{
+						Debug.Log($"failed with score of {score}");
+					}
 				}
 				else
 				{
@@ -160,7 +176,7 @@ namespace Patapon.Client.RhythmEngine
 			if (!hasSwitched && targetAudio != null && m_BgmSources[1 - m_Flip].time >= targetAudio.length)
 			{
 				Debug.Log($"Looping {m_LastClip?.name}");
-				m_BgmSources[1 - m_Flip].time = m_BgmSources[1 - m_Flip].time - targetAudio.length;
+				m_BgmSources[1 - m_Flip].time = math.max(m_BgmSources[1 - m_Flip].time - targetAudio.length, 0);
 				m_BgmSources[1 - m_Flip].Play();
 			}
 

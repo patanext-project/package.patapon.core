@@ -56,27 +56,24 @@ namespace Patapon.Mixed.Systems
 						var mercy = 1;
 						if (isServer)
 							mercy++; // we allow a mercy offset on a server in case the client is a bit laggy
-
 						var cmdMercy = 0;
 						if (isServer)
-							cmdMercy++;
+							cmdMercy = 3;
 
 						var rhythmActiveAtFlowBeat = FlowEngineProcess.CalculateFlowBeat(rhythm.ActiveAtTime, settings.BeatInterval);
 						var rhythmEndAtFlowBeat    = FlowEngineProcess.CalculateFlowBeat(rhythm.CustomEndTime, settings.BeatInterval);
 
-						var checkStopBeat = math.max(state.LastPressureBeat, FlowEngineProcess.CalculateFlowBeat(commandState.EndTime, settings.BeatInterval) + cmdMercy);
+						var checkStopBeat = math.max(state.LastPressureBeat + mercy, FlowEngineProcess.CalculateFlowBeat(commandState.EndTime, settings.BeatInterval) + cmdMercy);
 						if (!isServer && simulateTagFromEntity.Exists(entity))
 						{
-							checkStopBeat = math.max(checkStopBeat, FlowEngineProcess.CalculateFlowBeat(predictedCommandFromEntity[entity].State.EndTime, settings.BeatInterval) + cmdMercy);
+							checkStopBeat = math.max(checkStopBeat, FlowEngineProcess.CalculateFlowBeat(predictedCommandFromEntity[entity].State.EndTime, settings.BeatInterval));
 						}
-						
-						if (commandState.StartTime > 0)
-							Debug.Log($"curr = {process.GetFlowBeat(settings.BeatInterval)}, {checkStopBeat} against {FlowEngineProcess.CalculateFlowBeat(commandState.EndTime, settings.BeatInterval)}");
 						
 						var flowBeat = process.GetFlowBeat(settings.BeatInterval);
 						var activationBeat = process.GetActivationBeat(settings.BeatInterval);
-						if (state.IsRecovery(flowBeat) || (!commandState.HasActivity(process.Milliseconds, settings.BeatInterval) && rhythmActiveAtFlowBeat < flowBeat && checkStopBeat + mercy < activationBeat)
-						                               || (rhythm.CommandTarget == default && rhythm.HasPredictedCommands && rhythmActiveAtFlowBeat < state.LastPressureBeat))
+						if (state.IsRecovery(flowBeat) || (rhythmActiveAtFlowBeat < flowBeat && checkStopBeat < activationBeat)
+						                               || (rhythm.CommandTarget == default && rhythm.HasPredictedCommands && rhythmActiveAtFlowBeat < state.LastPressureBeat)
+						                               || (!rhythm.HasPredictedCommands && !isServer))
 						{
 							comboState.Chain        = 0;
 							comboState.Score        = 0;
