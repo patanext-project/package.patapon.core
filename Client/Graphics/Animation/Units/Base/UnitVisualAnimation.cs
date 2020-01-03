@@ -85,6 +85,10 @@ namespace Patapon.Client.Graphics.Animation.Units
 			if (!TryGetComponent(out m_Animation))
 			{
 				m_Animation = gameObject.AddComponent<UnitVisualAnimation>();
+				if (!DstEntityManager.HasComponent(BackendEntity, typeof(UnitVisualAnimation)))
+				{
+					DstEntityManager.AddComponentObject(BackendEntity, m_Animation);
+				}
 			}
 
 			m_Animation.OnBackendSet(this);
