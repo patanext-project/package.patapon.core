@@ -77,23 +77,25 @@ namespace Patapon4TLB.Core
 						}
 					});
 					break;
-				/*case string _ when typeId == GetInternal("basic_backward"):
-					CreateAbility<BackwardAbilityProvider, BackwardAbilityProvider.Create>(new BackwardAbilityProvider.Create
+				case string _ when typeId == GetInternal("basic_backward"):
+					CreateAbility<DefaultBackwardAbilityProvider, DefaultBackwardAbilityProvider.Create>(new DefaultBackwardAbilityProvider.Create
 					{
-						Owner              = entity,
-						AccelerationFactor = 1,
-						Command            = FindCommand(typeof(BackwardCommand))
+						Owner   = entity,
+						Command = FindCommand(typeof(BackwardCommand)),
+						Data = new DefaultBackwardAbility
+						{
+							AccelerationFactor = 1.0f
+						}
 					});
 					break;
 				case string _ when typeId == GetInternal("basic_jump"):
-					CreateAbility<JumpAbilityProvider, JumpAbilityProvider.Create>(new JumpAbilityProvider.Create
+					CreateAbility<DefaultJumpAbilityProvider, DefaultJumpAbilityProvider.Create>(new DefaultJumpAbilityProvider.Create
 					{
 						Owner              = entity,
-						AccelerationFactor = 1,
 						Command            = FindCommand(typeof(JumpCommand))
 					});
 					break;
-				case string _ when typeId == GetInternal("basic_retreat"):
+				/*case string _ when typeId == GetInternal("basic_retreat"):
 					CreateAbility<RetreatAbilityProvider, RetreatAbilityProvider.Create>(new RetreatAbilityProvider.Create
 					{
 						Owner              = entity,

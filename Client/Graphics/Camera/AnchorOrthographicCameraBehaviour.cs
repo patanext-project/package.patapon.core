@@ -62,7 +62,6 @@ namespace package.patapon.core
             e.SetOrAddComponentData(new Translation { Value = transform.position });
             e.SetOrAddComponentData(new Rotation { Value = transform.rotation });
             e.SetOrAddComponentData(new LocalToWorld());
-            e.SetOrAddComponentData(new CopyTransformToGameObject());
             e.SetOrAddComponentData(new AnchorOrthographicCameraOutput());
 
             if (setDebugData)

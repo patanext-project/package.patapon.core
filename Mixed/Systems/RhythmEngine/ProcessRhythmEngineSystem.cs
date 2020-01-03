@@ -10,6 +10,7 @@ using UnityEngine;
 
 namespace Patapon.Mixed.Systems
 {
+	[UpdateInGroup(typeof(RhythmEngineGroup))]
 	public class ProcessRhythmEngineSystem : JobGameBaseSystem
 	{
 		private struct EventCreated : IComponentData

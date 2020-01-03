@@ -12,7 +12,7 @@ using UnityEngine;
 namespace Patapon.Mixed.GamePlay
 {
 
-	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
+	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
 	[UpdateBefore(typeof(ActionSystemGroup))]
 	public class UpdateRhythmAbilityState : JobComponentSystem
 	{

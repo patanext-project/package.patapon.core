@@ -2,6 +2,7 @@ using package.patapon.core;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Definitions;
+using Revolution;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
@@ -18,13 +19,13 @@ namespace Patapon.Mixed.Systems
 
 			var march = Build(builder, new RhythmCommandDefinition {Identifier = new NativeString64("march"), BeatLength = 4}, new[]
 			{
-				new RhythmCommandDefinitionSequence(0, RhythmKeys.Left), 
+				new RhythmCommandDefinitionSequence(0, RhythmKeys.Left),
 				new RhythmCommandDefinitionSequence(1, RhythmKeys.Left),
 				new RhythmCommandDefinitionSequence(2, RhythmKeys.Left),
 				new RhythmCommandDefinitionSequence(3, RhythmKeys.Right),
 			});
 			EntityManager.AddComponent(march, typeof(MarchCommand));
-			
+
 			var attack = Build(builder, new RhythmCommandDefinition {Identifier = new NativeString64("attack"), BeatLength = 4}, new[]
 			{
 				new RhythmCommandDefinitionSequence(0, RhythmKeys.Right),
@@ -113,6 +114,9 @@ namespace Patapon.Mixed.Systems
 			var entity = builder.GetOrCreate(new NativeArray<RhythmCommandDefinitionSequence>(sequences, Allocator.Temp));
 
 			EntityManager.AddComponent(entity, typeof(DefaultRhythmCommand));
+			if (IsServer)
+				EntityManager.AddComponent(entity, typeof(GhostEntity));
+			
 			EntityManager.SetOrAddComponentData(entity, rhythmCommandData);
 
 			return entity;

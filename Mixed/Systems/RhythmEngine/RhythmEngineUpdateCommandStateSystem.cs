@@ -14,6 +14,8 @@ using UnityEngine;
 
 namespace Patapon.Mixed.Systems
 {
+	[UpdateInGroup(typeof(RhythmEngineGroup))]
+	[UpdateAfter(typeof(RhythmEngineCheckCommandValidity))]
 	public class RhythmEngineUpdateCommandStateSystem : JobGameBaseSystem
 	{
 		private RpcQueue<RhythmRpcClientRecover> m_RpcQueue;

@@ -20,8 +20,10 @@ namespace package.patapon.core
     {
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            Entities.ForEach((Camera camera, ref Translation tr, ref AnchorOrthographicCameraData data) =>
+            Entities.ForEach((Camera camera, ref Translation tr, ref AnchorOrthographicCameraData data, in SynchronizeCameraStateSystem.SystemData systemData) =>
             {
+                camera.orthographicSize = systemData.Focus;
+                
                 data.Height = camera.orthographicSize;
                 data.Width  = camera.aspect * data.Height;
             }).WithoutBurst().Run();

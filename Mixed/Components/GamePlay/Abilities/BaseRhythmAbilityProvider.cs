@@ -28,7 +28,7 @@ namespace Patapon.Mixed.GamePlay.Abilities
 				typeof(Owner),
 				typeof(DestroyChainReaction),
 				typeof(PlayEntityTag),
-				typeof(ReplicatedEntity)
+				typeof(GhostEntity)
 			};
 		}
 

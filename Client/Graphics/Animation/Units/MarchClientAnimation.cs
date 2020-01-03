@@ -161,8 +161,7 @@ namespace package.patapon.core.Animation.Units
 		{
 			if (!base.OnBeforeForEach())
 				return false;
-
-			Debug.Log($"{m_LoadSuccess} >= {m_Clips.Length}");
+			
 			return m_LoadSuccess >= m_Clips.Length;
 		}
 
@@ -210,21 +209,19 @@ namespace package.patapon.core.Animation.Units
 			var doAnimation = currAnim == TargetAnimation.Null || currAnim.Type == SystemType;
 
 			var abilityActive       = false;
-			var abilityWillBeActive = false;
 			if (abilityEntity != default)
 			{
 				var abilityState = EntityManager.GetComponentData<RhythmAbilityState>(abilityEntity);
-				abilityWillBeActive =  abilityState.WillBeActive;
 				doAnimation         |= abilityActive = abilityState.IsActive;
 			}
 
-			if (abilityActive || abilityWillBeActive)
+			if (abilityActive)
 			{
 				systemData.Behaviour.ForceAnimation = true;
 			}
 
 			var velocity = EntityManager.GetComponentData<Velocity>(backend.DstEntity);
-			systemData.Behaviour.TargetAnimation = math.abs(velocity.Value.x) > 0f || abilityWillBeActive || abilityActive ? 1 : 0;
+			systemData.Behaviour.TargetAnimation = math.abs(velocity.Value.x) > 0f || abilityActive ? 1 : 0;
 
 			if (!doAnimation)
 				return;

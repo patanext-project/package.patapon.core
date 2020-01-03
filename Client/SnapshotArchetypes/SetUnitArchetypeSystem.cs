@@ -14,6 +14,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace SnapshotArchetypes
 {
@@ -57,7 +58,7 @@ namespace SnapshotArchetypes
 
 			inputDeps = Entities
 			            .WithAll<SetUnitArchetypeSystem.IsSet>()
-			            .ForEach((Entity entity, ref Translation translation, ref CameraModifierData cameraModifier, ref CameraTargetAnchor anchor) =>
+			            .ForEach((Entity entity, ref CameraModifierData cameraModifier, ref CameraTargetAnchor anchor, ref Velocity velocity, in Translation translation) =>
 			            {
 				            var direction = directionFromEntity.TryGet(entity, out _, UnitDirection.Right);
 
@@ -67,13 +68,17 @@ namespace SnapshotArchetypes
 				            float3 positionResult = default;
 				            positionResult.x =  translation.Value.x;
 				            positionResult.x += userCommand.Panning * (cameraModifier.FieldOfView + 2.5f * direction.Value);
-				            positionResult.x += cameraModifier.FieldOfView * 0.25f * direction.Value;
+				            positionResult.x += cameraModifier.FieldOfView * 0.375f * direction.Value;
 				            
-				            cameraModifier.Position = math.lerp(cameraModifier.Position, positionResult, dt * 2.5f);
+				            cameraModifier.Position = math.lerp(cameraModifier.Position, positionResult, dt * 1.25f);
+				            cameraModifier.Position = Vector3.MoveTowards(cameraModifier.Position, positionResult, dt * 0.3f);
+				            //cameraModifier.Position.x = positionResult.x;
 				            if (math.isnan(cameraModifier.Position.x) || math.abs(cameraModifier.Position.x) > 4000.0f)
 				            {
 					            cameraModifier.Position.x = 0;
 				            }
+				            
+				            Debug.DrawRay(cameraModifier.Position, Vector3.up * 4, Color.blue);
 
 				            anchor.Type  = AnchorType.Screen;
 				            anchor.Value = new float2(0, 0.7f);

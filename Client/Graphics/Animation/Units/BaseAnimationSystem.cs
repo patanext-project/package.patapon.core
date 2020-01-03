@@ -70,13 +70,14 @@ namespace package.patapon.core.Animation.Units
 
 			GetModule(out AbilityFinder);
 			AbilityQuery = GetAbilityQuery();
+			AbilityFinder.Query = AbilityQuery;
 		}
 
 		protected abstract EntityQuery GetAbilityQuery();
 
 		protected override bool OnBeforeForEach()
 		{
-			AbilityFinder.Update(default);
+			AbilityFinder.Update(default).Complete();
 			return true;
 		}
 	}

@@ -29,6 +29,8 @@ namespace package.patapon.core
 
             public Entity      StateEntity;
             public CameraState StateData;
+
+            public float Focus;
         }
 
         private EntityQuery m_CameraWithoutUpdateComp;
@@ -126,7 +128,7 @@ namespace package.patapon.core
 
             var modifierFromEntity = GetComponentDataFromEntity<CameraModifierData>(true);
             Entities
-                .ForEach((ref Translation translation, ref Rotation rotation, ref LocalToWorld ltw, in SystemData systemData) =>
+                .ForEach((ref Translation translation, ref Rotation rotation, ref LocalToWorld ltw, ref SystemData systemData) =>
                 {
                     var offset = systemData.StateData.Offset;
                     if (!math.all(offset.rot.value))
@@ -142,6 +144,8 @@ namespace package.patapon.core
                     translation.Value.z = -100; // temporary for now
 
                     ltw.Value = new float4x4(rotation.Value, translation.Value);
+
+                    systemData.Focus = hasModifier ? modifier.FieldOfView : 8;
                 }).WithReadOnly(modifierFromEntity).Run();
 
             return default;

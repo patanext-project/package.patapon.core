@@ -17,6 +17,7 @@ using UnityEngine;
 
 namespace Patapon.Mixed.Systems
 {
+	[UpdateInGroup(typeof(RhythmEngineGroup))]
 	public class RhythmEngineCheckCommandValidity : JobGameBaseSystem
 	{
 		[BurstCompile]

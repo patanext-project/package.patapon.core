@@ -1,14 +1,17 @@
+using Patapon.Mixed.GamePlay.Abilities;
 using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.GamePlay.Units;
 using Patapon.Mixed.RhythmEngine.Flow;
+using Revolution;
 using Unity.Entities;
+using Unity.Networking.Transport;
 
 namespace Patapon.Mixed.GamePlay
 {
 	/// <summary>
 	/// Rhythm based ability.
 	/// </summary>
-	public struct RhythmAbilityState : IComponentData
+	public struct RhythmAbilityState : IComponentData, IReadWriteComponentSnapshot<RhythmAbilityState, GhostSetup>, ISnapshotDelta<RhythmAbilityState>
 	{
 		internal int PreviousActiveStartTime;
 
@@ -55,6 +58,30 @@ namespace Patapon.Mixed.GamePlay
 
 			IsStillChaining = commandState.StartTime <= process.Milliseconds + (IsStillChaining ? 500 : 0) && combo.Chain > 0;
 			WillBeActive    = commandState.StartTime > process.Milliseconds && process.Milliseconds <= commandState.EndTime && !IsActive;
+		}
+
+		public struct Exclude : IComponentData
+		{
+		}
+
+		public class NetSynchronize : MixedComponentSnapshotSystemDelta<RhythmAbilityState, GhostSetup>
+		{
+			public override ComponentType ExcludeComponent => typeof(Exclude);
+		}
+
+		public void WriteTo(DataStreamWriter writer, ref RhythmAbilityState baseline, GhostSetup setup, SerializeClientData jobData)
+		{
+			writer.WritePackedUInt(setup[Command], jobData.NetworkCompressionModel);
+		}
+
+		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref RhythmAbilityState baseline, DeserializeClientData jobData)
+		{
+			jobData.GhostToEntityMap.TryGetValue(reader.ReadPackedUInt(ref ctx, jobData.NetworkCompressionModel), out Command);
+		}
+
+		public bool DidChange(RhythmAbilityState baseline)
+		{
+			return Command != baseline.Command;
 		}
 	}
 }

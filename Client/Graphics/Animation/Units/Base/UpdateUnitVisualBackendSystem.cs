@@ -41,6 +41,7 @@ namespace Patapon.Client.Graphics.Animation.Units
 				ref var i = ref indexArray.AsRef();
 				
 				var pos = EntityManager.GetComponentData<Translation>(backend.DstEntity).Value;
+				Debug.DrawRay(pos, Vector3.up, Color.green);
 				pos.z = i++ * 2;
 
 				transform.position = pos;

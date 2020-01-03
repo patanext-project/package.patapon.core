@@ -6,6 +6,8 @@ using Unity.Jobs;
 
 namespace Patapon.Mixed.Systems
 {
+	[UpdateInGroup(typeof(RhythmEngineGroup))]
+	[UpdateAfter(typeof(RhythmEngineCheckCommandValidity))]
 	public class RhythmEngineRemoveOldCommandsSystem : JobGameBaseSystem
 	{
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
