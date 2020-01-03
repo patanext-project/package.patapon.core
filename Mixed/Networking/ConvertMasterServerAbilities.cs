@@ -95,15 +95,18 @@ namespace Patapon4TLB.Core
 						Command            = FindCommand(typeof(JumpCommand))
 					});
 					break;
-				/*case string _ when typeId == GetInternal("basic_retreat"):
+				case string _ when typeId == GetInternal("basic_retreat"):
 					CreateAbility<RetreatAbilityProvider, RetreatAbilityProvider.Create>(new RetreatAbilityProvider.Create
 					{
-						Owner              = entity,
-						AccelerationFactor = 1,
-						Command            = FindCommand(typeof(RetreatCommand))
+						Owner   = entity,
+						Command = FindCommand(typeof(RetreatCommand)),
+						Data = new DefaultRetreatAbility
+						{
+							AccelerationFactor = 1.0f
+						}
 					});
 					break;
-				case string _ when typeId == GetInternal("tate/basic_attack"):
+				/*case string _ when typeId == GetInternal("tate/basic_attack"):
 					CreateAbility<BasicTaterazayAttackAbility.Provider, BasicTaterazayAttackAbility.Create>(new BasicTaterazayAttackAbility.Create
 					{
 						Owner   = entity,

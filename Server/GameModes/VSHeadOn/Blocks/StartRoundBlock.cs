@@ -132,6 +132,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			var gmData = entityMgr.GetComponentData<VersusHeadOnUnit>(unit);
 
 			var team = gmCtx.Teams[gmData.Team];
+			Debug.Log("SPAWNPOINT ====== " + team.SpawnPoint);
 			if (team.SpawnPoint != default)
 			{
 				var spawnPointPos = entityMgr.GetComponentData<LocalToWorld>(team.SpawnPoint).Position;
@@ -142,6 +143,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				
 				var unitTargetRelative = entityMgr.GetComponentData<Relative<UnitTargetDescription>>(unit).Target;
 				entityMgr.SetComponentData(unitTargetRelative, new Translation {Value = spawnPointPos.x});
+				
+				Debug.Log("Spawning at " + spawnPointPos.x);
 			}
 		}
 	}

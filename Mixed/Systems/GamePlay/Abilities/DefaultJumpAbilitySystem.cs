@@ -44,7 +44,7 @@ namespace Systems.GamePlay
 						{
 							if (ability.IsJumping)
 							{
-								velocity.Value.y = math.max(0, velocity.Value.y - 20 * (ability.ActiveTime * 2));
+								velocity.Value.y = math.max(0, velocity.Value.y - 30 * (ability.ActiveTime * 2));
 								velocityUpdater.CompareAndUpdate(velocity);
 							}
 
