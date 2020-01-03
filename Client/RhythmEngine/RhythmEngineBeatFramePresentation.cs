@@ -192,12 +192,21 @@ namespace RhythmEngine
 				case RhythmEngineBeatFrameBackend.Phase.Fever:
 				{
 					// goooo crazy
-					for (var i = 0; i != 3; i++)
+					if (comboState.JinnEnergy < comboState.JinnEnergyMax)
 					{
-						TargetColor[i] = Mathf.Lerp(TargetColor[i], new Random((uint) Environment.TickCount).NextFloat(), Time.DeltaTime * 25f);
+						for (var i = 0; i != 3; i++)
+						{
+							TargetColor[i] = Mathf.Lerp(TargetColor[i], new Random((uint) Environment.TickCount).NextFloat(), Time.DeltaTime * 25f);
+						}
+
+						TargetColor[CurrentHue % 3] = 1;
+					}
+					// this color should be customizable but i'm lazy to add that settings so... eh...
+					else
+					{
+						TargetColor = new Color(1, 0.86f, 0, 1);
 					}
 
-					TargetColor[CurrentHue % 3] = 1;
 					break;
 				}
 			}

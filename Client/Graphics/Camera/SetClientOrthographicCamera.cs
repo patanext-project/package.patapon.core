@@ -2,6 +2,7 @@ using package.patapon.core;
 using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase.Components;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace p4tlb
@@ -28,7 +29,11 @@ namespace p4tlb
 
 				camera.transform.position = new Vector3(0, 0, -100);
 
-				EntityManager.SetOrAddComponentData(e, new CameraTargetAnchor());
+				EntityManager.SetOrAddComponentData(e, new CameraTargetAnchor
+				{
+					Type = AnchorType.Screen,
+					Value = new float2(0, 0.9f)
+				});
 				EntityManager.SetOrAddComponentData(e, new AnchorOrthographicCameraData());
 				EntityManager.SetOrAddComponentData(e, new AnchorOrthographicCameraOutput());
 				EntityManager.SetOrAddComponentData(e, new IsActive());

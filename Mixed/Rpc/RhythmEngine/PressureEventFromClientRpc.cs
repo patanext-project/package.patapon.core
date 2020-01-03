@@ -97,9 +97,9 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 						var combo   = comboFromEntity[ghostEntity];
 						var state   = stateFromEntity[ghostEntity];
 						
-						if (math.abs(ev.Score) <= FlowPressure.Perfect)
+						if (math.abs(ev.Score) <= FlowPressure.Perfect && combo.IsFever)
 						{
-							combo.JinnEnergy += 20;
+							combo.JinnEnergy += 5;
 						}
 
 						state.LastPressureBeat = math.min(ev.Key, process.GetFlowBeat(process.Milliseconds));

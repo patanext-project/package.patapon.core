@@ -11,6 +11,7 @@ using StormiumTeam.GameBase.Components;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace Patapon.Server.GameModes.VSHeadOn
 {
@@ -138,6 +139,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				{
 					Value = new float3(spawnPointPos.x, 0, 0)
 				});
+				
+				var unitTargetRelative = entityMgr.GetComponentData<Relative<UnitTargetDescription>>(unit).Target;
+				entityMgr.SetComponentData(unitTargetRelative, new Translation {Value = spawnPointPos.x});
 			}
 		}
 	}

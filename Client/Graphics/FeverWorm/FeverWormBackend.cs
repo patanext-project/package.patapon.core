@@ -46,6 +46,7 @@ namespace package.patapon.core.FeverWorm
 	}
 
 	// we do process on the backend instead of presentation since we do disable/enabled the presentation (aka removing it from the entity list)
+	[UpdateInGroup(typeof(OrderGroup.Presentation.InterfaceRendering))]
 	public class FeverWormRenderSystem : BaseRenderSystem<FeverWormBackend>
 	{
 		private Localization m_LocalTextDb;
@@ -122,16 +123,17 @@ namespace package.patapon.core.FeverWorm
 			var definition = backend.Presentation;
 			backend.SetEnabled(ComboCount >= 2);
 
-			definition.SetComboString(ComboString);
-			definition.SetProgression(ComboScoreReal, ComboCount, InterpolatedEnergyReal, SummonEnergyReal, IsFever);
-			definition.SetColors(definition.currentPulse);
-
 			definition.Animator.enabled = false;
 			definition.Animator.SetFloat(_NtDoubleBeat, Pulsation);
 			definition.Animator.SetFloat(_NtOneBeat, Pulsation);
 			definition.Animator.SetFloat(_Score, m_PreviousScoreInterpol);
 			definition.Animator.SetBool(_IsFever, IsFever);
-			definition.Animator.Update(Time.DeltaTime);
+			if (ComboCount >= 2)
+				definition.Animator.Update(Time.DeltaTime);
+			
+			definition.SetComboString(ComboString);
+			definition.SetProgression(ComboScoreReal, ComboCount, InterpolatedEnergyReal, SummonEnergyReal, IsFever);
+			definition.SetColors(definition.currentPulse);
 		}
 
 		private int m_PreviousScore;

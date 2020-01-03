@@ -27,10 +27,11 @@ namespace DefaultNamespace
 			}
 		}
 
-		public const string AssetFileName = "input_pressurekeys.inputactions";
+		public const string AssetFileName = "global_inputs.inputactions";
 		public const int    ActionLength  = 4;
 
 		private InputAction[] m_Actions;
+		private InputAction m_PanningAction;
 
 		private    UserCommand m_LocalCommand;
 		public ref UserCommand LocalCommand => ref m_LocalCommand;
@@ -80,6 +81,8 @@ namespace DefaultNamespace
 				}
 			}
 
+			m_LocalCommand.Panning = m_PanningAction.ReadValue<float>(); 
+
 			InputEvents.Clear();
 
 			var gamePlayer = this.GetFirstSelfGamePlayer();
@@ -99,18 +102,21 @@ namespace DefaultNamespace
 
 		protected override void OnAssetRefresh()
 		{
-			var actionMap = Asset.FindActionMap("Pressures", true);
-
+			var actionPressureMap = Asset.FindActionMap("Pressures", true);
+			var actionCameraMap = Asset.FindActionMap("Camera", true);
+			
 			m_Actions = new InputAction[ActionLength];
 
 			for (var i = 0; i != ActionLength; i++)
 			{
 				// we add +1 so it can match RhythmKeys constants
-				var action = actionMap.FindAction("Pressure" + (i + 1), true);
+				var action = actionPressureMap.FindAction("Pressure" + (i + 1), true);
 				m_Actions[i] = action;
 
 				AddActionEvents(action);
 			}
+
+			m_PanningAction = actionCameraMap.FindAction("Panning", true);
 		}
 	}
 }

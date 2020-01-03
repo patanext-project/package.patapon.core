@@ -1,4 +1,6 @@
 using System;
+using package.stormiumteam.shared.ecs;
+using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.Units;
 using Patapon4TLB.Core;
 using Patapon4TLB.Default;
@@ -9,6 +11,8 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
+using UnityEngine;
+using CapsuleCollider = Unity.Physics.CapsuleCollider;
 
 namespace Patapon.Server.GameModes.VSHeadOn
 {
@@ -44,6 +48,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 						var units = entityMgr.GetBuffer<FormationChild>(armies[arm].Value).ToNativeArray(Allocator.TempJob);
 						for (var unt = 0; unt != units.Length; unt++)
 						{
+							if (!entityMgr.HasComponent<Relative<PlayerDescription>>(units[unt].Value))
+								continue;
+							
 							var capsuleColl = CapsuleCollider.Create(new CapsuleGeometry
 							{
 								Radius  = 0.5f,
@@ -59,15 +66,28 @@ namespace Patapon.Server.GameModes.VSHeadOn
 							});
 
 							entityMgr.AddComponent(spawnedUnit, typeof(GhostEntity));
-							if (entityMgr.HasComponent<Relative<PlayerDescription>>(units[unt].Value))
+							if (entityMgr.TryGetComponentData(units[unt].Value, out Relative<PlayerDescription> relativePlayer))
 							{
-								entityMgr.ReplaceOwnerData(spawnedUnit, entityMgr.GetComponentData<Relative<PlayerDescription>>(units[unt].Value).Target);
+								entityMgr.ReplaceOwnerData(spawnedUnit, relativePlayer.Target);
+								
+								var childrenBuffer = entityMgr.GetBuffer<OwnerChild>(relativePlayer.Target).ToNativeArray(Allocator.Temp);
+								for (var i = 0; i != childrenBuffer.Length; i++)
+								{
+									if (entityMgr.HasComponent(childrenBuffer[i].Child, typeof(RhythmEngineDescription)))
+										entityMgr.SetOrAddComponentData(spawnedUnit, new Relative<RhythmEngineDescription>(childrenBuffer[i].Child));
+									if (entityMgr.HasComponent(childrenBuffer[i].Child, typeof(UnitTargetDescription)))
+										entityMgr.SetOrAddComponentData(spawnedUnit, new Relative<UnitTargetDescription>(childrenBuffer[i].Child));
+								}
+
+								childrenBuffer.Dispose();
 							}
 							else
 							{
 								// todo: entityMgr.AddComponent(spawnedUnit, typeof(BotControlledUnit));
 							}
 
+							entityMgr.AddComponent(spawnedUnit, typeof(UnitTargetControlTag));
+							
 							var stat = entityMgr.GetComponentData<UnitStatistics>(units[unt].Value);
 							var healthEntity = worldOrigin.GetExistingSystem<DefaultHealthData.InstanceProvider>().SpawnLocalEntityWithArguments(new DefaultHealthData.CreateInstance
 							{

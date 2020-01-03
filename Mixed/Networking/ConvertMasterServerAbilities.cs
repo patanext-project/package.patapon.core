@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using P4TLB.MasterServer.GamePlay;
+using Patapon.Mixed.GamePlay.Abilities;
+using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.Units;
 using Revolution;
 using StormiumTeam.GameBase;
@@ -48,18 +50,34 @@ namespace Patapon4TLB.Core
 
 			switch (typeId)
 			{
-				/*case string _ when string.IsNullOrEmpty(typeId):
+				case string _ when string.IsNullOrEmpty(typeId):
 					throw new InvalidOperationException();
-				case string _ when typeId == GetInternal("tate/basic_march"):
-				case string _ when typeId == GetInternal("basic_march"):
-					CreateAbility<MarchAbilityProvider, MarchAbilityProvider.Create>(new MarchAbilityProvider.Create
+				case string _ when typeId == GetInternal("basic_party"):
+					CreateAbility<DefaultPartyAbilityProvider, DefaultPartyAbilityProvider.Create>(new DefaultPartyAbilityProvider.Create
 					{
-						Owner              = entity,
-						AccelerationFactor = 1,
-						Command            = FindCommand(typeof(MarchCommand))
+						Owner   = entity,
+						Command = FindCommand(typeof(PartyCommand)),
+						Data = new DefaultPartyAbility()
+						{
+							TickPerSecond = 100,
+							EnergyPerTick = 1,
+							EnergyOnActivation = 30
+						}
 					});
 					break;
-				case string _ when typeId == GetInternal("basic_backward"):
+				case string _ when typeId == GetInternal("tate/basic_march"):
+				case string _ when typeId == GetInternal("basic_march"):
+					CreateAbility<DefaultMarchAbilityProvider, DefaultMarchAbilityProvider.Create>(new DefaultMarchAbilityProvider.Create
+					{
+						Owner = entity,
+						Command = FindCommand(typeof(MarchCommand)),
+						Data = new DefaultMarchAbility
+						{
+							AccelerationFactor = 1.0f
+						}
+					});
+					break;
+				/*case string _ when typeId == GetInternal("basic_backward"):
 					CreateAbility<BackwardAbilityProvider, BackwardAbilityProvider.Create>(new BackwardAbilityProvider.Create
 					{
 						Owner              = entity,

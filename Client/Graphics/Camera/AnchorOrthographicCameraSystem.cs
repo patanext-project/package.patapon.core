@@ -29,10 +29,10 @@ namespace package.patapon.core
             var targetAnchorFromEntity = GetComponentDataFromEntity<CameraTargetAnchor>(true);
             inputDeps = Entities.ForEach((ref Translation translation, in AnchorOrthographicCameraData cameraData, in SynchronizeCameraStateSystem.SystemData systemData) =>
             {
-                if (!targetAnchorFromEntity.Exists(systemData.StateEntity))
+                if (!targetAnchorFromEntity.Exists(systemData.StateData.Target))
                     return;
 
-                var anchor    = targetAnchorFromEntity[systemData.StateEntity];
+                var anchor    = targetAnchorFromEntity[systemData.StateData.Target];
                 var camSize   = new float2(cameraData.Width, cameraData.Height);
                 var anchorPos = new float2(anchor.Value.x, anchor.Value.y);
                 if (anchor.Type == AnchorType.World)

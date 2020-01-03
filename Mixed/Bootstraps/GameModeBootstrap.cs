@@ -1,6 +1,10 @@
 using Patapon.Mixed.GameModes.VSHeadOn;
+using Patapon.Mixed.Units;
+using Patapon4TLB.Core;
+using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Bootstraping;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Networking.Transport;
@@ -12,6 +16,7 @@ namespace Bootstraps
 	{
 		public struct IsActive : IComponentData
 		{
+			public int RequiredPlayers;
 		}
 
 		protected override void Register(Entity bootstrap)
@@ -26,7 +31,8 @@ namespace Bootstraps
 				var network = world.GetExistingSystem<NetworkStreamReceiveSystem>();
 				if (world.GetExistingSystem<SimpleRhythmTestSystem>() != null)
 				{
-					world.EntityManager.CreateEntity(typeof(IsActive));
+					var ent = world.EntityManager.CreateEntity(typeof(IsActive));
+					world.EntityManager.SetComponentData(ent, new IsActive {RequiredPlayers = 1});
 				}
 
 				if (world.GetExistingSystem<ClientSimulationSystemGroup>() != null)
@@ -50,22 +56,86 @@ namespace Bootstraps
 	}
 
 	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
-	public class GameModeBootstrapTestSystem : ComponentSystem
+	public class GameModeBootstrapTestSystem : GameBaseSystem
 	{
+		private EntityQuery m_PlayerQuery;
+		private bool m_Created;
+
 		protected override void OnCreate()
 		{
-			RequireSingletonForUpdate<GameModeBootstrap.IsActive>();
-		}
+			base.OnCreate();
 
-		protected override void OnStartRunning()
-		{
-			var gamemodeMgr = World.GetOrCreateSystem<GameModeManager>();
-			gamemodeMgr.SetGameMode(new MpVersusHeadOn {});
+			m_PlayerQuery = GetEntityQuery(typeof(GamePlayer), typeof(GamePlayerReadyTag));
+
+			RequireSingletonForUpdate<GameModeBootstrap.IsActive>();
 		}
 
 		protected override void OnUpdate()
 		{
+			if (!IsServer || m_Created)
+				return;
 
+			if (m_PlayerQuery.CalculateEntityCount() != GetSingleton<GameModeBootstrap.IsActive>().RequiredPlayers)
+				return;
+
+			m_Created = true;
+			
+			var playerEntities = m_PlayerQuery.ToEntityArray(Allocator.TempJob);
+
+			// Create formation
+			const int formationCount = 2;
+			for (var _ = 0; _ != formationCount; _++)
+			{
+				var formationRoot = EntityManager.CreateEntity(typeof(GameFormationTag), typeof(FormationTeam), typeof(FormationRoot));
+				{
+					for (var i = 0; i != playerEntities.Length; i++)
+					{
+						var armyEntity = EntityManager.CreateEntity(typeof(ArmyFormation), typeof(FormationParent), typeof(FormationChild));
+						EntityManager.SetComponentData(armyEntity, new FormationParent {Value = formationRoot});
+
+						var unitEntity = EntityManager.CreateEntity(typeof(UnitFormation), typeof(UnitStatistics), typeof(UnitDefinedAbilities), typeof(FormationParent));
+						EntityManager.SetComponentData(unitEntity, new FormationParent {Value = armyEntity});
+						// taterazay
+						EntityManager.SetComponentData(unitEntity, new UnitStatistics
+						{
+							Health  = 225,
+							Attack  = 24,
+							Defense = 7,
+
+							BaseWalkSpeed       = 2f,
+							FeverWalkSpeed      = 2.2f,
+							AttackSpeed         = 2.0f,
+							MovementAttackSpeed = 2.22f,
+							Weight              = 8.5f,
+							AttackSeekRange     = 20f
+						});
+
+						var definedAbilities = EntityManager.GetBuffer<UnitDefinedAbilities>(unitEntity);
+						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_march"), 0));
+						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_backward"), 0));
+						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_retreat"), 0));
+						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_jump"), 0));
+						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_party"), 0));
+						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_attack"), 0));
+						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_defense"), 0));
+
+						if (playerEntities[i] != Entity.Null)
+						{
+							EntityManager.ReplaceOwnerData(unitEntity, playerEntities[i]);
+						}
+						playerEntities[i] = Entity.Null;
+					}
+				}
+
+				EntityManager.SetComponentData(formationRoot, new FormationTeam {TeamIndex = _ + 1});
+			}
+
+			playerEntities.Dispose();
+			
+			// START THE GAMEMODE
+			var gamemodeMgr = World.GetOrCreateSystem<GameModeManager>();
+			gamemodeMgr.SetGameMode(new MpVersusHeadOn { });
+			
 		}
 	}
 }

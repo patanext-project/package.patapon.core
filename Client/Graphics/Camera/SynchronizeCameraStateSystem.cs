@@ -138,6 +138,8 @@ namespace package.patapon.core
 
                     translation.Value = modifier.Position + offset.pos;
                     rotation.Value    = math.mul(modifier.Rotation, offset.rot);
+                    
+                    translation.Value.z = -100; // temporary for now
 
                     ltw.Value = new float4x4(rotation.Value, translation.Value);
                 }).WithReadOnly(modifierFromEntity).Run();

@@ -10,14 +10,13 @@ namespace Patapon.Server.GameModes.VSHeadOn
 {
 	[UpdateInGroup(typeof(GameEventRuleSystemGroup))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
+	[AlwaysSynchronizeSystem]
 	public class VersusHeadOnEliminationRuleSystem : RuleBaseSystem
 	{
-		private struct UpdateJob : IJobForEachWithEntity_EBCC<HealthModifyingHistory, LivableHealth, VersusHeadOnUnit>
+		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			public Entity                                               GameModeEntity;
-			public NativeList<HeadOnOnUnitElimination> EliminationEvents;
-
-			public void Execute(Entity entity, int index, DynamicBuffer<HealthModifyingHistory> healthHistory, ref LivableHealth health, ref VersusHeadOnUnit gmUnit)
+			var eliminationEvents = World.GetExistingSystem<MpVersusHeadOnGameMode>().EliminationEvents;
+			Entities.ForEach((Entity entity, ref LivableHealth health, in DynamicBuffer<HealthModifyingHistory> healthHistory, in VersusHeadOnUnit gmUnit) =>
 			{
 				if (!health.ShouldBeDead() || health.IsDead)
 					return;
@@ -31,7 +30,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 						lastInstigator = healthHistory[i].Instigator;
 				}
 
-				EliminationEvents.Add(new HeadOnOnUnitElimination
+				eliminationEvents.Add(new HeadOnOnUnitElimination
 				{
 					InstigatorTeam = 1 - gmUnit.Team,
 					EntityTeam     = gmUnit.Team,
@@ -39,16 +38,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					Instigator = lastInstigator,
 					Entity     = entity
 				});
-			}
-		}
+			}).Run();
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
-		{
-			return new UpdateJob
-			{
-				GameModeEntity    = default,
-				EliminationEvents = World.GetExistingSystem<MpVersusHeadOnGameMode>().EliminationEvents
-			}.ScheduleSingle(this, inputDeps);
+			return default;
 		}
 	}
 }

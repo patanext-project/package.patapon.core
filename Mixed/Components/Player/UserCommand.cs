@@ -34,9 +34,11 @@ namespace Patapon4TLB.Default.Player
 		}
 
 		public const int MaxActionCount = 4;
-		
+
 		private fixed byte m_RhythmActions[sizeof(byte) * 4];
-		
+
+		public float Panning;
+
 		public UnsafeAllocationLength<RhythmAction> GetRhythmActions()
 		{
 			fixed (byte* fx = m_RhythmActions)
@@ -63,6 +65,8 @@ namespace Patapon4TLB.Default.Player
 			{
 				action.flags = (byte) reader.ReadPackedUIntDelta(ref ctx, baselineActions[i++].flags, compressionModel);
 			}
+
+			Panning = reader.ReadPackedFloat(ref ctx, compressionModel);
 		}
 
 		public void WriteTo(DataStreamWriter writer, UserCommand baseline, NetworkCompressionModel compressionModel)
@@ -73,6 +77,8 @@ namespace Patapon4TLB.Default.Player
 			{
 				writer.WritePackedUIntDelta(action.flags, baselineActions[i++].flags, compressionModel);
 			}
+
+			writer.WritePackedFloat(Panning, compressionModel);
 		}
 	}
 

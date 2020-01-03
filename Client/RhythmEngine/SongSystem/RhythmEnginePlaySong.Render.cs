@@ -54,6 +54,32 @@ namespace Patapon.Client.RhythmEngine
 			RenderCommand();
 		}
 
+		private bool Switch(AudioClip targetAudio, float delay)
+		{
+			var hasSwitched = false;
+			
+			m_LastClip = targetAudio;
+			if (targetAudio == null)
+			{
+				m_BgmSources[0].Stop();
+				m_BgmSources[1].Stop();
+			}
+			else
+			{
+				m_BgmSources[1 - m_Flip].SetScheduledEndTime(AudioSettings.dspTime + delay);
+				m_BgmSources[m_Flip].clip  = m_LastClip;
+				m_BgmSources[m_Flip].pitch = 1;
+				m_BgmSources[m_Flip].time  = 0;
+
+				m_BgmSources[m_Flip].PlayScheduled(AudioSettings.dspTime + delay);
+
+				hasSwitched = true;
+			}
+
+			m_Flip = 1 - m_Flip;
+			return hasSwitched;
+		}
+
 		private void RenderBgm()
 		{
 			Score = 0;
@@ -150,34 +176,16 @@ namespace Patapon.Client.RhythmEngine
 			    || forceSongChange)       // play an audio if we got forced
 			{
 				Debug.Log($"Switch from {m_LastClip?.name} to {targetAudio?.name}, delay: {nextBeatDelay} (b: {activationBeat}, f: {flowBeat}, s: {cmdStartActivationBeat})");
-
-				m_LastClip = targetAudio;
-				if (targetAudio == null)
-				{
-					m_BgmSources[0].Stop();
-					m_BgmSources[1].Stop();
-				}
-				else
-				{
-					m_BgmSources[1 - m_Flip].SetScheduledEndTime(AudioSettings.dspTime + nextBeatDelay);
-					m_BgmSources[m_Flip].clip  = m_LastClip;
-					m_BgmSources[m_Flip].pitch = 1;
-					m_BgmSources[m_Flip].time  = 0;
-
-					m_BgmSources[m_Flip].PlayScheduled(AudioSettings.dspTime + nextBeatDelay);
-
-					hasSwitched = true;
-				}
-
-				m_Flip = 1 - m_Flip;
+				hasSwitched = Switch(targetAudio, nextBeatDelay);
 			}
 
 			// It's loop time
-			if (!hasSwitched && targetAudio != null && m_BgmSources[1 - m_Flip].time >= targetAudio.length)
+			if (!hasSwitched && targetAudio != null && m_BgmSources[1 - m_Flip].time + nextBeatDelay >= targetAudio.length)
 			{
 				Debug.Log($"Looping {m_LastClip?.name}");
-				m_BgmSources[1 - m_Flip].time = math.max(m_BgmSources[1 - m_Flip].time - targetAudio.length, 0);
-				m_BgmSources[1 - m_Flip].Play();
+				/*m_BgmSources[1 - m_Flip].time = math.max(m_BgmSources[1 - m_Flip].time - targetAudio.length, 0);
+				m_BgmSources[1 - m_Flip].Play();*/
+				hasSwitched = Switch(targetAudio, nextBeatDelay);
 			}
 
 			var currBgmSource = m_BgmSources[1 - m_Flip];

@@ -5,6 +5,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
 using Unity.Networking.Transport;
+using UnityEngine;
 
 namespace Patapon.Mixed.RhythmEngine
 {
@@ -97,6 +98,8 @@ namespace Patapon.Mixed.RhythmEngine
 					component.IsPaused = last.IsPaused;
 					if (component.RecoveryTick < last.RecoveryTick || component.NextBeatRecovery < last.NextBeatRecovery)
 					{
+						Debug.Log($"Recover at {last.RecoveryTick}");
+						
 						component.RecoveryTick     = last.RecoveryTick;
 						component.NextBeatRecovery = last.NextBeatRecovery;
 					}

@@ -1,4 +1,5 @@
 using Patapon.Mixed.GamePlay.Team;
+using Patapon4TLB.Core.Snapshots;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Entities;
@@ -23,6 +24,8 @@ namespace Patapon.Mixed.Units
 		{
 			entityComponents = new ComponentType[]
 			{
+				typeof(EntityDescription),
+
 				typeof(LivableDescription),
 				typeof(MovableDescription),
 				typeof(UnitDescription),
@@ -48,8 +51,11 @@ namespace Patapon.Mixed.Units
 				typeof(ActionContainer),
 				typeof(HealthContainer),
 				typeof(HitShapeContainer),
-				
+
 				typeof(PlayEntityTag),
+
+				typeof(TranslationSnapshot.Exclude),
+				typeof(InterpolatedTranslationSnapshot.Use)
 			};
 		}
 
@@ -57,6 +63,8 @@ namespace Patapon.Mixed.Units
 		{
 			Debug.Assert(data.MovableCollider != null, "data.MovableCollider != null");
 			Debug.Assert(data.Settings != null, "data.Settings != null");
+
+			EntityManager.SetComponentData(entity, EntityDescription.New<UnitDescription>());
 
 			EntityManager.SetComponentData(entity, new PhysicsCollider {Value = data.MovableCollider});
 			EntityManager.SetComponentData(entity, data.Mass ?? PhysicsMass.CreateKinematic(data.MovableCollider.Value.MassProperties));

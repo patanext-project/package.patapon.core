@@ -28,6 +28,7 @@ namespace Patapon.Mixed.RhythmEngine
 		{
 			entityComponents = new[]
 			{
+				ComponentType.ReadWrite<EntityDescription>(), 
 				ComponentType.ReadWrite<RhythmEngineDescription>(),
 				ComponentType.ReadWrite<RhythmEngineSettings>(),
 				ComponentType.ReadWrite<RhythmEngineState>(),
@@ -45,9 +46,10 @@ namespace Patapon.Mixed.RhythmEngine
 
 		public override void SetEntityData(Entity entity, Create data)
 		{
+			EntityManager.SetComponentData(entity, EntityDescription.New<RhythmEngineDescription>());
 			EntityManager.SetComponentData(entity, new RhythmEngineSettings {MaxBeats = data.MaxBeats ?? 4, BeatInterval = data.BeatInterval ?? 500, UseClientSimulation = data.UseClientSimulation});
 			EntityManager.SetComponentData(entity, new RhythmCurrentCommand {CustomEndTime = -1, ActiveAtTime = -1, Power = 0});
-			EntityManager.SetComponentData(entity, new GameComboState {JinnEnergyMax = 500});
+			EntityManager.SetComponentData(entity, new GameComboState {JinnEnergyMax = 350});
 		}
 	}
 }

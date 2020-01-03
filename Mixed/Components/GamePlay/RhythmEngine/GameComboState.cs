@@ -56,17 +56,12 @@ namespace Patapon.Mixed.GamePlay.RhythmEngine
 			if (!IsFever)
 			{
 				ChainToFever++;
+				JinnEnergy = 0;
 			}
 
 			if (IsFever)
 			{
 				ChainToFever = 0;
-
-				// add jinn energy
-				if (Score >= 50) // we have a little bonus when doing a perfect command
-				{
-					JinnEnergy += 20;
-				}
 			}
 
 			var needed = 0;

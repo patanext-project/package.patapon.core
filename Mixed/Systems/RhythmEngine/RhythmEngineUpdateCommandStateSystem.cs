@@ -169,6 +169,12 @@ namespace Patapon.Mixed.Systems
 									: rhythm.CustomEndTime;
 
 								comboState.Update(rhythm, false);
+								
+								// add jinn energy
+								if (comboState.Score >= 50) // we have a little bonus when doing a perfect command
+								{
+									comboState.JinnEnergy += 10;
+								}
 							}
 						}
 

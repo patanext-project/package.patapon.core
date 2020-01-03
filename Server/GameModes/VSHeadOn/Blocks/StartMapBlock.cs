@@ -14,6 +14,7 @@ using StormiumTeam.GameBase.EcsComponents;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace Patapon.Server.GameModes.VSHeadOn
 {
@@ -41,6 +42,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				// ----------------------------- //
 				// Get spawn points
 				currQuery = queries.SpawnPoint;
+				Debug.Log($"spawn point count = {currQuery.CalculateEntityCount()}");
 				using (var entities = currQuery.ToEntityArray(Allocator.TempJob))
 				using (var teamTargetArray = currQuery.ToComponentDataArray<HeadOnTeamTarget>(Allocator.TempJob))
 				{
@@ -88,22 +90,21 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				{
 					var entMgr               = worldCtx.EntityMgr;
 					var rhythmEngineProvider = worldCtx.GetOrCreateSystem<RhythmEngineProvider>();
-					using (var spawnEntities = new NativeList<Entity>(Allocator.TempJob))
+					var rhythmEnt = rhythmEngineProvider.SpawnLocalEntityWithArguments(new RhythmEngineProvider.Create
 					{
-						rhythmEngineProvider.SpawnLocalEntityWithArguments(new RhythmEngineProvider.Create
-						{
-							UseClientSimulation = true
-						}, spawnEntities);
+						UseClientSimulation = true
+					});
 
-						entMgr.SetOrAddComponentData(spawnEntities[0], entMgr.GetComponentData<NetworkOwner>(player));
-						entMgr.SetOrAddComponentData(spawnEntities[0], new FlowEngineProcess {StartTime = gmContext.GetTick().Ms});
-						entMgr.AddComponent(spawnEntities[0], typeof(GhostEntity));
+					entMgr.SetOrAddComponentData(rhythmEnt, entMgr.GetComponentData<NetworkOwner>(player));
+					entMgr.SetOrAddComponentData(rhythmEnt, new FlowEngineProcess {StartTime = gmContext.GetTick().Ms});
+					entMgr.AddComponent(rhythmEnt, typeof(GhostEntity));
+					entMgr.AddComponentData(rhythmEnt, new OwnerServerId { Value = worldCtx.EntityMgr.GetComponentData<GamePlayer>(player).ServerId });
 
-						entMgr.ReplaceOwnerData(spawnEntities[0], player);
-					}
+					entMgr.ReplaceOwnerData(rhythmEnt, player);
 
 					var unitTarget = entMgr.CreateEntity(typeof(UnitTargetDescription), typeof(Translation), typeof(LocalToWorld), typeof(Relative<PlayerDescription>));
 					entMgr.AddComponent(unitTarget, typeof(GhostEntity));
+					entMgr.AddComponentData(unitTarget, EntityDescription.New<UnitTargetDescription>());
 					entMgr.ReplaceOwnerData(unitTarget, player);
 				});
 

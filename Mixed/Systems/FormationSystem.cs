@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
+using Unity.Entities.UniversalDelegates;
 using Unity.Jobs;
 
 namespace Patapon4TLB.Default
@@ -36,12 +38,7 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(FormationSystemGroup))]
 	public class FormationSystem : JobComponentSystem
 	{
-		[BurstCompile]
-		private struct JobClear : IJobForEach_B<FormationChild>
-		{
-			public void Execute(DynamicBuffer<FormationChild> buffer) => buffer.Clear();
-		}
-
+		// can't Entities-fy it because there is no ScheduleSingle for it... 
 		[BurstCompile]
 		private struct AddToParent : IJobForEachWithEntity<FormationParent>
 		{
@@ -56,38 +53,6 @@ namespace Patapon4TLB.Default
 				}
 
 				ChildFromEntity[parent.Value].Add(new FormationChild {Value = entity});
-			}
-		}
-
-		[RequireComponentTag(typeof(FormationRoot))]
-		[BurstCompile]
-		private struct RecursiveSetFormationRoot : IJobForEachWithEntity_EB<FormationChild>
-		{
-			[NativeDisableParallelForRestriction]
-			// It should be safe to access to this array since all childs got the same parent
-			public ComponentDataFromEntity<InFormation> FormationFromEntity;
-
-			[ReadOnly]
-			public BufferFromEntity<FormationChild> ChildFromEntiy;
-
-			private void Recursive(Entity root, Entity parent, DynamicBuffer<FormationChild> children)
-			{
-				for (int ent = 0, length = children.Length; ent < length; ent++)
-				{
-					var child = children[ent].Value;
-					FormationFromEntity[child] = new InFormation
-					{
-						Root = root
-					};
-
-					if (ChildFromEntiy.Exists(child))
-						Recursive(root, child, ChildFromEntiy[child]);
-				}
-			}
-
-			public void Execute(Entity root, int index, DynamicBuffer<FormationChild> children)
-			{
-				Recursive(root, root, children);
 			}
 		}
 
@@ -160,29 +125,51 @@ namespace Patapon4TLB.Default
 
 			if (m_ChildBufferQuery.CalculateEntityCount() > 0)
 			{
-				inputDeps = new JobClear().Schedule(m_ChildBufferQuery, inputDeps);
+				inputDeps = Entities.ForEach((ref DynamicBuffer<FormationChild> buffer) => buffer.Clear()).Schedule(inputDeps);
 			}
 
 			if (m_ChildWithParentQuery.CalculateEntityCount() > 0)
 			{
+				var childFromEntity = GetBufferFromEntity<FormationChild>();
 				inputDeps = new AddToParent
 				{
-					ChildFromEntity = GetBufferFromEntity<FormationChild>()
+					ChildFromEntity = childFromEntity
 				}.ScheduleSingle(m_ChildWithParentQuery, inputDeps);
 			}
 
 			if (m_RootWithChildQuery.CalculateEntityCount() > 0)
 			{
-				inputDeps = new RecursiveSetFormationRoot
-				{
-					FormationFromEntity = GetComponentDataFromEntity<InFormation>(),
-					ChildFromEntiy      = GetBufferFromEntity<FormationChild>(true)
-				}.Schedule(m_RootWithChildQuery, inputDeps);
+				var formationFromEntity = GetComponentDataFromEntity<InFormation>();
+				var childFromEntity     = GetBufferFromEntity<FormationChild>(true);
+				inputDeps = Entities
+				            .WithAll<FormationRoot, FormationChild>()
+				            .ForEach((Entity root) => { Recursive(root, root, childFromEntity[root], formationFromEntity, childFromEntity); })
+				            // It should be safe to access to this array since all childs got the same parent
+				            .WithNativeDisableParallelForRestriction(formationFromEntity)
+				            // Read only because it's read only :shrug:
+				            .WithReadOnly(childFromEntity)
+				            .Schedule(inputDeps);
 			}
 
 			m_FormationSystemGroup.AddDependency(inputDeps);
 
 			return inputDeps;
+		}
+
+		private static void Recursive(Entity root, Entity parent, DynamicBuffer<FormationChild> children,
+		                              ComponentDataFromEntity<InFormation> formationFromEntity, BufferFromEntity<FormationChild> childFromEntity)
+		{
+			for (int ent = 0, length = children.Length; ent < length; ent++)
+			{
+				var child = children[ent].Value;
+				formationFromEntity[child] = new InFormation
+				{
+					Root = root
+				};
+
+				if (childFromEntity.Exists(child))
+					Recursive(root, child, childFromEntity[child], formationFromEntity, childFromEntity);
+			}
 		}
 	}
 }

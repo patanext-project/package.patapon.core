@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Entities;
 using UnityEngine;
 
@@ -12,18 +13,19 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 
 	public class HeadOnDefineTeamAuthoring : MonoBehaviour
 	{
-		public  EHeadOnTeamTarget PredefinedTeam;
-		private Entity            m_CurrentEntity;
+		public  EHeadOnTeamTarget          PredefinedTeam;
+		private Dictionary<World, Entity> m_CurrentEntity = new Dictionary<World, Entity>();
 
 		public HeadOnTeamTarget FindOrCreate(EntityManager dstManager)
 		{
 			Debug.Assert(Application.isPlaying, "Application.isPlaying");
 
-			if (m_CurrentEntity == Entity.Null)
+			Entity ent;
+			if (!m_CurrentEntity.ContainsKey(dstManager.World))
 			{
 				// Create...
-				m_CurrentEntity = dstManager.CreateEntity();
-				dstManager.AddComponentData(m_CurrentEntity, new HeadOnTeam
+				ent = m_CurrentEntity[dstManager.World] = dstManager.CreateEntity(typeof(HeadOnTeam));
+				dstManager.SetComponentData(ent, new HeadOnTeam
 				{
 					IsPredefinedTeam = PredefinedTeam != EHeadOnTeamTarget.Undefined,
 					TeamIndex        = (int) PredefinedTeam - 1
@@ -31,15 +33,17 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 
 				return new HeadOnTeamTarget
 				{
-					Custom    = PredefinedTeam != EHeadOnTeamTarget.Undefined ? default : m_CurrentEntity,
+					Custom    = PredefinedTeam != EHeadOnTeamTarget.Undefined ? default : ent,
 					TeamIndex = (int) PredefinedTeam - 1
 				};
 			}
 
-			var data = dstManager.GetComponentData<HeadOnTeam>(m_CurrentEntity);
+			ent = m_CurrentEntity[dstManager.World];
+			
+			var data = dstManager.GetComponentData<HeadOnTeam>(ent);
 			return new HeadOnTeamTarget
 			{
-				Custom    = data.IsPredefinedTeam ? default : m_CurrentEntity,
+				Custom    = data.IsPredefinedTeam ? default : ent,
 				TeamIndex = data.TeamIndex
 			};
 		}
