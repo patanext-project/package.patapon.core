@@ -1,5 +1,6 @@
 using DefaultNamespace;
 using package.patapon.core;
+using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.RhythmEngine;
@@ -40,25 +41,31 @@ namespace SnapshotArchetypes
 		{
 			EntityManager.AddComponent(m_EntityWithoutArchetype, typeof(CameraModifierData));
 			EntityManager.AddComponent(m_EntityWithoutArchetype, typeof(CameraTargetAnchor));
+			EntityManager.AddComponent(m_EntityWithoutArchetype, typeof(UpdateUnitCameraModifierSystem.CameraData));
 			EntityManager.AddComponent(m_EntityWithoutArchetype, typeof(IsSet));
 		}
 	}
 
-	[UpdateInGroup(typeof(OrderGroup.Simulation.UpdateEntities))]
+	[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class UpdateUnitCameraModifierSystem : JobGameBaseSystem
 	{
+		public struct CameraData : IComponentData
+		{
+			public float Velocity;
+		}
+
 		private LazySystem<GrabInputSystem> m_GrabInputSystem;
-		
+
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			var userCommand = this.L(ref m_GrabInputSystem).LocalCommand;
-			var dt = Time.DeltaTime;
+			var userCommand         = this.L(ref m_GrabInputSystem).LocalCommand;
+			var dt                  = Time.DeltaTime;
 			var directionFromEntity = GetComponentDataFromEntity<UnitDirection>(true);
 
 			inputDeps = Entities
 			            .WithAll<SetUnitArchetypeSystem.IsSet>()
-			            .ForEach((Entity entity, ref CameraModifierData cameraModifier, ref CameraTargetAnchor anchor, ref Velocity velocity, in Translation translation) =>
+			            .ForEach((Entity entity, ref CameraModifierData cameraModifier, ref CameraTargetAnchor anchor, ref CameraData cameraData, in Translation translation) =>
 			            {
 				            var direction = directionFromEntity.TryGet(entity, out _, UnitDirection.Right);
 
@@ -69,15 +76,15 @@ namespace SnapshotArchetypes
 				            positionResult.x =  translation.Value.x;
 				            positionResult.x += userCommand.Panning * (cameraModifier.FieldOfView + 2.5f * direction.Value);
 				            positionResult.x += cameraModifier.FieldOfView * 0.375f * direction.Value;
-				            
-				            cameraModifier.Position = math.lerp(cameraModifier.Position, positionResult, dt * 1.25f);
-				            cameraModifier.Position = Vector3.MoveTowards(cameraModifier.Position, positionResult, dt * 0.3f);
-				            //cameraModifier.Position.x = positionResult.x;
+
+				            /*cameraModifier.Position = math.lerp(cameraModifier.Position, positionResult, dt * 1.25f);
+				            cameraModifier.Position = Vector3.MoveTowards(cameraModifier.Position, positionResult, dt * 0.05f);*/
+				            cameraModifier.Position.x = Mathf.SmoothDamp(cameraModifier.Position.x, positionResult.x, ref cameraData.Velocity, 0.4f, 100, dt);
 				            if (math.isnan(cameraModifier.Position.x) || math.abs(cameraModifier.Position.x) > 4000.0f)
 				            {
 					            cameraModifier.Position.x = 0;
 				            }
-				            
+
 				            Debug.DrawRay(cameraModifier.Position, Vector3.up * 4, Color.blue);
 
 				            anchor.Type  = AnchorType.Screen;

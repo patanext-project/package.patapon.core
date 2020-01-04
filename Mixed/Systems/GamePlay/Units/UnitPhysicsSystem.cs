@@ -98,6 +98,8 @@ namespace Patapon.Mixed.GamePlay
 						controllerState.OverrideTargetPosition = false;
 						controllerState.PassThroughEnemies     = false;
 						controllerState.PreviousPosition       = previousPosition;
+						
+						Debug.DrawRay(translation.Value, Vector3.up, Color.magenta);
 					})
 					.WithReadOnly(livableHealthFromEntity)
 					.WithReadOnly(relativeTargetFromEntity)

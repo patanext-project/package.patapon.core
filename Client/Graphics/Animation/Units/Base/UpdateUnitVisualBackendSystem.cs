@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using package.stormiumteam.shared;
+using package.stormiumteam.shared.ecs;
 using Patapon.Client.Systems;
+using Patapon.Mixed.Units;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
@@ -45,7 +47,10 @@ namespace Patapon.Client.Graphics.Animation.Units
 				pos.z = i++ * 2;
 
 				transform.position = pos;
-
+				
+				EntityManager.TryGetComponentData(backend.DstEntity, out UnitDirection direction, UnitDirection.Right);
+				transform.localScale = new Vector3(direction.Value, 1, 1);
+				
 				// Load presentation
 				const string unitArchetype = "UH.basic"; // this will be dynamic in the future (based on entity class)
 				if (backend.CurrentArchetype != unitArchetype)

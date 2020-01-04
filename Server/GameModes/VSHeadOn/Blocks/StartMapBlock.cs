@@ -89,18 +89,22 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				queries.GetEntityQueryBuilder().With(queries.Player).ForEach(player =>
 				{
 					var entMgr               = worldCtx.EntityMgr;
-					var rhythmEngineProvider = worldCtx.GetOrCreateSystem<RhythmEngineProvider>();
-					var rhythmEnt = rhythmEngineProvider.SpawnLocalEntityWithArguments(new RhythmEngineProvider.Create
+					// Player without NetworkOwner mean that it's a bot.
+					if (entMgr.TryGetComponentData(player, out NetworkOwner networkOwner))
 					{
-						UseClientSimulation = true
-					});
+						var rhythmEngineProvider = worldCtx.GetOrCreateSystem<RhythmEngineProvider>();
+						var rhythmEnt = rhythmEngineProvider.SpawnLocalEntityWithArguments(new RhythmEngineProvider.Create
+						{
+							UseClientSimulation = true
+						});
 
-					entMgr.SetOrAddComponentData(rhythmEnt, entMgr.GetComponentData<NetworkOwner>(player));
-					entMgr.SetOrAddComponentData(rhythmEnt, new FlowEngineProcess {StartTime = gmContext.GetTick().Ms});
-					entMgr.AddComponent(rhythmEnt, typeof(GhostEntity));
-					entMgr.AddComponentData(rhythmEnt, new OwnerServerId { Value = worldCtx.EntityMgr.GetComponentData<GamePlayer>(player).ServerId });
+						entMgr.SetOrAddComponentData(rhythmEnt, networkOwner);
+						entMgr.SetOrAddComponentData(rhythmEnt, new FlowEngineProcess {StartTime = gmContext.GetTick().Ms});
+						entMgr.AddComponent(rhythmEnt, typeof(GhostEntity));
+						entMgr.AddComponentData(rhythmEnt, new OwnerServerId {Value = worldCtx.EntityMgr.GetComponentData<GamePlayer>(player).ServerId});
 
-					entMgr.ReplaceOwnerData(rhythmEnt, player);
+						entMgr.ReplaceOwnerData(rhythmEnt, player);
+					}
 
 					var unitTarget = entMgr.CreateEntity(typeof(UnitTargetDescription), typeof(Translation), typeof(LocalToWorld), typeof(Relative<PlayerDescription>));
 					entMgr.AddComponent(unitTarget, typeof(GhostEntity));

@@ -3,6 +3,7 @@ using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Systems;
 using Unity.Entities;
+using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.Playables;
 using GameObjectEntity = Unity.Entities.GameObjectEntity;
@@ -109,6 +110,7 @@ namespace Patapon.Client.Graphics.Animation.Units
 		}
 	}
 
+	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class UnitVisualBackendSpawnSystem : PoolingSystem<UnitVisualBackend, UnitVisualPresentation>
 	{
 		protected override string AddressableAsset => "core://Client/Models/UberHero/EmptyPresentation.prefab";

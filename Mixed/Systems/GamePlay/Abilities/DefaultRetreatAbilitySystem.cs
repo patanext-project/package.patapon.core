@@ -84,7 +84,8 @@ namespace Systems.GamePlay
 						{
 							if (wasRetreating)
 							{
-								ability.BackVelocity = math.abs(ability.StartPosition.x - translation.Value.x) * 2.25f;
+								// we add '2.8f' to boost the speed when backing up, so the unit can't chain retreat to go further
+								ability.BackVelocity = math.abs(ability.StartPosition.x - translation.Value.x) * 2.8f;
 							}
 
 							var newPosX = Mathf.MoveTowards(translation.Value.x, ability.StartPosition.x, ability.BackVelocity * dt);

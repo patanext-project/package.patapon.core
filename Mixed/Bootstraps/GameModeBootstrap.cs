@@ -123,6 +123,16 @@ namespace Bootstraps
 						{
 							EntityManager.ReplaceOwnerData(unitEntity, playerEntities[i]);
 						}
+						else
+						{
+							// create a fake player
+							var playerArchetype = World.GetExistingSystem<GamePlayerProvider>().EntityArchetype;
+							var playerEntity    = EntityManager.CreateEntity(playerArchetype);
+
+							EntityManager.AddComponent(playerEntity, typeof(GamePlayerReadyTag));
+							EntityManager.ReplaceOwnerData(unitEntity, playerEntity);
+						}
+
 						playerEntities[i] = Entity.Null;
 					}
 				}
