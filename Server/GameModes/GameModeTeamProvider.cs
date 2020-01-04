@@ -8,11 +8,6 @@ namespace Patapon.Server.GameModes
 {
 	public class GameModeTeamProvider : BaseProviderBatch<GameModeTeamProvider.Create>
 	{
-		public struct Create
-		{
-
-		}
-
 		public override void GetComponents(out ComponentType[] entityComponents)
 		{
 			entityComponents = new ComponentType[]
@@ -22,13 +17,16 @@ namespace Patapon.Server.GameModes
 				typeof(TeamEnemies),
 				typeof(TeamBlockMovableArea),
 				typeof(GhostEntity),
-				typeof(PlayEntityTag),
+				typeof(PlayEntityTag)
 			};
 		}
 
 		public override void SetEntityData(Entity entity, Create data)
 		{
+		}
 
+		public struct Create
+		{
 		}
 	}
 }

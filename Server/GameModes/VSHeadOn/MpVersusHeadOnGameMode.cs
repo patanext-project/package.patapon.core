@@ -17,69 +17,29 @@ namespace Patapon.Server.GameModes.VSHeadOn
 {
 	// 'Mp' indicate this is a MultiPlayer designed game-mode
 	public class VersusHeadOnRuleGroup : RuleSystemGroupBase
-	{}
-	
-	public partial class MpVersusHeadOnGameMode : GameModeAsyncSystem<MpVersusHeadOn>
 	{
-		public interface IEntityQueryBuilderGetter
-		{
-			EntityQueryBuilder GetEntityQueryBuilder();
-		}
+	}
 
-		public class QueriesContext : ExternalContextBase, IEntityQueryBuilderGetter
-		{
-			public MpVersusHeadOnGameMode GameModeSystem;
-
-			public EntityQuery UpdateTeam;
-			public EntityQuery SpawnPoint;
-			public EntityQuery Flag;
-			public EntityQuery PlayerWithoutGameModeData;
-			public EntityQuery Player;
-
-			public EntityQuery Formation;
-			public EntityQuery Unit;
-
-			public EntityQueryBuilder GetEntityQueryBuilder()
-			{
-				return GameModeSystem.Entities;
-			}
-		}
-
-		public class ModeContext : ExternalContextBase, ITickGetter
-		{
-			public MpVersusHeadOnGameMode      GameModeSystem;
-			public ServerSimulationSystemGroup ServerSimulationSystemGroup;
-
-			public MpVersusHeadOnTeam[]         Teams;
-			public Entity         Entity;
-			public MpVersusHeadOn Data;
-
-			public NativeList<HeadOnOnUnitElimination>        EliminationEvents => GameModeSystem.EliminationEvents;
-			public NativeList<HeadOnStructureOnCapture> CaptureEvents     => GameModeSystem.CaptureEvents;
-
-			public UTick GetTick()
-			{
-				return ServerSimulationSystemGroup.GetServerTick();
-			}
-		}
-
-		public NativeList<HeadOnOnUnitElimination> EliminationEvents;
+	public class MpVersusHeadOnGameMode : GameModeAsyncSystem<MpVersusHeadOn>
+	{
 		public NativeList<HeadOnStructureOnCapture> CaptureEvents;
 
-		private EntityQuery m_UnitQuery;
-		private EntityQuery m_LivableQuery;
+		public NativeList<HeadOnOnUnitElimination> EliminationEvents;
 
 		private EntityQuery m_EventOnCaptureQuery;
+		private EntityQuery m_LivableQuery;
+
+		private EntityQuery m_UnitQuery;
 
 		protected override void OnCreateMachine(ref Machine machine)
 		{
 			EliminationEvents = new NativeList<HeadOnOnUnitElimination>(Allocator.Persistent);
-			CaptureEvents = new NativeList<HeadOnStructureOnCapture>(Allocator.Persistent);
-			
+			CaptureEvents     = new NativeList<HeadOnStructureOnCapture>(Allocator.Persistent);
+
 			machine.AddContext(new ModeContext
 			{
 				GameModeSystem = this,
-				
+
 				ServerSimulationSystemGroup = World.GetOrCreateSystem<ServerSimulationSystemGroup>(),
 				Teams                       = new MpVersusHeadOnTeam[2]
 			});
@@ -158,7 +118,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 							{
 								// -- On Loop started
 								new SetStateBlock("Set state to game loop", MpVersusHeadOn.State.Playing),
-								new PlayLoopBlock("PlayLoop"),
+								new PlayLoopBlock("PlayLoop")
 							})
 							{
 								ResetOnBeginning = true
@@ -188,13 +148,55 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			}
 			EntityManager.SetComponentData(gameModeEntity, gmContext.Data);
 		}
+
+		public interface IEntityQueryBuilderGetter
+		{
+			EntityQueryBuilder GetEntityQueryBuilder();
+		}
+
+		public class QueriesContext : ExternalContextBase, IEntityQueryBuilderGetter
+		{
+			public EntityQuery Flag;
+
+			public EntityQuery            Formation;
+			public MpVersusHeadOnGameMode GameModeSystem;
+			public EntityQuery            Player;
+			public EntityQuery            PlayerWithoutGameModeData;
+			public EntityQuery            SpawnPoint;
+			public EntityQuery            Unit;
+
+			public EntityQuery UpdateTeam;
+
+			public EntityQueryBuilder GetEntityQueryBuilder()
+			{
+				return GameModeSystem.Entities;
+			}
+		}
+
+		public class ModeContext : ExternalContextBase, ITickGetter
+		{
+			public MpVersusHeadOn              Data;
+			public Entity                      Entity;
+			public MpVersusHeadOnGameMode      GameModeSystem;
+			public ServerSimulationSystemGroup ServerSimulationSystemGroup;
+
+			public MpVersusHeadOnTeam[] Teams;
+
+			public NativeList<HeadOnOnUnitElimination>  EliminationEvents => GameModeSystem.EliminationEvents;
+			public NativeList<HeadOnStructureOnCapture> CaptureEvents     => GameModeSystem.CaptureEvents;
+
+			public UTick GetTick()
+			{
+				return ServerSimulationSystemGroup.GetServerTick();
+			}
+		}
 	}
 
 	public struct HeadOnOnUnitElimination : IComponentData
 	{
 		public int EntityTeam;
 		public int InstigatorTeam;
-			
+
 		public Entity Entity;
 		public Entity Instigator;
 	}
@@ -202,17 +204,17 @@ namespace Patapon.Server.GameModes.VSHeadOn
 	public struct MpVersusHeadOnTeam
 	{
 		/// <summary>
-		/// The team as an entity
+		///     The team as an entity
 		/// </summary>
 		public Entity Target;
 
 		/// <summary>
-		/// The team spawn point
+		///     The team spawn point
 		/// </summary>
 		public Entity SpawnPoint;
 
 		/// <summary>
-		/// The team flag
+		///     The team flag
 		/// </summary>
 		public Entity Flag;
 

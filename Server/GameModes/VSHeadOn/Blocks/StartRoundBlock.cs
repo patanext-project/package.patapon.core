@@ -17,12 +17,16 @@ namespace Patapon.Server.GameModes.VSHeadOn
 {
 	public class StartRoundBlock : BlockCollection
 	{
+		public WaitingTickBlock CounterBlock;
+
+		public  Block                                 CreateUnitBlock;
 		private MpVersusHeadOnGameMode.ModeContext    m_ModeContext;
 		private MpVersusHeadOnGameMode.QueriesContext m_QueriesContext;
 
-		public Block            CreateUnitBlock;
-		public Block            SpawnUnitBlock;
-		public WaitingTickBlock CounterBlock;
+		private int[] m_TeamAttackAverage;
+		private int[] m_TeamHealthAverage;
+		private int[] m_TeamUnitCount;
+		public  Block SpawnUnitBlock;
 
 		public StartRoundBlock(string name) : base(name)
 		{
@@ -64,10 +68,6 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 			CounterBlock.TickGetter = m_ModeContext;
 		}
-
-		private int[] m_TeamAttackAverage;
-		private int[] m_TeamHealthAverage;
-		private int[] m_TeamUnitCount;
 
 		private void CreateUnits()
 		{
@@ -111,11 +111,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			m_TeamUnitCount     = new int[2];
 			Utility.CreateUnitsBase(m_QueriesContext.GameModeSystem, worldCtx.World, m_QueriesContext.Formation, IsFormationValid, _ => true, OnUnitCreated);
 
-			var teams = m_ModeContext.Teams;
-			for (var i = 0; i < teams.Length; i++)
-			{
-				teams[i].AveragePower = m_TeamHealthAverage[1 - i] * m_TeamUnitCount[1 - i] - m_TeamAttackAverage[i] * m_TeamUnitCount[i];
-			}
+			var teams                                                    = m_ModeContext.Teams;
+			for (var i = 0; i < teams.Length; i++) teams[i].AveragePower = m_TeamHealthAverage[1 - i] * m_TeamUnitCount[1 - i] - m_TeamAttackAverage[i] * m_TeamUnitCount[i];
 		}
 
 		private void SpawnUnits()
@@ -140,10 +137,10 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				{
 					Value = new float3(spawnPointPos.x, 0, 0)
 				});
-				
+
 				var unitTargetRelative = entityMgr.GetComponentData<Relative<UnitTargetDescription>>(unit).Target;
 				entityMgr.SetComponentData(unitTargetRelative, new Translation {Value = spawnPointPos.x});
-				
+
 				Debug.Log("Spawning at " + spawnPointPos.x);
 			}
 		}

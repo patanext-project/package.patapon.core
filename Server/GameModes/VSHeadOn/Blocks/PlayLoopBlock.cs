@@ -9,11 +9,11 @@ namespace Patapon.Server.GameModes.VSHeadOn
 {
 	public class PlayLoopBlock : BlockCollection
 	{
-		private WorldContext                           m_WorldContext;
+		private GameEventRuleSystemGroup           m_GameEventRuleSystemGroup;
 		private MpVersusHeadOnGameMode.ModeContext m_HeadOnModeContext;
 
-		private VersusHeadOnRuleGroup    m_VersusHeadOnRuleGroup;
-		private GameEventRuleSystemGroup m_GameEventRuleSystemGroup;
+		private VersusHeadOnRuleGroup m_VersusHeadOnRuleGroup;
+		private WorldContext          m_WorldContext;
 
 		public PlayLoopBlock(string name) : base(name)
 		{

@@ -1,7 +1,6 @@
 using Patapon.Mixed.GameModes.VSHeadOn;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Components;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
@@ -25,10 +24,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 				Entity lastInstigator = default;
 				for (var i = 0; i != healthHistory.Length; i++)
-				{
 					if (healthHistory[i].Instigator != default && healthHistory[i].Value < 0)
 						lastInstigator = healthHistory[i].Instigator;
-				}
 
 				eliminationEvents.Add(new HeadOnOnUnitElimination
 				{

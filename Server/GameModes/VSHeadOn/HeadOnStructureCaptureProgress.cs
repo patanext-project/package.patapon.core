@@ -1,16 +1,16 @@
 using Patapon.Mixed.GameModes.VSHeadOn;
-using Unity.NetCode;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.NetCode;
 using Unity.Physics;
 using Unity.Transforms;
 
 namespace Patapon.Server.GameModes.VSHeadOn
 {
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-	public unsafe class HeadOnStructureCaptureProcess : JobGameBaseSystem
+	public class HeadOnStructureCaptureProcess : JobGameBaseSystem
 	{
 		private EntityQuery m_GameModeQuery;
 		private EntityQuery m_StructureQuery;

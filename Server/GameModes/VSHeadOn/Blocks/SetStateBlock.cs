@@ -5,9 +5,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 {
 	public class SetStateBlock : Block
 	{
-		private MpVersusHeadOnGameMode.ModeContext m_HeadOnCtx;
-
-		public readonly MpVersusHeadOn.State State;
+		public readonly MpVersusHeadOn.State               State;
+		private         MpVersusHeadOnGameMode.ModeContext m_HeadOnCtx;
 
 		public SetStateBlock(string name, MpVersusHeadOn.State state) : base(name)
 		{

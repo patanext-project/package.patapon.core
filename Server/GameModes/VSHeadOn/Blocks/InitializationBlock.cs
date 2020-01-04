@@ -10,10 +10,10 @@ namespace Patapon.Server.GameModes.VSHeadOn
 {
 	public class InitializationBlock : Block
 	{
-		public const int TeamCount = 2;
+		public const int                                TeamCount = 2;
+		public       MpVersusHeadOnGameMode.ModeContext GameModeCtx;
 
-		public WorldContext                       WorldCtx;
-		public MpVersusHeadOnGameMode.ModeContext GameModeCtx;
+		public WorldContext WorldCtx;
 
 		public InitializationBlock(string name) : base(name)
 		{

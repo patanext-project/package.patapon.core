@@ -8,9 +8,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 {
 	public class SetStructureTeamRelative : Block
 	{
-		private WorldContext                           m_WorldContext;
-		private MpVersusHeadOnGameMode.ModeContext m_ModeContext;
-		private MpVersusHeadOnGameMode.QueriesContext  m_QueriesContext;
+		private MpVersusHeadOnGameMode.ModeContext    m_ModeContext;
+		private MpVersusHeadOnGameMode.QueriesContext m_QueriesContext;
+		private WorldContext                          m_WorldContext;
 
 		public SetStructureTeamRelative(string name) : base(name)
 		{
@@ -31,9 +31,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					if (target.Custom != default)
 						entityManager.SetComponentData(entities[ent], new Relative<TeamDescription> {Target = target.Custom});
 					else
-					{
 						entityManager.SetComponentData(entities[ent], new Relative<TeamDescription> {Target = m_ModeContext.Teams[target.TeamIndex].Target});
-					}
 				}
 
 				entities.Dispose();
@@ -47,9 +45,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 		{
 			base.OnReset();
 
-			m_QueriesContext  = Context.GetExternal<MpVersusHeadOnGameMode.QueriesContext>();
-			m_ModeContext = Context.GetExternal<MpVersusHeadOnGameMode.ModeContext>();
-			m_WorldContext    = Context.GetExternal<WorldContext>();
+			m_QueriesContext = Context.GetExternal<MpVersusHeadOnGameMode.QueriesContext>();
+			m_ModeContext    = Context.GetExternal<MpVersusHeadOnGameMode.ModeContext>();
+			m_WorldContext   = Context.GetExternal<WorldContext>();
 		}
 	}
 }

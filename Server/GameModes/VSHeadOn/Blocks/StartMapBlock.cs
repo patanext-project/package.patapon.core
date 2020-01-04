@@ -20,8 +20,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 {
 	public class StartMapBlock : BlockCollection
 	{
-		public Block            SpawnBlock;
 		public WaitingTickBlock ShowMapTextBlock;
+		public Block            SpawnBlock;
 
 		public StartMapBlock(string name) : base(name)
 		{
@@ -88,7 +88,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				// Create player unit targets
 				queries.GetEntityQueryBuilder().With(queries.Player).ForEach(player =>
 				{
-					var entMgr               = worldCtx.EntityMgr;
+					var entMgr = worldCtx.EntityMgr;
 					// Player without NetworkOwner mean that it's a bot.
 					if (entMgr.TryGetComponentData(player, out NetworkOwner networkOwner))
 					{

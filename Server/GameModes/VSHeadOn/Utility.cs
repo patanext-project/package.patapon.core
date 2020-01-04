@@ -11,8 +11,6 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
-using UnityEngine;
-using CapsuleCollider = Unity.Physics.CapsuleCollider;
 
 namespace Patapon.Server.GameModes.VSHeadOn
 {
@@ -24,12 +22,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 		{
 			var unitProvider = worldOrigin.GetExistingSystem<UnitProvider>();
 
-			var entityMgr             = worldOrigin.EntityManager;
-			var wasFormationQueryNull = formationQuery == null;
-			if (wasFormationQueryNull)
-			{
-				formationQuery = entityMgr.CreateEntityQuery(typeof(GameFormationTag), typeof(FormationRoot));
-			}
+			var entityMgr                             = worldOrigin.EntityManager;
+			var wasFormationQueryNull                 = formationQuery == null;
+			if (wasFormationQueryNull) formationQuery = entityMgr.CreateEntityQuery(typeof(GameFormationTag), typeof(FormationRoot));
 
 			using (var entities = formationQuery.ToEntityArray(Allocator.TempJob))
 			{
@@ -50,7 +45,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 						{
 							if (!entityMgr.HasComponent<Relative<PlayerDescription>>(units[unt].Value))
 								continue;
-							
+
 							var capsuleColl = CapsuleCollider.Create(new CapsuleGeometry
 							{
 								Radius  = 0.5f,
@@ -69,7 +64,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 							if (entityMgr.TryGetComponentData(units[unt].Value, out Relative<PlayerDescription> relativePlayer))
 							{
 								entityMgr.ReplaceOwnerData(spawnedUnit, relativePlayer.Target);
-								
+
 								var childrenBuffer = entityMgr.GetBuffer<OwnerChild>(relativePlayer.Target).ToNativeArray(Allocator.Temp);
 								for (var i = 0; i != childrenBuffer.Length; i++)
 								{
@@ -81,13 +76,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 								childrenBuffer.Dispose();
 							}
-							else
-							{
-								// todo: entityMgr.AddComponent(spawnedUnit, typeof(BotControlledUnit));
-							}
 
 							entityMgr.AddComponent(spawnedUnit, typeof(UnitTargetControlTag));
-							
+
 							var stat = entityMgr.GetComponentData<UnitStatistics>(units[unt].Value);
 							var healthEntity = worldOrigin.GetExistingSystem<DefaultHealthData.InstanceProvider>().SpawnLocalEntityWithArguments(new DefaultHealthData.CreateInstance
 							{

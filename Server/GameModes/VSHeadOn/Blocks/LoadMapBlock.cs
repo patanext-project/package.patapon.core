@@ -9,9 +9,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 {
 	public class LoadMapBlock : Block
 	{
-		private WorldContext    m_WorldCtx;
 		private GameModeContext m_GameModeCtx;
 		private Entity          m_RequestEntity;
+		private WorldContext    m_WorldCtx;
 
 		public LoadMapBlock(string name) : base(name)
 		{
