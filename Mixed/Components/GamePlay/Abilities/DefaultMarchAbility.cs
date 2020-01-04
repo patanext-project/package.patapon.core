@@ -1,7 +1,4 @@
 using Revolution;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Data;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.NetCode;
@@ -40,7 +37,9 @@ namespace Patapon.Mixed.GamePlay.Abilities
 			public bool DidChange(Snapshot baseline)
 			{
 				fixed (void* addr = &this)
+				{
 					return UnsafeUtility.MemCmp(addr, &baseline, sizeof(Snapshot)) != 0;
+				}
 			}
 
 			public void SynchronizeFrom(in DefaultMarchAbility component, in DefaultSetup setup, in SerializeClientData serializeData)

@@ -20,7 +20,6 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 		{
 			Color color;
 			if (TeamDefine != null)
-			{
 				switch (TeamDefine.PredefinedTeam)
 				{
 					case EHeadOnTeamTarget.Blue:
@@ -35,11 +34,8 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 					default:
 						throw new ArgumentOutOfRangeException();
 				}
-			}
 			else
-			{
 				color = Color.black;
-			}
 
 			Gizmos.color = Color.Lerp(color, Color.white, 0.33f);
 			Gizmos.DrawWireSphere(transform.position, 0.25f);

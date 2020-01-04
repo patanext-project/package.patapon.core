@@ -10,13 +10,6 @@ namespace Patapon.Mixed.GamePlay.Abilities
 		where TCommand : struct, IComponentData
 		where TCreate : struct, BaseRhythmAbilityProvider<TCommand, TCreate>.ICreate
 	{
-		public interface ICreate
-		{
-			Entity   Owner   { get; set; }
-			Entity   Command { get; set; }
-			TCommand Data    { get; set; }
-		}
-
 		public override void GetComponents(out ComponentType[] entityComponents)
 		{
 			entityComponents = new ComponentType[]
@@ -41,6 +34,13 @@ namespace Patapon.Mixed.GamePlay.Abilities
 			EntityManager.SetComponentData(entity, new Owner {Target = data.Owner});
 			EntityManager.SetComponentData(entity, new DestroyChainReaction(data.Owner));
 		}
+
+		public interface ICreate
+		{
+			Entity   Owner   { get; set; }
+			Entity   Command { get; set; }
+			TCommand Data    { get; set; }
+		}
 	}
 
 	public class BaseRhythmAbilityProvider<TCommand> : BaseRhythmAbilityProvider<TCommand, BaseRhythmAbilityProvider<TCommand>.Create>
@@ -48,9 +48,9 @@ namespace Patapon.Mixed.GamePlay.Abilities
 	{
 		public struct Create : ICreate
 		{
-			public Entity Owner { get; set; }
-			public Entity Command { get; set; }
-			public TCommand Data { get; set; }
+			public Entity   Owner   { get; set; }
+			public Entity   Command { get; set; }
+			public TCommand Data    { get; set; }
 		}
 	}
 }

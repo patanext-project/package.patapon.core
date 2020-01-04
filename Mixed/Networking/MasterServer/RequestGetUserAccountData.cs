@@ -8,10 +8,11 @@ namespace Patapon4TLB.Core.MasterServer
 	public struct RequestGetUserAccountData : IMasterServerRequest, IComponentData
 	{
 		public struct Processing : IComponentData
-		{}
-		
+		{
+		}
+
 		public int ErrorCode; // enum?
-		
+
 		public bool error => ErrorCode != 0;
 
 		public long UserGuid;
@@ -26,6 +27,7 @@ namespace Patapon4TLB.Core.MasterServer
 	{
 		/// NEVER SHARE IT
 		public NativeString64 Token;
+
 		public int ClientId;
 	}
 
@@ -41,12 +43,9 @@ namespace Patapon4TLB.Core.MasterServer
 	[AlwaysUpdateSystem]
 	public class MasterServerRequestUserAccountSystem : GameBaseSystem
 	{
-		private struct UserAccountClient : ISystemStateComponentData
-		{
-		}
+		public AuthenticationService.AuthenticationServiceClient Client;
 
 		private MasterServerSystem m_MasterServer;
-		public AuthenticationService.AuthenticationServiceClient Client;
 
 		protected override void OnCreate()
 		{
@@ -62,6 +61,10 @@ namespace Patapon4TLB.Core.MasterServer
 			{
 				m_MasterServer.AddClient(() => { return Client = new AuthenticationService.AuthenticationServiceClient(m_MasterServer.channel); });
 			}*/
+		}
+
+		private struct UserAccountClient : ISystemStateComponentData
+		{
 		}
 	}
 }

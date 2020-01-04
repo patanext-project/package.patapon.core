@@ -22,8 +22,67 @@ namespace Patapon4TLB.Core.MasterServer
 	{
 		public delegate void ShutDownEvent();
 
+		private Dictionary<Type, object> m_ExistingClients;
+		public  Channel                  channel { get; private set; }
+
 		public event ShutDownEvent BeforeShutdown;
-		public Channel             channel { get; private set; }
+
+		protected override void OnCreate()
+		{
+			base.OnCreate();
+
+			m_ExistingClients = new Dictionary<Type, object>();
+			GrpcEnvironment.SetLogger(new Logger());
+		}
+
+		protected override void OnUpdate()
+		{
+		}
+
+		protected override async void OnDestroy()
+		{
+			base.OnDestroy();
+
+			Disconnect().Wait();
+			m_ExistingClients.Clear();
+		}
+
+		public async Task SetMasterServer(IPEndPoint endpoint)
+		{
+			await Disconnect();
+
+			channel = new Channel(endpoint.Address.ToString(), endpoint.Port, ChannelCredentials.Insecure);
+			await channel.ConnectAsync();
+		}
+
+		public async Task Disconnect()
+		{
+			Debug.Log("?");
+			if (channel != null && channel.State != ChannelState.Shutdown)
+				BeforeShutdown?.Invoke();
+			//channel.ShutdownAsync();
+
+			channel = null;
+			m_ExistingClients.Clear();
+		}
+
+		public bool HasClient<T>()
+			where T : ClientBase
+		{
+			return m_ExistingClients.ContainsKey(typeof(T));
+		}
+
+		public void AddClient<T>(Func<T> func)
+			where T : ClientBase
+		{
+			m_ExistingClients[typeof(T)] = func();
+		}
+
+		public T GetClient<T>()
+			where T : ClientBase
+		{
+			return (T) m_ExistingClients[typeof(T)];
+		}
 
 		public class Logger : ILogger
 		{
@@ -84,67 +143,6 @@ namespace Patapon4TLB.Core.MasterServer
 				Warning($"thrown {exception}, msg: {message}");
 			}
 		}
-
-		private Dictionary<Type, object> m_ExistingClients;
-
-		protected override void OnCreate()
-		{
-			base.OnCreate();
-
-			m_ExistingClients = new Dictionary<Type, object>();
-			GrpcEnvironment.SetLogger(new Logger());
-		}
-
-		protected override void OnUpdate()
-		{
-		}
-
-		protected override async void OnDestroy()
-		{
-			base.OnDestroy();
-
-			Disconnect().Wait();
-			m_ExistingClients.Clear();
-		}
-
-		public async Task SetMasterServer(IPEndPoint endpoint)
-		{
-			await Disconnect();
-
-			channel = new Channel(endpoint.Address.ToString(), endpoint.Port, ChannelCredentials.Insecure);
-			await channel.ConnectAsync();
-		}
-
-		public async Task Disconnect()
-		{
-			Debug.Log("?");
-			if (channel != null && channel.State != ChannelState.Shutdown)
-			{
-				BeforeShutdown?.Invoke();
-				//channel.ShutdownAsync();
-			}
-
-			channel = null;
-			m_ExistingClients.Clear();
-		}
-
-		public bool HasClient<T>()
-			where T : ClientBase
-		{
-			return m_ExistingClients.ContainsKey(typeof(T));
-		}
-
-		public void AddClient<T>(Func<T> func)
-			where T : ClientBase
-		{
-			m_ExistingClients[typeof(T)] = func();
-		}
-
-		public T GetClient<T>()
-			where T : ClientBase
-		{
-			return (T) m_ExistingClients[typeof(T)];
-		}
 	}
 
 	public class MasterServerRequestModule<TRequest, TProcessing, TCompleted> : BaseSystemModule
@@ -152,18 +150,12 @@ namespace Patapon4TLB.Core.MasterServer
 		where TProcessing : struct, IComponentData
 		where TCompleted : struct, IComponentData
 	{
-		public struct Request
-		{
-			public Entity   Entity;
-			public TRequest Value;
-		}
-
-		public EntityQuery RequestQuery;
-		public EntityQuery ProcessingQuery;
-		public EntityQuery ResultQuery;
-
 		private NativeList<Request> m_Requests;
 		private bool                m_Update;
+		public  EntityQuery         ProcessingQuery;
+
+		public EntityQuery RequestQuery;
+		public EntityQuery ResultQuery;
 
 		protected override void OnEnable()
 		{
@@ -190,13 +182,11 @@ namespace Patapon4TLB.Core.MasterServer
 					var entityArray  = chunk.GetNativeArray(entityType);
 					var requestArray = chunk.GetNativeArray(componentType);
 					for (var i = 0; i != chunk.Count; i++)
-					{
 						m_Requests.Add(new Request
 						{
 							Entity = entityArray[i],
 							Value  = requestArray[i]
 						});
-					}
 				}
 			}
 		}
@@ -217,6 +207,12 @@ namespace Patapon4TLB.Core.MasterServer
 		protected override void OnDisable()
 		{
 			m_Requests.Dispose();
+		}
+
+		public struct Request
+		{
+			public Entity   Entity;
+			public TRequest Value;
 		}
 	}
 }

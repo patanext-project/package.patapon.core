@@ -8,13 +8,13 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 	{
 		Undefined = 0,
 		Blue      = 1,
-		Red       = 2,
+		Red       = 2
 	}
 
 	public class HeadOnDefineTeamAuthoring : MonoBehaviour
 	{
-		public  EHeadOnTeamTarget          PredefinedTeam;
-		private Dictionary<World, Entity> m_CurrentEntity = new Dictionary<World, Entity>();
+		private readonly Dictionary<World, Entity> m_CurrentEntity = new Dictionary<World, Entity>();
+		public           EHeadOnTeamTarget         PredefinedTeam;
 
 		public HeadOnTeamTarget FindOrCreate(EntityManager dstManager)
 		{
@@ -39,7 +39,7 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 			}
 
 			ent = m_CurrentEntity[dstManager.World];
-			
+
 			var data = dstManager.GetComponentData<HeadOnTeam>(ent);
 			return new HeadOnTeamTarget
 			{

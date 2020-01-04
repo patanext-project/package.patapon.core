@@ -13,20 +13,17 @@ namespace Patapon.Mixed.Systems
 	[UpdateInGroup(typeof(RhythmEngineGroup))]
 	public class ProcessRhythmEngineSystem : JobGameBaseSystem
 	{
-		private struct EventCreated : IComponentData
-		{
-		}
+		private LazySystem<OrderGroup.Simulation.DeleteEntities.CommandBufferSystem> m_DeleteBarrier;
+
+		private EntityQuery m_DestroyEventQuery;
+
+		private LazySystem<OrderGroup.Simulation.SpawnEntities.CommandBufferSystem> m_SpawnBarrier;
 
 		[BurstDiscard]
 		private static void NonBurst_ThrowWarning(Entity entity)
 		{
 			Debug.LogWarning($"Engine '{entity}' had a FlowRhythmEngineSettingsData.BeatInterval of 0 (or less), this is not accepted.");
 		}
-
-		private LazySystem<OrderGroup.Simulation.SpawnEntities.CommandBufferSystem>  m_SpawnBarrier;
-		private LazySystem<OrderGroup.Simulation.DeleteEntities.CommandBufferSystem> m_DeleteBarrier;
-
-		private EntityQuery m_DestroyEventQuery;
 
 		protected override void OnCreate()
 		{
@@ -50,7 +47,7 @@ namespace Patapon.Mixed.Systems
 			            {
 				            var previousBeat = process.GetActivationBeat(settings.BeatInterval);
 
-				            process.Milliseconds = (int) (tick.Ms - process.StartTime);
+				            process.Milliseconds = tick.Ms - process.StartTime;
 				            if (settings.BeatInterval <= 0.0001f)
 				            {
 					            NonBurst_ThrowWarning(entity);
@@ -61,7 +58,7 @@ namespace Patapon.Mixed.Systems
 
 				            var beatDiff = math.abs(previousBeat - process.GetActivationBeat(settings.BeatInterval));
 				            if (beatDiff > 0) // the original plan was to create multiple events if there were multiple beats in the same frame
-											  // but maybe it would be too much if we do change the StartTime.
+					            // but maybe it would be too much if we do change the StartTime.
 				            {
 					            state.IsNewBeat = true;
 					            var ent = spawnEcb.CreateEntity(nativeThreadIndex);
@@ -76,6 +73,10 @@ namespace Patapon.Mixed.Systems
 			m_DeleteBarrier.Value.AddJobHandleForProducer(inputDeps);
 
 			return inputDeps;
+		}
+
+		private struct EventCreated : IComponentData
+		{
 		}
 	}
 }

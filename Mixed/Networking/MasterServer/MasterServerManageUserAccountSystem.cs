@@ -43,16 +43,16 @@ namespace Patapon4TLB.Core.MasterServer
 	[AlwaysUpdateSystem]
 	public class MasterServerManageUserAccountSystem : GameBaseSystem
 	{
+		private EntityQuery                          m_ClientQuery;
 		private MasterServerSystem                   m_MasterServer;
 		private MasterServerRequestUserAccountSystem m_RequestSystem;
 
 		private MasterServerRequestModule<RequestUserLogin, RequestUserLogin.Processing, ResultUserLogin> m_RequestUserLoginModule;
-		private EntityQuery                                                                               m_ClientQuery;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
- 
+
 			/* todo: if (World != BootWorld.World)
 				throw new InvalidOperationException();*/
 

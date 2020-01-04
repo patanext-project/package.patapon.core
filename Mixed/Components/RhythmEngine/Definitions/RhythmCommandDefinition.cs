@@ -70,9 +70,9 @@ namespace Patapon.Mixed.RhythmEngine.Definitions
 		public class SynchronizeToLocal : ComponentSystem
 		{
 			private EntityQuery m_LocalCommands;
-			private EntityQuery m_ServerCommands;
 
 			private SnapshotReceiveSystem m_ReceiveSystem;
+			private EntityQuery           m_ServerCommands;
 
 			protected override void OnCreate()
 			{

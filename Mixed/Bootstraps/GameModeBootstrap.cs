@@ -14,11 +14,6 @@ namespace Bootstraps
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
 	public class GameModeBootstrap : BaseBootstrapSystem
 	{
-		public struct IsActive : IComponentData
-		{
-			public int RequiredPlayers;
-		}
-
 		protected override void Register(Entity bootstrap)
 		{
 			EntityManager.SetComponentData(bootstrap, new BootstrapComponent {Name = nameof(GameModeBootstrap)});
@@ -53,13 +48,18 @@ namespace Bootstraps
 
 			EntityManager.DestroyEntity(bootstrapSingleton);
 		}
+
+		public struct IsActive : IComponentData
+		{
+			public int RequiredPlayers;
+		}
 	}
 
 	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
 	public class GameModeBootstrapTestSystem : GameBaseSystem
 	{
+		private bool        m_Created;
 		private EntityQuery m_PlayerQuery;
-		private bool m_Created;
 
 		protected override void OnCreate()
 		{
@@ -79,7 +79,7 @@ namespace Bootstraps
 				return;
 
 			m_Created = true;
-			
+
 			var playerEntities = m_PlayerQuery.ToEntityArray(Allocator.TempJob);
 
 			// Create formation
@@ -141,11 +141,10 @@ namespace Bootstraps
 			}
 
 			playerEntities.Dispose();
-			
+
 			// START THE GAMEMODE
 			var gamemodeMgr = World.GetOrCreateSystem<GameModeManager>();
-			gamemodeMgr.SetGameMode(new MpVersusHeadOn { });
-			
+			gamemodeMgr.SetGameMode(new MpVersusHeadOn());
 		}
 	}
 }

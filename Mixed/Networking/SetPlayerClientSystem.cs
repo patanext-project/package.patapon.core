@@ -3,8 +3,8 @@ using System.Security.Cryptography;
 using System.Text;
 using P4TLB.MasterServer;
 using Patapon4TLB.Core.MasterServer;
-using Unity.Entities;
 using Unity.Collections;
+using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
 
@@ -13,8 +13,8 @@ namespace Patapon4TLB.Core
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
 	public class SetPlayerClientSystem : ComponentSystem
 	{
-		private string m_Login;
 		private string m_HashedPassword;
+		private string m_Login;
 
 		private Entity m_PreviousRequest;
 
@@ -56,12 +56,9 @@ namespace Patapon4TLB.Core
 				// Only get client worlds
 				if (world.GetExistingSystem<ClientSimulationSystemGroup>() == null)
 					continue;
-				
+
 				var query = world.EntityManager.CreateEntityQuery(typeof(ConnectedMasterServerClient));
-				if (query.CalculateEntityCount() == 0)
-				{
-					world.EntityManager.CreateEntity(typeof(ConnectedMasterServerClient));
-				}
+				if (query.CalculateEntityCount() == 0) world.EntityManager.CreateEntity(typeof(ConnectedMasterServerClient));
 
 				query.SetSingleton(new ConnectedMasterServerClient
 				{
@@ -78,11 +75,10 @@ namespace Patapon4TLB.Core
 		}
 
 		/// <summary>
-		/// 
 		/// </summary>
 		/// <returns>The request entity</returns>
 		public Entity RequestConnection()
-		{ 
+		{
 			if (m_Login == null || m_HashedPassword == null)
 				throw new ArgumentNullException();
 
@@ -108,10 +104,7 @@ namespace Patapon4TLB.Core
 
 			// step 2, convert byte array to hex string
 			var sb = new StringBuilder();
-			foreach (var t in hash)
-			{
-				sb.Append(t.ToString("X2"));
-			}
+			foreach (var t in hash) sb.Append(t.ToString("X2"));
 
 			return sb.ToString();
 		}

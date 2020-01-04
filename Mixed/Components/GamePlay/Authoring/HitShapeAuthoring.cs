@@ -47,7 +47,7 @@ namespace Patapon.Mixed.GamePlay.Authoring
 			{
 				if (authoring.keepParent)
 					return;
-				
+
 				RemoveParentAndSetWorldTranslationAndRotation(DstEntityManager, GetPrimaryEntity(authoring), authoring.transform);
 
 				var parentWithoutCollider = authoring.transform.parent;
@@ -57,7 +57,7 @@ namespace Patapon.Mixed.GamePlay.Authoring
 						break;
 					parentWithoutCollider = parentWithoutCollider.parent;
 				}
-				
+
 				authoring.transform.SetParent(parentWithoutCollider, false);
 				authoring.transform.SetAsLastSibling();
 			});
@@ -66,30 +66,9 @@ namespace Patapon.Mixed.GamePlay.Authoring
 
 	public class HitShapeAuthoring : MonoBehaviour, IConvertGameObjectToEntity
 	{
-		public GameObject owner;
 		public bool       followParent = true;
-		public bool keepParent = false;
-		
-		public static T GetCopyOf<T>(Component comp, T other) where T : Component
-		{
-			var type = comp.GetType();
-			if (type != other.GetType()) return null; // type mis-match
-			var   flags  = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Default | BindingFlags.DeclaredOnly;
-			var pinfos = type.GetProperties(flags);
-			foreach (var pinfo in pinfos) {
-				if (pinfo.CanWrite) {
-					try {
-						pinfo.SetValue(comp, pinfo.GetValue(other, null), null);
-					}
-					catch { } // In case of NotImplementedException being thrown. For some reason specifying that exception didn't seem to catch it, so I didn't catch anything specific.
-				}
-			}
-			var finfos = type.GetFields(flags);
-			foreach (var finfo in finfos) {
-				finfo.SetValue(comp, finfo.GetValue(other));
-			}
-			return comp as T;
-		}
+		public bool       keepParent;
+		public GameObject owner;
 
 		public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
 		{
@@ -113,6 +92,27 @@ namespace Patapon.Mixed.GamePlay.Authoring
 				transform.position = transform.localPosition;
 				dstManager.AddComponent(entity, typeof(HitShapeFollowParentTag));
 			}
+		}
+
+		public static T GetCopyOf<T>(Component comp, T other) where T : Component
+		{
+			var type = comp.GetType();
+			if (type != other.GetType()) return null; // type mis-match
+			var flags  = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Default | BindingFlags.DeclaredOnly;
+			var pinfos = type.GetProperties(flags);
+			foreach (var pinfo in pinfos)
+				if (pinfo.CanWrite)
+					try
+					{
+						pinfo.SetValue(comp, pinfo.GetValue(other, null), null);
+					}
+					catch
+					{
+					} // In case of NotImplementedException being thrown. For some reason specifying that exception didn't seem to catch it, so I didn't catch anything specific.
+
+			var finfos = type.GetFields(flags);
+			foreach (var finfo in finfos) finfo.SetValue(comp, finfo.GetValue(other));
+			return comp as T;
 		}
 	}
 }

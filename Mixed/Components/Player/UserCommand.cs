@@ -1,11 +1,8 @@
-using System;
 using package.stormiumteam.shared;
 using StormiumTeam.GameBase;
-using Unity.Burst;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Networking.Transport;
-using UnityEngine;
 
 namespace Patapon4TLB.Default.Player
 {
@@ -59,12 +56,9 @@ namespace Patapon4TLB.Default.Player
 
 		public void ReadFrom(DataStreamReader reader, ref DataStreamReader.Context ctx, UserCommand baseline, NetworkCompressionModel compressionModel)
 		{
-			var baselineActions = baseline.GetRhythmActions();
-			var i               = 0;
-			foreach (ref var action in GetRhythmActions())
-			{
-				action.flags = (byte) reader.ReadPackedUIntDelta(ref ctx, baselineActions[i++].flags, compressionModel);
-			}
+			var baselineActions                                         = baseline.GetRhythmActions();
+			var i                                                       = 0;
+			foreach (ref var action in GetRhythmActions()) action.flags = (byte) reader.ReadPackedUIntDelta(ref ctx, baselineActions[i++].flags, compressionModel);
 
 			Panning = reader.ReadPackedFloat(ref ctx, compressionModel);
 		}
@@ -73,10 +67,7 @@ namespace Patapon4TLB.Default.Player
 		{
 			var baselineActions = baseline.GetRhythmActions();
 			var i               = 0;
-			foreach (ref readonly var action in GetRhythmActions())
-			{
-				writer.WritePackedUIntDelta(action.flags, baselineActions[i++].flags, compressionModel);
-			}
+			foreach (ref readonly var action in GetRhythmActions()) writer.WritePackedUIntDelta(action.flags, baselineActions[i++].flags, compressionModel);
 
 			writer.WritePackedFloat(Panning, compressionModel);
 		}
@@ -90,7 +81,7 @@ namespace Patapon4TLB.Default.Player
 			EntityManager.AddComponent(Entities.WithNone<UserCommand>().WithAll<GamePlayer>().ToEntityQuery(), typeof(UserCommand));
 		}
 	}
-	
+
 	[UpdateInGroup(typeof(ServerInitializationSystemGroup))]
 	public class SpawnGamePlayerUserCommand : ComponentSystem
 	{

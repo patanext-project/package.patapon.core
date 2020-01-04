@@ -14,15 +14,6 @@ namespace package.patapon.core
 
 	public unsafe class RhythmCommandBuilder : GameBaseSystem
 	{
-		public struct StockCommandId : IComponentData
-		{
-			public int LastId;
-		}
-
-		public struct RhythmCommandEntityTag : IComponentData
-		{
-		}
-
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -32,7 +23,6 @@ namespace package.patapon.core
 
 		protected override void OnUpdate()
 		{
-
 		}
 
 		public Entity GetOrCreate(NativeArray<RhythmCommandDefinitionSequence> sequence, bool dispose = true)
@@ -53,10 +43,7 @@ namespace package.patapon.core
 
 			if (finalEntity != default)
 			{
-				if (dispose)
-				{
-					sequence.Dispose();
-				}
+				if (dispose) sequence.Dispose();
 
 				return finalEntity;
 			}
@@ -65,11 +52,8 @@ namespace package.patapon.core
 
 			EntityManager.GetBuffer<RhythmCommandDefinitionSequence>(finalEntity)
 			             .CopyFrom(sequence);
-			
-			if (dispose)
-			{
-				sequence.Dispose();
-			}
+
+			if (dispose) sequence.Dispose();
 
 			var id = GetSingleton<StockCommandId>().LastId + 1;
 			EntityManager.AddComponentData(finalEntity, new RhythmCommandId
@@ -80,6 +64,15 @@ namespace package.patapon.core
 			SetSingleton(new StockCommandId {LastId = id});
 
 			return finalEntity;
+		}
+
+		public struct StockCommandId : IComponentData
+		{
+			public int LastId;
+		}
+
+		public struct RhythmCommandEntityTag : IComponentData
+		{
 		}
 	}
 }

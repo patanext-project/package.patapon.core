@@ -8,16 +8,17 @@ namespace Patapon.Mixed.Units
 	{
 		public int Health;
 
-		public int Attack;
+		public int   Attack;
 		public float AttackSpeed;
 
 		public int Defense;
-		
+
 		public float MovementAttackSpeed;
 		public float BaseWalkSpeed;
 		public float FeverWalkSpeed;
+
 		/// <summary>
-		/// Weight can be used to calculate unit acceleration for moving or for knock-back power amplification.
+		///     Weight can be used to calculate unit acceleration for moving or for knock-back power amplification.
 		/// </summary>
 		public float Weight;
 
@@ -49,7 +50,7 @@ namespace Patapon.Mixed.Units
 
 		public UnitDefinedAbilities(string type, int level)
 		{
-			Type = new NativeString512(type);
+			Type  = new NativeString512(type);
 			Level = level;
 		}
 	}

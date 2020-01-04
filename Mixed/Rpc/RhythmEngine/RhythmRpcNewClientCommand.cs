@@ -1,6 +1,5 @@
 using System;
 using package.stormiumteam.shared;
-using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.EcsComponents;
@@ -112,8 +111,8 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 	public class RhythmExecuteCommandSystem : JobComponentSystem
 	{
 		private EndSimulationEntityCommandBufferSystem m_EndBarrier;
-		private EntityQuery                            m_EventQuery;
 		private EntityQuery                            m_EngineQuery;
+		private EntityQuery                            m_EventQuery;
 
 		protected override void OnCreate()
 		{
@@ -129,9 +128,9 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 			var engineChunks           = m_EngineQuery.CreateArchetypeChunkArray(Allocator.TempJob, out var queryHandle);
 			var playerRelativeType     = GetArchetypeChunkComponentType<Relative<PlayerDescription>>(true);
 			var networkOwnerFromEntity = GetComponentDataFromEntity<NetworkOwner>(true);
-			var processType            = GetArchetypeChunkComponentType<FlowEngineProcess>(false);
+			var processType            = GetArchetypeChunkComponentType<FlowEngineProcess>();
 			var settingsType           = GetArchetypeChunkComponentType<RhythmEngineSettings>(true);
-			var stateType              = GetArchetypeChunkComponentType<RhythmEngineState>(false);
+			var stateType              = GetArchetypeChunkComponentType<RhythmEngineState>();
 
 			var commandProgressionType          = GetArchetypeChunkBufferType<RhythmEngineCommandProgression>();
 			var predictedCommandProgressionType = GetArchetypeChunkBufferType<RhythmEngineClientPredictedCommandProgression>();

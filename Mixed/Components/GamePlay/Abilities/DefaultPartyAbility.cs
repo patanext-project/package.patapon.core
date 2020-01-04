@@ -10,7 +10,7 @@ namespace Patapon.Mixed.GamePlay.Abilities
 	public struct DefaultPartyAbility : IComponentData
 	{
 		public bool WasActive;
-		
+
 		public UTimeProgression Progression;
 		public int              EnergyOnActivation;
 		public int              TickPerSecond;
@@ -45,7 +45,9 @@ namespace Patapon.Mixed.GamePlay.Abilities
 			public unsafe bool DidChange(Snapshot baseline)
 			{
 				fixed (void* addr = &this)
+				{
 					return UnsafeUtility.MemCmp(addr, &baseline, sizeof(Snapshot)) != 0;
+				}
 			}
 
 			public void SynchronizeFrom(in DefaultPartyAbility component, in DefaultSetup setup, in SerializeClientData serializeData)

@@ -10,9 +10,9 @@ namespace Patapon.Mixed.RhythmEngine
 		public int BeatInterval; // in ms
 
 		/// <summary>
-		/// Let the players simulate the rhythm engine or not.
-		/// If enabled, 'RhythmEngineClientPredictedCommand' and 'RhythmEngineClientRequestedCommand' will be
-		/// used instead of 'RhythmEngineCurrentCommand'.
+		///     Let the players simulate the rhythm engine or not.
+		///     If enabled, 'RhythmEngineClientPredictedCommand' and 'RhythmEngineClientRequestedCommand' will be
+		///     used instead of 'RhythmEngineCurrentCommand'.
 		/// </summary>
 		public bool UseClientSimulation;
 
@@ -25,22 +25,23 @@ namespace Patapon.Mixed.RhythmEngine
 
 		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref RhythmEngineSettings baseline, DeserializeClientData jobData)
 		{
-			this = baseline;
+			this         = baseline;
 			MaxBeats     = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
 			BeatInterval = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
 
 			UseClientSimulation = reader.ReadBitBool(ref ctx);
 		}
-		
+
 		public bool DidChange(RhythmEngineSettings baseline)
 		{
 			return MaxBeats != baseline.MaxBeats
 			       || BeatInterval != baseline.BeatInterval
 			       || UseClientSimulation != baseline.UseClientSimulation;
 		}
-		
+
 		public struct Exclude : IComponentData
-		{}
+		{
+		}
 
 		public class Sync : MixedComponentSnapshotSystemDelta<RhythmEngineSettings>
 		{

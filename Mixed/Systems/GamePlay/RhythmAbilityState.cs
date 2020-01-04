@@ -11,7 +11,6 @@ using UnityEngine;
 
 namespace Patapon.Mixed.GamePlay
 {
-
 	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
 	[UpdateBefore(typeof(ActionSystemGroup))]
 	public class UpdateRhythmAbilityState : JobComponentSystem
@@ -20,7 +19,7 @@ namespace Patapon.Mixed.GamePlay
 		private static void NonBurst_ErrorNoOwnerOrNoRelative(Entity owner, Entity entity)
 		{
 			if (owner == default)
-				Debug.LogError($"Default owner found on " + entity);
+				Debug.LogError("Default owner found on " + entity);
 		}
 
 		[BurstDiscard]

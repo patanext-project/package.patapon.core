@@ -9,9 +9,9 @@ namespace Patapon4TLB.Core.MasterServer
 		{
 			public int Value;
 		}
-		
+
 		public bool error => ErrorCode != 0;
-		
+
 		public int ErrorCode;
 	}
 
@@ -19,10 +19,10 @@ namespace Patapon4TLB.Core.MasterServer
 	{
 		public struct DArmy
 		{
-			public int Index;
+			public int            Index;
 			public BlobArray<int> UnitIds;
 		}
-		
+
 		public struct DBlob
 		{
 			public BlobArray<DArmy> Armies;
@@ -38,13 +38,10 @@ namespace Patapon4TLB.Core.MasterServer
 				var     armiesBuilder = builder.Allocate(unitIds.Length, ref root.Armies);
 				for (var i = 0; i != unitIds.Length; i++)
 				{
-					var     unitArray    = unitIds[i];
-					ref var army         = ref armiesBuilder[i];
-					var     unitsBuilder = builder.Allocate(unitArray.Length, ref army.UnitIds);
-					for (var u = 0; u != unitArray.Length; u++)
-					{
-						unitsBuilder[u] = unitArray[u];
-					}
+					var     unitArray                                           = unitIds[i];
+					ref var army                                                = ref armiesBuilder[i];
+					var     unitsBuilder                                        = builder.Allocate(unitArray.Length, ref army.UnitIds);
+					for (var u = 0; u != unitArray.Length; u++) unitsBuilder[u] = unitArray[u];
 				}
 
 				return builder.CreateBlobAssetReference<DBlob>(allocator);

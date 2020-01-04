@@ -1,4 +1,3 @@
-using Patapon.Mixed.GamePlay.Abilities;
 using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.GamePlay.Units;
 using Patapon.Mixed.RhythmEngine.Flow;
@@ -9,7 +8,7 @@ using Unity.Networking.Transport;
 namespace Patapon.Mixed.GamePlay
 {
 	/// <summary>
-	/// Rhythm based ability.
+	///     Rhythm based ability.
 	/// </summary>
 	public struct RhythmAbilityState : IComponentData, IReadWriteComponentSnapshot<RhythmAbilityState, GhostSetup>, ISnapshotDelta<RhythmAbilityState>
 	{

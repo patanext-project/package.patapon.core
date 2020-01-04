@@ -7,11 +7,11 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 {
 	public class HeadOnStructureAuthoring : MonoBehaviour, IConvertGameObjectToEntity
 	{
-		public HeadOnStructure.EType Type;
-
-		public int HealthPercentage;
 		public int CaptureTime;
+
+		public int                       HealthPercentage;
 		public HeadOnDefineTeamAuthoring TeamDefine;
+		public HeadOnStructure.EType     Type;
 
 		public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
 		{
@@ -22,11 +22,11 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 			dstManager.AddComponent(entity, typeof(GhostEntity));
 		}
 	}
-	
+
 	public unsafe struct HeadOnStructure : IComponentData
 	{
 		/// <summary>
-		/// A type will give different points
+		///     A type will give different points
 		/// </summary>
 		public enum EType
 		{
@@ -36,9 +36,9 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 		}
 
 		public EType Type;
-		public int HealthPercentage;
-		
-		public int TimeToCapture;
+		public int   HealthPercentage;
+
+		public       int TimeToCapture;
 		public fixed int CaptureProgress[2];
 	}
 

@@ -11,9 +11,9 @@ namespace Patapon.Mixed.GamePlay.Abilities
 {
 	public struct DefaultRetreatAbility : IReadWriteComponentSnapshot<DefaultRetreatAbility>
 	{
-		public const float StopTime = 1.5f;
+		public const float StopTime      = 1.5f;
 		public const float MaxActiveTime = StopTime + 0.5f;
-		
+
 		public int LastActiveId;
 
 		public float  AccelerationFactor;
@@ -24,12 +24,10 @@ namespace Patapon.Mixed.GamePlay.Abilities
 
 		public void WriteTo(DataStreamWriter writer, ref DefaultRetreatAbility baseline, DefaultSetup setup, SerializeClientData jobData)
 		{
-
 		}
 
 		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref DefaultRetreatAbility baseline, DeserializeClientData jobData)
 		{
-
 		}
 
 		public struct Exclude : IComponentData
@@ -57,7 +55,7 @@ namespace Patapon.Mixed.GamePlay.Abilities
 					if (state.IsActive || state.IsStillChaining)
 					{
 						ability.ActiveTime   = (engineProcessFromEntity[state.Engine].Milliseconds - state.StartTime) * 0.001f;
-						ability.IsRetreating = ability.ActiveTime <= DefaultRetreatAbility.MaxActiveTime;
+						ability.IsRetreating = ability.ActiveTime <= MaxActiveTime;
 					}
 					else
 					{

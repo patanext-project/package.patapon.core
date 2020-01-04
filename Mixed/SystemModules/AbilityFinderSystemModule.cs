@@ -3,47 +3,15 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using UnityEngine;
 
 namespace Modules
 {
 	public class AbilityFinderSystemModule : BaseSystemModule
 	{
-		public override ModuleUpdateType UpdateType => ModuleUpdateType.Job;
-
-		private struct ValueAbility
-		{
-			public Entity Owner;
-			public Entity Ability;
-		}
-
-		[BurstCompile]
-		private struct ClearJob : IJob
-		{
-			public NativeHashMap<Entity, ValueAbility> HashMap;
-			public int                                 TargetCapacity;
-
-			public void Execute()
-			{
-				HashMap.Clear();
-				if (HashMap.Capacity < TargetCapacity)
-					HashMap.Capacity = TargetCapacity;
-			}
-		}
-
-		[BurstCompile]
-		private struct SearchJob : IJobForEachWithEntity<Owner>
-		{
-			public NativeHashMap<Entity, ValueAbility>.ParallelWriter OwnerToAbilityMap;
-
-			public void Execute(Entity e, int _, ref Owner owner)
-			{
-				OwnerToAbilityMap.TryAdd(owner.Target, new ValueAbility {Owner = owner.Target, Ability = e});
-			}
-		}
-
-		public  EntityQuery                         Query;
 		private NativeHashMap<Entity, ValueAbility> m_OwnerToAbilityMap;
+
+		public          EntityQuery      Query;
+		public override ModuleUpdateType UpdateType => ModuleUpdateType.Job;
 
 		protected override void OnEnable()
 		{
@@ -74,6 +42,37 @@ namespace Modules
 		public Entity GetAbility(Entity owner)
 		{
 			return m_OwnerToAbilityMap.TryGetValue(owner, out var value) ? value.Ability : default;
+		}
+
+		private struct ValueAbility
+		{
+			public Entity Owner;
+			public Entity Ability;
+		}
+
+		[BurstCompile]
+		private struct ClearJob : IJob
+		{
+			public NativeHashMap<Entity, ValueAbility> HashMap;
+			public int                                 TargetCapacity;
+
+			public void Execute()
+			{
+				HashMap.Clear();
+				if (HashMap.Capacity < TargetCapacity)
+					HashMap.Capacity = TargetCapacity;
+			}
+		}
+
+		[BurstCompile]
+		private struct SearchJob : IJobForEachWithEntity<Owner>
+		{
+			public NativeHashMap<Entity, ValueAbility>.ParallelWriter OwnerToAbilityMap;
+
+			public void Execute(Entity e, int _, ref Owner owner)
+			{
+				OwnerToAbilityMap.TryAdd(owner.Target, new ValueAbility {Owner = owner.Target, Ability = e});
+			}
 		}
 	}
 }

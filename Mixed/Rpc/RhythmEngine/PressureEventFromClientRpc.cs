@@ -10,7 +10,6 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Networking.Transport;
-using UnityEngine;
 
 namespace Patapon.Mixed.RhythmEngine.Rpc
 {
@@ -20,9 +19,9 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 		public uint EngineGhostId;
 
 		public float Score;
-		public int  Key;
-		public int  FlowBeat;
-		public bool ShouldStartRecovery;
+		public int   Key;
+		public int   FlowBeat;
+		public bool  ShouldStartRecovery;
 
 		public void Serialize(DataStreamWriter writer)
 		{
@@ -52,16 +51,18 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 		{
 			return new PortableFunctionPointer<RpcExecutor.ExecuteDelegate>(InvokeExecute);
 		}
-		
-		public class RpcSystem : RpcCommandRequestSystem<PressureEventFromClientRpc> {}
+
+		public class RpcSystem : RpcCommandRequestSystem<PressureEventFromClientRpc>
+		{
+		}
 	}
-	
+
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 	public class ReceivePressureEventRpcSystem : JobGameBaseSystem
 	{
+		private CreateSnapshotSystem                   m_CreateSnapshotSystem;
 		private EndSimulationEntityCommandBufferSystem m_EndBarrier;
 		private EntityQuery                            m_EventQuery;
-		private CreateSnapshotSystem                   m_CreateSnapshotSystem;
 
 		protected override void OnCreate()
 		{
@@ -74,9 +75,9 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 		{
 			var playerRelativeFromEntity = GetComponentDataFromEntity<Relative<PlayerDescription>>(true);
 			var networkOwnerFromEntity   = GetComponentDataFromEntity<NetworkOwner>(true);
-			var processFromEntity        = GetComponentDataFromEntity<FlowEngineProcess>(false);
-			var stateFromEntity          = GetComponentDataFromEntity<RhythmEngineState>(false);
-			var comboFromEntity          = GetComponentDataFromEntity<GameComboState>(false);
+			var processFromEntity        = GetComponentDataFromEntity<FlowEngineProcess>();
+			var stateFromEntity          = GetComponentDataFromEntity<RhythmEngineState>();
+			var comboFromEntity          = GetComponentDataFromEntity<GameComboState>();
 
 			var ghostMap = m_CreateSnapshotSystem.GhostToEntityMap;
 
@@ -96,11 +97,8 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 						var process = processFromEntity[ghostEntity];
 						var combo   = comboFromEntity[ghostEntity];
 						var state   = stateFromEntity[ghostEntity];
-						
-						if (math.abs(ev.Score) <= FlowPressure.Perfect && combo.IsFever)
-						{
-							combo.JinnEnergy += 5;
-						}
+
+						if (math.abs(ev.Score) <= FlowPressure.Perfect && combo.IsFever) combo.JinnEnergy += 5;
 
 						state.LastPressureBeat = math.min(ev.Key, process.GetFlowBeat(process.Milliseconds));
 

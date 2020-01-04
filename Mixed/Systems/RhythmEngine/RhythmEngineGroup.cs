@@ -9,6 +9,5 @@ namespace Patapon.Mixed.Systems
 	[UpdateAfter(typeof(GhostPredictionSystemGroup))]
 	public class RhythmEngineGroup : ComponentSystemGroup
 	{
-		
 	}
 }

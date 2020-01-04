@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.Contracts;
 using package.stormiumteam.shared.ecs;
 using Revolution;
@@ -16,12 +17,13 @@ namespace Patapon.Mixed.RhythmEngine
 		public bool IsNewPressure;
 
 		/// <summary>
-		/// If a user do a f**k-up (doing pressure in an active command, waited a beat too much,...), he will need to wait a beat before starting to do pressures.
+		///     If a user do a f**k-up (doing pressure in an active command, waited a beat too much,...), he will need to wait a
+		///     beat before starting to do pressures.
 		/// </summary>
 		public int NextBeatRecovery;
 
 		/// <summary>
-		/// Used on client side since a client could have set a custom recovery.
+		///     Used on client side since a client could have set a custom recovery.
 		/// </summary>
 		public int RecoveryTick;
 
@@ -30,7 +32,10 @@ namespace Patapon.Mixed.RhythmEngine
 		public int  LastPressureBeat;
 
 		[Pure]
-		public bool IsRecovery(int processBeat) => NextBeatRecovery > processBeat;
+		public bool IsRecovery(int processBeat)
+		{
+			return NextBeatRecovery > processBeat;
+		}
 
 		public struct Snapshot : IReadWriteSnapshot<Snapshot>, ISnapshotDelta<Snapshot>, ISynchronizeImpl<RhythmEngineState, DefaultSetup>
 		{
@@ -70,7 +75,7 @@ namespace Patapon.Mixed.RhythmEngine
 
 			public void SynchronizeTo(ref RhythmEngineState component, in DeserializeClientData deserializeData)
 			{
-				throw new System.NotImplementedException();
+				throw new NotImplementedException();
 			}
 		}
 
@@ -99,7 +104,7 @@ namespace Patapon.Mixed.RhythmEngine
 					if (component.RecoveryTick < last.RecoveryTick || component.NextBeatRecovery < last.NextBeatRecovery)
 					{
 						Debug.Log($"Recover at {last.RecoveryTick}");
-						
+
 						component.RecoveryTick     = last.RecoveryTick;
 						component.NextBeatRecovery = last.NextBeatRecovery;
 					}

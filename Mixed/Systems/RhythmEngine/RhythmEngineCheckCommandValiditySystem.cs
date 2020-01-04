@@ -1,5 +1,3 @@
-using System.Linq;
-using JetBrains.Annotations;
 using package.stormiumteam.shared;
 using Patapon.Mixed.GamePlay.Units;
 using Patapon.Mixed.RhythmEngine;
@@ -20,29 +18,11 @@ namespace Patapon.Mixed.Systems
 	[UpdateInGroup(typeof(RhythmEngineGroup))]
 	public class RhythmEngineCheckCommandValidity : JobGameBaseSystem
 	{
-		[BurstCompile]
-		private struct GetRpcTargetConnectionJob : IJobForEachWithEntity<NetworkStreamConnection>
-		{
-			public NativeArray<Entity> Target;
+		private EntityQuery m_AvailableCommandQuery;
 
-			[BurstDiscard]
-			private void NonBurst_ThrowWarning()
-			{
-				Debug.LogWarning($"'{nameof(GetRpcTargetConnectionJob)}' already found a {nameof(Target)} = {Target[0]}");
-			}
+		private RpcQueue<RhythmRpcNewClientCommand>                     m_RpcQueue;
+		private OrderGroup.Simulation.SpawnEntities.CommandBufferSystem m_SpawnBarrier;
 
-			public void Execute(Entity entity, int jobIndex, ref NetworkStreamConnection connection)
-			{
-				if (Target[0] != default)
-				{
-					NonBurst_ThrowWarning();
-					return;
-				}
-
-				Target[0] = entity;
-			}
-		}
-		
 		public static bool SameAsSequence(DynamicBuffer<RhythmCommandDefinitionSequence> commandSequence, DynamicBuffer<FlowPressure> currentCommand)
 		{
 			if (currentCommand.Length <= 0)
@@ -113,18 +93,11 @@ namespace Patapon.Mixed.Systems
 						commandsOutput.Add(entityArray[ent]);
 						return;
 					}
-					else if (isPredicted && CanBePredicted(container, currentCommand))
-					{
-						commandsOutput.Add(entityArray[ent]);
-					}
+
+					if (isPredicted && CanBePredicted(container, currentCommand)) commandsOutput.Add(entityArray[ent]);
 				}
 			}
 		}
-
-		private EntityQuery                                             m_AvailableCommandQuery;
-		private OrderGroup.Simulation.SpawnEntities.CommandBufferSystem m_SpawnBarrier;
-
-		private RpcQueue<RhythmRpcNewClientCommand> m_RpcQueue;
 
 		protected override void OnCreate()
 		{
@@ -161,7 +134,7 @@ namespace Patapon.Mixed.Systems
 					          ref FlowEngineProcess                             process,           ref RhythmCurrentCommand rhythmCurrentCommand,
 					          ref DynamicBuffer<RhythmEngineCommandProgression> commandProgression) =>
 					{
-						if (state.IsPaused || process.Milliseconds < 0 || (!isServer && !state.IsNewPressure))
+						if (state.IsPaused || process.Milliseconds < 0 || !isServer && !state.IsNewPressure)
 							return;
 
 						if (isServer && settings.UseClientSimulation && !state.VerifyCommand)
@@ -203,9 +176,7 @@ namespace Patapon.Mixed.Systems
 							var clientPressureBeat = FlowEngineProcess.CalculateFlowBeat(commandProgression[commandProgression.Length - 1].Data.Time, settings.BeatInterval) + 1;
 							if (clientPressureBeat < targetBeat
 							    && clientPressureBeat <= process.GetActivationBeat(settings.BeatInterval) + 1)
-							{
 								targetBeat = clientPressureBeat;
-							}
 						}
 
 						rhythmCurrentCommand.ActiveAtTime  = targetBeat * settings.BeatInterval;
@@ -217,11 +188,8 @@ namespace Patapon.Mixed.Systems
 
 						if (!isServer && settings.UseClientSimulation)
 						{
-							var clientRequest = new UnsafeAllocationLength<RhythmEngineClientRequestedCommandProgression>(Allocator.Temp, commandProgression.Length);
-							for (var com = 0; com != clientRequest.Length; com++)
-							{
-								clientRequest[com] = new RhythmEngineClientRequestedCommandProgression {Data = commandProgression[com].Data};
-							}
+							var clientRequest                                                        = new UnsafeAllocationLength<RhythmEngineClientRequestedCommandProgression>(Allocator.Temp, commandProgression.Length);
+							for (var com = 0; com != clientRequest.Length; com++) clientRequest[com] = new RhythmEngineClientRequestedCommandProgression {Data = commandProgression[com].Data};
 
 							rpcQueue.Schedule(outgoingDataFromEntity[targetConnection], new RhythmRpcNewClientCommand {IsValid = true, ResultBuffer = clientRequest});
 
@@ -230,17 +198,11 @@ namespace Patapon.Mixed.Systems
 
 						var power = 0.0f;
 						for (var i = 0; i != commandProgression.Length; i++)
-						{
 							// perfect
 							if (commandProgression[i].Data.GetAbsoluteScore() <= FlowPressure.Perfect)
-							{
 								power += 1.0f;
-							}
 							else
-							{
 								power += 0.33f;
-							}
-						}
 
 						rhythmCurrentCommand.Power = math.clamp((int) math.ceil(power * 100 / commandProgression.Length), 0, 100);
 
@@ -257,6 +219,29 @@ namespace Patapon.Mixed.Systems
 			m_SpawnBarrier.AddJobHandleForProducer(inputDeps);
 
 			return inputDeps;
+		}
+
+		[BurstCompile]
+		private struct GetRpcTargetConnectionJob : IJobForEachWithEntity<NetworkStreamConnection>
+		{
+			public NativeArray<Entity> Target;
+
+			[BurstDiscard]
+			private void NonBurst_ThrowWarning()
+			{
+				Debug.LogWarning($"'{nameof(GetRpcTargetConnectionJob)}' already found a {nameof(Target)} = {Target[0]}");
+			}
+
+			public void Execute(Entity entity, int jobIndex, ref NetworkStreamConnection connection)
+			{
+				if (Target[0] != default)
+				{
+					NonBurst_ThrowWarning();
+					return;
+				}
+
+				Target[0] = entity;
+			}
 		}
 	}
 }

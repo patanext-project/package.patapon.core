@@ -7,9 +7,9 @@ using Unity.Networking.Transport;
 namespace Patapon.Mixed.GamePlay.RhythmEngine
 {
 	/// <summary>
-	/// The predicted client should only be used for presentation stuff (UI, sounds).
-	/// To see if you should use the predicted component, check first if the server sided one is active or not.
-	/// If false, then use the predicted one.
+	///     The predicted client should only be used for presentation stuff (UI, sounds).
+	///     To see if you should use the predicted component, check first if the server sided one is active or not.
+	///     If false, then use the predicted one.
 	/// </summary>
 	public struct GameComboPredictedClient : IComponentData
 	{
@@ -21,22 +21,22 @@ namespace Patapon.Mixed.GamePlay.RhythmEngine
 		public bool IsPerfect => Score >= 50;
 
 		/// <summary>
-		/// The score of the current combo. A perfect combo do a +5
+		///     The score of the current combo. A perfect combo do a +5
 		/// </summary>
 		public int Score;
 
 		/// <summary>
-		/// The current chain of the combo
+		///     The current chain of the combo
 		/// </summary>
 		public int Chain;
 
 		/// <summary>
-		/// It will be used to know when we should have the fever, it shouldn't be used to know the current chain.
+		///     It will be used to know when we should have the fever, it shouldn't be used to know the current chain.
 		/// </summary>
 		public int ChainToFever;
 
 		/// <summary>
-		/// The fever state, enabled if we have a score or 6 or more.
+		///     The fever state, enabled if we have a score or 6 or more.
 		/// </summary>
 		public bool IsFever;
 
@@ -59,22 +59,17 @@ namespace Patapon.Mixed.GamePlay.RhythmEngine
 				JinnEnergy = 0;
 			}
 
-			if (IsFever)
-			{
-				ChainToFever = 0;
-			}
+			if (IsFever) ChainToFever = 0;
 
 			var needed = 0;
 			if (ChainToFever < 2)
 				needed += 100;
 
 			if (!IsFever &&
-			    (ChainToFever >= 9) ||
-			    (ChainToFever >= 3 && Score >= 50) ||
-			    (Score > (10 - ChainToFever) * 10 + needed))
-			{
+			    ChainToFever >= 9 ||
+			    ChainToFever >= 3 && Score >= 50 ||
+			    Score > (10 - ChainToFever) * 10 + needed)
 				IsFever = true;
-			}
 		}
 
 		public void WriteTo(DataStreamWriter writer, ref GameComboState baseline, DefaultSetup setup, SerializeClientData jobData)
@@ -89,7 +84,7 @@ namespace Patapon.Mixed.GamePlay.RhythmEngine
 
 		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref GameComboState baseline, DeserializeClientData jobData)
 		{
-			this = baseline;
+			this          = baseline;
 			Score         = reader.ReadPackedIntDelta(ref ctx, baseline.Score, jobData.NetworkCompressionModel);
 			Chain         = reader.ReadPackedIntDelta(ref ctx, baseline.Chain, jobData.NetworkCompressionModel);
 			ChainToFever  = reader.ReadPackedIntDelta(ref ctx, baseline.ChainToFever, jobData.NetworkCompressionModel);
@@ -97,10 +92,11 @@ namespace Patapon.Mixed.GamePlay.RhythmEngine
 			JinnEnergy    = reader.ReadPackedIntDelta(ref ctx, baseline.JinnEnergy, jobData.NetworkCompressionModel);
 			JinnEnergyMax = reader.ReadPackedIntDelta(ref ctx, baseline.JinnEnergyMax, jobData.NetworkCompressionModel);
 		}
-		
+
 		public struct Exclude : IComponentData
-		{}
-		
+		{
+		}
+
 		public class Synchronize : MixedComponentSnapshotSystem<GameComboState, DefaultSetup>
 		{
 			public override ComponentType ExcludeComponent => typeof(Exclude);

@@ -23,7 +23,6 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 		{
 			Color color;
 			if (TeamDefine != null)
-			{
 				switch (TeamDefine.PredefinedTeam)
 				{
 					case EHeadOnTeamTarget.Blue:
@@ -38,11 +37,8 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 					default:
 						throw new ArgumentOutOfRangeException();
 				}
-			}
 			else
-			{
 				color = Color.black;
-			}
 
 			Gizmos.color = Color.Lerp(color, Color.white, 0.33f);
 			Gizmos.DrawWireSphere(transform.position, 0.25f);
@@ -52,10 +48,11 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 	public struct HeadOnFlag : IComponentData, IReadWriteComponentSnapshot<HeadOnFlag>
 	{
 		public struct Exclude : IComponentData
-		{}
-		
+		{
+		}
+
 		public int foo;
-		
+
 		public void WriteTo(DataStreamWriter writer, ref HeadOnFlag baseline, DefaultSetup setup, SerializeClientData jobData)
 		{
 			writer.WritePackedInt(foo, jobData.NetworkCompressionModel);
@@ -65,7 +62,7 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 		{
 			foo = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
 		}
-		
+
 		public class Synchronize : MixedComponentSnapshotSystem<HeadOnFlag, DefaultSetup>
 		{
 			public override ComponentType ExcludeComponent => typeof(Exclude);

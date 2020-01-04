@@ -33,7 +33,6 @@ namespace Patapon.Mixed.Systems
 					.Schedule(inputDeps);
 
 			return inputDeps;
-
 		}
 	}
 }

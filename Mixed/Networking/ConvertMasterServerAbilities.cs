@@ -53,23 +53,23 @@ namespace Patapon4TLB.Core
 				case string _ when string.IsNullOrEmpty(typeId):
 					throw new InvalidOperationException();
 				case string _ when typeId == GetInternal("basic_party"):
-					CreateAbility<DefaultPartyAbilityProvider, DefaultPartyAbilityProvider.Create>(new DefaultPartyAbilityProvider.Create
+					CreateAbility<DefaultPartyAbilityProvider, BaseRhythmAbilityProvider<DefaultPartyAbility>.Create>(new BaseRhythmAbilityProvider<DefaultPartyAbility>.Create
 					{
 						Owner   = entity,
 						Command = FindCommand(typeof(PartyCommand)),
-						Data = new DefaultPartyAbility()
+						Data = new DefaultPartyAbility
 						{
-							TickPerSecond = 100,
-							EnergyPerTick = 1,
+							TickPerSecond      = 100,
+							EnergyPerTick      = 1,
 							EnergyOnActivation = 30
 						}
 					});
 					break;
 				case string _ when typeId == GetInternal("tate/basic_march"):
 				case string _ when typeId == GetInternal("basic_march"):
-					CreateAbility<DefaultMarchAbilityProvider, DefaultMarchAbilityProvider.Create>(new DefaultMarchAbilityProvider.Create
+					CreateAbility<DefaultMarchAbilityProvider, BaseRhythmAbilityProvider<DefaultMarchAbility>.Create>(new BaseRhythmAbilityProvider<DefaultMarchAbility>.Create
 					{
-						Owner = entity,
+						Owner   = entity,
 						Command = FindCommand(typeof(MarchCommand)),
 						Data = new DefaultMarchAbility
 						{
@@ -78,7 +78,7 @@ namespace Patapon4TLB.Core
 					});
 					break;
 				case string _ when typeId == GetInternal("basic_backward"):
-					CreateAbility<DefaultBackwardAbilityProvider, DefaultBackwardAbilityProvider.Create>(new DefaultBackwardAbilityProvider.Create
+					CreateAbility<DefaultBackwardAbilityProvider, BaseRhythmAbilityProvider<DefaultBackwardAbility>.Create>(new BaseRhythmAbilityProvider<DefaultBackwardAbility>.Create
 					{
 						Owner   = entity,
 						Command = FindCommand(typeof(BackwardCommand)),
@@ -89,14 +89,14 @@ namespace Patapon4TLB.Core
 					});
 					break;
 				case string _ when typeId == GetInternal("basic_jump"):
-					CreateAbility<DefaultJumpAbilityProvider, DefaultJumpAbilityProvider.Create>(new DefaultJumpAbilityProvider.Create
+					CreateAbility<DefaultJumpAbilityProvider, BaseRhythmAbilityProvider<DefaultJumpAbility>.Create>(new BaseRhythmAbilityProvider<DefaultJumpAbility>.Create
 					{
-						Owner              = entity,
-						Command            = FindCommand(typeof(JumpCommand))
+						Owner   = entity,
+						Command = FindCommand(typeof(JumpCommand))
 					});
 					break;
 				case string _ when typeId == GetInternal("basic_retreat"):
-					CreateAbility<RetreatAbilityProvider, RetreatAbilityProvider.Create>(new RetreatAbilityProvider.Create
+					CreateAbility<RetreatAbilityProvider, BaseRhythmAbilityProvider<DefaultRetreatAbility>.Create>(new BaseRhythmAbilityProvider<DefaultRetreatAbility>.Create
 					{
 						Owner   = entity,
 						Command = FindCommand(typeof(RetreatCommand)),
@@ -122,23 +122,17 @@ namespace Patapon4TLB.Core
 		public static void Convert(ComponentSystemBase system, Entity entity, DynamicBuffer<UnitDefinedAbilities> abilities)
 		{
 			var array = abilities.ToNativeArray(Allocator.TempJob);
-			foreach (var ab in array)
-			{
-				_c(system, entity, ab.Type.ToString());
-			}
+			foreach (var ab in array) _c(system, entity, ab.Type.ToString());
 
 			array.Dispose();
 		}
 
 		public static void Convert(ComponentSystemBase system, Entity entity, List<Ability> abilities)
 		{
-			foreach (var ab in abilities)
-			{
-				_c(system, entity, ab.Type);
-			}
+			foreach (var ab in abilities) _c(system, entity, ab.Type);
 		}
 
-		public static string GetInternal(string ability)	
+		public static string GetInternal(string ability)
 		{
 			return string.Format(InternalFormat, ability);
 		}

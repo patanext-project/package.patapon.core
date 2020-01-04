@@ -1,3 +1,4 @@
+using System;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay;
 using Patapon.Mixed.GamePlay.Abilities;
@@ -47,13 +48,10 @@ namespace Systems.GamePlay
 							return;
 						}
 
-						var targetOffset  = targetOffsetFromEntity[owner.Target];
-						var groundState   = groundStateFromEntity[owner.Target];
-						var unitPlayState = unitPlayStateFromEntity[owner.Target];
-						if (state.Combo.IsFever && state.Combo.Score >= 50)
-						{
-							unitPlayState.MovementSpeed *= 1.2f;
-						}
+						var targetOffset                                                                = targetOffsetFromEntity[owner.Target];
+						var groundState                                                                 = groundStateFromEntity[owner.Target];
+						var unitPlayState                                                               = unitPlayStateFromEntity[owner.Target];
+						if (state.Combo.IsFever && state.Combo.Score >= 50) unitPlayState.MovementSpeed *= 1.2f;
 
 						if (!groundState.Value)
 							return;
@@ -93,13 +91,10 @@ namespace Systems.GamePlay
 
 						walkSpeed = unitPlayState.MovementSpeed * 0.5f;
 						// if we're near, let's slow down
-						var dist = math.distance(targetPosition.Value.x, translationFromEntity[owner.Target].Value.x);
-						if (dist < 0.5f)
-						{
-							walkSpeed *= math.clamp(dist * 0.5f, 0.5f, 1.0f);
-						}
+						var dist                   = math.distance(targetPosition.Value.x, translationFromEntity[owner.Target].Value.x);
+						if (dist < 0.5f) walkSpeed *= math.clamp(dist * 0.5f, 0.5f, 1.0f);
 
-						direction = System.Math.Sign(targetPosition.Value.x + targetOffset.Value - translationFromEntity[owner.Target].Value.x);
+						direction = Math.Sign(targetPosition.Value.x + targetOffset.Value - translationFromEntity[owner.Target].Value.x);
 
 						velocity.Value.x                 = math.lerp(velocity.Value.x, walkSpeed * direction, acceleration);
 						velocityFromEntity[owner.Target] = velocity;

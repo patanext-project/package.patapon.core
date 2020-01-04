@@ -12,14 +12,6 @@ namespace Patapon.Mixed.Units
 {
 	public class UnitProvider : BaseProviderBatch<UnitProvider.Create>
 	{
-		public struct Create
-		{
-			public BlobAssetReference<Collider> MovableCollider;
-			public UnitStatistics?              Settings;
-			public PhysicsMass?                 Mass;
-			public UnitDirection                Direction;
-		}
-
 		public override void GetComponents(out ComponentType[] entityComponents)
 		{
 			entityComponents = new ComponentType[]
@@ -77,6 +69,14 @@ namespace Patapon.Mixed.Units
 			var hitShape = EntityManager.CreateEntity(typeof(LocalToWorld), typeof(Translation), typeof(PhysicsCollider), typeof(HitShapeDescription), typeof(HitShapeFollowParentTag));
 			EntityManager.SetComponentData(hitShape, new PhysicsCollider {Value = data.MovableCollider});
 			EntityManager.AddComponentData(hitShape, new Owner {Target          = entity});
+		}
+
+		public struct Create
+		{
+			public BlobAssetReference<Collider> MovableCollider;
+			public UnitStatistics?              Settings;
+			public PhysicsMass?                 Mass;
+			public UnitDirection                Direction;
 		}
 	}
 }

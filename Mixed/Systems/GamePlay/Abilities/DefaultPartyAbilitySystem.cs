@@ -1,16 +1,10 @@
-using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay;
 using Patapon.Mixed.GamePlay.Abilities;
 using Patapon.Mixed.GamePlay.RhythmEngine;
-using Patapon.Mixed.RhythmEngine;
-using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Jobs;
-using Unity.Mathematics;
 using Unity.NetCode;
-using Unity.Transforms;
-using UnityEngine;
 
 namespace Systems.GamePlay
 {
@@ -47,7 +41,7 @@ namespace Systems.GamePlay
 								if (energy > 0)
 								{
 									partyAbility.Progression.Value = 0;
-									
+
 									var combo = comboStateFromEntity[state.Engine];
 									combo.JinnEnergy                   += energy * partyAbility.EnergyPerTick;
 									comboStateFromEntity[state.Engine] =  combo;
@@ -58,11 +52,13 @@ namespace Systems.GamePlay
 							{
 								var combo = comboStateFromEntity[state.Engine];
 								combo.JinnEnergy                   += partyAbility.EnergyOnActivation;
-								comboStateFromEntity[state.Engine] =  combo;	
+								comboStateFromEntity[state.Engine] =  combo;
 							}
 						}
 						else
+						{
 							partyAbility.Progression.Reset();
+						}
 					})
 					.WithNativeDisableParallelForRestriction(comboStateFromEntity)
 					.Schedule(inputDeps);

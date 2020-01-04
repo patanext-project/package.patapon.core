@@ -6,21 +6,14 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 {
 	public class VersusHeadOnRule : RuleBaseSystem
 	{
-		public struct Data : IComponentData
-		{
-			public int TimeLimit;
-			public int RespawnTime;
-			public int IncrementRespawnTime;
-			public int MaxRespawnTime;
-		}
-		
-		public override string Name => "Versus HeadOn Rules";
-
-		public RuleProperties<Data>               Properties;
-		public RuleProperties<Data>.Property<int> TimeLimit;
 		public RuleProperties<Data>.Property<int> BaseRespawnTime;
 		public RuleProperties<Data>.Property<int> IncrementRespawnTime;
 		public RuleProperties<Data>.Property<int> MaxRespawnTime;
+
+		public RuleProperties<Data>               Properties;
+		public RuleProperties<Data>.Property<int> TimeLimit;
+
+		public override string Name => "Versus HeadOn Rules";
 
 		protected override void OnCreate()
 		{
@@ -41,6 +34,14 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
 			return inputDeps;
+		}
+
+		public struct Data : IComponentData
+		{
+			public int TimeLimit;
+			public int RespawnTime;
+			public int IncrementRespawnTime;
+			public int MaxRespawnTime;
 		}
 	}
 }

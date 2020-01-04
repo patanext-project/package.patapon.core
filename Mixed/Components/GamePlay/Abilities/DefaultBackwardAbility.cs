@@ -27,7 +27,9 @@ namespace Patapon.Mixed.GamePlay.Abilities
 		public unsafe bool DidChange(DefaultBackwardAbility baseline)
 		{
 			fixed (void* addr = &this)
+			{
 				return UnsafeUtility.MemCmp(addr, &baseline, sizeof(DefaultBackwardAbility)) != 0;
+			}
 		}
 
 		public class NetSynchronize : MixedComponentSnapshotSystemDelta<DefaultBackwardAbility>

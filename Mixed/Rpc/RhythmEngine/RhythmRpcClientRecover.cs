@@ -6,8 +6,6 @@ using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.EcsComponents;
 using Unity.Burst;
-using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
@@ -19,7 +17,7 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 	public struct RhythmRpcClientRecover : IRpcCommand
 	{
 		public uint EngineGhostId;
-		
+
 		public bool ForceRecover;
 		public int  RecoverBeat;
 
@@ -45,7 +43,7 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 				LooseChain   = MainBit.GetBitAt(mask, pos++) == 1;
 			}
 			EngineGhostId = reader.ReadUInt(ref ctx);
-			RecoverBeat = reader.ReadInt(ref ctx);
+			RecoverBeat   = reader.ReadInt(ref ctx);
 		}
 
 		[BurstCompile]
@@ -67,9 +65,9 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	public class RhythmClientRecoverManageSystem : JobComponentSystem
 	{
+		private CreateSnapshotSystem                   m_CreateSnapshotSystem;
 		private EndSimulationEntityCommandBufferSystem m_EndBarrier;
 		private EntityQuery                            m_EventQuery;
-		private CreateSnapshotSystem                   m_CreateSnapshotSystem;
 
 		protected override void OnCreate()
 		{
@@ -82,10 +80,10 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 		{
 			var playerRelativeFromEntity = GetComponentDataFromEntity<Relative<PlayerDescription>>(true);
 			var networkOwnerFromEntity   = GetComponentDataFromEntity<NetworkOwner>(true);
-			var processFromEntity        = GetComponentDataFromEntity<FlowEngineProcess>(false);
+			var processFromEntity        = GetComponentDataFromEntity<FlowEngineProcess>();
 			var settingsFromEntity       = GetComponentDataFromEntity<RhythmEngineSettings>(true);
-			var stateFromEntity          = GetComponentDataFromEntity<RhythmEngineState>(false);
-			var comboFromEntity          = GetComponentDataFromEntity<GameComboState>(false);
+			var stateFromEntity          = GetComponentDataFromEntity<RhythmEngineState>();
+			var comboFromEntity          = GetComponentDataFromEntity<GameComboState>();
 
 			var ghostMap = m_CreateSnapshotSystem.GhostToEntityMap;
 

@@ -22,7 +22,7 @@ namespace Patapon.Mixed.Systems
 				new RhythmCommandDefinitionSequence(0, RhythmKeys.Left),
 				new RhythmCommandDefinitionSequence(1, RhythmKeys.Left),
 				new RhythmCommandDefinitionSequence(2, RhythmKeys.Left),
-				new RhythmCommandDefinitionSequence(3, RhythmKeys.Right),
+				new RhythmCommandDefinitionSequence(3, RhythmKeys.Right)
 			});
 			EntityManager.AddComponent(march, typeof(MarchCommand));
 
@@ -31,7 +31,7 @@ namespace Patapon.Mixed.Systems
 				new RhythmCommandDefinitionSequence(0, RhythmKeys.Right),
 				new RhythmCommandDefinitionSequence(1, RhythmKeys.Right),
 				new RhythmCommandDefinitionSequence(2, RhythmKeys.Left),
-				new RhythmCommandDefinitionSequence(3, RhythmKeys.Right),
+				new RhythmCommandDefinitionSequence(3, RhythmKeys.Right)
 			});
 			EntityManager.AddComponent(attack, typeof(AttackCommand));
 
@@ -40,7 +40,7 @@ namespace Patapon.Mixed.Systems
 				new RhythmCommandDefinitionSequence(0, RhythmKeys.Up),
 				new RhythmCommandDefinitionSequence(1, RhythmKeys.Up),
 				new RhythmCommandDefinitionSequence(2, RhythmKeys.Left),
-				new RhythmCommandDefinitionSequence(3, RhythmKeys.Right),
+				new RhythmCommandDefinitionSequence(3, RhythmKeys.Right)
 			});
 			EntityManager.AddComponent(defend, typeof(DefendCommand));
 
@@ -49,7 +49,7 @@ namespace Patapon.Mixed.Systems
 				new RhythmCommandDefinitionSequence(0, RhythmKeys.Right),
 				new RhythmCommandDefinitionSequence(1, RhythmKeys.Right),
 				new RhythmCommandDefinitionSequence(2, RhythmKeys.Up),
-				new RhythmCommandDefinitionSequence(3, RhythmKeys.Up),
+				new RhythmCommandDefinitionSequence(3, RhythmKeys.Up)
 			});
 			EntityManager.AddComponent(charge, typeof(ChargeCommand));
 
@@ -58,7 +58,7 @@ namespace Patapon.Mixed.Systems
 				new RhythmCommandDefinitionSequence(0, RhythmKeys.Right),
 				new RhythmCommandDefinitionSequence(1, RhythmKeys.Left),
 				new RhythmCommandDefinitionSequence(2, RhythmKeys.Right),
-				new RhythmCommandDefinitionSequence(3, RhythmKeys.Left),
+				new RhythmCommandDefinitionSequence(3, RhythmKeys.Left)
 			});
 			EntityManager.AddComponent(retreat, typeof(RetreatCommand));
 
@@ -67,7 +67,7 @@ namespace Patapon.Mixed.Systems
 				new RhythmCommandDefinitionSequence(0, RhythmKeys.Down),
 				new RhythmCommandDefinitionSequence(1, RhythmKeys.Down),
 				new RhythmCommandDefinitionSequence(2, RhythmKeys.Up),
-				new RhythmCommandDefinitionSequence(3, RhythmKeys.Up),
+				new RhythmCommandDefinitionSequence(3, RhythmKeys.Up)
 			});
 			EntityManager.AddComponent(jump, typeof(JumpCommand));
 
@@ -76,7 +76,7 @@ namespace Patapon.Mixed.Systems
 				new RhythmCommandDefinitionSequence(0, RhythmKeys.Left),
 				new RhythmCommandDefinitionSequence(1, RhythmKeys.Right),
 				new RhythmCommandDefinitionSequence(2, RhythmKeys.Down),
-				new RhythmCommandDefinitionSequence(3, RhythmKeys.Up),
+				new RhythmCommandDefinitionSequence(3, RhythmKeys.Up)
 			});
 			EntityManager.AddComponent(party, typeof(PartyCommand));
 
@@ -86,7 +86,7 @@ namespace Patapon.Mixed.Systems
 				new RhythmCommandDefinitionSequence(1, 1, RhythmKeys.Down),
 				new RhythmCommandDefinitionSequence(1, 1, RhythmKeys.Down),
 				new RhythmCommandDefinitionSequence(2, 1, RhythmKeys.Down),
-				new RhythmCommandDefinitionSequence(3, 0, RhythmKeys.Down),
+				new RhythmCommandDefinitionSequence(3, 0, RhythmKeys.Down)
 			});
 			EntityManager.AddComponent(summon, typeof(SummonCommand));
 
@@ -95,7 +95,7 @@ namespace Patapon.Mixed.Systems
 				new RhythmCommandDefinitionSequence(0, RhythmKeys.Up),
 				new RhythmCommandDefinitionSequence(1, RhythmKeys.Left),
 				new RhythmCommandDefinitionSequence(2, RhythmKeys.Up),
-				new RhythmCommandDefinitionSequence(3, RhythmKeys.Left),
+				new RhythmCommandDefinitionSequence(3, RhythmKeys.Left)
 			});
 			EntityManager.AddComponent(backward, typeof(BackwardCommand));
 
@@ -104,7 +104,7 @@ namespace Patapon.Mixed.Systems
 				new RhythmCommandDefinitionSequence(0, RhythmKeys.Up),
 				new RhythmCommandDefinitionSequence(1, RhythmKeys.Up),
 				new RhythmCommandDefinitionSequence(2, RhythmKeys.Right),
-				new RhythmCommandDefinitionSequence(3, RhythmKeys.Right),
+				new RhythmCommandDefinitionSequence(3, RhythmKeys.Right)
 			});
 			EntityManager.AddComponent(skip, typeof(SkipCommand));
 		}
@@ -116,7 +116,7 @@ namespace Patapon.Mixed.Systems
 			EntityManager.AddComponent(entity, typeof(DefaultRhythmCommand));
 			if (IsServer)
 				EntityManager.AddComponent(entity, typeof(GhostEntity));
-			
+
 			EntityManager.SetOrAddComponentData(entity, rhythmCommandData);
 
 			return entity;
@@ -124,7 +124,6 @@ namespace Patapon.Mixed.Systems
 
 		protected override void OnUpdate()
 		{
-
 		}
 	}
 }

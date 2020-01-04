@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
-using Unity.Entities.UniversalDelegates;
 using Unity.Jobs;
 
 namespace Patapon4TLB.Default
@@ -38,31 +36,13 @@ namespace Patapon4TLB.Default
 	[UpdateInGroup(typeof(FormationSystemGroup))]
 	public class FormationSystem : JobComponentSystem
 	{
-		// can't Entities-fy it because there is no ScheduleSingle for it... 
-		[BurstCompile]
-		private struct AddToParent : IJobForEachWithEntity<FormationParent>
-		{
-			public BufferFromEntity<FormationChild> ChildFromEntity;
-
-			public void Execute(Entity entity, int index, ref FormationParent parent)
-			{
-				if (!ChildFromEntity.Exists(parent.Value))
-				{
-					parent.Value = default;
-					return;
-				}
-
-				ChildFromEntity[parent.Value].Add(new FormationChild {Value = entity});
-			}
-		}
+		private EntityQuery m_ChildBufferQuery;
+		private EntityQuery m_ChildWithParentQuery;
 
 		private FormationSystemGroup m_FormationSystemGroup;
 
 		private EntityQuery m_FormationWithoutBufferQuery;
 		private EntityQuery m_FormationWithoutRootQuery;
-
-		private EntityQuery m_ChildBufferQuery;
-		private EntityQuery m_ChildWithParentQuery;
 
 		private EntityQuery m_RootWithChildQuery;
 
@@ -123,10 +103,7 @@ namespace Patapon4TLB.Default
 				EntityManager.AddComponent(m_FormationWithoutRootQuery, typeof(InFormation));
 			}
 
-			if (m_ChildBufferQuery.CalculateEntityCount() > 0)
-			{
-				inputDeps = Entities.ForEach((ref DynamicBuffer<FormationChild> buffer) => buffer.Clear()).Schedule(inputDeps);
-			}
+			if (m_ChildBufferQuery.CalculateEntityCount() > 0) inputDeps = Entities.ForEach((ref DynamicBuffer<FormationChild> buffer) => buffer.Clear()).Schedule(inputDeps);
 
 			if (m_ChildWithParentQuery.CalculateEntityCount() > 0)
 			{
@@ -156,7 +133,7 @@ namespace Patapon4TLB.Default
 			return inputDeps;
 		}
 
-		private static void Recursive(Entity root, Entity parent, DynamicBuffer<FormationChild> children,
+		private static void Recursive(Entity                               root,                Entity                           parent, DynamicBuffer<FormationChild> children,
 		                              ComponentDataFromEntity<InFormation> formationFromEntity, BufferFromEntity<FormationChild> childFromEntity)
 		{
 			for (int ent = 0, length = children.Length; ent < length; ent++)
@@ -169,6 +146,24 @@ namespace Patapon4TLB.Default
 
 				if (childFromEntity.Exists(child))
 					Recursive(root, child, childFromEntity[child], formationFromEntity, childFromEntity);
+			}
+		}
+
+		// can't Entities-fy it because there is no ScheduleSingle for it... 
+		[BurstCompile]
+		private struct AddToParent : IJobForEachWithEntity<FormationParent>
+		{
+			public BufferFromEntity<FormationChild> ChildFromEntity;
+
+			public void Execute(Entity entity, int index, ref FormationParent parent)
+			{
+				if (!ChildFromEntity.Exists(parent.Value))
+				{
+					parent.Value = default;
+					return;
+				}
+
+				ChildFromEntity[parent.Value].Add(new FormationChild {Value = entity});
 			}
 		}
 	}

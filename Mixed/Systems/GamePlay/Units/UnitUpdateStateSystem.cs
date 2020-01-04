@@ -11,6 +11,15 @@ namespace Patapon.Mixed.GamePlay
 	[UpdateInGroup(typeof(UnitInitStateSystemGroup))]
 	public class UnitCalculatePlayStateSystem : JobComponentSystem
 	{
+		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		{
+			return new JobUpdate
+			{
+				RhythmEngineRelativeFromEntity = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(true),
+				ComboStateFromEntity           = GetComponentDataFromEntity<GameComboState>(true)
+			}.Schedule(this, inputDeps);
+		}
+
 		private struct JobUpdate : IJobForEachWithEntity<UnitStatistics, UnitPlayState>
 		{
 			[ReadOnly] public ComponentDataFromEntity<Relative<RhythmEngineDescription>> RhythmEngineRelativeFromEntity;
@@ -20,26 +29,14 @@ namespace Patapon.Mixed.GamePlay
 			{
 				GameComboState comboState = default;
 
-				var hasRhythmEngine = RhythmEngineRelativeFromEntity.Exists(entity);
-				if (hasRhythmEngine)
-				{
-					comboState = ComboStateFromEntity[RhythmEngineRelativeFromEntity[entity].Target];
-				}
+				var hasRhythmEngine             = RhythmEngineRelativeFromEntity.Exists(entity);
+				if (hasRhythmEngine) comboState = ComboStateFromEntity[RhythmEngineRelativeFromEntity[entity].Target];
 
 				state.MovementSpeed       = comboState.IsFever ? settings.FeverWalkSpeed : settings.BaseWalkSpeed;
 				state.AttackSpeed         = settings.AttackSpeed;
 				state.MovementAttackSpeed = settings.MovementAttackSpeed;
 				state.Weight              = settings.Weight;
 			}
-		}
-
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
-		{
-			return new JobUpdate
-			{
-				RhythmEngineRelativeFromEntity = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(true),
-				ComboStateFromEntity           = GetComponentDataFromEntity<GameComboState>(true)
-			}.Schedule(this, inputDeps);
 		}
 	}
 }

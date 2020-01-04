@@ -12,10 +12,6 @@ namespace Bootstraps
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
 	public class SimpleRhythmBootstrap : BaseBootstrapSystem
 	{
-		public struct IsActive : IComponentData
-		{
-		}
-
 		protected override void Register(Entity bootstrap)
 		{
 			EntityManager.SetComponentData(bootstrap, new BootstrapComponent {Name = nameof(SimpleRhythmBootstrap)});
@@ -26,10 +22,7 @@ namespace Bootstraps
 			foreach (var world in World.AllWorlds)
 			{
 				var network = world.GetExistingSystem<NetworkStreamReceiveSystem>();
-				if (world.GetExistingSystem<SimpleRhythmTestSystem>() != null)
-				{
-					world.EntityManager.CreateEntity(typeof(IsActive));
-				}
+				if (world.GetExistingSystem<SimpleRhythmTestSystem>() != null) world.EntityManager.CreateEntity(typeof(IsActive));
 
 				if (world.GetExistingSystem<ClientSimulationSystemGroup>() != null)
 				{
@@ -48,6 +41,10 @@ namespace Bootstraps
 			}
 
 			EntityManager.DestroyEntity(bootstrapSingleton);
+		}
+
+		public struct IsActive : IComponentData
+		{
 		}
 	}
 
@@ -75,17 +72,13 @@ namespace Bootstraps
 					});
 
 					EntityManager.AddComponent(rhythmEnt, typeof(GhostEntity));
-					EntityManager.AddComponentData(rhythmEnt, new OwnerServerId { Value = connected.ServerId});
+					EntityManager.AddComponentData(rhythmEnt, new OwnerServerId {Value = connected.ServerId});
 					EntityManager.ReplaceOwnerData(rhythmEnt, connected.Player);
 
 					var process = EntityManager.GetComponentData<FlowEngineProcess>(rhythmEnt);
 					process.StartTime = GetTick(true).Ms;
 					EntityManager.SetComponentData(rhythmEnt, process);
 				});
-			}
-			else
-			{
-
 			}
 		}
 	}

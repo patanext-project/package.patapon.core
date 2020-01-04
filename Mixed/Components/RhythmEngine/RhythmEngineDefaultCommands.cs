@@ -4,7 +4,6 @@ namespace Patapon.Mixed.RhythmEngine
 {
 	public struct DefaultRhythmCommand : IComponentData
 	{
-
 	}
 
 	public struct MarchCommand : IComponentData

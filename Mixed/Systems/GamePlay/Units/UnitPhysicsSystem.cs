@@ -1,9 +1,6 @@
-using Patapon.Mixed.GamePlay.Team;
 using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
-using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -74,10 +71,8 @@ namespace Patapon.Mixed.GamePlay
 						}
 
 						if (!controllerState.ControlOverVelocity.y)
-						{
 							if (!groundState.Value)
 								velocity.Value += gravity * dt;
-						}
 
 						for (var v = 0; v != 3; v++)
 							velocity.Value[v] = math.isnan(velocity.Value[v]) ? 0.0f : velocity.Value[v];
@@ -98,7 +93,7 @@ namespace Patapon.Mixed.GamePlay
 						controllerState.OverrideTargetPosition = false;
 						controllerState.PassThroughEnemies     = false;
 						controllerState.PreviousPosition       = previousPosition;
-						
+
 						Debug.DrawRay(translation.Value, Vector3.up, Color.magenta);
 					})
 					.WithReadOnly(livableHealthFromEntity)

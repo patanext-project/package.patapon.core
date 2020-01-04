@@ -20,19 +20,19 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 
 	public struct VersusHeadOnPlayer : IComponentData
 	{
-
 	}
 
 	public struct MpVersusHeadOn : IGameMode, IReadWriteComponentSnapshot<MpVersusHeadOn, GhostSetup>
 	{
 		public struct Exclude : IComponentData
-		{}
-		
+		{
+		}
+
 		public class Synchronizer : MixedComponentSnapshotSystem<MpVersusHeadOn, GhostSetup>
 		{
 			public override ComponentType ExcludeComponent => typeof(Exclude);
 		}
-		
+
 		public enum State
 		{
 			OnInitialization,
@@ -41,7 +41,7 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 			OnRoundStart,
 			Playing,
 			OnRoundEnd,
-			OnMapEnd,
+			OnMapEnd
 		}
 
 		public State PlayState;
@@ -106,7 +106,7 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 		{
 			var compression = jobData.NetworkCompressionModel;
 
-			PlayState = (MpVersusHeadOn.State) reader.ReadPackedUIntDelta(ref ctx, (uint) baseline.PlayState, compression);
+			PlayState = (State) reader.ReadPackedUIntDelta(ref ctx, (uint) baseline.PlayState, compression);
 			EndTime   = reader.ReadPackedIntDelta(ref ctx, baseline.EndTime, compression);
 
 			jobData.GhostToEntityMap.TryGetValue(reader.ReadPackedUInt(ref ctx, compression), out Team0);

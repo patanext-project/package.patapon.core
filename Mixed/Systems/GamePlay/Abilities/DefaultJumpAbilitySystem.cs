@@ -1,16 +1,12 @@
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay;
 using Patapon.Mixed.GamePlay.Abilities;
-using Patapon.Mixed.GamePlay.RhythmEngine;
-using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
-using Unity.Transforms;
-using UnityEngine;
 
 namespace Systems.GamePlay
 {
@@ -57,13 +53,8 @@ namespace Systems.GamePlay
 						ability.IsJumping = ability.ActiveTime <= 0.5f;
 
 						if (!wasJumping && ability.IsJumping)
-						{
-							velocity.Value.y = math.max(velocity.Value.y + 30, 30);
-						}
-						else if (ability.IsJumping && velocity.Value.y > 0)
-						{
-							velocity.Value.y = math.max(velocity.Value.y - 60 * tick.Delta, 0);
-						}
+							velocity.Value.y                                                 = math.max(velocity.Value.y + 30, 30);
+						else if (ability.IsJumping && velocity.Value.y > 0) velocity.Value.y = math.max(velocity.Value.y - 60 * tick.Delta, 0);
 
 						if (ability.ActiveTime < 3.25f)
 							velocity.Value.x = math.lerp(velocity.Value.x, 0, tick.Delta * (ability.ActiveTime + 1));

@@ -33,7 +33,7 @@ namespace DefaultNamespace
 			Type[] result;
 
 			var directoryPath = $"{Application.streamingAssetsPath}/collections/";
-			var filePath = $"{directoryPath}systems_{type.ToString().ToLower()}.json";
+			var filePath      = $"{directoryPath}systems_{type.ToString().ToLower()}.json";
 			if (!File.Exists(filePath))
 			{
 				result = GetTypes(interfaceType, subclass)

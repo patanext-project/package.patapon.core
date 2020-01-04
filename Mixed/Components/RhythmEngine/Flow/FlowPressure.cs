@@ -5,31 +5,30 @@ namespace Patapon.Mixed.RhythmEngine.Flow
 {
 	public struct FlowPressure : IComponentData
 	{
-		public const float Error = 0.95f;
+		public const float  Error   = 0.95f;
 		public const double Perfect = 0.21f;
 
 		/// <summary>
-		/// Our custom Rhythm Key (Pata 1, Pon 2, Don 3, Chaka 4) 
+		///     Our custom Rhythm Key (Pata 1, Pon 2, Don 3, Chaka 4)
 		/// </summary>
 		public int KeyId;
 
 		public int RenderBeat;
 
 		/// <summary>
-		/// The time of the beat (in ms tick), it will be used to do server side check
+		///     The time of the beat (in ms tick), it will be used to do server side check
 		/// </summary>
 		public int Time;
 
 		/// <summary>
-		/// The score of the pressure [range -1 - 1, where 0 is perfect]
+		///     The score of the pressure [range -1 - 1, where 0 is perfect]
 		/// </summary>
 		/// <example>
-		/// Let's say we made an engine with BeatInterval = 0.5f.
-		/// The current time is 14.2f.
-		/// The actual beat is timed at 14f.
-		/// The score is 0.2f.
-		/// 
-		/// If we made one at 13.8f, the score should be the same (but negative)!
+		///     Let's say we made an engine with BeatInterval = 0.5f.
+		///     The current time is 14.2f.
+		///     The actual beat is timed at 14f.
+		///     The score is 0.2f.
+		///     If we made one at 13.8f, the score should be the same (but negative)!
 		/// </example>
 		public float Score;
 

@@ -1,3 +1,4 @@
+using System;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay;
 using Patapon.Mixed.GamePlay.Abilities;
@@ -8,7 +9,6 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
-using UnityEngine;
 
 namespace Systems.GamePlay
 {
@@ -48,13 +48,10 @@ namespace Systems.GamePlay
 							return;
 						}
 
-						var targetOffset  = targetOffsetFromEntity[owner.Target];
-						var groundState   = groundStateFromEntity[owner.Target];
-						var unitPlayState = unitPlayStateFromEntity[owner.Target];
-						if (state.Combo.IsFever && state.Combo.Score >= 50)
-						{
-							unitPlayState.MovementSpeed *= 1.2f;
-						}
+						var targetOffset                                                                = targetOffsetFromEntity[owner.Target];
+						var groundState                                                                 = groundStateFromEntity[owner.Target];
+						var unitPlayState                                                               = unitPlayStateFromEntity[owner.Target];
+						if (state.Combo.IsFever && state.Combo.Score >= 50) unitPlayState.MovementSpeed *= 1.2f;
 
 						if (!groundState.Value)
 							return;
@@ -93,7 +90,7 @@ namespace Systems.GamePlay
 						acceleration = math.min(acceleration * dt, 1);
 
 						walkSpeed = unitPlayState.MovementSpeed;
-						direction = System.Math.Sign(targetPosition.x + targetOffset.Value - translationFromEntity[owner.Target].Value.x);
+						direction = Math.Sign(targetPosition.x + targetOffset.Value - translationFromEntity[owner.Target].Value.x);
 
 						velocity.Value.x                 = math.lerp(velocity.Value.x, walkSpeed * direction, acceleration);
 						velocityFromEntity[owner.Target] = velocity;
