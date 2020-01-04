@@ -9,7 +9,6 @@ using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
 using Patapon4TLB.Default.Player;
 using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Systems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -24,56 +23,35 @@ namespace RhythmEngine
 	[UpdateInGroup(typeof(PresentationSystemGroup))]
 	public class RhythmEnginePlaySound : GameBaseSystem
 	{
-		private enum DataType
-		{
-			Beat,
-			Pressure,
-			Perfect
-		}
-
-		private enum PressureType
-		{
-			Voice,
-			Drum
-		}
-
-		private struct Data
-		{
-			public DataType Type;
-			public PressureType Pressure;
-			public int      PressureKey;
-			public int      PressureRank;
-		}
-
 		public bool IsNewBeat;
 		public bool IsNewPressure;
 
-		private EntityQuery m_EngineQuery;
+		private AsyncOperationModule m_AsyncOpModule;
+
+		private AudioClip                                   m_AudioOnNewBeat;
+		private AudioClip                                   m_AudioOnPerfect;
+		private Dictionary<int, Dictionary<int, AudioClip>> m_AudioOnPressureDrum;
+		private Dictionary<int, Dictionary<int, AudioClip>> m_AudioOnPressureVoice;
 
 		private AudioSource m_AudioSourceOnNewBeat;
 		private AudioSource m_AudioSourceOnNewPressureDrum;
 		private AudioSource m_AudioSourceOnNewPressureVoice;
 
-		private AudioClip m_AudioOnNewBeat;
-		private AudioClip m_AudioOnPerfect;
-		private Dictionary<int, Dictionary<int, AudioClip>> m_AudioOnPressureDrum;
-		private Dictionary<int, Dictionary<int, AudioClip>> m_AudioOnPressureVoice;
-
-		private AsyncOperationModule m_AsyncOpModule;
+		private EntityQuery m_EngineQuery;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			m_EngineQuery = GetEntityQuery(typeof(RhythmEngineDescription), typeof(Relative<PlayerDescription>));
-			m_AudioOnPressureDrum = new Dictionary<int, Dictionary<int, AudioClip>>();
-			m_AudioOnPressureVoice = new Dictionary<int, Dictionary<int, AudioClip>>(); 
-			
+			m_EngineQuery          = GetEntityQuery(typeof(RhythmEngineDescription), typeof(Relative<PlayerDescription>));
+			m_AudioOnPressureDrum  = new Dictionary<int, Dictionary<int, AudioClip>>();
+			m_AudioOnPressureVoice = new Dictionary<int, Dictionary<int, AudioClip>>();
+
 			void AddAsset(string path, Data data)
 			{
 				m_AsyncOpModule.Add(Addressables.LoadAssetAsync<AudioClip>($"core://Client/Sounds/Rhythm/{path}"), data);
 			}
-			
+
 			AudioSource CreateAudioSource(string name, float volume)
 			{
 				var audioSource = new GameObject("(Clip) " + name, typeof(AudioSource)).GetComponent<AudioSource>();
@@ -84,14 +62,14 @@ namespace RhythmEngine
 				return audioSource;
 			}
 
-			m_AudioSourceOnNewBeat = CreateAudioSource("On New Beat", 1);
+			m_AudioSourceOnNewBeat          = CreateAudioSource("On New Beat", 1);
 			m_AudioSourceOnNewPressureDrum  = CreateAudioSource("On New Pressure -> Drum", 1);
 			m_AudioSourceOnNewPressureVoice = CreateAudioSource("On New Pressure -> Voice", 1);
 
 			GetModule(out m_AsyncOpModule);
-			
+
 			AddAsset("Effects/on_new_beat.ogg", new Data {Type = DataType.Beat});
-			AddAsset("Effects/perfect_1.wav", new Data {Type = DataType.Perfect});
+			AddAsset("Effects/perfect_1.wav", new Data {Type   = DataType.Perfect});
 			for (var i = 0; i != 4; i++)
 			{
 				var key = i + 1;
@@ -106,7 +84,7 @@ namespace RhythmEngine
 					m_AudioOnPressureDrum[key][rank]  = null;
 					m_AudioOnPressureVoice[key][rank] = null;
 
-					AddAsset($"Drums/drum_{key}_{rank}.ogg", new Data {Type = DataType.Pressure, Pressure = PressureType.Drum, PressureKey = key, PressureRank = rank});
+					AddAsset($"Drums/drum_{key}_{rank}.ogg", new Data {Type  = DataType.Pressure, Pressure = PressureType.Drum, PressureKey  = key, PressureRank = rank});
 					AddAsset($"Drums/voice_{key}_{rank}.wav", new Data {Type = DataType.Pressure, Pressure = PressureType.Voice, PressureKey = key, PressureRank = rank});
 				}
 			}
@@ -121,7 +99,6 @@ namespace RhythmEngine
 					continue;
 
 				if (handle.Result != null)
-				{
 					switch (data.Type)
 					{
 						case DataType.Beat:
@@ -149,7 +126,6 @@ namespace RhythmEngine
 							m_AudioOnPerfect = handle.Result;
 							break;
 					}
-				}
 
 				m_AsyncOpModule.Handles.RemoveAtSwapBack(i);
 				i--;
@@ -157,10 +133,7 @@ namespace RhythmEngine
 
 			InitializeValues();
 
-			if (IsNewBeat && m_AudioOnNewBeat != null)
-			{
-				m_AudioSourceOnNewBeat.PlayOneShot(m_AudioOnNewBeat);
-			}
+			if (IsNewBeat && m_AudioOnNewBeat != null) m_AudioSourceOnNewBeat.PlayOneShot(m_AudioOnNewBeat);
 
 			ClearValues();
 		}
@@ -226,28 +199,19 @@ namespace RhythmEngine
 					var commandIsRunning = gameCommandState.IsGamePlayActive(process.Milliseconds)
 					                       || predictedCommand.State.IsGamePlayActive(process.Milliseconds);
 
-					var shouldFail = (commandIsRunning && !inputActive) || engineState.IsRecovery(currFlowBeat) || absRealScore > FlowPressure.Error;
-					if (shouldFail)
-					{
-						score = 2;
-					}
+					var shouldFail        = commandIsRunning && !inputActive || engineState.IsRecovery(currFlowBeat) || absRealScore > FlowPressure.Error;
+					if (shouldFail) score = 2;
 
 					// do the perfect sound
 					var isPerfect = !shouldFail && currentCommand.ActiveAtTime >= process.Milliseconds && currentCommand.Power >= 100;
-					if (isPerfect)
-					{
-						m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPerfect, 1.25f);
-					}
+					if (isPerfect) m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPerfect, 1.25f);
 
 					m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPressureDrum[key][score]);
 
 					if (false) // voiceoverlay
 					{
-						var id = score;
-						if (id > 0)
-						{
-							id = Mathf.Clamp(new Random((uint) Environment.TickCount).NextInt(-1, 3), 1, 2); // more chance to have a 1
-						}
+						var id         = score;
+						if (id > 0) id = Mathf.Clamp(new Random((uint) Environment.TickCount).NextInt(-1, 3), 1, 2); // more chance to have a 1
 
 						m_AudioSourceOnNewPressureVoice.PlayOneShot(m_AudioOnPressureVoice[key][id]);
 					}
@@ -260,6 +224,27 @@ namespace RhythmEngine
 		private void ClearValues()
 		{
 			IsNewBeat = false;
+		}
+
+		private enum DataType
+		{
+			Beat,
+			Pressure,
+			Perfect
+		}
+
+		private enum PressureType
+		{
+			Voice,
+			Drum
+		}
+
+		private struct Data
+		{
+			public DataType     Type;
+			public PressureType Pressure;
+			public int          PressureKey;
+			public int          PressureRank;
 		}
 	}
 }

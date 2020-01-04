@@ -1,10 +1,5 @@
 ﻿using System;
-using package.stormiumteam.shared;
 using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Data;
-using StormiumTeam.GameBase.Misc;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -13,43 +8,41 @@ using UnityEngine;
 
 namespace package.patapon.core
 {
-    [UpdateInGroup(typeof(OrderGroup.Presentation.UpdateCamera))]
-    [UpdateAfter(typeof(SynchronizeCameraStateSystem))]
-    // Update after animators
-    public class AnchorOrthographicCameraSystem : JobComponentSystem
-    {
-        protected override JobHandle OnUpdate(JobHandle inputDeps)
-        {
-            Entities.ForEach((Camera camera, ref Translation tr, ref AnchorOrthographicCameraData data, in SynchronizeCameraStateSystem.SystemData systemData) =>
-            {
-                camera.orthographicSize = systemData.Focus;
-                
-                data.Height = camera.orthographicSize;
-                data.Width  = camera.aspect * data.Height;
-            }).WithoutBurst().Run();
+	[UpdateInGroup(typeof(OrderGroup.Presentation.UpdateCamera))]
+	[UpdateAfter(typeof(SynchronizeCameraStateSystem))]
+	// Update after animators
+	public class AnchorOrthographicCameraSystem : JobComponentSystem
+	{
+		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		{
+			Entities.ForEach((Camera camera, ref Translation tr, ref AnchorOrthographicCameraData data, in SynchronizeCameraStateSystem.SystemData systemData) =>
+			{
+				camera.orthographicSize = systemData.Focus;
 
-            var targetAnchorFromEntity = GetComponentDataFromEntity<CameraTargetAnchor>(true);
-            inputDeps = Entities.ForEach((ref Translation translation, in AnchorOrthographicCameraData cameraData, in SynchronizeCameraStateSystem.SystemData systemData) =>
-            {
-                if (!targetAnchorFromEntity.Exists(systemData.StateData.Target))
-                    return;
+				data.Height = camera.orthographicSize;
+				data.Width  = camera.aspect * data.Height;
+			}).WithoutBurst().Run();
 
-                var anchor    = targetAnchorFromEntity[systemData.StateData.Target];
-                var camSize   = new float2(cameraData.Width, cameraData.Height);
-                var anchorPos = new float2(anchor.Value.x, anchor.Value.y);
-                if (anchor.Type == AnchorType.World)
-                {
-                    // todo: bla bla... world to screen point...
-                    throw new NotImplementedException();
-                }
+			var targetAnchorFromEntity = GetComponentDataFromEntity<CameraTargetAnchor>(true);
+			inputDeps = Entities.ForEach((ref Translation translation, in AnchorOrthographicCameraData cameraData, in SynchronizeCameraStateSystem.SystemData systemData) =>
+			{
+				if (!targetAnchorFromEntity.Exists(systemData.StateData.Target))
+					return;
 
-                var left = math.float2(1, 0) * (anchorPos.x * camSize.x);
-                var up   = math.float2(0, 1) * (anchorPos.y * camSize.y);
+				var anchor    = targetAnchorFromEntity[systemData.StateData.Target];
+				var camSize   = new float2(cameraData.Width, cameraData.Height);
+				var anchorPos = new float2(anchor.Value.x, anchor.Value.y);
+				if (anchor.Type == AnchorType.World)
+					// todo: bla bla... world to screen point...
+					throw new NotImplementedException();
 
-                translation.Value = math.float3(translation.Value.xy + left + up, -100);
-            }).WithReadOnly(targetAnchorFromEntity).Schedule(inputDeps);
+				var left = math.float2(1, 0) * (anchorPos.x * camSize.x);
+				var up   = math.float2(0, 1) * (anchorPos.y * camSize.y);
 
-            return inputDeps;
-        }
-    }
+				translation.Value = math.float3(translation.Value.xy + left + up, -100);
+			}).WithReadOnly(targetAnchorFromEntity).Schedule(inputDeps);
+
+			return inputDeps;
+		}
+	}
 }

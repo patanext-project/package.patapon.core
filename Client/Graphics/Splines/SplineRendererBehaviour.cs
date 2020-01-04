@@ -7,288 +7,272 @@ using UnityEngine;
 using UnityEngine.Serialization;
 #if UNITY_EDITOR
 using UnityEditor;
+
 #endif
 
 namespace package.patapon.core
 {
-    // TODO: UPGRADE
-    [Serializable]
-    public struct DSplineData : IComponentData
-    {
-        public float Tension;
-        public int   Step;
-        public bool  IsLooping;
-        
-        public float BoundsOutline;
-        public EActivationType ActivationType;
-    }
+	// TODO: UPGRADE
+	[Serializable]
+	public struct DSplineData : IComponentData
+	{
+		public float Tension;
+		public int   Step;
+		public bool  IsLooping;
 
-    [Serializable]
-    public struct DSplineBoundsData : IComponentData
-    {
-        public float3 Min;
-        public float3 Max;
-    }
+		public float           BoundsOutline;
+		public EActivationType ActivationType;
+	}
 
-    [InternalBufferCapacity(6)]
-    public struct DSplinePoint : IBufferElementData
-    {
-        public float3 Position;
-    }
-    
-   
-    public struct DSplineResult : IBufferElementData
-    {
-        public float3 Position;
-    }
+	[Serializable]
+	public struct DSplineBoundsData : IComponentData
+	{
+		public float3 Min;
+		public float3 Max;
+	}
 
-    public struct DSplineValidTag : IComponentData
-    {
-        
-    }
-    
-    public class SplineRendererBehaviour : MonoBehaviour
-    {
-        private EntityManager m_EntityManager;
-        private Entity m_Entity;
-        
-        // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
-        // Fields
-        // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
-        public int   Step    = 6;
-        public float Tension = 0.5f;
-        public bool  IsLooping;
+	[InternalBufferCapacity(6)]
+	public struct DSplinePoint : IBufferElementData
+	{
+		public float3 Position;
+	}
 
-        public EActivationType RefreshType;
-        public float           RefreshBoundsOutline = 1f;
-        
-        [SerializeField]
-        internal Transform[]  points;
 
-        private bool m_IsDirty;
-        
-        [SerializeField, FormerlySerializedAs("LineRenderer")]
-        private LineRenderer lineRenderer;
+	public struct DSplineResult : IBufferElementData
+	{
+		public float3 Position;
+	}
 
-        public LineRenderer[] lineRendererArray;
-        
-#if UNITY_EDITOR
-        private List<Vector3> m_EditorFillerArray;
-        private Vector3[] m_EditorResultArray;
-        #endif
-        
-        internal int LastLineRendererPositionCount;
-        internal int CameraRenderCount;
+	public struct DSplineValidTag : IComponentData
+	{
+	}
 
-        // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
-        // Unity Methods
-        // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
-        private void Awake()
-        {
-            MarkDirty();
-        }
+	public class SplineRendererBehaviour : MonoBehaviour
+	{
+		internal int  CameraRenderCount;
+		public   bool IsLooping;
 
-        private void OnEnable()
-        {
-            if (lineRenderer != null)
-            {
-                lineRendererArray = new[] {lineRenderer};
-            }
+		internal int LastLineRendererPositionCount;
 
-            m_EntityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-            m_Entity = m_EntityManager.CreateEntity();
-            
-            if (!m_EntityManager.HasComponent(m_Entity, typeof(SplineRendererBehaviour)))
-                m_EntityManager.AddComponentObject(m_Entity, this);
-                
-            m_EntityManager.AddComponentData(m_Entity, GetData());
-            m_EntityManager.AddComponentData(m_Entity, new DSplineBoundsData());
-            m_EntityManager.AddBuffer<DSplinePoint>(m_Entity);
-            var r = m_EntityManager.AddBuffer<DSplineResult>(m_Entity);
-            r.ResizeUninitialized(r.Capacity + 1); // go outside of the chunk memory
+		[SerializeField] [FormerlySerializedAs("LineRenderer")]
+		private LineRenderer lineRenderer;
 
-            if (lineRendererArray == null)
-            {
-                Debug.LogWarning("LineRender == null");
-                lineRendererArray = GetComponentsInChildren<LineRenderer>();
-            }
-            
-            MarkDirty();
-        }
+		public  LineRenderer[] lineRendererArray;
+		private Entity         m_Entity;
+		private EntityManager  m_EntityManager;
 
-        private void OnValidate()
-        {
-            var goEntity = GetComponent<GameObjectEntity>();
-            if (!Application.isPlaying || goEntity?.EntityManager == null)
-                return;
+		private bool m_IsDirty;
 
-            goEntity.EntityManager.SetComponentData(goEntity.Entity, GetData());
-            MarkDirty();
-        }
+		[SerializeField]
+		internal Transform[] points;
 
-        private void Update()
-        {
-            if (!m_IsDirty)
-                return;
+		public float RefreshBoundsOutline = 1f;
 
-            var canBeProcessed = points.Length > 0
-                                 && lineRendererArray != null;
+		public EActivationType RefreshType;
 
-            if (canBeProcessed && !m_EntityManager.HasComponent<DSplineValidTag>(m_Entity))
-            {
-                m_EntityManager.AddComponentData(m_Entity, new DSplineValidTag());
-            }
-            else if (!canBeProcessed && m_EntityManager.HasComponent<DSplineValidTag>(m_Entity))
-            {
-                m_EntityManager.RemoveComponent<DSplineValidTag>(m_Entity);
-            }
+		// -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
+		// Fields
+		// -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
+		public int   Step    = 6;
+		public float Tension = 0.5f;
 
-            m_IsDirty = false;
-        }
+		// -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
+		// Unity Methods
+		// -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
+		private void Awake()
+		{
+			MarkDirty();
+		}
 
-        public void MarkDirty()
-        {
-            m_IsDirty = true;
-        }
+		private void OnEnable()
+		{
+			if (lineRenderer != null) lineRendererArray = new[] {lineRenderer};
+
+			m_EntityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+			m_Entity        = m_EntityManager.CreateEntity();
+
+			if (!m_EntityManager.HasComponent(m_Entity, typeof(SplineRendererBehaviour)))
+				m_EntityManager.AddComponentObject(m_Entity, this);
+
+			m_EntityManager.AddComponentData(m_Entity, GetData());
+			m_EntityManager.AddComponentData(m_Entity, new DSplineBoundsData());
+			m_EntityManager.AddBuffer<DSplinePoint>(m_Entity);
+			var r = m_EntityManager.AddBuffer<DSplineResult>(m_Entity);
+			r.ResizeUninitialized(r.Capacity + 1); // go outside of the chunk memory
+
+			if (lineRendererArray == null)
+			{
+				Debug.LogWarning("LineRender == null");
+				lineRendererArray = GetComponentsInChildren<LineRenderer>();
+			}
+
+			MarkDirty();
+		}
+
+		private void OnValidate()
+		{
+			var goEntity = GetComponent<GameObjectEntity>();
+			if (!Application.isPlaying || goEntity?.EntityManager == null)
+				return;
+
+			goEntity.EntityManager.SetComponentData(goEntity.Entity, GetData());
+			MarkDirty();
+		}
+
+		private void Update()
+		{
+			if (!m_IsDirty)
+				return;
+
+			var canBeProcessed = points.Length > 0
+			                     && lineRendererArray != null;
+
+			if (canBeProcessed && !m_EntityManager.HasComponent<DSplineValidTag>(m_Entity))
+				m_EntityManager.AddComponentData(m_Entity, new DSplineValidTag());
+			else if (!canBeProcessed && m_EntityManager.HasComponent<DSplineValidTag>(m_Entity)) m_EntityManager.RemoveComponent<DSplineValidTag>(m_Entity);
+
+			m_IsDirty = false;
+		}
+
+		public void MarkDirty()
+		{
+			m_IsDirty = true;
+		}
 
 #if UNITY_EDITOR
-        private void OnDrawGizmos()
-        {
-            if (lineRendererArray == null || lineRendererArray.Length == 0)
-            {
-                lineRendererArray = new[] {lineRenderer};
-            }
-            
-            var currCam = Camera.current;
+		private void OnDrawGizmos()
+		{
+			if (lineRendererArray == null || lineRendererArray.Length == 0) lineRendererArray = new[] {lineRenderer};
 
-            var isSelected = Selection.activeGameObject == gameObject;
-            Gizmos.color = isSelected ? Color.blue : Color.magenta;
+			var currCam = Camera.current;
 
-            if (!Application.isPlaying
-                && lineRendererArray != null)
-            {
-                // Render spline
-                m_EditorFillerArray = m_EditorFillerArray ?? new List<Vector3>(points.Length * Step);
-                m_EditorFillerArray.Clear();
+			var isSelected = Selection.activeGameObject == gameObject;
+			Gizmos.color = isSelected ? Color.blue : Color.magenta;
 
-                CGraphicalCatmullromSplineUtility.CalculateCatmullromSpline
-                (
-                    points, 0, points.Length,
-                    m_EditorFillerArray, 0,
-                    Step, Tension, IsLooping
-                );
+			if (!Application.isPlaying
+			    && lineRendererArray != null)
+			{
+				// Render spline
+				m_EditorFillerArray = m_EditorFillerArray ?? new List<Vector3>(points.Length * Step);
+				m_EditorFillerArray.Clear();
 
-                if (points.Length > 0 && m_EditorFillerArray.Count > 0)
-                {
-                    m_EditorFillerArray[0]                             = points[0].localPosition;
-                    m_EditorFillerArray[m_EditorFillerArray.Count - 1] = points[points.Length - 1].localPosition;
-                }
+				CGraphicalCatmullromSplineUtility.CalculateCatmullromSpline
+				(
+					points, 0, points.Length,
+					m_EditorFillerArray, 0,
+					Step, Tension, IsLooping
+				);
 
-                if (m_EditorResultArray == null || m_EditorResultArray.Length != m_EditorFillerArray.Count)
-                {
-                    m_EditorResultArray = new Vector3[m_EditorFillerArray.Count];
-                }
+				if (points.Length > 0 && m_EditorFillerArray.Count > 0)
+				{
+					m_EditorFillerArray[0]                             = points[0].localPosition;
+					m_EditorFillerArray[m_EditorFillerArray.Count - 1] = points[points.Length - 1].localPosition;
+				}
 
-                for (int i = 0; i != m_EditorResultArray.Length; i++)
-                {
-                    m_EditorResultArray[i] = m_EditorFillerArray[i];
-                }
+				if (m_EditorResultArray == null || m_EditorResultArray.Length != m_EditorFillerArray.Count) m_EditorResultArray = new Vector3[m_EditorFillerArray.Count];
 
-                foreach (var lr in lineRendererArray)
-                {
-                    lr.positionCount = m_EditorResultArray.Length;
-                    lr.SetPositions(m_EditorResultArray);
-                }
-            }
+				for (var i = 0; i != m_EditorResultArray.Length; i++) m_EditorResultArray[i] = m_EditorFillerArray[i];
 
-            if (RefreshType == EActivationType.Bounds)
-            {
-                var boundsMin = new Vector3();
-                var boundsMax = new Vector3();
-                for (var i = 0; i != points.Length; i++)
-                {
-                    var point = (float3) points[i].transform.position;
+				foreach (var lr in lineRendererArray)
+				{
+					lr.positionCount = m_EditorResultArray.Length;
+					lr.SetPositions(m_EditorResultArray);
+				}
+			}
 
-                    if (i == 0)
-                    {
-                        boundsMin = point;
-                        boundsMax = point;
-                    }
+			if (RefreshType == EActivationType.Bounds)
+			{
+				var boundsMin = new Vector3();
+				var boundsMax = new Vector3();
+				for (var i = 0; i != points.Length; i++)
+				{
+					var point = (float3) points[i].transform.position;
 
-                    var min = boundsMin;
-                    var max = boundsMax;
-                    boundsMin = math.min(point, min);
-                    boundsMax = math.max(point, max);
-                }
+					if (i == 0)
+					{
+						boundsMin = point;
+						boundsMax = point;
+					}
 
-                boundsMin.x -= RefreshBoundsOutline;
-                boundsMin.y -= RefreshBoundsOutline;
-                boundsMax.x += RefreshBoundsOutline;
-                boundsMax.y += RefreshBoundsOutline;
+					var min = boundsMin;
+					var max = boundsMax;
+					boundsMin = math.min(point, min);
+					boundsMax = math.max(point, max);
+				}
 
-                var bounds = new Bounds();
-                bounds.SetMinMax(boundsMin, boundsMax);
+				boundsMin.x -= RefreshBoundsOutline;
+				boundsMin.y -= RefreshBoundsOutline;
+				boundsMax.x += RefreshBoundsOutline;
+				boundsMax.y += RefreshBoundsOutline;
 
-                var camBounds = new Bounds(currCam.transform.position, currCam.GetExtents()).Flat2D();
-                if (camBounds.Intersects(bounds))
-                    Gizmos.color = isSelected ? new Color(0.5f, 0.75f, 0.35f) : Color.green;
-                else
-                    Gizmos.color = isSelected ? new Color(0.75f, 0.35f, 0.5f) : Color.red;
+				var bounds = new Bounds();
+				bounds.SetMinMax(boundsMin, boundsMax);
 
-                Gizmos.DrawWireCube(camBounds.center, camBounds.size);
-                Gizmos.DrawWireCube(bounds.center, bounds.size);
-            }
-        }
+				var camBounds = new Bounds(currCam.transform.position, currCam.GetExtents()).Flat2D();
+				if (camBounds.Intersects(bounds))
+					Gizmos.color = isSelected ? new Color(0.5f, 0.75f, 0.35f) : Color.green;
+				else
+					Gizmos.color = isSelected ? new Color(0.75f, 0.35f, 0.5f) : Color.red;
+
+				Gizmos.DrawWireCube(camBounds.center, camBounds.size);
+				Gizmos.DrawWireCube(bounds.center, bounds.size);
+			}
+		}
 #endif
 
-        private void OnDisable()
-        {
-            void Pop()
-            {
-                // kinda weird to do a check on World, but there were some problems with it
-                if (m_EntityManager?.World == null)
-                    return;
-                
-                if (!m_EntityManager.Exists(m_Entity))
-                    return;
-            
-                m_EntityManager.DestroyEntity(m_Entity);
-            }
-            
-            Pop();
-            m_EntityManager = null;
-        }
+		private void OnDisable()
+		{
+			void Pop()
+			{
+				// kinda weird to do a check on World, but there were some problems with it
+				if (m_EntityManager?.World == null)
+					return;
 
-        // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
-        // Methods
-        // -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
-        public DSplineData GetData()
-        {
-            return new DSplineData
-            {
-                Step      = Step,
-                Tension   = Tension,
-                IsLooping = IsLooping
-            };
-        }
+				if (!m_EntityManager.Exists(m_Entity))
+					return;
 
-        public Vector3 GetPoint(int i)
-        {
-            return points[i].position;
-        }
+				m_EntityManager.DestroyEntity(m_Entity);
+			}
 
-        public void SetPoint(int i, Vector3 value)
-        {
-            points[i].position = value;
+			Pop();
+			m_EntityManager = null;
+		}
 
-            MarkDirty();
-        }
+		// -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
+		// Methods
+		// -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
+		public DSplineData GetData()
+		{
+			return new DSplineData
+			{
+				Step      = Step,
+				Tension   = Tension,
+				IsLooping = IsLooping
+			};
+		}
 
-        public void SetPointTransforms(params Transform[] transforms)
-        {
-            points = transforms;
-            
-            MarkDirty();
-        }
-    }
+		public Vector3 GetPoint(int i)
+		{
+			return points[i].position;
+		}
+
+		public void SetPoint(int i, Vector3 value)
+		{
+			points[i].position = value;
+
+			MarkDirty();
+		}
+
+		public void SetPointTransforms(params Transform[] transforms)
+		{
+			points = transforms;
+
+			MarkDirty();
+		}
+
+#if UNITY_EDITOR
+		private List<Vector3> m_EditorFillerArray;
+		private Vector3[]     m_EditorResultArray;
+#endif
+	}
 }

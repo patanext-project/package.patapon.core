@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Misc;
 using Misc.Extensions;
 using package.stormiumteam.shared.ecs;
@@ -7,15 +5,11 @@ using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.GamePlay.Units;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
-using Patapon4TLB.Default.Player;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
-using Random = UnityEngine.Random;
 
 namespace Patapon.Client.RhythmEngine
 {
@@ -23,19 +17,20 @@ namespace Patapon.Client.RhythmEngine
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	public partial class RhythmEnginePlaySong : GameBaseSystem
 	{
-		public bool HasEngineTarget;
-
 		public SongDescription CurrentSong;
-
-		private string      m_PreviousSongId;
-		private EntityQuery m_EngineQuery;
-
-		private AudioClip m_FeverClip;
-		private AudioClip m_FeverLostClip;
+		public bool            HasEngineTarget;
 
 		private AudioSource[] m_BgmSources;
 		private AudioSource   m_CommandSource;
 		private AudioSource   m_CommandVfxSource;
+		private EntityQuery   m_EngineQuery;
+
+		private AudioClip m_FeverClip;
+		private AudioClip m_FeverLostClip;
+
+		private int m_LastCommandStartTime;
+
+		private string m_PreviousSongId;
 
 		private SongSystem m_SongSystem;
 
@@ -62,36 +57,32 @@ namespace Patapon.Client.RhythmEngine
 			m_CommandVfxSource      = CreateAudioSource("Vfx Command", 1);
 			m_CommandVfxSource.loop = false;
 
-			m_SongSystem = World.GetOrCreateSystem<SongSystem>();
+			m_SongSystem                 = World.GetOrCreateSystem<SongSystem>();
 			m_SongSystem.MapTargetSongId = "test_song";
 
-			this.RegisterAsyncOperations();
+			RegisterAsyncOperations();
 		}
 
 		protected override void OnUpdate()
 		{
-			this.UpdateAsyncOperations();
+			UpdateAsyncOperations();
 
 			if (m_PreviousSongId != m_SongSystem.MapTargetSongId)
 			{
 				m_PreviousSongId = m_SongSystem.MapTargetSongId;
 				CurrentSong?.Dispose();
 
-				if (m_PreviousSongId != null && m_SongSystem.Files.ContainsKey(m_PreviousSongId))
-				{
-					CurrentSong = new SongDescription(m_SongSystem.Files[m_PreviousSongId]);
-				}
+				if (m_PreviousSongId != null && m_SongSystem.Files.ContainsKey(m_PreviousSongId)) CurrentSong = new SongDescription(m_SongSystem.Files[m_PreviousSongId]);
 			}
 
 			if (CurrentSong?.IsFinalized == false)
 				return;
 
 			InitializeValues();
-			this.Render();
+			Render();
 			ClearValues();
 		}
 
-		private int m_LastCommandStartTime;
 		private void InitializeValues()
 		{
 			var player = this.GetFirstSelfGamePlayer();
@@ -122,27 +113,20 @@ namespace Patapon.Client.RhythmEngine
 			IsNewBeat       = engineState.IsNewBeat;
 
 			if (serverCommandState.StartTime >= currentCommand.ActiveAtTime)
-			{
 				ComboState = EntityManager.GetComponentData<GameComboState>(engine);
-			}
 			else
-			{
 				ComboState = EntityManager.GetComponentData<GameComboPredictedClient>(engine).State;
-			}
 
-			var isCommandClient = false;
-			var isCommandServer = serverCommandState.StartTime <= EngineProcess.Milliseconds && serverCommandState.EndTime > EngineProcess.Milliseconds;
-			if (EntityManager.HasComponent<FlowSimulateProcess>(engine))
-			{
-				isCommandClient = currentCommand.ActiveAtTime <= EngineProcess.Milliseconds && clientCommandState.State.EndTime > EngineProcess.Milliseconds;
-			}
-			
+			var isCommandClient                                                          = false;
+			var isCommandServer                                                          = serverCommandState.StartTime <= EngineProcess.Milliseconds && serverCommandState.EndTime > EngineProcess.Milliseconds;
+			if (EntityManager.HasComponent<FlowSimulateProcess>(engine)) isCommandClient = currentCommand.ActiveAtTime <= EngineProcess.Milliseconds && clientCommandState.State.EndTime > EngineProcess.Milliseconds;
+
 			var tmp = serverCommandState.StartTime <= EngineProcess.Milliseconds && serverCommandState.StartTime > EngineProcess.Milliseconds
 			          || clientCommandState.State.StartTime <= EngineProcess.Milliseconds && clientCommandState.State.EndTime > EngineProcess.Milliseconds;
-			
+
 			CommandStartTime = math.max(clientCommandState.State.StartTime, serverCommandState.StartTime);
 			CommandEndTime   = math.max(clientCommandState.State.EndTime, serverCommandState.EndTime);
-			if (tmp && !IsCommand || (IsCommand && CommandStartTime != m_LastCommandStartTime))
+			if (tmp && !IsCommand || IsCommand && CommandStartTime != m_LastCommandStartTime)
 			{
 				m_LastCommandStartTime = CommandStartTime;
 				IsNewCommand           = true;

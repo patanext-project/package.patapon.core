@@ -1,4 +1,3 @@
-using Patapon.Mixed.GameModes.VSHeadOn;
 using StormiumTeam.GameBase;
 using UnityEngine;
 using UnityEngine.AddressableAssets;

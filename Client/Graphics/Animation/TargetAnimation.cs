@@ -8,25 +8,25 @@ namespace package.patapon.core.Animation
 		public static readonly TargetAnimation Null = new TargetAnimation(null);
 
 		/// <summary>
-		/// The system type of the animation
+		///     The system type of the animation
 		/// </summary>
 		public readonly Type Type;
 
 		/// <summary>
-		/// The previous system type before the new animation (used for transition)
+		///     The previous system type before the new animation (used for transition)
 		/// </summary>
 		public readonly Type PreviousType;
 
 		/// <summary>
-		/// Can other animations override this one?
-		/// (There can be some exceptions where some animations can override on some conditions or if it's urgent)
+		///     Can other animations override this one?
+		///     (There can be some exceptions where some animations can override on some conditions or if it's urgent)
 		/// </summary>
 		public readonly bool AllowOverride;
 
 		public readonly bool AllowTransition;
 
 		/// <summary>
-		/// The current weight of this animation, use this for transition
+		///     The current weight of this animation, use this for transition
 		/// </summary>
 		public readonly float Weight;
 

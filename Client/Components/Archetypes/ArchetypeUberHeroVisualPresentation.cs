@@ -13,8 +13,9 @@ namespace Components.Archetypes
 			RightWeapon
 		}
 
-		public Transform MaskRoot;
 		public Transform LeftWeaponRoot;
+
+		public Transform MaskRoot;
 		public Transform RightWeaponRoot;
 
 		public Transform GetRoot(RootType rootType)
@@ -34,7 +35,6 @@ namespace Components.Archetypes
 
 		public override void UpdateData()
 		{
-			
 		}
 	}
 }

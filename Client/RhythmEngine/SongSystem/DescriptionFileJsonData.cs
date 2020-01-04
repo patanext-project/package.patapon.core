@@ -14,7 +14,9 @@ namespace Patapon.Client.RhythmEngine
 
 		public string name;
 		public string description;
+
 		public string identifier;
+
 		// disk files start with 'file://'
 		// addressables file start with 'core://'
 		public string path;

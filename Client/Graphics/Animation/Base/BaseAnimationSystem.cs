@@ -5,15 +5,14 @@ using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Jobs;
 using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace package.patapon.core.Animation.Units
 {
 	[AlwaysSynchronizeSystem]
 	public abstract class BaseAnimationSystem : JobGameBaseSystem
 	{
-		protected Type SystemType;
 		protected AsyncOperationModule AsyncOp;
+		protected Type                 SystemType;
 
 		protected override void OnCreate()
 		{
@@ -31,14 +30,11 @@ namespace package.patapon.core.Animation.Units
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			for (var i = 0; i != AsyncOp.Handles.Count; i++)
-			{
-				OnAsyncOpUpdate(ref i);
-			}
+			for (var i = 0; i != AsyncOp.Handles.Count; i++) OnAsyncOpUpdate(ref i);
 
 			if (!OnBeforeForEach())
 				return default;
-			
+
 			Entities.ForEach((UnitVisualBackend backend, UnitVisualAnimation animation) =>
 			{
 				// main
@@ -69,7 +65,7 @@ namespace package.patapon.core.Animation.Units
 			base.OnCreate();
 
 			GetModule(out AbilityFinder);
-			AbilityQuery = GetAbilityQuery();
+			AbilityQuery        = GetAbilityQuery();
 			AbilityFinder.Query = AbilityQuery;
 		}
 

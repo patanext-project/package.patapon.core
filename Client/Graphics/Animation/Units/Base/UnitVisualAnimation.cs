@@ -6,7 +6,6 @@ using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.Playables;
-using GameObjectEntity = Unity.Entities.GameObjectEntity;
 
 namespace Patapon.Client.Graphics.Animation.Units
 {
@@ -44,7 +43,7 @@ namespace Patapon.Client.Graphics.Animation.Units
 			DestroyPlayableGraph();
 			CreatePlayableGraph($"{backend.DstEntity}");
 			CreatePlayable();
-			
+
 			m_PlayableGraph.Stop();
 		}
 
@@ -52,7 +51,7 @@ namespace Patapon.Client.Graphics.Animation.Units
 		{
 			Presentation = presentation;
 			SetAnimatorOutput("standard output", presentation.Animator);
-			
+
 			m_PlayableGraph.Stop();
 			m_PlayableGraph.Play();
 		}
@@ -75,11 +74,10 @@ namespace Patapon.Client.Graphics.Animation.Units
 
 	public class UnitVisualBackend : RuntimeAssetBackend<UnitVisualPresentation>
 	{
+		public  string              CurrentArchetype;
 		private UnitVisualAnimation m_Animation;
 
 		public UnitVisualAnimation Animation => m_Animation;
-
-		public string CurrentArchetype;
 
 		public override void OnTargetUpdate()
 		{
@@ -114,7 +112,7 @@ namespace Patapon.Client.Graphics.Animation.Units
 	public class UnitVisualBackendSpawnSystem : PoolingSystem<UnitVisualBackend, UnitVisualPresentation>
 	{
 		protected override string AddressableAsset => "core://Client/Models/UberHero/EmptyPresentation.prefab";
-		
+
 		protected override EntityQuery GetQuery()
 		{
 			return GetEntityQuery(typeof(UnitDescription));

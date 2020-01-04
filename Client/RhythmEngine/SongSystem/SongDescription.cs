@@ -18,68 +18,18 @@ namespace Patapon.Client.RhythmEngine
 		public const string BgmKeyFeverEntrance  = "fever_entrance";
 		public const string BgmKeyFever          = "fever";
 
-		private enum OpType
-		{
-			BgmFull,
-			BgmSlice,
-			Command,
-		}
-
-		private enum OpBgmSliceType
-		{
-			NormalEntrance,
-			Normal,
-			FeverEntrance,
-			Fever
-		}
-
-		private struct OperationData
-		{
-			public OpType Type;
-
-			public OpBgmSliceType BgmSliceType;
-			public int            BgmSliceNormalCmdRank;
-			public int            BgmSliceOrder;
-
-			public string CmdType;
-			public string CmdIdentifier;
-			public int    CmdIndex;
-		}
-
-		public struct BgmComboPart
-		{
-			public int             ScoreNeeded;
-			public int             ClipCount;
-			public List<AudioClip> Clips;
-		}
-
-		private List<AsyncOperationHandle> m_AddrOperations;
-		private List<OperationData>        m_OperationData;
-		private bool                       m_IsFinalized;
-
-		public bool AreAddressableCompleted
-		{
-			get
-			{
-				var done = 0;
-				for (var i = 0; i != m_AddrOperations.Count; i++)
-					if (m_AddrOperations[i].IsDone)
-						done++;
-				return done == m_AddrOperations.Count;
-			}
-		}
-
-		public bool IsFinalized => m_IsFinalized;
-
 		public readonly DescriptionFileJsonData File;
+		public          List<BgmComboPart>      BgmComboParts;
+
+		public List<AudioClip> BgmEntranceClips;
+		public List<AudioClip> BgmFeverEntranceClips;
+		public List<AudioClip> BgmFeverLoopClips;
 
 		// example of the possibilities: normal, pre-fever, fever
 		public Dictionary<string, Dictionary<string, List<AudioClip>>> CommandsAudio;
 
-		public List<AudioClip>    BgmEntranceClips;
-		public List<AudioClip>    BgmFeverEntranceClips;
-		public List<AudioClip>    BgmFeverLoopClips;
-		public List<BgmComboPart> BgmComboParts;
+		private readonly List<AsyncOperationHandle> m_AddrOperations;
+		private readonly List<OperationData>        m_OperationData;
 
 		public SongDescription(DescriptionFileJsonData file)
 		{
@@ -115,10 +65,7 @@ namespace Patapon.Client.RhythmEngine
 			}
 
 			var useFullAudio = file.bgmAudioFull != null;
-			if (useFullAudio)
-			{
-				throw new NotImplementedException();
-			}
+			if (useFullAudio) throw new NotImplementedException();
 
 			if (file.bgmAudioSliced == null)
 				throw new Exception("sliced and full values are not set!");
@@ -143,52 +90,71 @@ namespace Patapon.Client.RhythmEngine
 
 			var order = 0;
 			foreach (var bgm in file.bgmAudioSliced)
+			foreach (var bgmAudioFile in bgm.Value)
 			{
-				foreach (var bgmAudioFile in bgm.Value)
+				var data = new OperationData {Type = OpType.BgmSlice, BgmSliceOrder = order};
+				if (bgm.Key == BgmKeyNormalEntrance)
 				{
-					var data = new OperationData {Type = OpType.BgmSlice, BgmSliceOrder = order};
-					if (bgm.Key == BgmKeyNormalEntrance)
-					{
-						data.BgmSliceType = OpBgmSliceType.NormalEntrance;
-					}
-					else if (bgm.Key.StartsWith(BgmKeyNormal))
-					{
-						data.BgmSliceType = OpBgmSliceType.Normal;
-						if (bgm.Key == BgmKeyNormal) data.BgmSliceNormalCmdRank = 0;
-						else if (bgm.Key.StartsWith(BgmKeyNormal + "_"))
-						{
-							var strRank = bgm.Key.Replace(BgmKeyNormal + "_", string.Empty);
-							if (int.TryParse(strRank, out var rank))
-							{
-								data.BgmSliceNormalCmdRank = rank;
-							}
-						}
-					}
-					else if (bgm.Key == BgmKeyFeverEntrance)
-					{
-						data.BgmSliceType = OpBgmSliceType.FeverEntrance;
-					}
-					else if (bgm.Key == BgmKeyFever)
-					{
-						data.BgmSliceType = OpBgmSliceType.Fever;
-					}
-
-					var op = Addressables.LoadAssetAsync<AudioClip>(bgmAudioFile.Replace("{p}", $"{file.path}/{file.identifier}/bgm/"));
-
-					m_OperationData.Add(data);
-					m_AddrOperations.Add(op);
-
-					order++;
+					data.BgmSliceType = OpBgmSliceType.NormalEntrance;
 				}
+				else if (bgm.Key.StartsWith(BgmKeyNormal))
+				{
+					data.BgmSliceType = OpBgmSliceType.Normal;
+					if (bgm.Key == BgmKeyNormal)
+					{
+						data.BgmSliceNormalCmdRank = 0;
+					}
+					else if (bgm.Key.StartsWith(BgmKeyNormal + "_"))
+					{
+						var strRank                                                         = bgm.Key.Replace(BgmKeyNormal + "_", string.Empty);
+						if (int.TryParse(strRank, out var rank)) data.BgmSliceNormalCmdRank = rank;
+					}
+				}
+				else if (bgm.Key == BgmKeyFeverEntrance)
+				{
+					data.BgmSliceType = OpBgmSliceType.FeverEntrance;
+				}
+				else if (bgm.Key == BgmKeyFever)
+				{
+					data.BgmSliceType = OpBgmSliceType.Fever;
+				}
+
+				var op = Addressables.LoadAssetAsync<AudioClip>(bgmAudioFile.Replace("{p}", $"{file.path}/{file.identifier}/bgm/"));
+
+				m_OperationData.Add(data);
+				m_AddrOperations.Add(op);
+
+				order++;
+			}
+		}
+
+		public bool AreAddressableCompleted
+		{
+			get
+			{
+				var done = 0;
+				for (var i = 0; i != m_AddrOperations.Count; i++)
+					if (m_AddrOperations[i].IsDone)
+						done++;
+				return done == m_AddrOperations.Count;
+			}
+		}
+
+		public bool IsFinalized { get; private set; }
+
+		public void Dispose()
+		{
+			for (var i = 0; i != m_AddrOperations.Count; i++)
+			{
+				Addressables.Release(m_AddrOperations[i]);
+				if (m_AddrOperations[i].Result != null)
+					Addressables.Release(m_AddrOperations[i].Result);
 			}
 		}
 
 		public void FinalizeOperation()
 		{
-			if (m_IsFinalized)
-			{
-				throw new InvalidOperationException("Already finalized song.");
-			}
+			if (IsFinalized) throw new InvalidOperationException("Already finalized song.");
 
 			if (!AreAddressableCompleted)
 				throw new InvalidOperationException("We haven't loaded all addressable asset yet!");
@@ -272,29 +238,52 @@ namespace Patapon.Client.RhythmEngine
 
 			BgmEntranceClips = bgmEntranceClips;
 			foreach (var combo in bgmComboPartClips)
-			{
 				BgmComboParts.Add(new BgmComboPart
 				{
 					ScoreNeeded = combo.Key,
 					ClipCount   = combo.Value.Count,
 					Clips       = combo.Value
 				});
-			}
 
 			BgmFeverEntranceClips = bgmFeverEntranceClips;
 			BgmFeverLoopClips     = bgmFeverLoopClips;
 
-			m_IsFinalized = true;
+			IsFinalized = true;
 		}
 
-		public void Dispose()
+		private enum OpType
 		{
-			for (var i = 0; i != m_AddrOperations.Count; i++)
-			{
-				Addressables.Release(m_AddrOperations[i]);
-				if (m_AddrOperations[i].Result != null)
-					Addressables.Release(m_AddrOperations[i].Result);
-			}
+			BgmFull,
+			BgmSlice,
+			Command
+		}
+
+		private enum OpBgmSliceType
+		{
+			NormalEntrance,
+			Normal,
+			FeverEntrance,
+			Fever
+		}
+
+		private struct OperationData
+		{
+			public OpType Type;
+
+			public OpBgmSliceType BgmSliceType;
+			public int            BgmSliceNormalCmdRank;
+			public int            BgmSliceOrder;
+
+			public string CmdType;
+			public string CmdIdentifier;
+			public int    CmdIndex;
+		}
+
+		public struct BgmComboPart
+		{
+			public int             ScoreNeeded;
+			public int             ClipCount;
+			public List<AudioClip> Clips;
 		}
 
 		private struct PriorityBgmSlice : IComparable<PriorityBgmSlice>

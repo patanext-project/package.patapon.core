@@ -6,7 +6,6 @@ using package.stormiumteam.shared.ecs;
 using Patapon4TLB.Default.Player;
 using StormiumTeam.GameBase.Systems;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -17,23 +16,13 @@ namespace DefaultNamespace
 	[UpdateAfter(typeof(UpdateInputSystem))]
 	public class GrabInputSystem : BaseSyncInputSystem<GrabInputSystem.Data>
 	{
-		public struct Data : IInitializeInputEventData
-		{
-			public bool IsActive;
-
-			public void Initialize(InputAction.CallbackContext ctx)
-			{
-				IsActive = ctx.action.ReadValue<float>() > 0;
-			}
-		}
-
 		public const string AssetFileName = "global_inputs.inputactions";
 		public const int    ActionLength  = 4;
 
 		private InputAction[] m_Actions;
-		private InputAction m_PanningAction;
 
 		private    UserCommand m_LocalCommand;
+		private    InputAction m_PanningAction;
 		public ref UserCommand LocalCommand => ref m_LocalCommand;
 
 		protected override void OnCreate()
@@ -64,11 +53,8 @@ namespace DefaultNamespace
 
 		protected override void OnUpdate()
 		{
-			var actions = m_LocalCommand.GetRhythmActions();
-			foreach (ref var ac in actions)
-			{
-				ac.flags = 0;
-			}
+			var actions                              = m_LocalCommand.GetRhythmActions();
+			foreach (ref var ac in actions) ac.flags = 0;
 
 			foreach (var ev in InputEvents)
 			{
@@ -81,7 +67,7 @@ namespace DefaultNamespace
 				}
 			}
 
-			m_LocalCommand.Panning = m_PanningAction.ReadValue<float>(); 
+			m_LocalCommand.Panning = m_PanningAction.ReadValue<float>();
 
 			InputEvents.Clear();
 
@@ -103,8 +89,8 @@ namespace DefaultNamespace
 		protected override void OnAssetRefresh()
 		{
 			var actionPressureMap = Asset.FindActionMap("Pressures", true);
-			var actionCameraMap = Asset.FindActionMap("Camera", true);
-			
+			var actionCameraMap   = Asset.FindActionMap("Camera", true);
+
 			m_Actions = new InputAction[ActionLength];
 
 			for (var i = 0; i != ActionLength; i++)
@@ -117,6 +103,16 @@ namespace DefaultNamespace
 			}
 
 			m_PanningAction = actionCameraMap.FindAction("Panning", true);
+		}
+
+		public struct Data : IInitializeInputEventData
+		{
+			public bool IsActive;
+
+			public void Initialize(InputAction.CallbackContext ctx)
+			{
+				IsActive = ctx.action.ReadValue<float>() > 0;
+			}
 		}
 	}
 }

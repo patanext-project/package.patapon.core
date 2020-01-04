@@ -1,14 +1,12 @@
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Graphics.Animation.Units;
 using Patapon.Mixed;
-using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.Units;
 using Patapon4TLB.Default.Player;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
@@ -17,76 +15,12 @@ namespace package.patapon.core.Animation.Units
 	[UpdateInGroup(typeof(ClientUnitAnimationGroup))]
 	public class UnitPressureClientAnimation : BaseAnimationSystem
 	{
-		public struct PlayableInitData
-		{
-			public AnimationClip[] Clips;
-		}
-
-		public class SystemPlayable : BasePlayable<PlayableInitData>
-		{
-			public UnitVisualPlayableBehaviourData VisualData;
-
-			public double TransitionStart;
-			public double TransitionEnd;
-
-			public int CurrentKey;
-
-			protected override void OnInitialize(PlayableInitData data)
-			{
-				for (var i = 0; i != data.Clips.Length; i++)
-				{
-					var clipPlayable = AnimationClipPlayable.Create(Graph, data.Clips[i]);
-					Graph.Connect(clipPlayable, 0, Mixer, i);
-				}
-			}
-
-			public override void PrepareFrame(Playable playable, FrameData info)
-			{
-				var inputCount = Mixer.GetInputCount();
-				var e          = VisualAnimation.GetWeightFixed(Root.GetTime(), TransitionStart, TransitionEnd);
-
-				for (var i = 0; i != inputCount; i++)
-				{
-					Mixer.SetInputWeight(i, i == CurrentKey - 1 ? 1 : 0);
-				}
-
-				if (!VisualData.CurrAnimation.AllowTransition && VisualData.CurrAnimation.Type != SystemType)
-				{
-					e = 0;
-				}
-
-				Root.SetInputWeight(VisualAnimation.GetIndexFrom(Root, Self), e);
-			}
-		}
-
-		private struct SystemData
-		{
-			public ScriptPlayable<SystemPlayable> Playable;
-			public SystemPlayable                 Behaviour;
-
-			public AnimationMixerPlayable Mixer
-			{
-				get => Behaviour.Mixer;
-			}
-
-			public int CurrentKey
-			{
-				get => Behaviour.CurrentKey;
-				set => Behaviour.CurrentKey = value;
-			}
-		}
-
-		private struct OperationHandleData
-		{
-			public int Index;
-		}
-
-		private EntityQuery m_PressureEventQuery;
-
 		private const string AddrKey = "core://Client/Models/UberHero/Animations/Shared/{0}.anim";
 
 		private AnimationClip[] m_AnimationClips = new AnimationClip[0];
 		private int             m_LoadSuccess;
+
+		private EntityQuery m_PressureEventQuery;
 
 		protected override void OnCreate()
 		{
@@ -127,11 +61,8 @@ namespace package.patapon.core.Animation.Units
 
 			var currAnim = animation.CurrAnimation;
 
-			ref var data = ref animation.GetSystemData<SystemData>(SystemType);
-			if (currAnim.Type != SystemType && !currAnim.CanBlend(animation.RootTime))
-			{
-				data.Behaviour.TransitionEnd = -1;
-			}
+			ref var data                                                                                            = ref animation.GetSystemData<SystemData>(SystemType);
+			if (currAnim.Type != SystemType && !currAnim.CanBlend(animation.RootTime)) data.Behaviour.TransitionEnd = -1;
 		}
 
 		protected override void OnUpdate(Entity targetEntity, UnitVisualBackend backend, UnitVisualAnimation animation)
@@ -148,10 +79,8 @@ namespace package.patapon.core.Animation.Units
 			var pressureKey   = -1;
 			var rhythmActions = playerCommand.Base.GetRhythmActions();
 			for (var i = 0; pressureKey < 0 && i != rhythmActions.Length; i++)
-			{
 				if (rhythmActions[i].WasPressed)
 					pressureKey = i;
-			}
 
 			if (pressureKey < 0)
 				return;
@@ -166,10 +95,7 @@ namespace package.patapon.core.Animation.Units
 				else if (pressureKey == RhythmKeys.Right) pressureKey = RhythmKeys.Left;
 			}
 
-			if (!animation.ContainsSystem(SystemType))
-			{
-				animation.InsertSystem<SystemData>(SystemType, AddAnimationData, RemoveAnimationData);
-			}
+			if (!animation.ContainsSystem(SystemType)) animation.InsertSystem<SystemData>(SystemType, AddAnimationData, RemoveAnimationData);
 
 			ref var data = ref animation.GetSystemData<SystemData>(SystemType);
 
@@ -200,6 +126,60 @@ namespace package.patapon.core.Animation.Units
 		private void RemoveAnimationData(VisualAnimation.ManageData data, SystemData systemData)
 		{
 			systemData.Mixer.Destroy();
+		}
+
+		public struct PlayableInitData
+		{
+			public AnimationClip[] Clips;
+		}
+
+		public class SystemPlayable : BasePlayable<PlayableInitData>
+		{
+			public int    CurrentKey;
+			public double TransitionEnd;
+
+			public double                          TransitionStart;
+			public UnitVisualPlayableBehaviourData VisualData;
+
+			protected override void OnInitialize(PlayableInitData data)
+			{
+				for (var i = 0; i != data.Clips.Length; i++)
+				{
+					var clipPlayable = AnimationClipPlayable.Create(Graph, data.Clips[i]);
+					Graph.Connect(clipPlayable, 0, Mixer, i);
+				}
+			}
+
+			public override void PrepareFrame(Playable playable, FrameData info)
+			{
+				var inputCount = Mixer.GetInputCount();
+				var e          = VisualAnimation.GetWeightFixed(Root.GetTime(), TransitionStart, TransitionEnd);
+
+				for (var i = 0; i != inputCount; i++) Mixer.SetInputWeight(i, i == CurrentKey - 1 ? 1 : 0);
+
+				if (!VisualData.CurrAnimation.AllowTransition && VisualData.CurrAnimation.Type != SystemType) e = 0;
+
+				Root.SetInputWeight(VisualAnimation.GetIndexFrom(Root, Self), e);
+			}
+		}
+
+		private struct SystemData
+		{
+			public ScriptPlayable<SystemPlayable> Playable;
+			public SystemPlayable                 Behaviour;
+
+			public AnimationMixerPlayable Mixer => Behaviour.Mixer;
+
+			public int CurrentKey
+			{
+				get => Behaviour.CurrentKey;
+				set => Behaviour.CurrentKey = value;
+			}
+		}
+
+		private struct OperationHandleData
+		{
+			public int Index;
 		}
 	}
 }

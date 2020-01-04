@@ -1,8 +1,8 @@
 ﻿namespace package.patapon.core
 {
-    public enum AnchorType
-    {
-        World,
-        Screen
-    }
+	public enum AnchorType
+	{
+		World,
+		Screen
+	}
 }

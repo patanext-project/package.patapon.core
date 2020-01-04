@@ -11,7 +11,6 @@ using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Misc;
 using StormiumTeam.GameBase.Systems;
 using Unity.Entities;
-using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,9 +21,9 @@ namespace RhythmEngine
 	public class RhythmEngineBeatFramePresentation : RuntimeAssetPresentation<RhythmEngineBeatFramePresentation>
 	{
 		public GameObject[] lines = new GameObject[3];
-		public Material     material;
 
-		private int[] m_LinesState;
+		private int[]    m_LinesState;
+		public  Material material;
 
 		public void SetEnabled(int index, bool state)
 		{
@@ -47,43 +46,42 @@ namespace RhythmEngine
 		public override void OnBackendSet()
 		{
 			m_LinesState = new int[lines.Length];
-			foreach (ref var state in m_LinesState.AsSpan())
-			{
-				state = -1;
-			}
+			foreach (ref var state in m_LinesState.AsSpan()) state = -1;
 		}
 	}
 
 	public class RhythmEngineBeatFrameBackend : RuntimeAssetBackend<RhythmEngineBeatFramePresentation>
 	{
-		public override bool PresentationWorldTransformStayOnSpawn => false;
-
 		public enum Phase
 		{
 			NoCommand,
 			Fever,
-			Command,
+			Command
 		}
+
+		public override bool PresentationWorldTransformStayOnSpawn => false;
 	}
 
 	[UpdateInGroup(typeof(OrderInterfaceSystemGroup))]
 	[UpdateAfter(typeof(FeverWormOrderingSystem))]
 	public class RhythmEngineBeatFrameOrdering : OrderingSystem
-	{}
-	
+	{
+	}
+
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	public class RhythmEngineBeatFrameRenderSystem : BaseRenderSystem<RhythmEngineBeatFramePresentation>
 	{
-		public RhythmEngineBeatFrameBackend.Phase PreviousPhase;
-
-		public Color TargetColor;
+		private static readonly int ColorId = Shader.PropertyToID("_Color");
 
 		public float BeatTime;
 		public float BeatTimeExp;
 
 		public int CurrentHue;
 
-		private EntityQuery m_EngineQuery;
+		private EntityQuery                        m_EngineQuery;
+		public  RhythmEngineBeatFrameBackend.Phase PreviousPhase;
+
+		public Color TargetColor;
 
 		protected override void OnCreate()
 		{
@@ -121,20 +119,13 @@ namespace RhythmEngine
 
 			GameComboState comboState;
 			if (serverCommandState.StartTime >= currentCommand.ActiveAtTime)
-			{
 				comboState = EntityManager.GetComponentData<GameComboState>(engine);
-			}
 			else
-			{
 				comboState = EntityManager.GetComponentData<GameComboPredictedClient>(engine).State;
-			}
 
-			var isCommandClient = false;
-			var isCommandServer = serverCommandState.StartTime <= process.Milliseconds && serverCommandState.EndTime > process.Milliseconds;
-			if (EntityManager.HasComponent<FlowSimulateProcess>(engine))
-			{
-				isCommandClient = currentCommand.ActiveAtTime <= process.Milliseconds && clientCommandState.State.EndTime > process.Milliseconds;
-			}
+			var isCommandClient                                                          = false;
+			var isCommandServer                                                          = serverCommandState.StartTime <= process.Milliseconds && serverCommandState.EndTime > process.Milliseconds;
+			if (EntityManager.HasComponent<FlowSimulateProcess>(engine)) isCommandClient = currentCommand.ActiveAtTime <= process.Milliseconds && clientCommandState.State.EndTime > process.Milliseconds;
 
 			var state = EntityManager.GetComponentData<RhythmEngineState>(engine);
 			if (state.IsNewBeat)
@@ -145,13 +136,9 @@ namespace RhythmEngine
 			else
 			{
 				if (PreviousPhase != RhythmEngineBeatFrameBackend.Phase.Fever)
-				{
-					BeatTime += Time.DeltaTime * 2f + (BeatTimeExp * 0.5f);
-				}
+					BeatTime += Time.DeltaTime * 2f + BeatTimeExp * 0.5f;
 				else
-				{
 					BeatTime += Time.DeltaTime * 2f;
-				}
 
 				BeatTimeExp += Time.DeltaTime;
 			}
@@ -170,10 +157,7 @@ namespace RhythmEngine
 				}
 			}
 
-			if ((isCommandServer || isCommandClient) && state.IsNewBeat)
-			{
-				PreviousPhase = RhythmEngineBeatFrameBackend.Phase.Command;
-			}
+			if ((isCommandServer || isCommandClient) && state.IsNewBeat) PreviousPhase = RhythmEngineBeatFrameBackend.Phase.Command;
 
 			switch (PreviousPhase)
 			{
@@ -194,10 +178,7 @@ namespace RhythmEngine
 					// goooo crazy
 					if (comboState.JinnEnergy < comboState.JinnEnergyMax)
 					{
-						for (var i = 0; i != 3; i++)
-						{
-							TargetColor[i] = Mathf.Lerp(TargetColor[i], new Random((uint) Environment.TickCount).NextFloat(), Time.DeltaTime * 25f);
-						}
+						for (var i = 0; i != 3; i++) TargetColor[i] = Mathf.Lerp(TargetColor[i], new Random((uint) Environment.TickCount).NextFloat(), Time.DeltaTime * 25f);
 
 						TargetColor[CurrentHue % 3] = 1;
 					}
@@ -211,8 +192,6 @@ namespace RhythmEngine
 				}
 			}
 		}
-
-		private static readonly int ColorId = Shader.PropertyToID("_Color");
 
 		protected override void Render(RhythmEngineBeatFramePresentation definition)
 		{
@@ -236,7 +215,6 @@ namespace RhythmEngine
 
 				case RhythmEngineBeatFrameBackend.Phase.Fever:
 				{
-
 					definition.SetEnabled(0, true);
 					definition.SetEnabled(1, true);
 					definition.SetEnabled(2, true);
@@ -253,16 +231,14 @@ namespace RhythmEngine
 
 		protected override void ClearValues()
 		{
-
 		}
 	}
-	
+
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class RhythmEngineBeatFrameCreate : PoolingSystem<RhythmEngineBeatFrameBackend, RhythmEngineBeatFramePresentation>
 	{
+		private            Canvas m_Canvas;
 		protected override string AddressableAsset => "core://Client/Interface/InGame/RhythmEngine/BeatEffect.prefab";
-
-		private Canvas m_Canvas;
 
 		protected override EntityQuery GetQuery()
 		{
@@ -276,10 +252,10 @@ namespace RhythmEngine
 				var interfaceOrder = World.GetExistingSystem<RhythmEngineBeatFrameOrdering>().Order;
 				var canvasSystem   = World.GetExistingSystem<ClientCanvasSystem>();
 
-				m_Canvas               = canvasSystem.CreateCanvas(out _, "BeatFrameCanvas");
-				m_Canvas.renderMode    = RenderMode.ScreenSpaceCamera;
-				m_Canvas.worldCamera   = World.GetExistingSystem<ClientCreateCameraSystem>().Camera;
-				m_Canvas.planeDistance = 1;
+				m_Canvas                  = canvasSystem.CreateCanvas(out _, "BeatFrameCanvas");
+				m_Canvas.renderMode       = RenderMode.ScreenSpaceCamera;
+				m_Canvas.worldCamera      = World.GetExistingSystem<ClientCreateCameraSystem>().Camera;
+				m_Canvas.planeDistance    = 1;
 				m_Canvas.sortingLayerName = "OverlayUI";
 				m_Canvas.sortingOrder     = interfaceOrder;
 
@@ -294,10 +270,7 @@ namespace RhythmEngine
 
 			var backend = LastBackend;
 			backend.transform.SetParent(m_Canvas.transform, false);
-			if (!backend.TryGetComponent(out RectTransform rt))
-			{
-				rt = backend.gameObject.AddComponent<RectTransform>();
-			}
+			if (!backend.TryGetComponent(out RectTransform rt)) rt = backend.gameObject.AddComponent<RectTransform>();
 
 			rt.localScale       = new Vector3(1, 1, 1);
 			rt.anchorMin        = new Vector2(0, 0);

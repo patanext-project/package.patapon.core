@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Patapon.Mixed.GamePlay.RhythmEngine;
-using Patapon.Mixed.GamePlay.Units;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Definitions;
 using Patapon.Mixed.RhythmEngine.Flow;
@@ -12,41 +11,41 @@ namespace Patapon.Client.RhythmEngine
 	public partial class RhythmEnginePlaySong
 	{
 		private const int SongBeatSize = 8;
+		public        int BgmFeverChain;
 
-		// It's normally private, but it is used for RhythmEngineFeverWormRenderSystem
-		public int Score;
-		
+		public bool           BgmWasFever;
+		public GameComboState ComboState;
+		public int            CommandEndTime;
+
 		public int CommandStartTime;
-		public int CommandEndTime;
-		
+
+		public FlowEngineProcess    EngineProcess;
+		public RhythmEngineSettings EngineSettings;
+		public bool                 IsCommand;
+
 		public bool IsNewBeat;
 		public bool IsNewCommand;
-		public bool IsCommand;
 
-		public bool BgmWasFever;
-		public int BgmFeverChain;
+		// used to not throw the same audio for the command.
+		private readonly Dictionary<int, int> m_CommandChain = new Dictionary<int, int>();
+		private          int                  m_EndFeverEntranceAt;
 
-		public FlowEngineProcess       EngineProcess;
-		public RhythmEngineSettings    EngineSettings;
-		public GameComboState          ComboState;
-		public RhythmCommandDefinition TargetCommandDefinition;
-
-		private AudioClip m_LastClip;
-		
-		private bool m_WasFever;
-		private bool m_HadRhythmEngine;
-		private int m_EndFeverEntranceAt;
-		private int m_Flip;
-		
 		// removed for now
 		// check this github link:
 		// https://github.com/guerro323/package.patapon.core/blob/a05689eb7f2500964e820daebe07d58cb20c8233/Data/PlaySongSystem.cs
 		// for reimplementing it from a base
 		//private bool m_IsSkippingSong;
 		private double m_EndTime;
+		private int    m_Flip;
+		private bool   m_HadRhythmEngine;
 
-		// used to not throw the same audio for the command.
-		private Dictionary<int, int> m_CommandChain = new Dictionary<int, int>();
+		private AudioClip m_LastClip;
+
+		private bool m_WasFever;
+
+		// It's normally private, but it is used for RhythmEngineFeverWormRenderSystem
+		public int                     Score;
+		public RhythmCommandDefinition TargetCommandDefinition;
 
 		public void Render()
 		{
@@ -57,7 +56,7 @@ namespace Patapon.Client.RhythmEngine
 		private bool Switch(AudioClip targetAudio, float delay)
 		{
 			var hasSwitched = false;
-			
+
 			m_LastClip = targetAudio;
 			if (targetAudio == null)
 			{
@@ -83,7 +82,7 @@ namespace Patapon.Client.RhythmEngine
 		private void RenderBgm()
 		{
 			Score = 0;
-			
+
 			if (!HasEngineTarget)
 			{
 				m_HadRhythmEngine = false;
@@ -119,10 +118,7 @@ namespace Patapon.Client.RhythmEngine
 					else
 					{
 						score = ComboState.ChainToFever;
-						if (ComboState.Score >= 33)
-						{
-							score += 2;
-						}
+						if (ComboState.Score >= 33) score += 2;
 					}
 
 					if (score < 0)
@@ -163,13 +159,11 @@ namespace Patapon.Client.RhythmEngine
 				targetAudio = CurrentSong.BgmEntranceClips[commandLength % CurrentSong.BgmEntranceClips.Count];
 			}
 
-			var nextBeatDelay          = (((activationBeat + 1) * EngineSettings.BeatInterval) - EngineProcess.Milliseconds) * 0.001f;
+			var nextBeatDelay          = ((activationBeat + 1) * EngineSettings.BeatInterval - EngineProcess.Milliseconds) * 0.001f;
 			var cmdStartActivationBeat = FlowEngineProcess.CalculateActivationBeat(CommandStartTime, EngineSettings.BeatInterval);
 			if (cmdStartActivationBeat >= activationBeat) // we have a planned command
-			{
 				nextBeatDelay = (cmdStartActivationBeat * EngineSettings.BeatInterval - EngineProcess.Milliseconds) * 0.001f;
-			}
-			
+
 			// Check if we should change clips or if we are requested to...
 			var hasSwitched = false;
 			if (m_LastClip != targetAudio // switch audio if we are requested to
@@ -224,30 +218,19 @@ namespace Patapon.Client.RhythmEngine
 			var id   = TargetCommandDefinition.Identifier.ToString();
 			var hash = TargetCommandDefinition.Identifier.GetHashCode();
 
-			if (!m_CommandChain.ContainsKey(hash))
-			{
-				m_CommandChain[hash] = 0;
-			}
+			if (!m_CommandChain.ContainsKey(hash)) m_CommandChain[hash] = 0;
 
 			if (CurrentSong.CommandsAudio.ContainsKey(id) && !(ComboState.IsFever && !m_WasFever))
 			{
 				var key = SongDescription.CmdKeyNormal;
 				if (ComboState.IsFever)
-				{
-					key = SongDescription.CmdKeyFever;
-				}
-				else if (ComboState.ChainToFever > 1 && ComboState.Score >= 33)
-				{
-					key = SongDescription.CmdKeyPreFever;
-				}
+					key                                                             = SongDescription.CmdKeyFever;
+				else if (ComboState.ChainToFever > 1 && ComboState.Score >= 33) key = SongDescription.CmdKeyPreFever;
 
-				if (!ComboState.IsFever)
-				{
-					m_WasFever = false;
-				}
+				if (!ComboState.IsFever) m_WasFever = false;
 
 				var clips = CurrentSong.CommandsAudio[id][key];
-				commandTarget = clips[m_CommandChain[TargetCommandDefinition.Identifier.GetHashCode()] % (clips.Count)];
+				commandTarget = clips[m_CommandChain[TargetCommandDefinition.Identifier.GetHashCode()] % clips.Count];
 			}
 			else if (ComboState.IsFever && !m_WasFever)
 			{

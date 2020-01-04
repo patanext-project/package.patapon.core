@@ -6,9 +6,6 @@ namespace Graphics.Camera
 {
 	public class LocalCameraTest : ComponentSystem
 	{
-		public struct Local : IComponentData
-		{}
-		
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -19,6 +16,10 @@ namespace Graphics.Camera
 		protected override void OnUpdate()
 		{
 			Entities.WithAll<Local>().ForEach((ref LocalCameraState state) => { state.Data.Offset.pos.x += Input.GetAxis("Horizontal"); });
+		}
+
+		public struct Local : IComponentData
+		{
 		}
 	}
 }

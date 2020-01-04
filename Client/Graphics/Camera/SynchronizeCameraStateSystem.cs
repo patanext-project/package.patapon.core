@@ -7,148 +7,134 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEngine;
-using UnityEngine.Profiling;
 
 namespace package.patapon.core
 {
-    public struct CurrentCameraStateSource : IComponentData
-    {
-        public Entity Value;
-    }
+	public struct CurrentCameraStateSource : IComponentData
+	{
+		public Entity Value;
+	}
 
-    [UpdateInGroup(typeof(OrderGroup.Presentation.UpdateCamera))]
-    [AlwaysSynchronizeSystem]
-    [AlwaysUpdateSystem]
-    public class SynchronizeCameraStateSystem : JobComponentSystem
-    {
-        public struct SystemData : IComponentData
-        {
-            public CameraMode Mode;
-            public int        Priority;
+	[UpdateInGroup(typeof(OrderGroup.Presentation.UpdateCamera))]
+	[AlwaysSynchronizeSystem]
+	[AlwaysUpdateSystem]
+	public class SynchronizeCameraStateSystem : JobComponentSystem
+	{
+		private EntityQuery m_CameraWithoutUpdateComp;
 
-            public Entity      StateEntity;
-            public CameraState StateData;
+		protected override void OnCreate()
+		{
+			base.OnCreate();
 
-            public float Focus;
-        }
+			m_CameraWithoutUpdateComp = GetEntityQuery(new EntityQueryDesc
+			{
+				All  = new ComponentType[] {typeof(GameCamera)},
+				None = new ComponentType[] {typeof(SystemData)}
+			});
+		}
 
-        private EntityQuery m_CameraWithoutUpdateComp;
+		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		{
+			if (!m_CameraWithoutUpdateComp.IsEmptyIgnoreFilter) EntityManager.AddComponent(m_CameraWithoutUpdateComp, typeof(SystemData));
 
-        protected override void OnCreate()
-        {
-            base.OnCreate();
+			Entity defaultCamera                             = default;
+			if (HasSingleton<DefaultCamera>()) defaultCamera = GetSingletonEntity<DefaultCamera>();
 
-            m_CameraWithoutUpdateComp = GetEntityQuery(new EntityQueryDesc
-            {
-                All  = new ComponentType[] {typeof(GameCamera)},
-                None = new ComponentType[] {typeof(SystemData)}
-            });
-        }
+			Entities
+				.WithAll<GameCamera>()
+				.ForEach((Entity entity, ref SystemData update) =>
+				{
+					update.Mode     = CameraMode.Default;
+					update.Priority = int.MinValue;
+				})
+				.Run();
 
-        protected override JobHandle OnUpdate(JobHandle inputDeps)
-        {
-            if (!m_CameraWithoutUpdateComp.IsEmptyIgnoreFilter)
-            {
-                EntityManager.AddComponent(m_CameraWithoutUpdateComp, typeof(SystemData));
-            }
+			var cameraTargetFromEntity = GetComponentDataFromEntity<CameraStateCameraTarget>(true);
+			var updateFromEntity       = GetComponentDataFromEntity<SystemData>();
+			Entities
+				.ForEach((Entity entity, in LocalCameraState cameraState) =>
+				{
+					var camera                                        = defaultCamera;
+					if (cameraTargetFromEntity.Exists(entity)) camera = cameraTargetFromEntity[entity].Value;
 
-            Entity defaultCamera = default;
-            if (HasSingleton<DefaultCamera>())
-            {
-                defaultCamera = GetSingletonEntity<DefaultCamera>();
-            }
+					var updater = updateFromEntity.GetUpdater(camera);
+					if (!updater.Out(out var cameraStateUpdate).possess)
+						return;
 
-            Entities
-                .WithAll<GameCamera>()
-                .ForEach((Entity entity, ref SystemData update) =>
-                {
-                    update.Mode     = CameraMode.Default;
-                    update.Priority = int.MinValue;
-                })
-                .Run();
+					if (cameraStateUpdate.Mode > cameraState.Mode)
+						return;
 
-            var cameraTargetFromEntity = GetComponentDataFromEntity<CameraStateCameraTarget>(true);
-            var updateFromEntity       = GetComponentDataFromEntity<SystemData>();
-            Entities
-                .ForEach((Entity entity, in LocalCameraState cameraState) =>
-                {
-                    var camera = defaultCamera;
-                    if (cameraTargetFromEntity.Exists(entity))
-                    {
-                        camera = cameraTargetFromEntity[entity].Value;
-                    }
+					cameraStateUpdate.Mode     = cameraState.Mode;
+					cameraStateUpdate.Priority = 0;
 
-                    var updater = updateFromEntity.GetUpdater(camera);
-                    if (!updater.Out(out var cameraStateUpdate).possess)
-                        return;
+					cameraStateUpdate.StateEntity = entity;
+					cameraStateUpdate.StateData   = cameraState.Data;
 
-                    if (cameraStateUpdate.Mode > cameraState.Mode)
-                        return;
+					updater.Update(cameraStateUpdate);
+				})
+				.WithName("Check_LocalCameraState_AndReplaceSystemData")
+				.WithReadOnly(cameraTargetFromEntity)
+				.Run(); // use ScheduleSingle() when it will be out.
 
-                    cameraStateUpdate.Mode     = cameraState.Mode;
-                    cameraStateUpdate.Priority = 0;
+			Entities
+				.ForEach((Entity entity, in ServerCameraState cameraState) =>
+				{
+					var camera                                        = defaultCamera;
+					if (cameraTargetFromEntity.Exists(entity)) camera = cameraTargetFromEntity[entity].Value;
 
-                    cameraStateUpdate.StateEntity = entity;
-                    cameraStateUpdate.StateData   = cameraState.Data;
+					var updater = updateFromEntity.GetUpdater(camera);
+					if (!updater.Out(out var cameraStateUpdate).possess)
+						return;
 
-                    updater.Update(cameraStateUpdate);
-                })
-                .WithName("Check_LocalCameraState_AndReplaceSystemData")
-                .WithReadOnly(cameraTargetFromEntity)
-                .Run(); // use ScheduleSingle() when it will be out.
+					if (cameraStateUpdate.Mode > cameraState.Mode)
+						return;
 
-            Entities
-                .ForEach((Entity entity, in ServerCameraState cameraState) =>
-                {
-                    var camera = defaultCamera;
-                    if (cameraTargetFromEntity.Exists(entity))
-                    {
-                        camera = cameraTargetFromEntity[entity].Value;
-                    }
+					cameraStateUpdate.Mode     = cameraState.Mode;
+					cameraStateUpdate.Priority = 0;
 
-                    var updater = updateFromEntity.GetUpdater(camera);
-                    if (!updater.Out(out var cameraStateUpdate).possess)
-                        return;
+					cameraStateUpdate.StateEntity = entity;
+					cameraStateUpdate.StateData   = cameraState.Data;
 
-                    if (cameraStateUpdate.Mode > cameraState.Mode)
-                        return;
+					updater.Update(cameraStateUpdate);
+				})
+				.WithName("Check_ServerCameraState_AndReplaceSystemData")
+				.WithReadOnly(cameraTargetFromEntity)
+				.Run(); // use ScheduleSingle() when it will be out.
 
-                    cameraStateUpdate.Mode     = cameraState.Mode;
-                    cameraStateUpdate.Priority = 0;
+			var modifierFromEntity = GetComponentDataFromEntity<CameraModifierData>(true);
+			Entities
+				.ForEach((ref Translation translation, ref Rotation rotation, ref LocalToWorld ltw, ref SystemData systemData) =>
+				{
+					var offset = systemData.StateData.Offset;
+					if (!math.all(offset.rot.value))
+						offset.rot = quaternion.identity;
 
-                    cameraStateUpdate.StateEntity = entity;
-                    cameraStateUpdate.StateData   = cameraState.Data;
+					var modifier = modifierFromEntity.TryGet(systemData.StateData.Target, out var hasModifier, default);
+					if (!hasModifier)
+						modifier.Rotation = quaternion.identity;
 
-                    updater.Update(cameraStateUpdate);
-                })
-                .WithName("Check_ServerCameraState_AndReplaceSystemData")
-                .WithReadOnly(cameraTargetFromEntity)
-                .Run(); // use ScheduleSingle() when it will be out.
+					translation.Value = modifier.Position + offset.pos;
+					rotation.Value    = math.mul(modifier.Rotation, offset.rot);
 
-            var modifierFromEntity = GetComponentDataFromEntity<CameraModifierData>(true);
-            Entities
-                .ForEach((ref Translation translation, ref Rotation rotation, ref LocalToWorld ltw, ref SystemData systemData) =>
-                {
-                    var offset = systemData.StateData.Offset;
-                    if (!math.all(offset.rot.value))
-                        offset.rot = quaternion.identity;
+					translation.Value.z = -100; // temporary for now
 
-                    var modifier = modifierFromEntity.TryGet(systemData.StateData.Target, out var hasModifier, default);
-                    if (!hasModifier)
-                        modifier.Rotation = quaternion.identity;
+					ltw.Value = new float4x4(rotation.Value, translation.Value);
 
-                    translation.Value = modifier.Position + offset.pos;
-                    rotation.Value    = math.mul(modifier.Rotation, offset.rot);
-                    
-                    translation.Value.z = -100; // temporary for now
+					systemData.Focus = hasModifier ? modifier.FieldOfView : 8;
+				}).WithReadOnly(modifierFromEntity).Run();
 
-                    ltw.Value = new float4x4(rotation.Value, translation.Value);
+			return default;
+		}
 
-                    systemData.Focus = hasModifier ? modifier.FieldOfView : 8;
-                }).WithReadOnly(modifierFromEntity).Run();
+		public struct SystemData : IComponentData
+		{
+			public CameraMode Mode;
+			public int        Priority;
 
-            return default;
-        }
-    }
+			public Entity      StateEntity;
+			public CameraState StateData;
+
+			public float Focus;
+		}
+	}
 }

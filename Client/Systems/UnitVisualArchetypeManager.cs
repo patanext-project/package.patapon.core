@@ -20,7 +20,6 @@ namespace Patapon.Client.Systems
 
 		protected override void OnUpdate()
 		{
-
 		}
 
 		public AsyncAssetPool<GameObject> GetArchetypePool(string archetype)

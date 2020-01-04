@@ -1,12 +1,7 @@
 using DefaultNamespace;
 using package.patapon.core;
-using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
-using Patapon.Mixed.GamePlay.RhythmEngine;
-using Patapon.Mixed.RhythmEngine;
-using Patapon.Mixed.RhythmEngine.Flow;
 using Patapon.Mixed.Units;
-using Patapon4TLB.Default.Player;
 using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Data;
@@ -22,10 +17,6 @@ namespace SnapshotArchetypes
 	[UpdateInGroup(typeof(AfterSnapshotIsAppliedSystemGroup))]
 	public class SetUnitArchetypeSystem : ComponentSystem
 	{
-		public struct IsSet : IComponentData
-		{
-		}
-
 		private EntityQuery m_EntityWithoutArchetype;
 
 		protected override void OnCreate()
@@ -44,17 +35,16 @@ namespace SnapshotArchetypes
 			EntityManager.AddComponent(m_EntityWithoutArchetype, typeof(UpdateUnitCameraModifierSystem.CameraData));
 			EntityManager.AddComponent(m_EntityWithoutArchetype, typeof(IsSet));
 		}
+
+		public struct IsSet : IComponentData
+		{
+		}
 	}
 
 	[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class UpdateUnitCameraModifierSystem : JobGameBaseSystem
 	{
-		public struct CameraData : IComponentData
-		{
-			public float Velocity;
-		}
-
 		private LazySystem<GrabInputSystem> m_GrabInputSystem;
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -80,10 +70,7 @@ namespace SnapshotArchetypes
 				            /*cameraModifier.Position = math.lerp(cameraModifier.Position, positionResult, dt * 1.25f);
 				            cameraModifier.Position = Vector3.MoveTowards(cameraModifier.Position, positionResult, dt * 0.05f);*/
 				            cameraModifier.Position.x = Mathf.SmoothDamp(cameraModifier.Position.x, positionResult.x, ref cameraData.Velocity, 0.4f, 100, dt);
-				            if (math.isnan(cameraModifier.Position.x) || math.abs(cameraModifier.Position.x) > 4000.0f)
-				            {
-					            cameraModifier.Position.x = 0;
-				            }
+				            if (math.isnan(cameraModifier.Position.x) || math.abs(cameraModifier.Position.x) > 4000.0f) cameraModifier.Position.x = 0;
 
 				            Debug.DrawRay(cameraModifier.Position, Vector3.up * 4, Color.blue);
 
@@ -94,6 +81,11 @@ namespace SnapshotArchetypes
 			            .Schedule(inputDeps);
 
 			return inputDeps;
+		}
+
+		public struct CameraData : IComponentData
+		{
+			public float Velocity;
 		}
 	}
 }

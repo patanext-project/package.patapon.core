@@ -17,7 +17,7 @@ namespace Patapon.Client.Graphics.Animation.Units
 		public void Initialize(BaseAnimationSystem system, PlayableGraph graph, Playable self, int index, AnimationMixerPlayable rootMixer, TInit init)
 		{
 			SystemType = system.GetType();
-			
+
 			Self  = self;
 			Root  = rootMixer;
 			Graph = graph;
@@ -25,7 +25,7 @@ namespace Patapon.Client.Graphics.Animation.Units
 			Mixer = AnimationMixerPlayable.Create(graph, 4, true);
 			Mixer.SetPropagateSetTime(true);
 			OnInitialize(init);
-			rootMixer.AddInput(self, 0, 0);
+			rootMixer.AddInput(self, 0);
 			self.AddInput(Mixer, 0, 1);
 		}
 

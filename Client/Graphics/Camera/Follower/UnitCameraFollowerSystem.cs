@@ -10,7 +10,6 @@ namespace Graphics.Camera.Follower
 	{
 		protected override void OnUpdate()
 		{
-			
 		}
 	}
 }

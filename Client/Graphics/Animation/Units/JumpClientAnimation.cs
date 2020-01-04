@@ -6,18 +6,169 @@ using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
 using StormiumTeam.GameBase;
 using Unity.Collections;
+using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
-using Unity.Entities;
 
 namespace package.patapon.core.Animation.Units
 {
-	[Unity.Entities.UpdateInGroup(typeof(ClientUnitAnimationGroup))]
+	[UpdateInGroup(typeof(ClientUnitAnimationGroup))]
 	public class JumpAbilityClientAnimationSystem : BaseAbilityAnimationSystem
 	{
+		private const string AddrKey = "core://Client/Models/UberHero/Animations/Shared/Jump/Jump{0}.anim";
+
+		private const int             ArrayLength = 4;
+		private       AnimationClip[] m_AnimationClips;
+
+		private int m_LoadSuccess;
+
+		protected override void OnCreate()
+		{
+			base.OnCreate();
+
+			for (var i = 0; i != ArrayLength; i++)
+			{
+				var key = "Start";
+				switch (i)
+				{
+					case 0:
+						key = "Start";
+						break;
+					case 1:
+						key = "Idle";
+						break;
+					case 2:
+						key = "IdleAir";
+						break;
+					case 3:
+						key = "Fall";
+						break;
+				}
+
+				LoadAssetAsync<AnimationClip, OperationData>(string.Format(AddrKey, $"{key}"), new OperationData
+				{
+					ArrayIndex = i
+				});
+			}
+		}
+
+		protected override EntityQuery GetAbilityQuery()
+		{
+			return GetEntityQuery(typeof(DefaultJumpAbility), typeof(Owner));
+		}
+
+		protected override void OnAsyncOpUpdate(ref int index)
+		{
+			var (handle, data) = AsyncOp.Get<AnimationClip, OperationData>(index);
+			if (handle.Result == null)
+				return;
+
+			if (m_AnimationClips == null)
+				m_AnimationClips = new AnimationClip[ArrayLength];
+
+			m_AnimationClips[data.ArrayIndex] = handle.Result;
+			m_LoadSuccess++;
+
+			AsyncOp.Handles.RemoveAtSwapBack(index);
+			index--;
+		}
+
+		protected override bool OnBeforeForEach()
+		{
+			if (!base.OnBeforeForEach())
+				return false;
+			return m_LoadSuccess >= ArrayLength;
+		}
+
+		private void AddAnimation(ref VisualAnimation.ManageData data, ref SystemData systemData)
+		{
+			var playable = ScriptPlayable<SystemPlayable>.Create(data.Graph);
+			var behavior = playable.GetBehaviour();
+
+			behavior.Initialize(playable, data.Index, data.Graph, data.Behavior.RootMixer, m_AnimationClips);
+
+			systemData.ActiveId             = -1;
+			systemData.StartAt              = -1;
+			systemData.Behaviour            = behavior;
+			systemData.Behaviour.VisualData = ((UnitVisualAnimation) data.Handle).GetBehaviorData();
+		}
+
+		private void RemoveAnimation(VisualAnimation.ManageData data, SystemData systemData)
+		{
+		}
+
+		protected override void OnUpdate(Entity targetEntity, UnitVisualBackend backend, UnitVisualAnimation animation)
+		{
+			var currAnim = animation.CurrAnimation;
+			if (currAnim.Type == SystemType && animation.RootTime > currAnim.StopAt)
+			{
+				// allow transitions and overrides now...
+				animation.SetTargetAnimation(new TargetAnimation(currAnim.Type, transitionStart: currAnim.StopAt, transitionEnd: currAnim.StopAt + 0.25f));
+				// if no one set another animation, then let's set to null...
+				if (animation.RootTime > currAnim.StopAt + 0.25f)
+					animation.SetTargetAnimation(TargetAnimation.Null);
+			}
+
+			var abilityEntity = AbilityFinder.GetAbility(targetEntity);
+			if (abilityEntity == default)
+				return;
+
+			if (!animation.ContainsSystem(SystemType))
+				animation.InsertSystem<SystemData>(SystemType, AddAnimation, RemoveAnimation);
+
+			var abilityState = EntityManager.GetComponentData<RhythmAbilityState>(abilityEntity);
+			var jumpAbility  = EntityManager.GetComponentData<DefaultJumpAbility>(abilityEntity);
+			var velocity     = EntityManager.GetComponentData<Velocity>(targetEntity);
+
+			if (!abilityState.IsStillChaining && !abilityState.IsActive && !abilityState.WillBeActive)
+			{
+				if (currAnim.Type == SystemType)
+					animation.SetTargetAnimation(TargetAnimation.Null);
+
+				return;
+			}
+
+			ref var data = ref animation.GetSystemData<SystemData>(SystemType);
+			if (abilityState.WillBeActive && data.StartAt < 0 && abilityState.ActiveId >= data.ActiveId && !abilityState.IsActive)
+			{
+				var process = EntityManager.GetComponentData<FlowEngineProcess>(EntityManager.GetComponentData<Relative<RhythmEngineDescription>>(backend.DstEntity).Target);
+				var delay   = math.max(abilityState.StartTime - 200 - process.Milliseconds, 0) * 0.001f;
+				// StartTime - StartJump Animation Approx Length in ms - Time, aka delay 0.2s before the command
+
+				Debug.Log($"{abilityState.StartTime - process.Milliseconds} {delay} activeId:{abilityState.ActiveId + 1}");
+
+				data.StartAt             = animation.RootTime + delay;
+				data.ActiveId            = abilityState.ActiveId + 1;
+				data.Behaviour.Predicted = true;
+			}
+
+			// Start animation if Behavior.ActiveId and Jump.ActiveId is different... or if we need to start now
+			if (abilityState.IsActive && abilityState.ActiveId > data.ActiveId || data.StartAt > 0 && data.StartAt < data.Behaviour.Root.GetTime())
+			{
+				var stopAt = animation.RootTime + 3.5f;
+				animation.SetTargetAnimation(new TargetAnimation(SystemType, false, false, stopAt: stopAt));
+				Debug.Log($"Start Animation [{abilityState.ActiveId} > {data.ActiveId}] || [0 < {data.StartAt} < {data.Behaviour.Root.GetTime()}]");
+
+				data.StartAt = -1;
+				if (abilityState.IsActive)
+					data.ActiveId = abilityState.ActiveId;
+				data.Behaviour.StartTime = animation.RootTime;
+				data.Behaviour.Mixer.SetTime(0);
+				data.Behaviour.Weight = 1;
+				//data.Behaviour.Predicted = false;
+			}
+
+			var targetPhase = Phase.Idle;
+			if (jumpAbility.IsJumping || abilityState.WillBeActive)
+				targetPhase = Phase.Jumping;
+			else if (velocity.Value.y < 0)
+				targetPhase = Phase.Fall;
+
+			data.Behaviour.Phase = targetPhase;
+		}
+
 		private enum Phase
 		{
 			Jumping,
@@ -27,37 +178,29 @@ namespace package.patapon.core.Animation.Units
 
 		private class SystemPlayable : PlayableBehaviour
 		{
-			private enum AnimationType
-			{
-				Start   = 0,
-				Jump    = 1,
-				IdleAir = 2,
-				Fall    = 3
-			}
-
-			public Playable                        Self;
-			public UnitVisualPlayableBehaviourData VisualData;
-
-			public AnimationMixerPlayable Mixer;
-			public AnimationMixerPlayable Root;
-
-			public double StartTime;
-			public Phase  Phase;
-
-			public bool Predicted;
-
-			private Phase m_PreviousPhase;
-
-			public float Weight;
-
-			public Transition StartTransition;
-			public Transition JumpTransition;
+			public Transition FallTransition1;
+			public Transition FallTransition2;
 
 			public Transition IdleAirTransition1;
 			public Transition IdleAirTransition2;
+			public Transition JumpTransition;
 
-			public Transition FallTransition1;
-			public Transition FallTransition2;
+			private Phase m_PreviousPhase;
+
+			public AnimationMixerPlayable Mixer;
+			public Phase                  Phase;
+
+			public bool                   Predicted;
+			public AnimationMixerPlayable Root;
+
+			public Playable Self;
+
+			public double StartTime;
+
+			public Transition                      StartTransition;
+			public UnitVisualPlayableBehaviourData VisualData;
+
+			public float Weight;
 
 			public void Initialize(Playable self, int index, PlayableGraph graph, AnimationMixerPlayable rootMixer, IReadOnlyList<AnimationClip> clips)
 			{
@@ -137,15 +280,18 @@ namespace package.patapon.core.Animation.Units
 
 				Weight = 0;
 				if (currAnim.CanBlend(Root.GetTime()) && currAnim.PreviousType == systemType)
-				{
-					Weight = currAnim.GetTransitionWeightFixed(Root.GetTime());
-				}
-				else if (currAnim.Type == systemType)
-				{
-					Weight = 1;
-				}
+					Weight                                   = currAnim.GetTransitionWeightFixed(Root.GetTime());
+				else if (currAnim.Type == systemType) Weight = 1;
 
 				Root.SetInputWeight(VisualAnimation.GetIndexFrom(Root, Self), Weight);
+			}
+
+			private enum AnimationType
+			{
+				Start   = 0,
+				Jump    = 1,
+				IdleAir = 2,
+				Fall    = 3
 			}
 		}
 
@@ -160,161 +306,6 @@ namespace package.patapon.core.Animation.Units
 		private struct OperationData
 		{
 			public int ArrayIndex;
-		}
-
-		private const string          AddrKey = "core://Client/Models/UberHero/Animations/Shared/Jump/Jump{0}.anim";
-		private       AnimationClip[] m_AnimationClips;
-
-		private const int ArrayLength = 4;
-
-		protected override void OnCreate()
-		{
-			base.OnCreate();
-
-			for (var i = 0; i != ArrayLength; i++)
-			{
-				var key = "Start";
-				switch (i)
-				{
-					case 0:
-						key = "Start";
-						break;
-					case 1:
-						key = "Idle";
-						break;
-					case 2:
-						key = "IdleAir";
-						break;
-					case 3:
-						key = "Fall";
-						break;
-				}
-
-				LoadAssetAsync<AnimationClip, OperationData>(string.Format(AddrKey, $"{key}"), new OperationData
-				{
-					ArrayIndex = i
-				});
-			}
-		}
-
-		protected override EntityQuery GetAbilityQuery()
-		{
-			return GetEntityQuery(typeof(DefaultJumpAbility), typeof(Owner));
-		}
-
-		private int m_LoadSuccess = 0;
-
-		protected override void OnAsyncOpUpdate(ref int index)
-		{
-			var (handle, data) = AsyncOp.Get<AnimationClip, OperationData>(index);
-			if (handle.Result == null)
-				return;
-
-			if (m_AnimationClips == null)
-				m_AnimationClips = new AnimationClip[ArrayLength];
-
-			m_AnimationClips[data.ArrayIndex] = handle.Result;
-			m_LoadSuccess++;
-
-			AsyncOp.Handles.RemoveAtSwapBack(index);
-			index--;
-		}
-
-		protected override bool OnBeforeForEach()
-		{
-			if (!base.OnBeforeForEach())
-				return false;
-			return m_LoadSuccess >= ArrayLength;
-		}
-
-		private void AddAnimation(ref VisualAnimation.ManageData data, ref SystemData systemData)
-		{
-			var playable = ScriptPlayable<SystemPlayable>.Create(data.Graph);
-			var behavior = playable.GetBehaviour();
-
-			behavior.Initialize(playable, data.Index, data.Graph, data.Behavior.RootMixer, m_AnimationClips);
-
-			systemData.ActiveId             = -1;
-			systemData.StartAt              = -1;
-			systemData.Behaviour            = behavior;
-			systemData.Behaviour.VisualData = ((UnitVisualAnimation) data.Handle).GetBehaviorData();
-		}
-
-		private void RemoveAnimation(VisualAnimation.ManageData data, SystemData systemData)
-		{
-
-		}
-
-		protected override void OnUpdate(Entity targetEntity, UnitVisualBackend backend, UnitVisualAnimation animation)
-		{
-			var currAnim = animation.CurrAnimation;
-			if (currAnim.Type == SystemType && animation.RootTime > currAnim.StopAt)
-			{
-				// allow transitions and overrides now...
-				animation.SetTargetAnimation(new TargetAnimation(currAnim.Type, transitionStart: currAnim.StopAt, transitionEnd: currAnim.StopAt + 0.25f));
-				// if no one set another animation, then let's set to null...
-				if (animation.RootTime > currAnim.StopAt + 0.25f)
-					animation.SetTargetAnimation(TargetAnimation.Null);
-			}
-
-			var abilityEntity = AbilityFinder.GetAbility(targetEntity);
-			if (abilityEntity == default)
-				return;
-
-			if (!animation.ContainsSystem(SystemType))
-				animation.InsertSystem<SystemData>(SystemType, AddAnimation, RemoveAnimation);
-
-			var abilityState = EntityManager.GetComponentData<RhythmAbilityState>(abilityEntity);
-			var jumpAbility  = EntityManager.GetComponentData<DefaultJumpAbility>(abilityEntity);
-			var velocity     = EntityManager.GetComponentData<Velocity>(targetEntity);
-
-			if (!abilityState.IsStillChaining && !abilityState.IsActive && !abilityState.WillBeActive)
-			{
-				if (currAnim.Type == SystemType)
-					animation.SetTargetAnimation(TargetAnimation.Null);
-
-				return;
-			}
-
-			ref var data = ref animation.GetSystemData<SystemData>(SystemType);
-			if (abilityState.WillBeActive && data.StartAt < 0 && abilityState.ActiveId >= data.ActiveId && !abilityState.IsActive)
-			{
-				var process = EntityManager.GetComponentData<FlowEngineProcess>(EntityManager.GetComponentData<Relative<RhythmEngineDescription>>(backend.DstEntity).Target);
-				var delay   = math.max(abilityState.StartTime - 200 - process.Milliseconds, 0) * 0.001f;
-				// StartTime - StartJump Animation Approx Length in ms - Time, aka delay 0.2s before the command
-
-				Debug.Log($"{abilityState.StartTime - process.Milliseconds} {delay} activeId:{abilityState.ActiveId + 1}");
-
-				data.StartAt             = animation.RootTime + delay;
-				data.ActiveId            = abilityState.ActiveId + 1;
-				data.Behaviour.Predicted = true;
-			}
-
-			// Start animation if Behavior.ActiveId and Jump.ActiveId is different... or if we need to start now
-			if (abilityState.IsActive && abilityState.ActiveId > data.ActiveId || data.StartAt > 0 && data.StartAt < data.Behaviour.Root.GetTime())
-			{
-				var stopAt = animation.RootTime + 3.5f;
-				animation.SetTargetAnimation(new TargetAnimation(SystemType, false, false, stopAt: stopAt));
-				Debug.Log($"Start Animation [{abilityState.ActiveId} > {data.ActiveId}] || [0 < {data.StartAt} < {data.Behaviour.Root.GetTime()}]");
-
-				data.StartAt = -1;
-				if (abilityState.IsActive)
-					data.ActiveId = abilityState.ActiveId;
-				data.Behaviour.StartTime = animation.RootTime;
-				data.Behaviour.Mixer.SetTime(0);
-				data.Behaviour.Weight = 1;
-				//data.Behaviour.Predicted = false;
-			}
-
-			var targetPhase = Phase.Idle;
-			if (jumpAbility.IsJumping || abilityState.WillBeActive)
-			{
-				targetPhase = Phase.Jumping;
-			}
-			else if (velocity.Value.y < 0)
-				targetPhase = Phase.Fall;
-
-			data.Behaviour.Phase = targetPhase;
 		}
 	}
 }

@@ -1,23 +1,18 @@
 using Systems;
 using Misc;
 using Misc.Extensions;
-using package.stormiumteam.shared.ecs;
 using Patapon.Client.RhythmEngine;
 using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
-using RhythmEngine;
 using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Misc;
 using StormiumTeam.GameBase.Systems;
 using StormiumTeam.Shared;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
 
 namespace package.patapon.core.FeverWorm
@@ -49,19 +44,29 @@ namespace package.patapon.core.FeverWorm
 	[UpdateInGroup(typeof(OrderGroup.Presentation.InterfaceRendering))]
 	public class FeverWormRenderSystem : BaseRenderSystem<FeverWormBackend>
 	{
-		private Localization m_LocalTextDb;
+		private static readonly int _NtOneBeat    = Animator.StringToHash("_NT1.0");
+		private static readonly int _NtDoubleBeat = Animator.StringToHash("_NT0.5");
+		private static readonly int _Score        = Animator.StringToHash("_Score");
+		private static readonly int _IsFever      = Animator.StringToHash("_IsFever");
 
-		public string ComboString;
-
-		public float SummonEnergyReal;
-		public float InterpolatedEnergyReal;
+		public int   ComboCount;
 		public float ComboScoreReal;
 
-		public int ComboCount;
+		public string ComboString;
+		public float  InterpolatedEnergyReal;
 
 		public bool IsFever;
 
+		private EntityQuery          m_EngineQuery;
+		private Localization         m_LocalTextDb;
+		private RhythmEnginePlaySong m_PlaySongSystem;
+
+		private int   m_PreviousScore;
+		private float m_PreviousScoreInterpol;
+
 		public float Pulsation;
+
+		public float SummonEnergyReal;
 
 		private float real(int v, int m)
 		{
@@ -75,10 +80,8 @@ namespace package.patapon.core.FeverWorm
 		protected override void PrepareValues()
 		{
 			if (m_LocalTextDb == null)
-			{
 				m_LocalTextDb = World.GetOrCreateSystem<LocalizationSystem>()
 				                     .LoadLocal("ingame");
-			}
 
 			ComboString = m_LocalTextDb["ComboText", "FWorm"];
 
@@ -106,12 +109,13 @@ namespace package.patapon.core.FeverWorm
 			Pulsation = real(process.Milliseconds % settings.BeatInterval, settings.BeatInterval);
 
 			InterpolatedEnergyReal = Mathf.MoveTowards(math.lerp(InterpolatedEnergyReal, SummonEnergyReal, Time.DeltaTime), SummonEnergyReal, Time.DeltaTime * 0.25f);
-			
+
 			if (m_PlaySongSystem.Score != m_PreviousScore)
 			{
 				m_PreviousScoreInterpol = m_PreviousScore;
-				m_PreviousScore = m_PlaySongSystem.Score;
+				m_PreviousScore         = m_PlaySongSystem.Score;
 			}
+
 			m_PreviousScoreInterpol = Mathf.MoveTowards(math.lerp(m_PreviousScoreInterpol, m_PlaySongSystem.Score, Time.DeltaTime * 5), m_PlaySongSystem.Score, Time.DeltaTime);
 		}
 
@@ -130,34 +134,24 @@ namespace package.patapon.core.FeverWorm
 			definition.Animator.SetBool(_IsFever, IsFever);
 			if (ComboCount >= 2)
 				definition.Animator.Update(Time.DeltaTime);
-			
+
 			definition.SetComboString(ComboString);
 			definition.SetProgression(ComboScoreReal, ComboCount, InterpolatedEnergyReal, SummonEnergyReal, IsFever);
 			definition.SetColors(definition.currentPulse);
 		}
-
-		private int m_PreviousScore;
-		private float m_PreviousScoreInterpol;
 
 		protected override void ClearValues()
 		{
 			// not used
 		}
 
-		private EntityQuery m_EngineQuery;
-		private RhythmEnginePlaySong m_PlaySongSystem;
-		private static readonly int _NtOneBeat = Animator.StringToHash("_NT1.0");
-		private static readonly int _NtDoubleBeat = Animator.StringToHash("_NT0.5");
-		private static readonly int _Score = Animator.StringToHash("_Score");
-		private static readonly int _IsFever = Animator.StringToHash("_IsFever");
-
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
 			EntityManager.CreateEntity(typeof(CreateFeverWormData));
-			
-			m_EngineQuery = GetEntityQuery(typeof(RhythmEngineDescription), typeof(Relative<PlayerDescription>));
+
+			m_EngineQuery    = GetEntityQuery(typeof(RhythmEngineDescription), typeof(Relative<PlayerDescription>));
 			m_PlaySongSystem = World.GetOrCreateSystem<RhythmEnginePlaySong>();
 		}
 	}
@@ -165,9 +159,8 @@ namespace package.patapon.core.FeverWorm
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class FeverWormCreate : PoolingSystem<FeverWormBackend, FeverWormPresentation>
 	{
+		private            Canvas m_Canvas;
 		protected override string AddressableAsset => "core://Client/Interface/InGame/RhythmEngine/FeverWorm/FeverWorm.prefab";
-
-		private Canvas m_Canvas;
 
 		protected override EntityQuery GetQuery()
 		{
@@ -181,10 +174,10 @@ namespace package.patapon.core.FeverWorm
 				var interfaceOrder = World.GetExistingSystem<FeverWormOrderingSystem>().Order;
 				var canvasSystem   = World.GetExistingSystem<ClientCanvasSystem>();
 
-				m_Canvas               = canvasSystem.CreateCanvas(out _, "FeverWormCanvas");
-				m_Canvas.renderMode    = RenderMode.ScreenSpaceCamera;
-				m_Canvas.worldCamera   = World.GetExistingSystem<ClientCreateCameraSystem>().Camera;
-				m_Canvas.planeDistance = 1;
+				m_Canvas                = canvasSystem.CreateCanvas(out _, "FeverWormCanvas");
+				m_Canvas.renderMode     = RenderMode.ScreenSpaceCamera;
+				m_Canvas.worldCamera    = World.GetExistingSystem<ClientCreateCameraSystem>().Camera;
+				m_Canvas.planeDistance  = 1;
 				m_Canvas.sortingLayerID = SortingLayer.NameToID("OverlayUI");
 				m_Canvas.sortingOrder   = interfaceOrder;
 
@@ -199,10 +192,7 @@ namespace package.patapon.core.FeverWorm
 
 			var backend = LastBackend;
 			backend.transform.SetParent(m_Canvas.transform, false);
-			if (!backend.TryGetComponent(out RectTransform rt))
-			{
-				rt = backend.gameObject.AddComponent<RectTransform>();
-			}
+			if (!backend.TryGetComponent(out RectTransform rt)) rt = backend.gameObject.AddComponent<RectTransform>();
 
 			rt.localScale       = new Vector3(70, 70, 1);
 			rt.anchorMin        = new Vector2(0, 0.5f);

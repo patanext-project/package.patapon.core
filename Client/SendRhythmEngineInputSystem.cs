@@ -10,7 +10,6 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
-using UnityEngine;
 
 namespace Systems.RhythmEngine
 {
@@ -32,19 +31,17 @@ namespace Systems.RhythmEngine
 			inputDeps.Complete();
 			EntityManager.CompleteAllJobs();
 
-			int targetKey = -1;
+			var targetKey = -1;
 
 			var     grabInputSystem = m_GrabInputSystem.Get(World);
 			ref var currentCommand  = ref grabInputSystem.LocalCommand;
 			var     actions         = currentCommand.GetRhythmActions();
 			for (var i = 0; i != actions.Length; i++)
-			{
 				if (actions[i].FrameUpdate && actions[i].IsActive)
 				{
 					targetKey = i + 1;
 					break;
 				}
-			}
 
 			if (targetKey < 0)
 				return inputDeps;
@@ -54,17 +51,17 @@ namespace Systems.RhythmEngine
 			                              ref RhythmEngineState                             state,  ref GamePredictedCommandState predictedCommand,
 			                              ref DynamicBuffer<RhythmEngineCommandProgression> progression,
 			                              in  RhythmEngineSettings                          settings, in FlowEngineProcess process,
-			                              in ReplicatedEntity replicatedEntity) =>
+			                              in  ReplicatedEntity                              replicatedEntity) =>
 			{
-				Entity rpcEnt;
+				Entity                     rpcEnt;
 				PressureEventFromClientRpc pressureEvent = default;
 
 				var flowBeat = process.GetFlowBeat(settings.BeatInterval);
 
 				pressureEvent.EngineGhostId = replicatedEntity.GhostId;
-				pressureEvent.Key = targetKey;
-				pressureEvent.FlowBeat = flowBeat;
-				state.IsNewPressure    = true;
+				pressureEvent.Key           = targetKey;
+				pressureEvent.FlowBeat      = flowBeat;
+				state.IsNewPressure         = true;
 
 				var pressureData    = new FlowPressure(pressureEvent.Key, settings.BeatInterval, process.Milliseconds);
 				var cmdChainEndFlow = FlowEngineProcess.CalculateFlowBeat(predictedCommand.State.ChainEndTime, settings.BeatInterval);
@@ -95,8 +92,8 @@ namespace Systems.RhythmEngine
 					ecb.AddComponent(nativeThreadIndex, rpcEnt, new RhythmRpcClientRecover
 					{
 						EngineGhostId = replicatedEntity.GhostId,
-						ForceRecover = true,
-						RecoverBeat = state.NextBeatRecovery
+						ForceRecover  = true,
+						RecoverBeat   = state.NextBeatRecovery
 					});
 				}
 				else
@@ -107,7 +104,7 @@ namespace Systems.RhythmEngine
 					});
 				}
 
-				pressureEvent.Score = pressureData.Score;
+				pressureEvent.Score    = pressureData.Score;
 				state.LastPressureBeat = math.max(state.LastPressureBeat, pressureData.RenderBeat);
 
 				rpcEnt = ecb.CreateEntity(nativeThreadIndex);

@@ -9,10 +9,6 @@ namespace p4tlb
 {
 	public class SetClientOrthographicCamera : ComponentSystem
 	{
-		public struct IsActive : IComponentData
-		{
-		}
-
 		private EntityQuery m_Query;
 
 		protected override void OnCreate()
@@ -31,13 +27,17 @@ namespace p4tlb
 
 				EntityManager.SetOrAddComponentData(e, new CameraTargetAnchor
 				{
-					Type = AnchorType.Screen,
+					Type  = AnchorType.Screen,
 					Value = new float2(0, 0.9f)
 				});
 				EntityManager.SetOrAddComponentData(e, new AnchorOrthographicCameraData());
 				EntityManager.SetOrAddComponentData(e, new AnchorOrthographicCameraOutput());
 				EntityManager.SetOrAddComponentData(e, new IsActive());
 			});
+		}
+
+		public struct IsActive : IComponentData
+		{
 		}
 	}
 }

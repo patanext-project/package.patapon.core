@@ -1,4 +1,3 @@
-using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
@@ -12,10 +11,6 @@ namespace SnapshotArchetypes
 	[UpdateInGroup(typeof(AfterSnapshotIsAppliedSystemGroup))]
 	public class SetRhythmEngineArchetypeSystem : ComponentSystem
 	{
-		public struct IsSet : IComponentData
-		{
-		}
-
 		private EntityQuery m_RhythmEngineWithoutArchetype;
 
 		protected override void OnCreate()
@@ -34,20 +29,24 @@ namespace SnapshotArchetypes
 			EntityManager.AddComponent(m_RhythmEngineWithoutArchetype, typeof(GameComboPredictedClient));
 			EntityManager.AddComponent(m_RhythmEngineWithoutArchetype, typeof(IsSet));
 		}
+
+		public struct IsSet : IComponentData
+		{
+		}
 	}
-	
+
 	[UpdateInGroup(typeof(AfterSnapshotIsAppliedSystemGroup))]
 	public class UpdateLocalRhythmEngineSystem : JobGameBaseSystem
 	{
 		private EndSimulationEntityCommandBufferSystem m_EndBarrier;
-		private EntityQuery m_Query;
-		
+		private EntityQuery                            m_Query;
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
 			m_EndBarrier = World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>();
-			
+
 			m_Query = GetEntityQuery(new EntityQueryDesc
 			{
 				All  = new ComponentType[] {typeof(SetRhythmEngineArchetypeSystem.IsSet), typeof(HasAuthorityFromServer)},

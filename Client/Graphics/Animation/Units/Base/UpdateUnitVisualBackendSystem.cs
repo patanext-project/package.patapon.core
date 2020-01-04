@@ -18,6 +18,7 @@ namespace Patapon.Client.Graphics.Animation.Units
 	{
 		private EntityQuery                                         m_BackendQuery;
 		private List<(UnitVisualBackend backend, string archetype)> m_UpdateArchetypeList;
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -30,7 +31,7 @@ namespace Patapon.Client.Graphics.Animation.Units
 		{
 			m_UpdateArchetypeList.Clear();
 
-			var __i = 0;
+			var __i        = 0;
 			var indexArray = UnsafeAllocation.From(ref __i);
 			Entities.ForEach((Transform transform, UnitVisualBackend backend) =>
 			{
@@ -41,23 +42,23 @@ namespace Patapon.Client.Graphics.Animation.Units
 				}
 
 				ref var i = ref indexArray.AsRef();
-				
+
 				var pos = EntityManager.GetComponentData<Translation>(backend.DstEntity).Value;
 				Debug.DrawRay(pos, Vector3.up, Color.green);
 				pos.z = i++ * 2;
 
 				transform.position = pos;
-				
-				EntityManager.TryGetComponentData(backend.DstEntity, out UnitDirection direction, UnitDirection.Right);
+
+				EntityManager.TryGetComponentData(backend.DstEntity, out var direction, UnitDirection.Right);
 				transform.localScale = new Vector3(direction.Value, 1, 1);
-				
+
 				// Load presentation
 				const string unitArchetype = "UH.basic"; // this will be dynamic in the future (based on entity class)
 				if (backend.CurrentArchetype != unitArchetype)
 				{
 					backend.CurrentArchetype = unitArchetype;
 					m_UpdateArchetypeList.Add((backend, unitArchetype));
-				}		
+				}
 			}).WithoutBurst().Run();
 
 			foreach (var (be, archetype) in m_UpdateArchetypeList)

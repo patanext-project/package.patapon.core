@@ -2,13 +2,10 @@ using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GameModes.VSHeadOn;
 using Revolution;
 using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Data;
 using StormiumTeam.GameBase.Systems;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Transforms;
-using UnityEngine;
 
 namespace Patapon4TLB.GameModes
 {
@@ -20,11 +17,11 @@ namespace Patapon4TLB.GameModes
 	[UpdateInGroup(typeof(ClientGameModeSystemGroup))]
 	public class MpVersusHeadOnClientGameMode : GameBaseSystem
 	{
-		private EntityQuery m_GameModeQuery;
 		private EntityQuery m_ExecutingMapQuery;
-		private EntityQuery m_ServerMapQuery;
+		private EntityQuery m_GameModeQuery;
 
-		private MapManager m_MapManager;
+		private MapManager  m_MapManager;
+		private EntityQuery m_ServerMapQuery;
 
 		protected override void OnCreate()
 		{

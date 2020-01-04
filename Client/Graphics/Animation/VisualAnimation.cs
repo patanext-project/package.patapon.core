@@ -10,10 +10,10 @@ namespace package.patapon.core.Animation
 {
 	public class PlayableBehaviorData
 	{
-		public Entity DstEntity;
+		public Entity        DstEntity;
 		public EntityManager DstEntityManager;
 	}
-	
+
 	public struct Transition
 	{
 		public float Key0;
@@ -81,10 +81,9 @@ namespace package.patapon.core.Animation
 
 	public class VisualAnimationPlayable : PlayableBehaviour
 	{
-		private PlayableGraph graph => Playable.GetGraph();
-
-		public Playable               Playable;
-		public AnimationMixerPlayable RootMixer;
+		public  Playable               Playable;
+		public  AnimationMixerPlayable RootMixer;
+		private PlayableGraph          graph => Playable.GetGraph();
 
 		public override void OnPlayableCreate(Playable playable)
 		{
@@ -101,37 +100,16 @@ namespace package.patapon.core.Animation
 
 	public class VisualAnimation : MonoBehaviour
 	{
-		protected abstract class SystemDataBase
-		{
-			public Type Type;
-			public int  Index;
-		}
-
-		protected class SystemData<T> : SystemDataBase
-			where T : struct
-		{
-			public T               Data;
-			public RemoveSystem<T> RemoveDelegate;
-		}
-
-		public struct ManageData
-		{
-			public VisualAnimation         Handle;
-			public PlayableGraph           Graph;
-			public VisualAnimationPlayable Behavior;
-			public int                     Index;
-		}
-
 		public delegate void AddSystem<T>(ref ManageData data, ref T systemData) where T : struct;
 
 		public delegate void RemoveSystem<in T>(ManageData data, T systemData) where T : struct;
 
-		protected Dictionary<Type, SystemDataBase> m_SystemData = new Dictionary<Type, SystemDataBase>();
-		protected VisualAnimationPlayable          m_Playable;
-		protected AnimationMixerPlayable rootMixer => m_Playable.RootMixer;
-		protected PlayableGraph                    m_PlayableGraph;
+		private   AnimationPlayableOutput m_AnimationPlayableOutput;
+		protected VisualAnimationPlayable m_Playable;
+		protected PlayableGraph           m_PlayableGraph;
 
-		private AnimationPlayableOutput m_AnimationPlayableOutput;
+		protected Dictionary<Type, SystemDataBase> m_SystemData = new Dictionary<Type, SystemDataBase>();
+		protected AnimationMixerPlayable           rootMixer => m_Playable.RootMixer;
 
 
 		public void DestroyPlayableGraph()
@@ -155,7 +133,7 @@ namespace package.patapon.core.Animation
 		{
 			m_PlayableGraph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
 			m_PlayableGraph.Play();
-			m_Playable = ScriptPlayable<VisualAnimationPlayable>.Create(m_PlayableGraph).GetBehaviour();
+			m_Playable                = ScriptPlayable<VisualAnimationPlayable>.Create(m_PlayableGraph).GetBehaviour();
 			m_AnimationPlayableOutput = AnimationPlayableOutput.Create(m_PlayableGraph, "Output", null);
 			m_AnimationPlayableOutput.SetSourcePlayable(m_Playable.Playable, 0);
 		}
@@ -164,7 +142,7 @@ namespace package.patapon.core.Animation
 		{
 			if (m_AnimationPlayableOutput.GetHandle() == null)
 				throw new InvalidOperationException();
-			
+
 			m_AnimationPlayableOutput.SetTarget(animator);
 		}
 
@@ -206,10 +184,8 @@ namespace package.patapon.core.Animation
 		{
 			var rootInputCount = parent.GetInputCount();
 			for (var i = 0; i != rootInputCount; i++)
-			{
 				if (parent.GetInput(i).Equals(child))
 					return i;
-			}
 
 			return -1;
 		}
@@ -223,6 +199,27 @@ namespace package.patapon.core.Animation
 			if (time < start)
 				return 1;
 			return (float) (1 - math.unlerp(start, end, time));
+		}
+
+		protected abstract class SystemDataBase
+		{
+			public int  Index;
+			public Type Type;
+		}
+
+		protected class SystemData<T> : SystemDataBase
+			where T : struct
+		{
+			public T               Data;
+			public RemoveSystem<T> RemoveDelegate;
+		}
+
+		public struct ManageData
+		{
+			public VisualAnimation         Handle;
+			public PlayableGraph           Graph;
+			public VisualAnimationPlayable Behavior;
+			public int                     Index;
 		}
 	}
 }
