@@ -67,7 +67,7 @@ namespace Systems.GamePlay
 						float acceleration, walkSpeed;
 						int   direction;
 
-						if (unitTargetControlFromEntity.Exists(owner.Target))
+						if (unitTargetControlFromEntity.Exists(owner.Target) && marchAbility.Delta <= 3.75f)
 						{
 							direction = unitDirectionFromEntity[owner.Target].Value;
 

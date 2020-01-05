@@ -2,6 +2,7 @@ using GmMachine;
 using GmMachine.Blocks;
 using Misc.GmMachine.Blocks;
 using Misc.GmMachine.Contexts;
+using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GameModes.VSHeadOn;
 using Patapon.Mixed.RhythmEngine.Flow;
 using Patapon.Mixed.Units;
@@ -140,8 +141,11 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 				var unitTargetRelative = entityMgr.GetComponentData<Relative<UnitTargetDescription>>(unit).Target;
 				entityMgr.SetComponentData(unitTargetRelative, new Translation {Value = spawnPointPos.x});
-
+				entityMgr.SetOrAddComponentData(unitTargetRelative, entityMgr.GetComponentData<UnitDirection>(unit));
+				entityMgr.SetOrAddComponentData(unitTargetRelative, entityMgr.GetComponentData<Relative<TeamDescription>>(unit));
+				
 				Debug.Log("Spawning at " + spawnPointPos.x);
+				
 			}
 		}
 	}
