@@ -24,7 +24,7 @@ namespace Bootstraps
 		{
 			EntityManager.SetComponentData(bootstrap, new BootstrapComponent {Name = nameof(DiscordToMasterServerBootstrap)});
 			m_LocalDiscordUser = GetEntityQuery(typeof(DiscordLocalUser));
-			
+
 			var masterServer = World.GetOrCreateSystem<MasterServerSystem>();
 
 			// Set the target of our MasterServer here
@@ -52,21 +52,41 @@ namespace Bootstraps
 	public class DiscordToMasterServerClientTestSystem : ComponentSystem
 	{
 		private MasterServerSystem m_MasterServerSystem;
-		private bool connected;
+		private bool               runOnce;
+
+		private EntityQuery m_UserConnectionQuery;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
 			RequireSingletonForUpdate<DiscordToMasterServerBootstrap.IsActive>();
+
+			m_UserConnectionQuery = GetEntityQuery(typeof(ConnectedMasterServerClient));
 		}
 
 		protected override void OnUpdate()
 		{
-			if (connected)
-				return;
 			if (!(BaseDiscordSystem.Instance is P4DiscordSystem discordSystem))
 				return;
+
+			if (runOnce)
+			{
+				if (m_UserConnectionQuery.CalculateEntityCount() != 0 && discordSystem.ConnectionLobby.Id > 0)
+				{
+					discordSystem.DeleteConnectionLobby();
+				}
+
+				return;
+			}
+
+			if (discordSystem.ConnectionLobby.Id == 0)
+			{
+				if (!discordSystem.IsConnectionLobbyRequested)
+					discordSystem.CreateConnectionLobby();
+
+				return;
+			}
 
 			var localUser = discordSystem.GetLocalUser();
 			var request   = EntityManager.CreateEntity(typeof(RequestUserLogin));
@@ -75,10 +95,11 @@ namespace Bootstraps
 				{
 					Login          = $"DISCORD_{localUser.Id}",
 					HashedPassword = string.Empty,
-					Type           = UserLoginRequest.Types.RequestType.Player
+					Type           = UserLoginRequest.Types.RequestType.Player,
+					RoutedData     = new NativeString512("{\"lobby_id\"=\"" + discordSystem.ConnectionLobby.Id + "\"}")
 				});
 			}
-			connected = true;
+			runOnce = true;
 		}
 	}
 }

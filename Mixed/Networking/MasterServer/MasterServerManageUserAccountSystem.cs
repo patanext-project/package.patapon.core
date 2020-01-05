@@ -20,12 +20,14 @@ namespace Patapon4TLB.Core.MasterServer
 
 		public NativeString64                     Login;
 		public NativeString512                    HashedPassword;
+		public NativeString512                    RoutedData;
 		public UserLoginRequest.Types.RequestType Type;
 
-		public RequestUserLogin(string login, string password, UserLoginRequest.Types.RequestType type)
+		public RequestUserLogin(string login, string password, UserLoginRequest.Types.RequestType type, string routedData = "")
 		{
 			Login          = new NativeString64(login);
 			HashedPassword = new NativeString512(password);
+			RoutedData     = new NativeString512(routedData);
 			Type           = type;
 
 			ErrorCode = UserLoginResponse.Types.ErrorCode.Invalid;
@@ -69,9 +71,10 @@ namespace Patapon4TLB.Core.MasterServer
 				var request = item.Value;
 				var rpc = new UserLoginRequest
 				{
-					Login    = request.Login.ToString(),
-					Password = request.HashedPassword.ToString(),
-					Type     = request.Type
+					Login     = request.Login.ToString(),
+					Password  = request.HashedPassword.ToString(),
+					Type      = request.Type,
+					RouteData = request.RoutedData.ToString()
 				};
 
 				var result = await client.UserLoginAsync(rpc);
