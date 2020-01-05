@@ -22,8 +22,8 @@ namespace Patapon4TLB.Core
 		{
 			base.OnCreate();
 
-			SetLoginAndPassword("server_0", "");
-			RequestConnection();
+			/*SetLoginAndPassword("server_0", "");
+			RequestConnection();*/
 		}
 
 		protected override void OnUpdate()

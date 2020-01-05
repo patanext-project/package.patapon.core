@@ -2,6 +2,7 @@ using Patapon.Mixed.GameModes.VSHeadOn;
 using Patapon.Mixed.Units;
 using Patapon4TLB.Core;
 using Patapon4TLB.Default;
+using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Bootstraping;
 using Unity.Collections;
@@ -130,6 +131,7 @@ namespace Bootstraps
 							var playerEntity    = EntityManager.CreateEntity(playerArchetype);
 
 							EntityManager.AddComponent(playerEntity, typeof(GamePlayerReadyTag));
+							EntityManager.AddComponent(playerEntity, typeof(GhostEntity));
 							EntityManager.ReplaceOwnerData(unitEntity, playerEntity);
 						}
 

@@ -174,12 +174,12 @@ namespace Patapon.Client.RhythmEngine
 			}
 
 			// It's loop time
-			if (!hasSwitched && targetAudio != null && m_BgmSources[1 - m_Flip].time + nextBeatDelay >= targetAudio.length)
+			if (!hasSwitched && targetAudio != null && m_BgmSources[1 - m_Flip].time + nextBeatDelay + 0.1f >= targetAudio.length)
 			{
 				Debug.Log($"Looping {m_LastClip?.name}");
 				/*m_BgmSources[1 - m_Flip].time = math.max(m_BgmSources[1 - m_Flip].time - targetAudio.length, 0);
 				m_BgmSources[1 - m_Flip].Play();*/
-				hasSwitched = Switch(targetAudio, nextBeatDelay);
+				hasSwitched = Switch(targetAudio, nextBeatDelay + 0.1f);
 			}
 
 			var currBgmSource = m_BgmSources[1 - m_Flip];

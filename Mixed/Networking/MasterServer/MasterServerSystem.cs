@@ -20,6 +20,8 @@ namespace Patapon4TLB.Core.MasterServer
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
 	public class MasterServerSystem : ComponentSystem
 	{
+		public static MasterServerSystem Instance;
+		
 		public delegate void ShutDownEvent();
 
 		private Dictionary<Type, object> m_ExistingClients;
@@ -30,6 +32,8 @@ namespace Patapon4TLB.Core.MasterServer
 		protected override void OnCreate()
 		{
 			base.OnCreate();
+
+			Instance = this;
 
 			m_ExistingClients = new Dictionary<Type, object>();
 			GrpcEnvironment.SetLogger(new Logger());
@@ -42,9 +46,11 @@ namespace Patapon4TLB.Core.MasterServer
 		protected override async void OnDestroy()
 		{
 			base.OnDestroy();
-
+			
 			Disconnect().Wait();
 			m_ExistingClients.Clear();
+			
+			Instance = null;
 		}
 
 		public async Task SetMasterServer(IPEndPoint endpoint)

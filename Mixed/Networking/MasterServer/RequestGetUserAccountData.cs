@@ -38,33 +38,4 @@ namespace Patapon4TLB.Core.MasterServer
 	public struct MasterServerIsServer : IComponentData
 	{
 	}
-
-	[UpdateInGroup(typeof(MasterServerProcessRpcSystem))]
-	[AlwaysUpdateSystem]
-	public class MasterServerRequestUserAccountSystem : GameBaseSystem
-	{
-		public AuthenticationService.AuthenticationServiceClient Client;
-
-		private MasterServerSystem m_MasterServer;
-
-		protected override void OnCreate()
-		{
-			base.OnCreate();
-
-			// todo: m_MasterServer = BootWorld.GetOrCreateSystem<MasterServerSystem>();
-		}
-
-		protected override void OnUpdate()
-		{
-			/*if (m_MasterServer.channel != null
-			    && !m_MasterServer.HasClient<AuthenticationService.AuthenticationServiceClient>())
-			{
-				m_MasterServer.AddClient(() => { return Client = new AuthenticationService.AuthenticationServiceClient(m_MasterServer.channel); });
-			}*/
-		}
-
-		private struct UserAccountClient : ISystemStateComponentData
-		{
-		}
-	}
 }

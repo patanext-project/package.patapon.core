@@ -41,7 +41,7 @@ namespace package.patapon.core.FeverWorm
 		};
 
 		private StringBuilder         m_ComboCountStrBuilder;
-		private StringBuilder         m_ComboInfoStrBuilder;
+		private StringBuilder         m_TranslationStrBuilder;
 		private string[]              m_ComputedColorStrings;
 		public  MaterialPropertyBlock mpb;
 
@@ -56,12 +56,12 @@ namespace package.patapon.core.FeverWorm
 		{
 			mpb                    = new MaterialPropertyBlock();
 			m_ComboCountStrBuilder = new StringBuilder();
-			m_ComboInfoStrBuilder  = new StringBuilder();
+			m_TranslationStrBuilder  = new StringBuilder();
 
 			m_ComputedColorStrings = new string[infoColors.Length];
 			for (var i = 0; i != infoColors.Length; i++) m_ComputedColorStrings[i] = ColorUtility.ToHtmlStringRGB(infoColors[i]);
 
-			SetComboString("Combo!");
+			SetStrings("Combo!", "Fever!!");
 
 			Animator = GetComponent<Animator>();
 		}
@@ -72,21 +72,25 @@ namespace package.patapon.core.FeverWorm
 			mpb = null;
 		}
 
-		public void SetComboString(string str)
+		public void SetStrings(string combo, string fever)
 		{
 			const string xmlColorOpenKey  = "<color=#";
 			const string xmlColorCloseKey = ">";
 
-			m_ComboInfoStrBuilder.Clear();
-			for (var i = 0; i != str.Length; i++)
+			m_TranslationStrBuilder.Clear();
+			for (var i = 0; i != combo.Length; i++)
 			{
-				m_ComboInfoStrBuilder.Append(xmlColorOpenKey);
-				m_ComboInfoStrBuilder.Append(m_ComputedColorStrings[i % m_ComputedColorStrings.Length]);
-				m_ComboInfoStrBuilder.Append(xmlColorCloseKey);
-				m_ComboInfoStrBuilder.Append(str[i]);
+				m_TranslationStrBuilder.Append(xmlColorOpenKey);
+				m_TranslationStrBuilder.Append(m_ComputedColorStrings[i % m_ComputedColorStrings.Length]);
+				m_TranslationStrBuilder.Append(xmlColorCloseKey);
+				m_TranslationStrBuilder.Append(combo[i]);
 			}
 
-			foreach (var label in comboInfoLabels) label.SetText(m_ComboInfoStrBuilder);
+			foreach (var label in comboInfoLabels) label.SetText(m_TranslationStrBuilder);
+
+			m_TranslationStrBuilder.Clear();
+			
+			foreach (var label in feverLabels) label.SetText(fever);
 		}
 
 		public void SetProgression(float comboScore, int combo, float interpolatedProgression, float directProgression, bool isFever)

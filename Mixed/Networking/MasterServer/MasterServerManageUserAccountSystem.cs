@@ -1,4 +1,5 @@
 using P4TLB.MasterServer;
+using Patapon4TLB.Core.MasterServer.Implementations;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
@@ -38,37 +39,26 @@ namespace Patapon4TLB.Core.MasterServer
 		public ulong          UserId;
 	}
 
-	[UpdateInGroup(typeof(MasterServerProcessRpcSystem))]
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
 	[AlwaysUpdateSystem]
-	public class MasterServerManageUserAccountSystem : GameBaseSystem
+	public class MasterServerManageUserAccountSystem : BaseSystemMasterServerService
 	{
-		private EntityQuery                          m_ClientQuery;
-		private MasterServerSystem                   m_MasterServer;
-		private MasterServerRequestUserAccountSystem m_RequestSystem;
-
+		private EntityQuery                                                                               m_ClientQuery;
 		private MasterServerRequestModule<RequestUserLogin, RequestUserLogin.Processing, ResultUserLogin> m_RequestUserLoginModule;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			/* todo: if (World != BootWorld.World)
-				throw new InvalidOperationException();*/
-
 			GetModule(out m_RequestUserLoginModule);
-
-			m_MasterServer  = World.GetOrCreateSystem<MasterServerSystem>();
-			m_RequestSystem = World.GetOrCreateSystem<MasterServerRequestUserAccountSystem>();
-			m_ClientQuery   = GetEntityQuery(typeof(ConnectedMasterServerClient));
-
-			m_MasterServer.BeforeShutdown += OnBeforeShutdown;
+			m_ClientQuery = GetEntityQuery(typeof(ConnectedMasterServerClient));
 		}
 
 		protected override async void OnUpdate()
 		{
-			if (m_RequestSystem.Client == null)
+			if (!StaticMasterServer.HasClient<AuthenticationService.AuthenticationServiceClient>())
 				return;
+
+			var client = StaticMasterServer.GetClient<AuthenticationService.AuthenticationServiceClient>();
 
 			m_RequestUserLoginModule.Update();
 			m_RequestUserLoginModule.AddProcessTagToAllRequests();
@@ -84,7 +74,7 @@ namespace Patapon4TLB.Core.MasterServer
 					Type     = request.Type
 				};
 
-				var result = await m_RequestSystem.Client.UserLoginAsync(rpc);
+				var result = await client.UserLoginAsync(rpc);
 				// if the user deleted the entity, throw an error as it's not accepted when log in...
 				if (!EntityManager.Exists(item.Entity))
 				{
@@ -115,17 +105,19 @@ namespace Patapon4TLB.Core.MasterServer
 			}
 		}
 
-		private void OnBeforeShutdown()
+		protected override void OnShutdown()
 		{
-			if (m_RequestSystem.Client == null)
+			if (!StaticMasterServer.HasClient<AuthenticationService.AuthenticationServiceClient>())
 				return;
+
+			var client = StaticMasterServer.GetClient<AuthenticationService.AuthenticationServiceClient>();
 
 			using (var entities = m_ClientQuery.ToEntityArray(Allocator.TempJob))
 			using (var components = m_ClientQuery.ToComponentDataArray<ConnectedMasterServerClient>(Allocator.TempJob))
 			{
 				for (var ent = 0; ent != entities.Length; ent++)
 				{
-					m_RequestSystem.Client.DisconnectAsync(new DisconnectRequest
+					client.DisconnectAsync(new DisconnectRequest
 					{
 						Reason = "shutdown",
 						Token  = components[ent].Token.ToString()

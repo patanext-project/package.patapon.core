@@ -53,6 +53,8 @@ namespace package.patapon.core.FeverWorm
 		public float ComboScoreReal;
 
 		public string ComboString;
+		public string FeverString;
+		
 		public float  InterpolatedEnergyReal;
 
 		public bool IsFever;
@@ -81,9 +83,10 @@ namespace package.patapon.core.FeverWorm
 		{
 			if (m_LocalTextDb == null)
 				m_LocalTextDb = World.GetOrCreateSystem<LocalizationSystem>()
-				                     .LoadLocal("ingame");
+				                     .LoadLocal("ingame_interface");
 
-			ComboString = m_LocalTextDb["ComboText", "FWorm"];
+			ComboString = m_LocalTextDb["ComboLabel", "FWorm"];
+			FeverString = m_LocalTextDb["FeverLabel", "FWorm"];
 
 			var player = this.GetFirstSelfGamePlayer();
 			if (player == default)
@@ -135,7 +138,7 @@ namespace package.patapon.core.FeverWorm
 			if (ComboCount >= 2)
 				definition.Animator.Update(Time.DeltaTime);
 
-			definition.SetComboString(ComboString);
+			definition.SetStrings(ComboString, FeverString);
 			definition.SetProgression(ComboScoreReal, ComboCount, InterpolatedEnergyReal, SummonEnergyReal, IsFever);
 			definition.SetColors(definition.currentPulse);
 		}
