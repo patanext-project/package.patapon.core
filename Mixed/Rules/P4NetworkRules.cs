@@ -1,6 +1,8 @@
+using Misc;
 using StormiumTeam.GameBase.BaseSystems;
 using Unity.Entities;
 using Unity.Jobs;
+using UnityEngine;
 
 namespace Patapon.Mixed.Rules
 {
@@ -12,6 +14,7 @@ namespace Patapon.Mixed.Rules
 			Double
 		}
 
+		public BaseRuleConfiguration RuleConfiguration;
 		public RuleProperties<Data>.Property<bool> RhythmEngineUsePredicted;
 
 		public RuleProperties<Data>                         Rule;
@@ -27,11 +30,20 @@ namespace Patapon.Mixed.Rules
 
 			RhythmEngineUsePredicted.Value      = true;
 			UnitPresentationInterpolation.Value = Interpolation.Double;
+			
+			RuleConfiguration = new BaseRuleConfiguration(Rule, 1, $"{Application.streamingAssetsPath}/conf/P4NetworkRules.json");
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
 			return inputDeps;
+		}
+
+		protected override void OnDestroy()
+		{
+			base.OnDestroy();
+			
+			RuleConfiguration.SaveAndDispose();
 		}
 
 		public struct Data : IComponentData
