@@ -1,5 +1,6 @@
 using System;
 using package.stormiumteam.shared.ecs;
+using Patapon.Client.PoolingSystems;
 using Patapon.Mixed.GameModes.VSHeadOn;
 using Revolution;
 using StormiumTeam.GameBase;
@@ -15,6 +16,13 @@ using Entity = Unity.Entities.Entity;
 
 namespace Patapon4TLB.GameModes.Interface
 {
+	public enum DrawerAlignment
+	{
+		Top,
+		Center,
+		Bottom
+	}
+	
 	public class UIHeadOnPresentation : RuntimeAssetPresentation<UIHeadOnPresentation>
 	{
 		public UIHeadOnScoreFrame[] ScoreFrames;
@@ -29,6 +37,14 @@ namespace Patapon4TLB.GameModes.Interface
 		private int m_PreviousTime;
 
 		private ClubInformation[] m_ClubInformationArray;
+
+		public override void OnBackendSet()
+		{
+			base.OnBackendSet();
+
+			Backend.DstEntityManager.World.GetExistingSystem<UIHeadOnUnitStatusPoolingSystem>()
+			       .Reorder(DrawerFrame.UnitStatusFrame);
+		}
 
 		private void OnEnable()
 		{
@@ -74,13 +90,13 @@ namespace Patapon4TLB.GameModes.Interface
 			FlagPositions[1] = flag1Pos.x;
 		}
 
-		public float3 GetPositionOnDrawer(float3 position, bool limit = true)
+		public float3 GetPositionOnDrawer(float3 position, DrawerAlignment alignment, bool limit = true)
 		{
 			var t = math.unlerp(FlagPositions[0], FlagPositions[1], position.x);
 			if (limit)
 				t = math.clamp(t, 0, 1);
 
-			return DrawerFrame.GetPosition(t);
+			return DrawerFrame.GetPosition(t, alignment);
 		}
 
 		public void UpdateClubInformation(ClubInformation team1, ClubInformation team2)
@@ -113,6 +129,7 @@ namespace Patapon4TLB.GameModes.Interface
 	{
 	}
 
+	[UpdateInGroup(typeof(OrderGroup.Presentation.InterfaceRendering))]
 	public class UIHeadOnRenderSystem : BaseRenderSystem<UIHeadOnPresentation>
 	{
 		public int               ArenaTimeMs;

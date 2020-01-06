@@ -36,14 +36,33 @@ namespace Patapon4TLB.GameModes.Interface
 			Drawer.GetLocalCorners(m_Corners);
 		}
 		
-		public Vector3 GetPosition(float t)
+		public Vector3 GetPosition(float t, DrawerAlignment alignment)
 		{
 			if (!m_Enabled)
 				OnEnable();
-			
+
+			Vector3 left, right;
+			switch (alignment)
+			{
+				case DrawerAlignment.Top:
+					left = TopLeft;
+					right = TopRight;
+					break;
+				case DrawerAlignment.Center:
+					left = Vector3.Lerp(BottomLeft, TopLeft, 0.5f);
+					right = Vector3.Lerp(BottomRight, TopRight, 0.5f);
+					break;
+				case DrawerAlignment.Bottom:
+					left = BottomLeft;
+					right = BottomRight;
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null);
+			}
+	/*		
 			var left  = Vector3.Lerp(BottomLeft, TopLeft, 0.5f);
 			var right = Vector3.Lerp(BottomRight, TopRight, 0.5f);
-
+*/
 			return math.lerp(left, right, t);
 		}
 	}

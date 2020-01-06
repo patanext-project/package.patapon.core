@@ -1,4 +1,11 @@
+using Misc.Extensions;
+using package.stormiumteam.shared.ecs;
+using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
+using StormiumTeam.GameBase.Systems;
+using Unity.Entities;
+using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -46,8 +53,6 @@ namespace Patapon4TLB.GameModes.Interface
 
 	public class UIHeadOnUnitStatusBackend : RuntimeAssetBackend<UIHeadOnUnitStatusPresentation>
 	{
-		public UIHeadOnUnitStatusPresentation Hud;
-
 		private RectTransform m_RectTransform;
 		public  RectTransform rectTransform => m_RectTransform;
 
@@ -60,6 +65,85 @@ namespace Patapon4TLB.GameModes.Interface
 		{
 			if (!gameObject.TryGetComponent(out m_RectTransform))
 				m_RectTransform = gameObject.AddComponent<RectTransform>();
+		}
+	}
+
+	[UpdateInGroup(typeof(OrderGroup.Presentation.InterfaceRendering))]
+	[UpdateAfter(typeof(UIHeadOnPresentation))]
+	public class UIHeadOnUnitStatusRenderSystem : BaseRenderSystem<UIHeadOnUnitStatusPresentation>
+	{
+		public Entity LocalPlayer;
+		public UIHeadOnPresentation Hud;
+
+		private EntityQuery m_HudQuery;
+
+		protected override void OnCreate()
+		{
+			base.OnCreate();
+
+			m_HudQuery = GetEntityQuery(typeof(UIHeadOnPresentation));
+			
+			RequireForUpdate(m_HudQuery);
+		}
+
+		protected override void PrepareValues()
+		{
+			LocalPlayer = this.GetFirstSelfGamePlayer();
+			Hud = EntityManager.GetComponentObject<UIHeadOnPresentation>(m_HudQuery.GetSingletonEntity());
+		}
+
+		protected override void Render(UIHeadOnUnitStatusPresentation definition)
+		{
+			var backend      = (UIHeadOnUnitStatusBackend) definition.Backend;
+			var targetEntity = definition.Backend.DstEntity;
+			var armyInFormation = 0;
+			if (EntityManager.TryGetComponentData(targetEntity, out LivableHealth livableHealth))
+			{
+				definition.SetHealth(livableHealth.Value, livableHealth.Max);
+			}
+
+			if (EntityManager.TryGetComponentData(targetEntity, out Relative<TeamDescription> relativeTeam))
+			{
+				if (EntityManager.HasComponent<Relative<ClubDescription>>(relativeTeam.Target))
+				{
+					var relativeClub = EntityManager.GetComponentData<Relative<ClubDescription>>(relativeTeam.Target).Target;
+					var clubInfo     = EntityManager.GetComponentData<ClubInformation>(relativeClub);
+
+					definition.SetTeamColor(clubInfo.PrimaryColor);
+				}
+			}
+
+			if (EntityManager.TryGetComponentData(targetEntity, out Relative<PlayerDescription> relativePlayer))
+			{
+				if (relativePlayer.Target == LocalPlayer)
+				{
+					definition.SetPossessionColor(new Color32(242, 255, 36, 255));
+				}
+				else
+				{
+					definition.SetPossessionColor(Color.clear);
+				}
+			}
+			else
+			{
+				definition.SetPossessionColor(Color.clear);
+			}
+
+			if (EntityManager.TryGetComponentData(targetEntity, out UnitAppliedArmyFormation unitFormation))
+			{
+				armyInFormation = unitFormation.ArmyInFormation;
+			}
+
+			var drawerPosition = Hud.GetPositionOnDrawer(EntityManager.GetComponentData<Translation>(targetEntity).Value, DrawerAlignment.Center);
+			drawerPosition.y += armyInFormation;
+			drawerPosition.z = 0;
+
+			backend.rectTransform.localPosition = drawerPosition;
+		}
+
+		protected override void ClearValues()
+		{
+			LocalPlayer = default;
 		}
 	}
 }
