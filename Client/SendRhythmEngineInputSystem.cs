@@ -4,6 +4,7 @@ using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
 using Patapon.Mixed.RhythmEngine.Rpc;
+using Patapon.Mixed.Systems;
 using Revolution;
 using StormiumTeam.GameBase;
 using Unity.Entities;
@@ -13,8 +14,9 @@ using Unity.NetCode;
 
 namespace Systems.RhythmEngine
 {
-	[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
-	[UpdateAfter(typeof(GrabInputSystem))]
+	[UpdateInGroup(typeof(RhythmEngineGroup))]
+	[UpdateAfter(typeof(ProcessRhythmEngineSystem))]
+	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class SendRhythmEngineInputSystem : JobGameBaseSystem
 	{
 		private LazySystem<EndSimulationEntityCommandBufferSystem> m_EndBarrier;

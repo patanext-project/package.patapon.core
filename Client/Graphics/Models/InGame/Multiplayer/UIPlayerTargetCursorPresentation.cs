@@ -1,5 +1,9 @@
+using Misc.Extensions;
+using package.stormiumteam.shared.ecs;
 using Patapon.Client.PoolingSystems;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
+using StormiumTeam.GameBase.Systems;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Transforms;
@@ -14,11 +18,25 @@ namespace package.patapon.core.Models.InGame.Multiplayer
 		public GameObject Controlled;
 		public GameObject NotOwned;
 
+		public Renderer[] RendererForColor;
+
+		public MaterialPropertyBlock mpb;
+		
+		private static readonly int BaseColorId = Shader.PropertyToID("_Color");
+
 		private void OnEnable()
 		{
 			m_ActiveStates = new bool[2];
 			Controlled.SetActive(false);
 			NotOwned.SetActive(false);
+			
+			mpb = new MaterialPropertyBlock();
+		}
+
+		private void OnDisable()
+		{
+			mpb.Clear();
+			mpb = null;
 		}
 
 		public void SetActive(int index, bool state)
@@ -37,52 +55,67 @@ namespace package.patapon.core.Models.InGame.Multiplayer
 					break;
 			}
 		}
+
+		public void SetColor(Color target)
+		{
+			foreach (var r in RendererForColor)
+			{
+				r.GetPropertyBlock(mpb);
+				{
+					mpb.SetColor(BaseColorId, target);
+				}
+				r.SetPropertyBlock(mpb);
+			}
+		}
 	}
 
 	public class UIPlayerTargetCursorBackend : RuntimeAssetBackend<UIPlayerTargetCursorPresentation>
 	{
-		public override void OnTargetUpdate()
-		{
-			DstEntityManager.AddComponentData(BackendEntity, RuntimeAssetDisable.All);
-		}
 	}
 
-	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
+	[UpdateInGroup(typeof(OrderGroup.Presentation.InterfaceRendering))]
 	[UpdateAfter(typeof(UIPlayerTargetCursorPoolingSystem))]
-	public class UIPlayerTargetCursorSystem : GameBaseSystem
+	public class UIPlayerTargetCursorRenderSystem : BaseRenderSystem<UIPlayerTargetCursorPresentation>
 	{
-		protected override void OnUpdate()
+		public Entity LocalPlayer;
+
+		protected override void PrepareValues()
 		{
-			Entities.ForEach((UIPlayerTargetCursorBackend backend) =>
+			LocalPlayer = this.GetFirstSelfGamePlayer();
+		}
+
+		protected override void Render(UIPlayerTargetCursorPresentation definition)
+		{
+			var backend      = definition.Backend;
+			var targetEntity = definition.Backend.DstEntity;
+			backend.transform.position = new Vector3
 			{
-				var targetPosition = EntityManager.GetComponentData<Translation>(backend.DstEntity);
+				x = EntityManager.GetComponentData<Translation>(targetEntity).Value.x,
+				y = -0.3f
+			};
 
-				backend.transform.position = new Vector3
-				(
-					targetPosition.Value.x,
-					-0.3f,
-					0
-				);
+			if (!EntityManager.TryGetComponentData(targetEntity, out Relative<PlayerDescription> relativePlayer))
+				return;
 
-				var presentation = backend.Presentation;
-				if (presentation == null)
-					return;
+			if (relativePlayer.Target == Entity.Null)
+			{
+				definition.SetActive(0, false);
+				definition.SetActive(1, false);
+				return;
+			}
 
-				if (!EntityManager.HasComponent<Relative<PlayerDescription>>(backend.DstEntity))
-					return;
-				var playerRelative = EntityManager.GetComponentData<Relative<PlayerDescription>>(backend.DstEntity).Target;
-				if (playerRelative == default)
-				{
-					presentation.SetActive(0, false);
-					presentation.SetActive(1, false);
-					return;
-				}
+			definition.SetActive(0, LocalPlayer == relativePlayer.Target);
+			definition.SetActive(1, LocalPlayer != relativePlayer.Target);
 
-				var isLocal = EntityManager.HasComponent<GamePlayerLocalTag>(playerRelative);
+			EntityManager.TryGetComponentData(targetEntity, out var relativeTeam, new Relative<TeamDescription>(targetEntity));
+			EntityManager.TryGetComponentData(relativeTeam.Target, out var relativeClub, new Relative<ClubDescription>(targetEntity));
+			EntityManager.TryGetComponentData(relativeClub.Target, out ClubInformation clubInformation);
 
-				presentation.SetActive(0, isLocal);
-				presentation.SetActive(1, !isLocal);
-			});
+			definition.SetColor(clubInformation.PrimaryColor);
+		}
+
+		protected override void ClearValues()
+		{
 		}
 	}
 }

@@ -179,12 +179,15 @@ namespace Patapon4TLB.GameModes.Interface
 			for (var i = 0; i != 2; i++)
 			{
 				var team = i == 0 ? gameMode.Team0 : gameMode.Team1;
-				EntityManager.TryGetComponentData(team, out Clubs[i], new ClubInformation
+
+				EntityManager.TryGetComponentData(team, out var relativeClub, new Relative<ClubDescription>(team));
+				EntityManager.TryGetComponentData(relativeClub.Target, out Clubs[i], new ClubInformation
 				{
 					Name           = new NativeString64("No Team"),
 					PrimaryColor   = Color.cyan,
 					SecondaryColor = Color.yellow
 				});
+				
 				TeamPoints[i]       = gameMode.GetPoints(i);
 				TeamEliminations[i] = gameMode.GetEliminations(i);
 			}

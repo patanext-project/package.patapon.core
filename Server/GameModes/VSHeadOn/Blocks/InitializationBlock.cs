@@ -36,7 +36,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				var club = clubProvider.SpawnLocalEntityWithArguments(new ClubProvider.Create
 				{
 					name           = new NativeString64(t == 0 ? "Blue" : "Red"),
-					primaryColor   = Color.Lerp(t == 0 ? Color.blue : Color.red, Color.white, 0.33f),
+					primaryColor   = t == 0 ? new Color(0.39f, 0.51f, 0.87f) : new Color(0.87f, 0.3f, 0.48f),
 					secondaryColor = Color.Lerp(Color.Lerp(t == 0 ? Color.blue : Color.red, Color.white, 0.15f), Color.black, 0.15f)
 				});
 				WorldCtx.EntityMgr.AddComponentData(team.Target, new Relative<ClubDescription> {Target = club});

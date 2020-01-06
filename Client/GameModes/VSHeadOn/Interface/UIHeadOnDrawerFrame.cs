@@ -59,10 +59,7 @@ namespace Patapon4TLB.GameModes.Interface
 				default:
 					throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null);
 			}
-	/*		
-			var left  = Vector3.Lerp(BottomLeft, TopLeft, 0.5f);
-			var right = Vector3.Lerp(BottomRight, TopRight, 0.5f);
-*/
+
 			return math.lerp(left, right, t);
 		}
 	}

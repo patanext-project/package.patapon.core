@@ -134,7 +134,7 @@ namespace Patapon4TLB.GameModes.Interface
 				armyInFormation = unitFormation.ArmyInFormation;
 			}
 
-			var drawerPosition = Hud.GetPositionOnDrawer(EntityManager.GetComponentData<Translation>(targetEntity).Value, DrawerAlignment.Center);
+			var drawerPosition = Hud.GetPositionOnDrawer(EntityManager.GetComponentData<Translation>(targetEntity).Value, DrawerAlignment.Bottom);
 			drawerPosition.y += armyInFormation;
 			drawerPosition.z = 0;
 
