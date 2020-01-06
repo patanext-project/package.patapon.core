@@ -29,7 +29,10 @@ namespace DefaultNamespace
 
 	public class AddressBuilderClient : AddressBuilder<AddressBuilderClient>
 	{
-
+		public AddressBuilderInterface Interface()
+		{
+			return new AddressBuilderInterface {m_CurrentAddress = m_CurrentAddress}.Folder("Interface");
+		}
 	}
 
 	public class AddressBuilderMixed : AddressBuilder<AddressBuilderMixed>
@@ -37,6 +40,24 @@ namespace DefaultNamespace
 	}
 
 	public class AddressBuilderServer : AddressBuilder<AddressBuilderServer>
+	{
+	}
+
+	public class AddressBuilderInterface : AddressBuilder<AddressBuilderInterface>
+	{
+		public AddressBuilderInterfaceGameMode GameMode()
+		{
+			return new AddressBuilderInterfaceGameMode {m_CurrentAddress = m_CurrentAddress}.Folder("GameMode");
+		}
+		
+		public AddressBuilderInterfaceGameMode GameMode(string gameModeFolder)
+		{
+			return new AddressBuilderInterfaceGameMode {m_CurrentAddress = m_CurrentAddress}.Folder("GameMode")
+			                                                                                .Folder(gameModeFolder);
+		}
+	}
+
+	public class AddressBuilderInterfaceGameMode : AddressBuilder<AddressBuilderInterfaceGameMode>
 	{
 	}
 }

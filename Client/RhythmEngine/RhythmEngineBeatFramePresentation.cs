@@ -3,6 +3,7 @@ using Systems;
 using Misc;
 using Misc.Extensions;
 using package.patapon.core.FeverWorm;
+using Patapon.Client.OrderSystems;
 using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.GamePlay.Units;
 using Patapon.Mixed.RhythmEngine;
@@ -62,16 +63,10 @@ namespace RhythmEngine
 		public override bool PresentationWorldTransformStayOnSpawn => false;
 	}
 
-	[UpdateInGroup(typeof(OrderInterfaceSystemGroup))]
-	[UpdateAfter(typeof(FeverWormOrderingSystem))]
-	public class RhythmEngineBeatFrameOrdering : OrderingSystem
-	{
-	}
-
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	public class RhythmEngineBeatFrameRenderSystem : BaseRenderSystem<RhythmEngineBeatFramePresentation>
 	{
-		private static readonly int ColorId = Shader.PropertyToID("_Color");
+		private static readonly int ColorId = Shader.PropertyToID("_BaseColor");
 
 		public float BeatTime;
 		public float BeatTimeExp;
@@ -236,7 +231,7 @@ namespace RhythmEngine
 
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class RhythmEngineBeatFrameCreate : PoolingSystem<RhythmEngineBeatFrameBackend, RhythmEngineBeatFramePresentation>
-	{
+	{		
 		private            Canvas m_Canvas;
 		protected override string AddressableAsset => "core://Client/Interface/InGame/RhythmEngine/BeatEffect.prefab";
 

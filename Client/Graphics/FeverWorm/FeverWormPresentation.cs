@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using StormiumTeam.GameBase;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace package.patapon.core.FeverWorm
 {
@@ -52,11 +55,16 @@ namespace package.patapon.core.FeverWorm
 
 		public Animator Animator { get; private set; }
 
+		private void Awake()
+		{
+			Canvas.willRenderCanvases += () => OnRebuild(CanvasUpdate.Layout);
+		}
+
 		private void OnEnable()
 		{
-			mpb                    = new MaterialPropertyBlock();
-			m_ComboCountStrBuilder = new StringBuilder();
-			m_TranslationStrBuilder  = new StringBuilder();
+			mpb                     = new MaterialPropertyBlock();
+			m_ComboCountStrBuilder  = new StringBuilder();
+			m_TranslationStrBuilder = new StringBuilder();
 
 			m_ComputedColorStrings = new string[infoColors.Length];
 			for (var i = 0; i != infoColors.Length; i++) m_ComputedColorStrings[i] = ColorUtility.ToHtmlStringRGB(infoColors[i]);
@@ -89,7 +97,7 @@ namespace package.patapon.core.FeverWorm
 			foreach (var label in comboInfoLabels) label.SetText(m_TranslationStrBuilder);
 
 			m_TranslationStrBuilder.Clear();
-			
+
 			foreach (var label in feverLabels) label.SetText(fever);
 		}
 
@@ -105,7 +113,7 @@ namespace package.patapon.core.FeverWorm
 					mpb.SetFloat(Progression, interpolatedProgression);
 					mpb.SetFloat(DirectProgression, directProgression);
 					mpb.SetInt(IsFever, isFever ? 1 : 0);
-					mpb.SetVector(SummonPosition, new Vector4(ranges[0].position.x, ranges[1].position.x, 0, 0));
+					//mpb.SetVector(SummonPosition, new Vector4(ranges[0].position.x, ranges[1].position.x, 0, 0));
 				}
 				r.SetPropertyBlock(mpb);
 			}
@@ -137,6 +145,21 @@ namespace package.patapon.core.FeverWorm
 			{
 				label.outlineColor  = outline;
 				label.colorGradient = gradient;
+			}
+		}
+
+		public void OnRebuild(CanvasUpdate update)
+		{
+			if (mpb == null)
+				return;
+			
+			foreach (var r in rendererArray)
+			{
+				r.GetPropertyBlock(mpb);
+				{
+					mpb.SetVector(SummonPosition, new Vector4(ranges[0].position.x, ranges[1].position.x, 0, 0));
+				}
+				r.SetPropertyBlock(mpb);
 			}
 		}
 	}

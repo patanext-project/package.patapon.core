@@ -1,6 +1,7 @@
 using Systems;
 using Misc;
 using Misc.Extensions;
+using Patapon.Client.OrderSystems;
 using Patapon.Client.RhythmEngine;
 using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.RhythmEngine;
@@ -32,11 +33,6 @@ namespace package.patapon.core.FeverWorm
 	}
 
 	public struct CreateFeverWormData : IComponentData
-	{
-	}
-
-	[UpdateInGroup(typeof(OrderInterfaceSystemGroup))]
-	public class FeverWormOrderingSystem : OrderingSystem
 	{
 	}
 
@@ -126,7 +122,7 @@ namespace package.patapon.core.FeverWorm
 		{
 			if (backend.Presentation == null)
 				return;
-
+			
 			var definition = backend.Presentation;
 			backend.SetEnabled(ComboCount >= 2);
 
@@ -177,7 +173,7 @@ namespace package.patapon.core.FeverWorm
 				var interfaceOrder = World.GetExistingSystem<FeverWormOrderingSystem>().Order;
 				var canvasSystem   = World.GetExistingSystem<ClientCanvasSystem>();
 
-				m_Canvas                = canvasSystem.CreateCanvas(out _, "FeverWormCanvas");
+				m_Canvas                = canvasSystem.CreateCanvas(out _, "FeverWormCanvas", defaultAddRaycaster: false);
 				m_Canvas.renderMode     = RenderMode.ScreenSpaceCamera;
 				m_Canvas.worldCamera    = World.GetExistingSystem<ClientCreateCameraSystem>().Camera;
 				m_Canvas.planeDistance  = 1;

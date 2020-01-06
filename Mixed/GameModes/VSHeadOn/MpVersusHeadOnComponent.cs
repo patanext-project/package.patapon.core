@@ -1,13 +1,16 @@
+using System.Runtime.CompilerServices;
 using Revolution;
+using Scripts.Utilities;
 using StormiumTeam.GameBase;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Networking.Transport;
 using UnityEngine;
+using Utilities;
 
 namespace Patapon.Mixed.GameModes.VSHeadOn
 {
-	public struct VersusHeadOnUnit : IComponentData
+	public struct VersusHeadOnUnit : IReadWriteComponentSnapshot<VersusHeadOnUnit>, ISnapshotDelta<VersusHeadOnUnit>
 	{
 		public int Team;
 		public int FormationIndex;
@@ -15,7 +18,39 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 		public int KillStreak;
 		public int DeadCount;
 
-		public UTick TickBeforeSpawn;
+		public long TickBeforeSpawn;
+
+		public void WriteTo(DataStreamWriter writer, ref VersusHeadOnUnit baseline, DefaultSetup setup, SerializeClientData jobData)
+		{
+			writer.WritePackedInt(Team, jobData.NetworkCompressionModel);
+			writer.WritePackedInt(FormationIndex, jobData.NetworkCompressionModel);
+			writer.WritePackedInt(KillStreak, jobData.NetworkCompressionModel);
+			writer.WritePackedInt(DeadCount, jobData.NetworkCompressionModel);
+			writer.WritePackedLong(TickBeforeSpawn, jobData.NetworkCompressionModel);
+		}
+
+		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref VersusHeadOnUnit baseline, DeserializeClientData jobData)
+		{
+			Team            = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
+			FormationIndex  = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
+			KillStreak      = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
+			DeadCount       = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
+			TickBeforeSpawn = reader.ReadPackedLong(ref ctx, jobData.NetworkCompressionModel);
+		}
+
+		public bool DidChange(VersusHeadOnUnit baseline)
+		{
+			return UnsafeUtilityOp.AreNotEquals(ref this, ref baseline);
+		}
+
+		public struct Exclude : IComponentData
+		{
+		}
+
+		public class NetSynchronize : MixedComponentSnapshotSystemDelta<VersusHeadOnUnit>
+		{
+			public override ComponentType ExcludeComponent => typeof(Exclude);
+		}
 	}
 
 	public struct VersusHeadOnPlayer : IComponentData
