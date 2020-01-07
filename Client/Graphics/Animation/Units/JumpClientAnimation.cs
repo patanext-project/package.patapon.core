@@ -62,7 +62,7 @@ namespace package.patapon.core.Animation.Units
 
 		protected override void OnAsyncOpUpdate(ref int index)
 		{
-			var (handle, data) = DefaultAsyncOperation.InvokeExecute<AnimationClip, OperationData>(ref AsyncOp, ref index);
+			var (handle, data) = DefaultAsyncOperation.InvokeExecute<AnimationClip, OperationData>(AsyncOp, ref index);
 			if (handle.Result == null)
 				return;
 

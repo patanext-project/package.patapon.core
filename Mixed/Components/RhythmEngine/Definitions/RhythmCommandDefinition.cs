@@ -14,17 +14,27 @@ namespace Patapon.Mixed.RhythmEngine.Definitions
 	{
 		public RangeInt BeatRange;
 		public int      Key;
+		public float MaxTimeDifference;
 
 		public RhythmCommandDefinitionSequence(int beatFract, int key)
 		{
 			BeatRange = new RangeInt(beatFract, 0);
 			Key       = key;
+			MaxTimeDifference = -1;
+		}
+		
+		public RhythmCommandDefinitionSequence(int beatFract, int beatFractLength, int key)
+		{
+			BeatRange              = new RangeInt(beatFract, beatFractLength);
+			Key                    = key;
+			MaxTimeDifference = -1;
 		}
 
-		public RhythmCommandDefinitionSequence(int beatFract, int beatFractLength, int key)
+		public RhythmCommandDefinitionSequence(int beatFract, int beatFractLength, int key, float maxTimeDifference)
 		{
 			BeatRange = new RangeInt(beatFract, beatFractLength);
 			Key       = key;
+			this.MaxTimeDifference = maxTimeDifference;
 		}
 
 		public int BeatEnd => BeatRange.end;

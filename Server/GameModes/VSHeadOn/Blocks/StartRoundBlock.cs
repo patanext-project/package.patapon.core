@@ -47,10 +47,12 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			if (RunNext(SpawnUnitBlock))
 			{
 				SpawnUnits();
-				CounterBlock.SetTicksFromMs(30);
+				CounterBlock.SetTicksFromMs(3000);
 
 				m_QueriesContext.GetEntityQueryBuilder().ForEach((ref FlowEngineProcess process) => { process.StartTime = CounterBlock.Target.Ms; });
 
+				m_ModeContext.HudSettings.EnableUnitSounds = true;
+				
 				return false;
 			}
 
@@ -101,7 +103,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				else m_TeamAttackAverage[ti] = stat.Health;
 
 				var healthEvent = entityMgr.CreateEntity(typeof(ModifyHealthEvent));
-				entityMgr.SetComponentData(healthEvent, new ModifyHealthEvent(ModifyHealthType.SetMax, 0, unit));
+				entityMgr.SetComponentData(healthEvent, new ModifyHealthEvent(ModifyHealthType.SetNone, 0, unit));
 
 				m_TeamUnitCount[ti]++;
 			}

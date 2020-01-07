@@ -59,6 +59,9 @@ namespace Systems.RhythmEngine
 				Entity                     rpcEnt;
 				PressureEventFromClientRpc pressureEvent = default;
 
+				if (state.IsPaused || process.Milliseconds <= 0)
+					return;
+
 				var flowBeat = process.GetFlowBeat(settings.BeatInterval);
 
 				pressureEvent.EngineGhostId = replicatedEntity.GhostId;

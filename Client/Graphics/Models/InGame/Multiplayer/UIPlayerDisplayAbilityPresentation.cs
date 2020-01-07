@@ -1,10 +1,15 @@
 using System;
+using DefaultNamespace;
+using Misc.Extensions;
+using package.patapon.core.Animation.Units;
 using package.stormiumteam.shared.ecs;
 using Patapon4TLB.Default.Player;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Systems;
+using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 namespace package.patapon.core.Models.InGame.Multiplayer
 {
@@ -34,15 +39,58 @@ namespace package.patapon.core.Models.InGame.Multiplayer
 
 	public class UIPlayerDisplayAbilityBackend : RuntimeAssetBackend<UIPlayerDisplayAbilityPresentation>
 	{
-		public bool wasSelectingAbility;
+		public bool             wasSelectingAbility;
 		public AbilitySelection lastAbility;
 	}
 
+	[UpdateInGroup(typeof(OrderGroup.Presentation.InterfaceRendering))]
 	public class UIPlayerDisplayAbilityRenderSystem : BaseRenderSystem<UIPlayerDisplayAbilityPresentation>
 	{
+		public Entity    LocalPlayer;
+		public AudioClip SwitchAbilityAudio;
+
+		private AudioSource m_AudioSource;
+
+		private struct HandleOpData
+		{
+		}
+
+		private AsyncOperationModule m_AsyncOp;
+
+		protected override void OnCreate()
+		{
+			base.OnCreate();
+
+			AudioSource CreateAudioSource(string name, float volume)
+			{
+				var audioSource = new GameObject("(Clip) " + name, typeof(AudioSource)).GetComponent<AudioSource>();
+				audioSource.reverbZoneMix = 0f;
+				audioSource.spatialBlend  = 0f;
+				audioSource.volume        = volume;
+
+				return audioSource;
+			}
+
+			m_AudioSource = CreateAudioSource("AbilitySwitch", 0.25f);
+			GetModule(out m_AsyncOp);
+
+			var path = AddressBuilder.Client()
+			                         .Folder("Sounds")
+			                         .Folder("InGame");
+			m_AsyncOp.Add(Addressables.LoadAssetAsync<AudioClip>(path.GetFile("ability_switch.wav")), new HandleOpData { });
+		}
+
 		protected override void PrepareValues()
 		{
+			for (var i = 0; i != m_AsyncOp.Handles.Count; i++)
+			{
+				var (handle, data) = DefaultAsyncOperation.InvokeExecute<AudioClip, HandleOpData>(m_AsyncOp, ref i);
+				if (handle.Result == null)
+					continue;
+				SwitchAbilityAudio = handle.Result;
+			}
 
+			LocalPlayer = this.GetFirstSelfGamePlayer();
 		}
 
 		protected override void Render(UIPlayerDisplayAbilityPresentation definition)
@@ -67,8 +115,11 @@ namespace package.patapon.core.Models.InGame.Multiplayer
 			if (backend.lastAbility != command.Ability || (backend.wasSelectingAbility != command.IsSelectingAbility && command.IsSelectingAbility))
 			{
 				definition.Animator.SetTrigger("Show");
+
+				if (relativePlayer.Target == LocalPlayer)
+					m_AudioSource.PlayOneShot(SwitchAbilityAudio);
 			}
-			
+
 			backend.lastAbility         = command.Ability;
 			backend.wasSelectingAbility = command.IsSelectingAbility;
 		}

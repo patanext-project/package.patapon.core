@@ -3,6 +3,8 @@ using GmMachine;
 using GmMachine.Blocks;
 using GmMachine.Blocks.Instructions;
 using Misc.GmMachine.Blocks;
+using package.stormiumteam.shared.ecs;
+using Patapon.Mixed.GameModes;
 using Patapon.Mixed.GameModes.VSHeadOn;
 using Patapon.Mixed.Units;
 using Patapon4TLB.Default;
@@ -25,7 +27,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 		public NativeList<HeadOnStructureOnCapture> CaptureEvents;
 
 		public NativeList<HeadOnOnUnitElimination> EliminationEvents;
-		public NativeList<Entity> RespawnEvents;
+		public NativeList<Entity>                  RespawnEvents;
 
 		private EntityQuery m_EventOnCaptureQuery;
 		private EntityQuery m_LivableQuery;
@@ -142,6 +144,12 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 		protected override void OnLoop(Entity gameModeEntity)
 		{
+			if (IsInitialization())
+			{
+				EntityManager.SetOrAddComponentData(gameModeEntity, new GameModeHudSettings());
+				FinishInitialization();
+			}
+
 			Machine.Update();
 			var gmContext = Machine.GetContext<ModeContext>();
 			{
@@ -149,6 +157,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				gmContext.Data.Team1 = gmContext.Teams[1].Target;
 			}
 			EntityManager.SetComponentData(gameModeEntity, gmContext.Data);
+			EntityManager.SetComponentData(gameModeEntity, gmContext.HudSettings);
 		}
 
 		public interface IEntityQueryBuilderGetter
@@ -183,10 +192,11 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			public ServerSimulationSystemGroup ServerSimulationSystemGroup;
 
 			public MpVersusHeadOnTeam[] Teams;
+			public GameModeHudSettings  HudSettings;
 
 			public NativeList<HeadOnOnUnitElimination>  EliminationEvents => GameModeSystem.EliminationEvents;
 			public NativeList<HeadOnStructureOnCapture> CaptureEvents     => GameModeSystem.CaptureEvents;
-			public NativeList<Entity> RespawnEvents => GameModeSystem.RespawnEvents;
+			public NativeList<Entity>                   RespawnEvents     => GameModeSystem.RespawnEvents;
 
 			public UTick GetTick()
 			{

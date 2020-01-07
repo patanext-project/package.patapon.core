@@ -40,6 +40,9 @@ namespace Patapon.Mixed.Systems
 			if (comDiff < 0)
 				return false;
 
+			if (!CanBePredicted(commandSequence, currentCommand))
+				return false;
+
 			for (var com = commandSequence.Length - 1; com >= 0; com--)
 			{
 				var range = commandSequence[com].BeatRange;
@@ -72,6 +75,14 @@ namespace Patapon.Mixed.Systems
 
 				if (commandSequence[seq].Key != currentCommand[curr].KeyId)
 					return false;
+
+				if (seq > 0
+				    && commandSequence[seq].MaxTimeDifference > 0
+				    && (currentCommand[seq].Time - currentCommand[seq - 1].Time) * 0.001f >= commandSequence[seq].MaxTimeDifference)
+				{
+					Debug.Log((currentCommand[seq].Time - currentCommand[seq - 1].Time));
+					return false;
+				}
 
 				seq++;
 			}

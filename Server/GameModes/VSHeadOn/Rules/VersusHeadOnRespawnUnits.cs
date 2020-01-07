@@ -1,3 +1,5 @@
+using Systems.GamePlay;
+using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GameModes.VSHeadOn;
 using Patapon.Mixed.Units;
 using StormiumTeam.GameBase.BaseSystems;
@@ -26,6 +28,20 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					health.IsDead = false;
 					respawnEvents.Add(entity);
 				}
+			}).Run();
+
+			var livableHealthFromEntity = GetComponentDataFromEntity<LivableHealth>();
+			var gameModeUnitFromEntity  = GetComponentDataFromEntity<VersusHeadOnUnit>();
+			Entities.ForEach((ref TargetRebornEvent rebornEvent) =>
+			{
+				var gmUnitUpdater = gameModeUnitFromEntity.GetUpdater(rebornEvent.Target)
+				                                          .Out(out var gmUnit);
+				if (!gmUnitUpdater.possess || !(livableHealthFromEntity[rebornEvent.Target].IsDead || livableHealthFromEntity[rebornEvent.Target].ShouldBeDead()))
+					return;
+
+				gmUnit.TickBeforeSpawn = 0;
+				gmUnitUpdater.CompareAndUpdate(gmUnit);
+				respawnEvents.Add(rebornEvent.Target);
 			}).Run();
 
 			return default;
