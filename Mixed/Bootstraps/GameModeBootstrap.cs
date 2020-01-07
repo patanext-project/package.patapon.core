@@ -101,7 +101,8 @@ namespace Bootstraps
 						// taterazay
 						EntityManager.SetComponentData(unitEntity, new UnitStatistics
 						{
-							Health  = 225,
+							//Health  = 225,
+							Health = 10,
 							Attack  = 24,
 							Defense = 7,
 

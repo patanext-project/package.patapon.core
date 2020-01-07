@@ -31,7 +31,7 @@ namespace Patapon.Mixed.RhythmEngine.Definitions
 
 		public bool ContainsInRange(int beatVal)
 		{
-			return BeatRange.start >= beatVal && BeatRange.end <= beatVal;
+			return BeatRange.start <= beatVal && BeatRange.end >= beatVal;
 		}
 	}
 

@@ -5,12 +5,13 @@ using StormiumTeam.GameBase.Components;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
+using UnityEngine;
 
 namespace Patapon.Server.GameModes.VSHeadOn
 {
 	[UpdateInGroup(typeof(VersusHeadOnRuleGroup))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
-	[UpdateAfter(typeof(VersusHeadOnEliminationRule))] // this order is important, or else the respawned unit will be immediately dead again...
+	[UpdateAfter(typeof(VersusHeadOnEliminationRuleSystem))] // this order is important, or else the respawned unit will be immediately dead again...
 	[AlwaysSynchronizeSystem]
 	public class VersusHeadOnRespawnUnits : RuleBaseSystem
 	{

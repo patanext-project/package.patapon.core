@@ -10,6 +10,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
+using UnityEngine;
 
 namespace Patapon.Mixed.Systems
 {
@@ -66,10 +67,12 @@ namespace Patapon.Mixed.Systems
 
 						var flowBeat       = process.GetFlowBeat(settings.BeatInterval);
 						var activationBeat = process.GetActivationBeat(settings.BeatInterval);
-						if (state.IsRecovery(flowBeat) || rhythmActiveAtFlowBeat < flowBeat && checkStopBeat < activationBeat
-						                               || rhythm.CommandTarget == default && rhythm.HasPredictedCommands && rhythmActiveAtFlowBeat < state.LastPressureBeat
-						                               || !rhythm.HasPredictedCommands && !isServer)
+						if (state.IsRecovery(flowBeat) || (rhythmActiveAtFlowBeat < flowBeat && checkStopBeat < activationBeat)
+						                               || (rhythm.CommandTarget == default && rhythm.HasPredictedCommands && rhythmActiveAtFlowBeat < state.LastPressureBeat)
+						                               || (!rhythm.HasPredictedCommands && !isServer))
 						{
+							//Debug.Log($"server={isServer}, isRecovery={state.IsRecovery(flowBeat)}\n({rhythmActiveAtFlowBeat} < {flowBeat} && {checkStopBeat} < {activationBeat})\n({rhythm.CommandTarget == default} && {rhythm.HasPredictedCommands} && {rhythmActiveAtFlowBeat} < {state.LastPressureBeat})");
+							
 							comboState.Chain        = 0;
 							comboState.Score        = 0;
 							comboState.IsFever      = false;

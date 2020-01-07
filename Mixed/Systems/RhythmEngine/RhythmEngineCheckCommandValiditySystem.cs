@@ -66,7 +66,14 @@ namespace Patapon.Mixed.Systems
 			for (int seq = 0, curr = 0; curr < currentCommand.Length; curr++)
 			{
 				if (!commandSequence[seq].ContainsInRange(currentCommand[curr].RenderBeat - firstBeat))
+				{
+					if (commandSequence.Length > 4 && currentCommand[0].KeyId == commandSequence[0].Key)
+					{
+						Debug.Log($"{commandSequence[seq].BeatRange.start} {commandSequence[seq].BeatRange.end} -> {currentCommand[curr].RenderBeat - firstBeat}");
+					}
 					return false;
+				}
+
 				if (commandSequence[seq].Key != currentCommand[curr].KeyId)
 					return false;
 

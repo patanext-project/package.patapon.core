@@ -14,6 +14,7 @@ namespace Patapon.Mixed.GamePlay
 	{
 		internal int PreviousActiveStartTime;
 
+		public GameComboState PreviousActiveCombo;
 		public GameComboState Combo;
 
 		public Entity Engine;
@@ -34,12 +35,16 @@ namespace Patapon.Mixed.GamePlay
 			if (ActiveId == 0)
 				ActiveId++;
 
+			if (combo.Chain != 0)
+				PreviousActiveCombo = combo;
+			
 			if (currCommand.CommandTarget != Command)
 			{
 				IsActive        = IsActive && commandState.StartTime > process.Milliseconds && currCommand.Previous == Command;
 				IsStillChaining = IsStillChaining && commandState.StartTime > process.Milliseconds && currCommand.Previous == Command;
 				StartTime       = -1;
 				WillBeActive    = false;
+				
 				return;
 			}
 
