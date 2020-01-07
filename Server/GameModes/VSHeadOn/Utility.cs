@@ -11,6 +11,9 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
+using Unity.Transforms;
+using UnityEngine;
+using CapsuleCollider = Unity.Physics.CapsuleCollider;
 
 namespace Patapon.Server.GameModes.VSHeadOn
 {
@@ -97,6 +100,21 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 			if (wasFormationQueryNull)
 				formationQuery.Dispose();
+		}
+
+		public static void RespawnUnit(EntityManager entityMgr, Entity unit, float3 spawnPointPos)
+		{
+			entityMgr.SetComponentData(unit, new Translation
+			{
+				Value = new float3(spawnPointPos.x, 0, 0)
+			});
+
+			var unitTargetRelative = entityMgr.GetComponentData<Relative<UnitTargetDescription>>(unit).Target;
+			entityMgr.SetComponentData(unitTargetRelative, new Translation {Value = spawnPointPos.x});
+			entityMgr.SetOrAddComponentData(unitTargetRelative, entityMgr.GetComponentData<UnitDirection>(unit));
+			entityMgr.SetOrAddComponentData(unitTargetRelative, entityMgr.GetComponentData<Relative<TeamDescription>>(unit));
+				
+			Debug.Log("Spawning at " + spawnPointPos.x);
 		}
 	}
 }

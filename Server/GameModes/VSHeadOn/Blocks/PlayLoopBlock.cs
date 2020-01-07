@@ -4,6 +4,7 @@ using Patapon.Mixed.GameModes.VSHeadOn;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Components;
+using Unity.Transforms;
 
 namespace Patapon.Server.GameModes.VSHeadOn
 {
@@ -46,7 +47,23 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 			// -- clear elimination events
 			eliminationEvents.Clear();
+			
+			// ----------------------------- //
+			// Respawn events
+			var respawnEvents = m_HeadOnModeContext.RespawnEvents;
+			for (int i = 0, length = respawnEvents.Length; i < length; i++)
+			{
+				var unit   = respawnEvents[i];
+				var gmUnit = entityMgr.GetComponentData<VersusHeadOnUnit>(unit);
+				Utility.RespawnUnit(entityMgr, unit, entityMgr.GetComponentData<LocalToWorld>(m_HeadOnModeContext.Teams[gmUnit.Team].SpawnPoint).Position);
 
+				var healthEvent = entityMgr.CreateEntity(typeof(ModifyHealthEvent));
+				entityMgr.SetComponentData(healthEvent, new ModifyHealthEvent(ModifyHealthType.SetMax, 0, unit));
+			}
+
+			// -- clear respawn events
+			respawnEvents.Clear();
+			
 			// ----------------------------- //
 			// Capture events (from towers and walls)
 			var captureEvents = m_HeadOnModeContext.CaptureEvents;

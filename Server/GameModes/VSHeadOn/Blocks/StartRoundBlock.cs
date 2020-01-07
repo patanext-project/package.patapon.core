@@ -134,19 +134,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			Debug.Log("SPAWNPOINT ====== " + team.SpawnPoint);
 			if (team.SpawnPoint != default)
 			{
-				var spawnPointPos = entityMgr.GetComponentData<LocalToWorld>(team.SpawnPoint).Position;
-				entityMgr.SetComponentData(unit, new Translation
-				{
-					Value = new float3(spawnPointPos.x, 0, 0)
-				});
-
-				var unitTargetRelative = entityMgr.GetComponentData<Relative<UnitTargetDescription>>(unit).Target;
-				entityMgr.SetComponentData(unitTargetRelative, new Translation {Value = spawnPointPos.x});
-				entityMgr.SetOrAddComponentData(unitTargetRelative, entityMgr.GetComponentData<UnitDirection>(unit));
-				entityMgr.SetOrAddComponentData(unitTargetRelative, entityMgr.GetComponentData<Relative<TeamDescription>>(unit));
-				
-				Debug.Log("Spawning at " + spawnPointPos.x);
-				
+				Utility.RespawnUnit(entityMgr, unit, entityMgr.GetComponentData<LocalToWorld>(team.SpawnPoint).Position);
 			}
 		}
 	}

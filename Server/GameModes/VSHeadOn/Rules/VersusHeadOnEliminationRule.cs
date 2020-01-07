@@ -16,7 +16,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 		public int MaxRespawnTime;
 	}
 
-	[UpdateInGroup(typeof(GameEventRuleSystemGroup))]
+	[UpdateInGroup(typeof(VersusHeadOnRuleGroup))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	[AlwaysSynchronizeSystem]
 	public class VersusHeadOnEliminationRuleSystem : RuleBaseSystem<VersusHeadOnEliminationRule>

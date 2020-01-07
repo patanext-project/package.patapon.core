@@ -25,6 +25,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 		public NativeList<HeadOnStructureOnCapture> CaptureEvents;
 
 		public NativeList<HeadOnOnUnitElimination> EliminationEvents;
+		public NativeList<Entity> RespawnEvents;
 
 		private EntityQuery m_EventOnCaptureQuery;
 		private EntityQuery m_LivableQuery;
@@ -35,6 +36,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 		{
 			EliminationEvents = new NativeList<HeadOnOnUnitElimination>(Allocator.Persistent);
 			CaptureEvents     = new NativeList<HeadOnStructureOnCapture>(Allocator.Persistent);
+			RespawnEvents     = new NativeList<Entity>(Allocator.Persistent);
 
 			machine.AddContext(new ModeContext
 			{
@@ -184,6 +186,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 			public NativeList<HeadOnOnUnitElimination>  EliminationEvents => GameModeSystem.EliminationEvents;
 			public NativeList<HeadOnStructureOnCapture> CaptureEvents     => GameModeSystem.CaptureEvents;
+			public NativeList<Entity> RespawnEvents => GameModeSystem.RespawnEvents;
 
 			public UTick GetTick()
 			{

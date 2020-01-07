@@ -1,10 +1,13 @@
+using System.Text;
 using Misc.Extensions;
 using package.stormiumteam.shared.ecs;
+using Patapon.Mixed.GameModes.VSHeadOn;
 using Patapon.Mixed.Units;
 using Patapon4TLB.Default.Player;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Systems;
+using TMPro;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
@@ -14,14 +17,22 @@ namespace Patapon4TLB.GameModes.Interface
 {
 	public class UIHeadOnUnitStatusPresentation : RuntimeAssetPresentation<UIHeadOnUnitStatusPresentation>
 	{
+		public RectTransform Rescale;
+		
 		public Image           HealthGauge;
 		public MaskableGraphic TeamCircleQuad;
 		public MaskableGraphic PossessionOutlineQuad;
 		public Gradient        Gradient;
 
+		public RectTransform RespawnQuad;
+		public TextMeshProUGUI RespawnLabel;
+
+		private StringBuilder m_StringBuilder;
+
 		public override void OnBackendSet()
 		{
 			GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+			m_StringBuilder = new StringBuilder();
 		}
 
 		public void SetHealth(int value, int max)
@@ -38,7 +49,7 @@ namespace Patapon4TLB.GameModes.Interface
 
 		public void SetDirection(UnitDirection direction)
 		{
-			transform.localScale = new Vector3
+			Rescale.localScale = new Vector3
 			{
 				x = direction.Value,
 				y = 1, z = 1
@@ -53,6 +64,20 @@ namespace Patapon4TLB.GameModes.Interface
 		public void SetPossessionColor(Color color)
 		{
 			PossessionOutlineQuad.color = color;
+		}
+
+		public void SetRespawnMilliseconds(int ms)
+		{
+			if (ms < 100)
+			{
+				RespawnQuad.gameObject.SetActive(false);
+				return;
+			}
+
+			RespawnQuad.gameObject.SetActive(true);
+			m_StringBuilder.Clear();
+			m_StringBuilder.Append(ms / 1000);
+			RespawnLabel.SetText(m_StringBuilder);
 		}
 
 		public override void OnReset()
@@ -146,6 +171,9 @@ namespace Patapon4TLB.GameModes.Interface
 
 			EntityManager.TryGetComponentData(targetEntity, out UnitDirection direction, UnitDirection.Right);
 			definition.SetDirection(direction);
+
+			EntityManager.TryGetComponentData(targetEntity, out VersusHeadOnUnit gmUnit, new VersusHeadOnUnit {DeadCount = -1, TickBeforeSpawn = -1});
+			definition.SetRespawnMilliseconds(UTick.CopyDelta(ServerTick, gmUnit.TickBeforeSpawn).Ms - ServerTick.Ms);
 
 			var drawerPosition = Hud.GetPositionOnDrawer(EntityManager.GetComponentData<Translation>(targetEntity).Value, DrawerAlignment.Bottom);
 			drawerPosition.y += (armyIndex % 4) * 25 + 3;
