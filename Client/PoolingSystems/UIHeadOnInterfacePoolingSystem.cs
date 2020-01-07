@@ -33,7 +33,7 @@ namespace Patapon.Client.PoolingSystems
 		{
 			if (m_Canvas == null)
 			{
-				var interfaceOrder = World.GetExistingSystem<FeverWormOrderingSystem>().Order;
+				var interfaceOrder = World.GetExistingSystem<UIHeadOnInterfaceOrderSystem>().Order;
 				var canvasSystem   = World.GetExistingSystem<ClientCanvasSystem>();
 
 				m_Canvas                = canvasSystem.CreateCanvas(out _, "VSHeadOn Canvas", defaultAddRaycaster: false);

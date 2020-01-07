@@ -6,6 +6,7 @@
         "package.patapon.masterserver.shared",
         "package.stormiumteam.gamebase",
         "package.stormiumteam.networking",
+        "Unity.VectorGraphics",
         "Revolution.NetCode",
         "Revolution.Snapshot",
         "Unity.ugui",

@@ -31,7 +31,7 @@ namespace Patapon.Mixed.Rules
 			RhythmEngineUsePredicted.Value      = true;
 			UnitPresentationInterpolation.Value = Interpolation.Double;
 			
-			RuleConfiguration = new BaseRuleConfiguration(Rule, 1, $"{Application.streamingAssetsPath}/conf/P4NetworkRules.json");
+			RuleConfiguration = new BaseRuleConfiguration(Rule, this, 1);
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)

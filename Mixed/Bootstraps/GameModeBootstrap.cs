@@ -82,6 +82,8 @@ namespace Bootstraps
 			m_Created = true;
 
 			var playerEntities = m_PlayerQuery.ToEntityArray(Allocator.TempJob);
+			var count = playerEntities.Length;
+			count = 1;
 
 			// Create formation
 			const int formationCount = 2;
@@ -89,7 +91,7 @@ namespace Bootstraps
 			{
 				var formationRoot = EntityManager.CreateEntity(typeof(GameFormationTag), typeof(FormationTeam), typeof(FormationRoot));
 				{
-					for (var i = 0; i != playerEntities.Length; i++)
+					for (var i = 0; i != count; i++)
 					{
 						var armyEntity = EntityManager.CreateEntity(typeof(ArmyFormation), typeof(FormationParent), typeof(FormationChild));
 						EntityManager.SetComponentData(armyEntity, new FormationParent {Value = formationRoot});
@@ -120,7 +122,7 @@ namespace Bootstraps
 						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_attack"), 0));
 						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_defense"), 0));
 
-						if (playerEntities[i] != Entity.Null)
+						if (playerEntities.Length > i && playerEntities[i] != Entity.Null)
 						{
 							EntityManager.ReplaceOwnerData(unitEntity, playerEntities[i]);
 						}
@@ -135,7 +137,7 @@ namespace Bootstraps
 							EntityManager.ReplaceOwnerData(unitEntity, playerEntity);
 						}
 
-						playerEntities[i] = Entity.Null;
+						if (playerEntities.Length > i) playerEntities[i] = Entity.Null;
 					}
 				}
 

@@ -1,6 +1,7 @@
 using Misc.Extensions;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.Units;
+using Patapon4TLB.Default.Player;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Systems;
@@ -33,6 +34,15 @@ namespace Patapon4TLB.GameModes.Interface
 
 			HealthGauge.fillAmount = real;
 			HealthGauge.color      = Gradient.Evaluate(real);
+		}
+
+		public void SetDirection(UnitDirection direction)
+		{
+			transform.localScale = new Vector3
+			{
+				x = direction.Value,
+				y = 1, z = 1
+			};
 		}
 
 		public void SetTeamColor(Color color)
@@ -72,7 +82,7 @@ namespace Patapon4TLB.GameModes.Interface
 	[UpdateAfter(typeof(UIHeadOnPresentation))]
 	public class UIHeadOnUnitStatusRenderSystem : BaseRenderSystem<UIHeadOnUnitStatusPresentation>
 	{
-		public Entity LocalPlayer;
+		public Entity               LocalPlayer;
 		public UIHeadOnPresentation Hud;
 
 		private EntityQuery m_HudQuery;
@@ -82,21 +92,21 @@ namespace Patapon4TLB.GameModes.Interface
 			base.OnCreate();
 
 			m_HudQuery = GetEntityQuery(typeof(UIHeadOnPresentation));
-			
+
 			RequireForUpdate(m_HudQuery);
 		}
 
 		protected override void PrepareValues()
 		{
 			LocalPlayer = this.GetFirstSelfGamePlayer();
-			Hud = EntityManager.GetComponentObject<UIHeadOnPresentation>(m_HudQuery.GetSingletonEntity());
+			Hud         = EntityManager.GetComponentObject<UIHeadOnPresentation>(m_HudQuery.GetSingletonEntity());
 		}
 
 		protected override void Render(UIHeadOnUnitStatusPresentation definition)
 		{
 			var backend      = (UIHeadOnUnitStatusBackend) definition.Backend;
 			var targetEntity = definition.Backend.DstEntity;
-			var armyInFormation = 0;
+			var armyIndex    = 0;
 			if (EntityManager.TryGetComponentData(targetEntity, out LivableHealth livableHealth))
 			{
 				definition.SetHealth(livableHealth.Value, livableHealth.Max);
@@ -131,12 +141,15 @@ namespace Patapon4TLB.GameModes.Interface
 
 			if (EntityManager.TryGetComponentData(targetEntity, out UnitAppliedArmyFormation unitFormation))
 			{
-				armyInFormation = unitFormation.ArmyInFormation;
+				armyIndex = unitFormation.ArmyIndex;
 			}
 
+			EntityManager.TryGetComponentData(targetEntity, out UnitDirection direction, UnitDirection.Right);
+			definition.SetDirection(direction);
+
 			var drawerPosition = Hud.GetPositionOnDrawer(EntityManager.GetComponentData<Translation>(targetEntity).Value, DrawerAlignment.Bottom);
-			drawerPosition.y += armyInFormation;
-			drawerPosition.z = 0;
+			drawerPosition.y += (armyIndex % 4) * 25 + 3;
+			drawerPosition.z =  0;
 
 			backend.rectTransform.localPosition = drawerPosition;
 		}

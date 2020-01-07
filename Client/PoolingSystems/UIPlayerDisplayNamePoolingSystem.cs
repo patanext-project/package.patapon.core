@@ -12,30 +12,29 @@ using UnityEngine.Rendering;
 namespace Patapon.Client.PoolingSystems
 {
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
-	public class UIPlayerTargetCursorPoolingSystem : PoolingSystem<UIPlayerTargetCursorBackend, UIPlayerTargetCursorPresentation>
+	public class UIPlayerDisplayNamePoolingSystem : PoolingSystem<UIPlayerDisplayNameBackend, UIPlayerDisplayNamePresentation>
 	{
 		protected override Type[] AdditionalBackendComponents => new Type[] {typeof(SortingGroup)};
-
+		
 		protected override string AddressableAsset =>
 			AddressBuilder.Client()
 			              .Folder("Models")
 			              .Folder("InGame")
 			              .Folder("Multiplayer")
-			              .GetFile("MpTargetCursor.prefab");
+			              .GetFile("MpDisplayName.prefab");
 
 		protected override EntityQuery GetQuery()
 		{
-			// only display if there is a relative player...
-			return GetEntityQuery(typeof(UnitTargetDescription), typeof(Relative<PlayerDescription>));
+			return GetEntityQuery(typeof(UnitDescription), typeof(Relative<PlayerDescription>));
 		}
-
+		
 		protected override void SpawnBackend(Entity target)
 		{
 			base.SpawnBackend(target);
-
+			
 			var sortingGroup = LastBackend.GetComponent<SortingGroup>();
 			sortingGroup.sortingLayerName = "OverlayUI";
-			sortingGroup.sortingOrder     = World.GetExistingSystem<UIPlayerTargetCursorOrderSystem>().Order;
+			sortingGroup.sortingOrder = World.GetExistingSystem<UIPlayerDisplayNameOrderSystem>().Order;
 		}
 	}
 }

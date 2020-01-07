@@ -1,3 +1,4 @@
+using Patapon.Mixed.GamePlay.Team;
 using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
@@ -11,6 +12,7 @@ using UnityEngine;
 namespace Patapon.Mixed.GamePlay
 {
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
+	[UpdateAfter(typeof(TeamBlockMovableAreaSystem))]
 	public class UnitPhysicsSystem : JobComponentSystem
 	{
 		private static float MoveTowards(float current, float target, float maxDelta)

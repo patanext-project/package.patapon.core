@@ -88,7 +88,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					Team           = team.TeamIndex - 1,
 					FormationIndex = formationIndex
 				});
-				entityMgr.AddComponentData(unit, new UnitAppliedArmyFormation {ArmyInFormation = formationIndex, IndexInArmy = armyIndex});
+				entityMgr.AddComponentData(unit, new UnitAppliedArmyFormation {FormationIndex = formationIndex, ArmyIndex = armyIndex});
 
 				var stat = entityMgr.GetComponentData<UnitStatistics>(unit);
 				var ti   = team.TeamIndex - 1;

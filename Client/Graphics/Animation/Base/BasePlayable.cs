@@ -7,10 +7,10 @@ namespace Patapon.Client.Graphics.Animation.Units
 {
 	public abstract class BasePlayable<TInit> : PlayableBehaviour
 	{
-		public PlayableGraph          Graph { get; private set; }
-		public Playable               Self  { get; private set; }
-		public AnimationMixerPlayable Mixer { get; private set; }
-		public AnimationMixerPlayable Root  { get; private set; }
+		public PlayableGraph          Graph  { get; private set; }
+		public Playable               Self   { get; private set; }
+		public AnimationMixerPlayable Mixer  { get; private set; }
+		public AnimationMixerPlayable Root   { get; private set; }
 
 		public Type SystemType { get; private set; }
 
@@ -30,5 +30,10 @@ namespace Patapon.Client.Graphics.Animation.Units
 		}
 
 		protected abstract void OnInitialize(TInit init);
+	}
+
+	public abstract class BaseAbilityPlayable<TInit> : BasePlayable<TInit>
+	{
+		public UnitVisualPlayableBehaviourData Visual { get; set; }
 	}
 }

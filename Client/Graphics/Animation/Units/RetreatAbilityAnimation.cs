@@ -54,15 +54,12 @@ namespace package.patapon.core.Animation.Units
 
 		protected override void OnAsyncOpUpdate(ref int index)
 		{
-			var (handle, data) = AsyncOp.Get<AnimationClip, OperationHandleData>(index);
+			var (handle, data) = DefaultAsyncOperation.InvokeExecute<AnimationClip, OperationHandleData>(ref AsyncOp, ref index);
 			if (handle.Result == null)
 				return;
 
 			m_AnimationClips[data.ArrayIndex] = handle.Result;
 			m_LoadSuccess++;
-
-			AsyncOp.Handles.RemoveAtSwapBack(index);
-			index--;
 		}
 
 		protected override bool OnBeforeForEach()

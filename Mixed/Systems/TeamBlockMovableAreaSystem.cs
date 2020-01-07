@@ -9,7 +9,8 @@ using Unity.Transforms;
 
 namespace Patapon.Mixed.GamePlay.Team
 {
-	[UpdateInGroup(typeof(OrderGroup.Simulation.UpdateEntities.Interaction))]
+	//[UpdateInGroup(typeof(OrderGroup.Simulation.UpdateEntities.Interaction))]
+	[UpdateInGroup(typeof(InitializationSystemGroup))]
 	public class TeamBlockMovableAreaSystem : JobComponentSystem
 	{
 		protected override JobHandle OnUpdate(JobHandle inputDeps)

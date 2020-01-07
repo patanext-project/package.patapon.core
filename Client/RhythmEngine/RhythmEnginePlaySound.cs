@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DefaultNamespace;
 using Misc;
 using Misc.Extensions;
 using package.stormiumteam.shared.ecs;
@@ -208,7 +209,7 @@ namespace RhythmEngine
 
 					m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPressureDrum[key][score]);
 
-					if (false) // voiceoverlay
+					if (GetSingleton<P4SoundRules.Data>().EnableDrumVoices) // voiceoverlay
 					{
 						var id         = score;
 						if (id > 0) id = Mathf.Clamp(new Random((uint) Environment.TickCount).NextInt(-1, 3), 1, 2); // more chance to have a 1

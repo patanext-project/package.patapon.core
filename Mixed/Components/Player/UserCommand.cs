@@ -6,6 +6,13 @@ using Unity.Networking.Transport;
 
 namespace Patapon4TLB.Default.Player
 {
+	public enum AbilitySelection
+	{
+		Horizontal = 0,
+		Top        = 1,
+		Bottom     = 2
+	}
+
 	public unsafe struct UserCommand : ICommandData<UserCommand>
 	{
 		public uint Tick { get; set; }
@@ -36,6 +43,9 @@ namespace Patapon4TLB.Default.Player
 
 		public float Panning;
 
+		public bool             IsSelectingAbility;
+		public AbilitySelection Ability;
+
 		public UnsafeAllocationLength<RhythmAction> GetRhythmActions()
 		{
 			fixed (byte* fx = m_RhythmActions)
@@ -60,7 +70,9 @@ namespace Patapon4TLB.Default.Player
 			var i                                                       = 0;
 			foreach (ref var action in GetRhythmActions()) action.flags = (byte) reader.ReadPackedUIntDelta(ref ctx, baselineActions[i++].flags, compressionModel);
 
-			Panning = reader.ReadPackedFloat(ref ctx, compressionModel);
+			Panning            = reader.ReadPackedFloat(ref ctx, compressionModel);
+			IsSelectingAbility = reader.ReadBitBool(ref ctx);
+			Ability            = (AbilitySelection) reader.ReadPackedUIntDelta(ref ctx, (uint) baseline.Ability, compressionModel);
 		}
 
 		public void WriteTo(DataStreamWriter writer, UserCommand baseline, NetworkCompressionModel compressionModel)
@@ -70,6 +82,8 @@ namespace Patapon4TLB.Default.Player
 			foreach (ref readonly var action in GetRhythmActions()) writer.WritePackedUIntDelta(action.flags, baselineActions[i++].flags, compressionModel);
 
 			writer.WritePackedFloat(Panning, compressionModel);
+			writer.WriteBitBool(IsSelectingAbility);
+			writer.WritePackedUIntDelta((uint) Ability, (uint) baseline.Ability, compressionModel);
 		}
 	}
 

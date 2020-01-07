@@ -21,9 +21,6 @@ namespace Patapon.Mixed.GamePlay
 			for (var i = 0; i != 2; i++)
 				inputDeps = new Job
 				{
-					DeltaTime = Time.DeltaTime,
-					Gravity   = new float3(0, -20f, 0),
-
 					RelativeTeamFromEntity     = GetComponentDataFromEntity<Relative<TeamDescription>>(true),
 					BlockMovableAreaFromEntity = GetComponentDataFromEntity<TeamBlockMovableArea>(),
 					TeamEnemiesFromEntity      = GetBufferFromEntity<TeamEnemies>(true),
@@ -37,9 +34,6 @@ namespace Patapon.Mixed.GamePlay
 		[RequireComponentTag(typeof(UnitDescription))]
 		private struct Job : IJobForEachWithEntity<UnitControllerState, LivableHealth, Translation, TeamAgainstMovable, Relative<TeamDescription>>
 		{
-			public float  DeltaTime;
-			public float3 Gravity;
-
 			[ReadOnly] public ComponentDataFromEntity<UnitDirection>             UnitDirectionFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<Relative<TeamDescription>> RelativeTeamFromEntity;
 			[ReadOnly] public BufferFromEntity<TeamEnemies>                      TeamEnemiesFromEntity;
@@ -78,9 +72,9 @@ namespace Patapon.Mixed.GamePlay
 						if (translation.Value.x + size > area.LeftX && translation.Value.x - size < area.RightX)
 						{
 							if (unitDirection.IsLeft)
-								translation.Value = area.RightX + size;
+								translation.Value.x = area.RightX + size;
 							else if (unitDirection.IsRight)
-								translation.Value = area.LeftX - size;
+								translation.Value.x = area.LeftX - size;
 						}
 					}
 				}

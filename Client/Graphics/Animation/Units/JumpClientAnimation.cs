@@ -28,6 +28,7 @@ namespace package.patapon.core.Animation.Units
 		{
 			base.OnCreate();
 
+			m_AnimationClips = new AnimationClip[ArrayLength];
 			for (var i = 0; i != ArrayLength; i++)
 			{
 				var key = "Start";
@@ -61,18 +62,12 @@ namespace package.patapon.core.Animation.Units
 
 		protected override void OnAsyncOpUpdate(ref int index)
 		{
-			var (handle, data) = AsyncOp.Get<AnimationClip, OperationData>(index);
+			var (handle, data) = DefaultAsyncOperation.InvokeExecute<AnimationClip, OperationData>(ref AsyncOp, ref index);
 			if (handle.Result == null)
 				return;
 
-			if (m_AnimationClips == null)
-				m_AnimationClips = new AnimationClip[ArrayLength];
-
 			m_AnimationClips[data.ArrayIndex] = handle.Result;
 			m_LoadSuccess++;
-
-			AsyncOp.Handles.RemoveAtSwapBack(index);
-			index--;
 		}
 
 		protected override bool OnBeforeForEach()

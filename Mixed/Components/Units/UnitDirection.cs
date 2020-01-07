@@ -26,6 +26,11 @@ namespace Patapon.Mixed.Units
 			Value = (sbyte) (reader.ReadBitBool(ref ctx) ? -1 : 1);
 		}
 
+		public bool Equals(UnitDirection other)
+		{
+			return Value == other.Value;
+		}
+
 		// delta system worth it?
 		public class NetSynchronize : MixedComponentSnapshotSystem<UnitDirection, DefaultSetup>
 		{

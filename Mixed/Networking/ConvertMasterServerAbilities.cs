@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using P4TLB.MasterServer.GamePlay;
 using Patapon.Mixed.GamePlay.Abilities;
+using Patapon.Mixed.GamePlay.Abilities.CTate;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.Units;
 using Revolution;
@@ -53,7 +54,7 @@ namespace Patapon4TLB.Core
 				case string _ when string.IsNullOrEmpty(typeId):
 					throw new InvalidOperationException();
 				case string _ when typeId == GetInternal("basic_party"):
-					CreateAbility<DefaultPartyAbilityProvider, BaseRhythmAbilityProvider<DefaultPartyAbility>.Create>(new BaseRhythmAbilityProvider<DefaultPartyAbility>.Create
+					CreateAbility<DefaultPartyAbilityProvider, DefaultPartyAbilityProvider.Create>(new DefaultPartyAbilityProvider.Create
 					{
 						Owner   = entity,
 						Command = FindCommand(typeof(PartyCommand)),
@@ -67,7 +68,7 @@ namespace Patapon4TLB.Core
 					break;
 				case string _ when typeId == GetInternal("tate/basic_march"):
 				case string _ when typeId == GetInternal("basic_march"):
-					CreateAbility<DefaultMarchAbilityProvider, BaseRhythmAbilityProvider<DefaultMarchAbility>.Create>(new BaseRhythmAbilityProvider<DefaultMarchAbility>.Create
+					CreateAbility<DefaultMarchAbilityProvider, DefaultMarchAbilityProvider.Create>(new DefaultMarchAbilityProvider.Create
 					{
 						Owner   = entity,
 						Command = FindCommand(typeof(MarchCommand)),
@@ -78,7 +79,7 @@ namespace Patapon4TLB.Core
 					});
 					break;
 				case string _ when typeId == GetInternal("basic_backward"):
-					CreateAbility<DefaultBackwardAbilityProvider, BaseRhythmAbilityProvider<DefaultBackwardAbility>.Create>(new BaseRhythmAbilityProvider<DefaultBackwardAbility>.Create
+					CreateAbility<DefaultBackwardAbilityProvider, DefaultBackwardAbilityProvider.Create>(new DefaultBackwardAbilityProvider.Create
 					{
 						Owner   = entity,
 						Command = FindCommand(typeof(BackwardCommand)),
@@ -89,14 +90,14 @@ namespace Patapon4TLB.Core
 					});
 					break;
 				case string _ when typeId == GetInternal("basic_jump"):
-					CreateAbility<DefaultJumpAbilityProvider, BaseRhythmAbilityProvider<DefaultJumpAbility>.Create>(new BaseRhythmAbilityProvider<DefaultJumpAbility>.Create
+					CreateAbility<DefaultJumpAbilityProvider, DefaultJumpAbilityProvider.Create>(new DefaultJumpAbilityProvider.Create
 					{
 						Owner   = entity,
 						Command = FindCommand(typeof(JumpCommand))
 					});
 					break;
 				case string _ when typeId == GetInternal("basic_retreat"):
-					CreateAbility<RetreatAbilityProvider, BaseRhythmAbilityProvider<DefaultRetreatAbility>.Create>(new BaseRhythmAbilityProvider<DefaultRetreatAbility>.Create
+					CreateAbility<RetreatAbilityProvider, RetreatAbilityProvider.Create>(new RetreatAbilityProvider.Create
 					{
 						Owner   = entity,
 						Command = FindCommand(typeof(RetreatCommand)),
@@ -106,8 +107,8 @@ namespace Patapon4TLB.Core
 						}
 					});
 					break;
-				/*case string _ when typeId == GetInternal("tate/basic_attack"):
-					CreateAbility<BasicTaterazayAttackAbility.Provider, BasicTaterazayAttackAbility.Create>(new BasicTaterazayAttackAbility.Create
+				case string _ when typeId == GetInternal("tate/basic_attack"):
+					CreateAbility<BasicTaterazayAttackAbility.Provider, BasicTaterazayAttackAbility.Provider.Create>(new BasicTaterazayAttackAbility.Provider.Create
 					{
 						Owner   = entity,
 						Command = FindCommand(typeof(AttackCommand))
@@ -115,7 +116,7 @@ namespace Patapon4TLB.Core
 					break;
 				default:
 					Debug.LogError("No ability found with type: " + typeId);
-					break;*/
+					break;
 			}
 		}
 
