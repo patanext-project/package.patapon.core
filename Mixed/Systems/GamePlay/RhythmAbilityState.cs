@@ -33,6 +33,7 @@ namespace Patapon.Mixed.GamePlay
 			var relativeRhythmEngineFromEntity    = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(true);
 			var rhythmEngineDescriptionFromEntity = GetComponentDataFromEntity<RhythmEngineDescription>(true);
 			var rhythmEngineProcessFromEntity     = GetComponentDataFromEntity<FlowEngineProcess>(true);
+			var rhythmEngineStateFromEntity     = GetComponentDataFromEntity<RhythmEngineState>(true);
 			var rhythmCurrentCommandFromEntity    = GetComponentDataFromEntity<RhythmCurrentCommand>(true);
 			var gameCommandStateFromEntity        = GetComponentDataFromEntity<GameCommandState>(true);
 			var gameComboStateFromEntity          = GetComponentDataFromEntity<GameComboState>(true);
@@ -57,11 +58,13 @@ namespace Patapon.Mixed.GamePlay
 				       abilityState.Calculate(rhythmCurrentCommandFromEntity[engine],
 					       gameCommandStateFromEntity[engine],
 					       gameComboStateFromEntity[engine],
-					       rhythmEngineProcessFromEntity[engine]);
+					       rhythmEngineProcessFromEntity[engine],
+					       rhythmEngineStateFromEntity[engine]);
 			       })
 			       .WithReadOnly(relativeRhythmEngineFromEntity)
 			       .WithReadOnly(rhythmEngineDescriptionFromEntity)
 			       .WithReadOnly(rhythmEngineProcessFromEntity)
+			       .WithReadOnly(rhythmEngineStateFromEntity)
 			       .WithReadOnly(rhythmCurrentCommandFromEntity)
 			       .WithReadOnly(gameCommandStateFromEntity)
 			       .WithReadOnly(gameComboStateFromEntity)

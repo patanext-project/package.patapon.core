@@ -83,10 +83,10 @@ namespace Patapon.Mixed.Systems
 			var summon = Build(builder, new RhythmCommandDefinition {Identifier = new NativeString64("summon"), BeatLength = 4}, new[]
 			{
 				new RhythmCommandDefinitionSequence(0, 0, RhythmKeys.Down),
-				new RhythmCommandDefinitionSequence(1, 1, RhythmKeys.Down),
-				new RhythmCommandDefinitionSequence(1, 1, RhythmKeys.Down),
-				new RhythmCommandDefinitionSequence(2, 1, RhythmKeys.Down),
-				new RhythmCommandDefinitionSequence(3, 0, RhythmKeys.Down)
+				new RhythmCommandDefinitionSequence(1, 0, RhythmKeys.Down),
+				new RhythmCommandDefinitionSequence(1, 0, RhythmKeys.Down),
+				new RhythmCommandDefinitionSequence(2, 0, RhythmKeys.Down),
+				new RhythmCommandDefinitionSequence(2, 1, RhythmKeys.Down)
 			});
 			EntityManager.AddComponent(summon, typeof(SummonCommand));
 

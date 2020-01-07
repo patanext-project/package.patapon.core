@@ -67,10 +67,6 @@ namespace Patapon.Mixed.Systems
 			{
 				if (!commandSequence[seq].ContainsInRange(currentCommand[curr].RenderBeat - firstBeat))
 				{
-					if (commandSequence.Length > 4 && currentCommand[0].KeyId == commandSequence[0].Key)
-					{
-						Debug.Log($"{commandSequence[seq].BeatRange.start} {commandSequence[seq].BeatRange.end} -> {currentCommand[curr].RenderBeat - firstBeat}");
-					}
 					return false;
 				}
 

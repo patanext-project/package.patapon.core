@@ -10,6 +10,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Networking.Transport;
+using UnityEngine;
 
 namespace Patapon.Mixed.RhythmEngine.Rpc
 {
@@ -75,6 +76,7 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 		{
 			var playerRelativeFromEntity = GetComponentDataFromEntity<Relative<PlayerDescription>>(true);
 			var networkOwnerFromEntity   = GetComponentDataFromEntity<NetworkOwner>(true);
+			var settingsFromEntity        = GetComponentDataFromEntity<RhythmEngineSettings>();
 			var processFromEntity        = GetComponentDataFromEntity<FlowEngineProcess>();
 			var stateFromEntity          = GetComponentDataFromEntity<RhythmEngineState>();
 			var comboFromEntity          = GetComponentDataFromEntity<GameComboState>();
@@ -95,18 +97,20 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 							return;
 
 						var process = processFromEntity[ghostEntity];
+						var settings = settingsFromEntity[ghostEntity];
 						var combo   = comboFromEntity[ghostEntity];
 						var state   = stateFromEntity[ghostEntity];
 
 						if (math.abs(ev.Score) <= FlowPressure.Perfect && combo.IsFever) combo.JinnEnergy += 5;
 
-						state.LastPressureBeat = math.min(ev.Key, process.GetFlowBeat(process.Milliseconds));
+						state.LastPressureBeat = math.min(ev.FlowBeat, process.GetFlowBeat(settings.BeatInterval));
 
 						comboFromEntity[ghostEntity] = combo;
 						stateFromEntity[ghostEntity] = state;
 					})
 					.WithReadOnly(ghostMap)
 					.WithReadOnly(processFromEntity)
+					.WithReadOnly(settingsFromEntity)
 					.WithReadOnly(playerRelativeFromEntity)
 					.WithReadOnly(networkOwnerFromEntity)
 					.WithNativeDisableParallelForRestriction(stateFromEntity)

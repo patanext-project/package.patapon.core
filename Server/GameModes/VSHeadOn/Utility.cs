@@ -1,5 +1,6 @@
 using System;
 using package.stormiumteam.shared.ecs;
+using Patapon.Mixed.GamePlay.Abilities;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.Units;
 using Patapon4TLB.Core;
@@ -92,6 +93,14 @@ namespace Patapon.Server.GameModes.VSHeadOn
 							entityMgr.AddComponent(healthEntity, typeof(GhostEntity));
 							MasterServerAbilities.Convert(dummySystem, spawnedUnit, entityMgr.GetBuffer<UnitDefinedAbilities>(units[unt].Value));
 
+							worldOrigin.GetExistingSystem<DefaultRebornAbility.Provider>()
+							           .SpawnLocalEntityWithArguments(new BaseRhythmAbilityProvider<DefaultRebornAbility>.Create
+							           {
+								           Owner   = spawnedUnit,
+								           Command = FindCommand(dummySystem, typeof(SummonCommand)),
+								           Data    = new DefaultRebornAbility()
+							           });
+
 							onEntityCreated(entities[form], form, armies[arm].Value, arm, spawnedUnit, worldOrigin);
 						}
 					}
@@ -100,6 +109,20 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 			if (wasFormationQueryNull)
 				formationQuery.Dispose();
+		}
+
+		public static Entity FindCommand(ComponentSystemBase system, Type type)
+		{
+			using (var query = system.EntityManager.CreateEntityQuery(type))
+			{
+				if (query.CalculateEntityCount() == 0)
+					return Entity.Null;
+
+				using (var entities = query.ToEntityArray(Allocator.TempJob))
+				{
+					return entities[0];
+				}
+			}
 		}
 
 		public static void RespawnUnit(EntityManager entityMgr, Entity unit, float3 spawnPointPos)

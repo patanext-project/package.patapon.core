@@ -1,5 +1,6 @@
 using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.GamePlay.Units;
+using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
 using Revolution;
 using Unity.Entities;
@@ -25,19 +26,19 @@ namespace Patapon.Mixed.GamePlay
 		public bool   WillBeActive;
 		public int    StartTime;
 
-		public void CalculateWithValidCommand(GameCommandState commandState, GameComboState combo, FlowEngineProcess process)
+		public void CalculateWithValidCommand(GameCommandState commandState, GameComboState combo, FlowEngineProcess process, RhythmEngineState state)
 		{
-			Calculate(new RhythmCurrentCommand {CommandTarget = Command}, commandState, combo, process);
+			Calculate(new RhythmCurrentCommand {CommandTarget = Command}, commandState, combo, process, state);
 		}
 
-		public void Calculate(RhythmCurrentCommand currCommand, GameCommandState commandState, GameComboState combo, FlowEngineProcess process)
+		public void Calculate(RhythmCurrentCommand currCommand, GameCommandState commandState, GameComboState combo, FlowEngineProcess process, RhythmEngineState state)
 		{
 			if (ActiveId == 0)
 				ActiveId++;
 
 			if (combo.Chain != 0)
 				PreviousActiveCombo = combo;
-			
+
 			if (currCommand.CommandTarget != Command)
 			{
 				IsActive        = IsActive && commandState.StartTime > process.Milliseconds && currCommand.Previous == Command;

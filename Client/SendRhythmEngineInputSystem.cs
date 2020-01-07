@@ -79,13 +79,17 @@ namespace Systems.RhythmEngine
 				// check for inputs that were done after the current command chain
 				var failFlag2 = pressureData.RenderBeat >= cmdChainEndFlow
 				                && cmdChainEndFlow > 0;
+				failFlag2 = false; // this flag is deactivated for delayed reborn ability
+				var failFlag0 = cmdEndFlow > flowBeat && cmdEndFlow > 0;
 
 				if (state.IsRecovery(flowBeat))
 				{
 					predictedCommand.State.ChainEndTime = default;
 				}
-				else if (cmdEndFlow > flowBeat || failFlag1 || failFlag2 || failFlag3 || pressureData.GetAbsoluteScore() > FlowPressure.Error)
+				else if (failFlag0 || failFlag1 || failFlag2 || failFlag3 || pressureData.GetAbsoluteScore() > FlowPressure.Error)
 				{
+					Debug.Log($"{failFlag0} {failFlag1} {failFlag2} {failFlag3} (chainEnd={cmdChainEndFlow} end={cmdEndFlow} beat={flowBeat})");
+					
 					pressureEvent.ShouldStartRecovery   = true;
 					state.NextBeatRecovery              = flowBeat + 1;
 					predictedCommand.State.ChainEndTime = default;
