@@ -7,7 +7,7 @@ namespace Patapon.Mixed.GamePlay.Abilities.CTate
 {
 	public struct BasicTaterazayAttackAbility : IReadWriteComponentSnapshot<BasicTaterazayAttackAbility>, ISnapshotDelta<BasicTaterazayAttackAbility>
 	{
-		public const int DelaySlashMs = 100;
+		public const int DelaySlashMs = 150;
 
 		public bool HasSlashed;
 
