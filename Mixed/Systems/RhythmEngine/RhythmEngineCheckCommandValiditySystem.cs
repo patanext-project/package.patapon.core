@@ -149,7 +149,13 @@ namespace Patapon.Mixed.Systems
 					          ref DynamicBuffer<RhythmEngineCommandProgression> commandProgression) =>
 					{
 						if (state.IsPaused || process.Milliseconds < 0 || !isServer && !state.IsNewPressure)
+						{
+							if (state.IsPaused || process.Milliseconds < 0)
+							{
+								rhythmCurrentCommand = new RhythmCurrentCommand {CustomEndTime = -1, ActiveAtTime = -1};
+							}
 							return;
+						}
 
 						if (isServer && settings.UseClientSimulation && !state.VerifyCommand)
 							return;

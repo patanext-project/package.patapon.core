@@ -1,3 +1,4 @@
+using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GameModes.VSHeadOn;
 using Patapon.Mixed.Units;
 using Patapon4TLB.Core;
@@ -71,6 +72,33 @@ namespace Bootstraps
 			RequireSingletonForUpdate<GameModeBootstrap.IsActive>();
 		}
 
+		private void SetAsYarida(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities)
+		{
+			statistics.Health = 160;
+			statistics.Attack = 30;
+			statistics.Defense = 0;
+			statistics.Weight = 6;
+			
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("yarida/basic_attack"), 0));
+		}
+
+		private void SetAsTaterazay(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities)
+		{
+			statistics.Health  = 225;
+			statistics.Attack  = 24;
+			statistics.Defense = 7;
+			statistics.Weight  = 8.5f;
+
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_attack"), 0));
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_defense"), 0));
+		}
+
+		enum ClassType
+		{
+			Taterazay,
+			Yarida
+		}
+		
 		protected override void OnUpdate()
 		{
 			if (!IsServer || m_Created)
@@ -98,11 +126,17 @@ namespace Bootstraps
 
 						var unitEntity = EntityManager.CreateEntity(typeof(UnitFormation), typeof(UnitStatistics), typeof(UnitDefinedAbilities), typeof(FormationParent));
 						EntityManager.SetComponentData(unitEntity, new FormationParent {Value = armyEntity});
-						// taterazay
-						EntityManager.SetComponentData(unitEntity, new UnitStatistics
+
+						var definedAbilities = EntityManager.GetBuffer<UnitDefinedAbilities>(unitEntity);
+						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_march"), 0));
+						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_backward"), 0));
+						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_retreat"), 0));
+						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_jump"), 0));
+						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_party"), 0));
+
+						var statistics = new UnitStatistics
 						{
-							//Health  = 225,
-							Health = 10,
+							Health  = 1000,
 							Attack  = 24,
 							Defense = 7,
 
@@ -112,23 +146,17 @@ namespace Bootstraps
 							MovementAttackSpeed = 2.22f,
 							Weight              = 8.5f,
 							AttackSeekRange     = 20f
-						});
-
-						var definedAbilities = EntityManager.GetBuffer<UnitDefinedAbilities>(unitEntity);
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_march"), 0));
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_backward"), 0));
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_retreat"), 0));
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_jump"), 0));
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_party"), 0));
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_attack"), 0));
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_defense"), 0));
+						};
 
 						if (playerEntities.Length > i && playerEntities[i] != Entity.Null)
 						{
+							SetAsTaterazay(ref statistics, definedAbilities);
 							EntityManager.ReplaceOwnerData(unitEntity, playerEntities[i]);
 						}
 						else
 						{
+							SetAsTaterazay(ref statistics, definedAbilities);
+
 							// create a fake player
 							var playerArchetype = World.GetExistingSystem<GamePlayerProvider>().EntityArchetype;
 							var playerEntity    = EntityManager.CreateEntity(playerArchetype);
@@ -137,6 +165,8 @@ namespace Bootstraps
 							EntityManager.AddComponent(playerEntity, typeof(GhostEntity));
 							EntityManager.ReplaceOwnerData(unitEntity, playerEntity);
 						}
+
+						EntityManager.SetComponentData(unitEntity, statistics);
 
 						if (playerEntities.Length > i) playerEntities[i] = Entity.Null;
 					}

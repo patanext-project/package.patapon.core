@@ -127,7 +127,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 							{
 								ResetOnBeginning = true
 							},
-							new Block("EndRound")
+							new EndRoundBlock("EndRound")
 						})
 						{
 							ResetOnBeginning = true

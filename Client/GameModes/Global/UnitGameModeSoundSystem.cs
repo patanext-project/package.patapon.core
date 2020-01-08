@@ -4,10 +4,12 @@ using package.patapon.core.Animation.Units;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Graphics.Animation.Units;
 using Patapon.Mixed.GameModes;
+using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Systems;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -15,7 +17,8 @@ using UnityEngine.AddressableAssets;
 namespace GameModes.Global
 {
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
-	public class UnitGameModeSoundSystem : GameBaseSystem
+	[AlwaysSynchronizeSystem]
+	public class UnitGameModeSoundSystem : JobGameBaseSystem
 	{
 		public enum TargetAudio
 		{
@@ -64,7 +67,7 @@ namespace GameModes.Global
 			m_AsyncOp.Add(Addressables.LoadAssetAsync<AudioClip>(address.GetFile("uh_def_reborn.wav")), new OperationHandleData {type = TargetAudio.Reborn});
 		}
 
-		protected override void OnUpdate()
+		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
 			for (var i = 0; i != m_AsyncOp.Handles.Count; i++)
 			{
@@ -82,6 +85,8 @@ namespace GameModes.Global
 				hudSettings = GetSingleton<GameModeHudSettings>();
 			}
 
+			AudioClip clipToUse      = null;
+			float     audioDirection = 0;
 			Entities.ForEach((UnitVisualBackend backend) =>
 			{
 				// todo: try get audio from backend to replace default audio of this system....
@@ -95,17 +100,32 @@ namespace GameModes.Global
 					if (didChange && hudSettings.EnableUnitSounds)
 					{
 						AudioClip sound;
-						if (health.IsDead && m_AudioClips.TryGetValue(TargetAudio.Death, out sound))
-							m_AudioSource.PlayOneShot(sound);
-						if (!health.IsDead && m_AudioClips.TryGetValue(TargetAudio.Reborn, out sound))
-							m_AudioSource.PlayOneShot(sound);
+						// the empty ifs are intended
+						if (health.IsDead && m_AudioClips.TryGetValue(TargetAudio.Death, out clipToUse))
+						{
+						}
+
+						if (!health.IsDead && m_AudioClips.TryGetValue(TargetAudio.Reborn, out clipToUse))
+						{
+						}
+
+						audioDirection = -EntityManager.GetComponentData<UnitDirection>(backend.DstEntity).Value;
 					}
 
 					state.IsDead = health.IsDead;
 				}
-				
+
 				EntityManager.SetComponentData(backend.BackendEntity, state);
-			});
+			}).WithStructuralChanges().Run();
+
+			if (clipToUse != null)
+			{
+				m_AudioSource.clip      = clipToUse;
+				m_AudioSource.panStereo = audioDirection * 0.5f;
+				m_AudioSource.Play();
+			}
+
+			return default;
 		}
 
 		public struct State : IComponentData

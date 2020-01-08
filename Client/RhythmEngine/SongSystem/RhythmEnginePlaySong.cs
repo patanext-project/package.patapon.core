@@ -134,6 +134,8 @@ namespace Patapon.Client.RhythmEngine
 
 			if (IsNewCommand)
 			{
+				Debug.Log("New command!");
+				
 				if (ComboState.IsFever)
 					BgmFeverChain++;
 				else

@@ -5,6 +5,7 @@ using Patapon.Mixed.RhythmEngine.Flow;
 using Revolution;
 using Unity.Entities;
 using Unity.Networking.Transport;
+using UnityEngine;
 
 namespace Patapon.Mixed.GamePlay
 {
@@ -38,7 +39,7 @@ namespace Patapon.Mixed.GamePlay
 
 			if (combo.Chain != 0)
 				PreviousActiveCombo = combo;
-
+			
 			if (currCommand.CommandTarget != Command)
 			{
 				IsActive        = IsActive && commandState.StartTime > process.Milliseconds && currCommand.Previous == Command;
@@ -60,8 +61,7 @@ namespace Patapon.Mixed.GamePlay
 			Combo = combo;
 
 			StartTime = commandState.StartTime;
-
-			IsStillChaining = commandState.StartTime <= process.Milliseconds + (IsStillChaining ? 500 : 0) && combo.Chain > 0;
+			IsStillChaining = commandState.StartTime <= process.Milliseconds + (IsStillChaining ? 1000 : 0) && combo.Chain > 0;
 			WillBeActive    = commandState.StartTime > process.Milliseconds && process.Milliseconds <= commandState.EndTime && !IsActive;
 		}
 

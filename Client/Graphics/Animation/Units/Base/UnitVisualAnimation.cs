@@ -52,6 +52,8 @@ namespace Patapon.Client.Graphics.Animation.Units
 			Presentation = presentation;
 			SetAnimatorOutput("standard output", presentation.Animator);
 
+			CurrAnimation = new TargetAnimation(null);
+			
 			m_PlayableGraph.Stop();
 			m_PlayableGraph.Play();
 		}
@@ -96,14 +98,30 @@ namespace Patapon.Client.Graphics.Animation.Units
 
 		public override void OnPresentationSet()
 		{
+			Presentation.Animator.WriteDefaultValues();
+			Presentation.Animator.Rebind();
 			Animation.OnPresentationSet(Presentation);
 			Presentation.Animator.runtimeAnimatorController = null;
 		}
 
+		public override void ReturnPresentation()
+		{
+			if (Presentation != null && Presentation.Animator != null)
+			{
+				Presentation.Animator.WriteDefaultValues();
+				Presentation.Animator.Rebind();
+			}
+			base.ReturnPresentation();
+		}
+
 		public override void OnReset()
 		{
-			GetComponent<UnitVisualAnimation>().DestroyPlayableGraph();
-			m_Animation      = null;
+			if (m_Animation != null)
+			{
+				m_Animation.DestroyPlayableGraph();
+				m_Animation = null;
+			}
+
 			CurrentArchetype = string.Empty;
 		}
 	}

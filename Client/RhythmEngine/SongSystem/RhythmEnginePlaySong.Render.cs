@@ -174,12 +174,10 @@ namespace Patapon.Client.RhythmEngine
 			}
 
 			// It's loop time
-			if (!hasSwitched && targetAudio != null && m_BgmSources[1 - m_Flip].time + nextBeatDelay + 0.1f >= targetAudio.length)
+			if (!hasSwitched && targetAudio != null && m_BgmSources[1 - m_Flip].time + nextBeatDelay + 0.25f >= targetAudio.length)
 			{
 				Debug.Log($"Looping {m_LastClip?.name}");
-				/*m_BgmSources[1 - m_Flip].time = math.max(m_BgmSources[1 - m_Flip].time - targetAudio.length, 0);
-				m_BgmSources[1 - m_Flip].Play();*/
-				hasSwitched = Switch(targetAudio, nextBeatDelay + 0.1f);
+				hasSwitched = Switch(targetAudio, nextBeatDelay + 0.25f);
 			}
 
 			var currBgmSource = m_BgmSources[1 - m_Flip];
@@ -239,12 +237,11 @@ namespace Patapon.Client.RhythmEngine
 			}
 
 			m_CommandChain[hash] = m_CommandChain[hash] + 1;
-
-			Debug.Log(commandTarget);
+			
 			if (commandTarget == null)
 				return;
 
-			var cmdStartActivationBeat = FlowEngineProcess.CalculateActivationBeat(EngineProcess.StartTime, EngineSettings.BeatInterval);
+			var cmdStartActivationBeat = FlowEngineProcess.CalculateActivationBeat(CommandStartTime, EngineSettings.BeatInterval);
 			var nextBeatDelay          = (cmdStartActivationBeat * EngineSettings.BeatInterval - EngineProcess.Milliseconds) * 0.001f;
 			m_CommandSource.clip  = commandTarget;
 			m_CommandSource.pitch = TargetCommandDefinition.BeatLength == 3 ? 1.25f : 1f;

@@ -37,6 +37,7 @@ namespace Patapon.Mixed.Systems
 			var spawnEcb   = this.L(ref m_SpawnBarrier).CreateCommandBuffer().ToConcurrent();
 			var destroyEcb = this.L(ref m_DeleteBarrier).CreateCommandBuffer();
 			var tick       = GetTick(true);
+			var isServer = IsServer;
 
 			destroyEcb.DestroyEntity(m_DestroyEventQuery);
 
@@ -44,7 +45,7 @@ namespace Patapon.Mixed.Systems
 			// I don't remember why this tag was needed
 			inputDeps = Entities
 			            .ForEach((Entity entity, int nativeThreadIndex, ref FlowEngineProcess process, ref RhythmEngineState state, in RhythmEngineSettings settings) =>
-			            {
+			            {				            
 				            var previousBeat = process.GetActivationBeat(settings.BeatInterval);
 
 				            process.Milliseconds = tick.Ms - process.StartTime;
@@ -52,6 +53,11 @@ namespace Patapon.Mixed.Systems
 				            {
 					            NonBurst_ThrowWarning(entity);
 					            return;
+				            }
+				            
+				            if (state.IsPaused || process.Milliseconds < 0)
+				            {
+					            state.LastPressureBeat = 0;
 				            }
 
 				            state.IsNewBeat = false;
@@ -65,6 +71,10 @@ namespace Patapon.Mixed.Systems
 					            spawnEcb.AddComponent(nativeThreadIndex, ent, new FlowBeatEvent(process.GetActivationBeat(settings.BeatInterval)));
 					            spawnEcb.AddComponent(nativeThreadIndex, ent, new Relative<RhythmEngineDescription>(entity));
 					            spawnEcb.AddComponent(nativeThreadIndex, ent, new EventCreated());
+
+					            var mercy = isServer ? 2 : 0;
+					            if (state.LastPressureBeat > process.GetActivationBeat(settings.BeatInterval) + mercy)
+						            state.LastPressureBeat = 0;
 				            }
 			            })
 			            .Schedule(inputDeps);

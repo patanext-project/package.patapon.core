@@ -68,7 +68,7 @@ namespace Patapon.Mixed.Units
 			// Create a temporary hitshape
 			var hitShape = EntityManager.CreateEntity(typeof(LocalToWorld), typeof(Translation), typeof(PhysicsCollider), typeof(HitShapeDescription), typeof(HitShapeFollowParentTag));
 			EntityManager.SetComponentData(hitShape, new PhysicsCollider {Value = data.MovableCollider});
-			EntityManager.AddComponentData(hitShape, new Owner {Target          = entity});
+			EntityManager.ReplaceOwnerData(hitShape, entity);
 		}
 
 		public struct Create

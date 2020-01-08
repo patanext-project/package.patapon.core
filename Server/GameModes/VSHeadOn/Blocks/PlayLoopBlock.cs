@@ -5,6 +5,7 @@ using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Components;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace Patapon.Server.GameModes.VSHeadOn
 {
@@ -105,7 +106,14 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			// -- clear capture events
 			captureEvents.Clear();
 
-			return false;
+			// press U to finish the loop :)
+			// todo: there should be a real way to finish this xd
+			if (Input.GetKeyDown(KeyCode.U) && Executor is BlockAutoLoopCollection collection)
+			{
+				collection.Break();
+			}
+
+			return true;
 		}
 
 		protected override void OnReset()
