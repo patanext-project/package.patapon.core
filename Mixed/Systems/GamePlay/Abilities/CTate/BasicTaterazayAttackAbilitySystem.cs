@@ -3,6 +3,7 @@ using Patapon.Mixed.GamePlay;
 using Patapon.Mixed.GamePlay.Abilities.CTate;
 using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.Units;
+using Patapon.Mixed.Utilities;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Collections;
@@ -10,15 +11,19 @@ using Unity.Entities;
 using Unity.Entities.CodeGeneratedJobForEach;
 using Unity.Jobs;
 using Unity.Mathematics;
+using Unity.NetCode;
 using Unity.Physics;
+using Unity.Transforms;
 using UnityEngine;
 using SphereCollider = Unity.Physics.SphereCollider;
 
 namespace Systems.GamePlay.CTate
 {
+	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
+	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	public unsafe class BasicTaterazayAttackAbilitySystem : JobGameBaseSystem
 	{
-		private JobPhysicsQuery m_HitQuery;
+		private JobPhysicsQuery            m_HitQuery;
 		private TargetDamageEvent.Provider m_DamageEventProvider;
 
 		protected override void OnCreate()
@@ -28,7 +33,7 @@ namespace Systems.GamePlay.CTate
 			m_HitQuery = new JobPhysicsQuery(() => SphereCollider.Create(new SphereGeometry
 			{
 				Center = float3.zero,
-				Radius = 2.6f
+				Radius = 2f
 			}));
 			m_DamageEventProvider = World.GetOrCreateSystem<TargetDamageEvent.Provider>();
 		}
@@ -52,12 +57,13 @@ namespace Systems.GamePlay.CTate
 			var relativeTeamFromEntity   = GetComponentDataFromEntity<Relative<TeamDescription>>(true);
 			var relativeTargetFromEntity = GetComponentDataFromEntity<Relative<UnitTargetDescription>>(true);
 
-			var damageStreamWriter = m_DamageEventProvider.GetEntityDelayedStream()
-			                                              .AsParallelWriter();
+			var damageEvArchetype = m_DamageEventProvider.EntityArchetype;
+			var ecb = m_DamageEventProvider.CreateEntityCommandBuffer()
+			                               .ToConcurrent();
 
 			inputDeps =
 				Entities
-					.ForEach((Entity entity, int nativeThreadIndex, ref RhythmAbilityState state, ref BasicTaterazayAttackAbility ability, in Owner owner) =>
+					.ForEach((Entity entity, int nativeThreadIndex, ref RhythmAbilityState state, ref BasicTaterazayAttackAbility ability, in UnitEnemySeekingState seekingState, in Owner owner) =>
 					{
 						const float attackRange = 3f;
 
@@ -76,17 +82,9 @@ namespace Systems.GamePlay.CTate
 						var playState    = impl.UnitPlayStateFromEntity[owner.Target];
 						var unitPosition = impl.TranslationFromEntity[owner.Target].Value;
 
-						var allEnemies = new NativeList<Entity>(Allocator.Temp);
-						seekEnemies.GetAllEnemies(ref allEnemies, teamEnemies);
-						seekEnemies.SeekNearest
-						(
-							impl.TranslationFromEntity[relativeTarget.Target].Value, statistics.AttackSeekRange, allEnemies,
-							out var nearestEnemy, out var targetPosition, out var enemyDistance
-						);
-
 						var velocityUpdater   = impl.VelocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
 						var controllerUpdater = impl.ControllerFromEntity.GetUpdater(owner.Target).Out(out var controller);
-						if (state.IsStillChaining && !state.IsActive && nearestEnemy != default)
+						if (state.IsStillChaining && !state.IsActive && seekingState.Enemy != default)
 						{
 							var acceleration = math.clamp(math.rcp(playState.Weight), 0, 1) * 50;
 							acceleration = math.min(acceleration * tick.Delta, 1);
@@ -94,7 +92,7 @@ namespace Systems.GamePlay.CTate
 							velocity.Value.x = math.lerp(velocity.Value.x, 0, acceleration);
 						}
 
-						if (state.IsStillChaining && nearestEnemy != default)
+						if (state.IsStillChaining && seekingState.Enemy != default)
 							controller.ControlOverVelocity.x = true;
 
 						var attackStartTick = UTick.CopyDelta(tick, ability.AttackStartTick);
@@ -119,12 +117,9 @@ namespace Systems.GamePlay.CTate
 								}
 
 								var unitDirection = impl.UnitDirectionFromEntity[owner.Target];
-								var distanceInput = new ColliderDistanceInput
-								{
-									Collider    = colliderQuery.Ptr,
-									MaxDistance = 10,
-									Transform   = new RigidTransform(quaternion.identity, unitPosition * new float3(unitDirection.Value, 1, 0))
-								};
+								var distanceInput = CreateDistanceFlatInput.ColliderWithOffset(colliderQuery.Ptr, unitPosition.xy, new float2(unitDirection.Value, 1));
+								var allEnemies    = new NativeList<Entity>(Allocator.Temp);
+								seekEnemies.GetAllEnemies(ref allEnemies, teamEnemies);
 
 								var rigidBodies = new NativeList<RigidBody>(allEnemies.Length, Allocator.Temp);
 								for (var ent = 0; ent != allEnemies.Length; ent++)
@@ -148,15 +143,19 @@ namespace Systems.GamePlay.CTate
 										cc.WorldFromMotion.pos.z = 0;
 
 										var collection = new CustomCollideCollection(ref cc);
+										Debug.DrawRay(distanceInput.Transform.pos, Vector3.up, Color.red, 2f);
 										if (!collection.CalculateDistance(distanceInput, out var closestHit))
 											continue;
-										
-										damageStreamWriter.Enqueue(new TargetDamageEvent
+
+										// dat pun 
+										var evEnt = ecb.CreateEntity(nativeThreadIndex, damageEvArchetype);
+										ecb.SetComponent(nativeThreadIndex, evEnt, new TargetDamageEvent
 										{
 											Origin      = owner.Target,
 											Destination = enemy,
-											Damage      = -damage
+											Damage      = -damage,
 										});
+										ecb.AddComponent(nativeThreadIndex, evEnt, new Translation {Value = closestHit.Position});
 									}
 								}
 							}
@@ -179,7 +178,7 @@ namespace Systems.GamePlay.CTate
 						controllerUpdater.CompareAndUpdate(controller);
 
 						// if inactive or no enemy are present, continue...
-						if (!state.IsActive || nearestEnemy == default)
+						if (!state.IsActive || seekingState.Enemy == default)
 							return;
 
 						if (state.Combo.IsFever)
@@ -190,7 +189,8 @@ namespace Systems.GamePlay.CTate
 						}
 
 						// if all conditions are ok, start attacking.
-						enemyDistance = math.distance(unitPosition.x, targetPosition.x);
+						var targetPosition = impl.LocalToWorldFromEntity[seekingState.Enemy].Position;
+						var enemyDistance  = math.distance(unitPosition.x, targetPosition.x);
 						if (enemyDistance <= attackRange && ability.NextAttackDelay <= 0.0f && ability.AttackStartTick <= 0)
 						{
 							var atkSpeed = playState.AttackSpeed;
@@ -202,6 +202,8 @@ namespace Systems.GamePlay.CTate
 							ability.NextAttackDelay = atkSpeed;
 							ability.AttackStartTick = (uint) tick.Value;
 							ability.HasSlashed      = false;
+
+							Debug.Log("Start..." + tick.Value);
 						}
 						else if (tick >= UTick.AddMs(attackStartTick, BasicTaterazayAttackAbility.DelaySlashMs))
 						{
@@ -222,7 +224,7 @@ namespace Systems.GamePlay.CTate
 					.WithReadOnly(relativeTargetFromEntity)
 					.WithReadOnly(relativeTeamFromEntity)
 					.Schedule(inputDeps);
-			
+
 			m_DamageEventProvider.AddJobHandleForProducer(inputDeps);
 
 			return inputDeps;

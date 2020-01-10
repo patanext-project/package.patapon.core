@@ -4,9 +4,15 @@ using Unity.NetCode;
 
 namespace Patapon.Mixed.GamePlay
 {
-	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
+	[UpdateInGroup(typeof(OrderGroup.Simulation.UpdateEntities))]
+	[UpdateBefore(typeof(ActionSystemGroup))]
+	public class UnitInitStateSystemGroup : BaseGhostPredictionSystemGroup
+	{
+	}
+
+	[UpdateInGroup(typeof(OrderGroup.Simulation.UpdateEntities))]
 	[UpdateAfter(typeof(ActionSystemGroup))]
-	public class UnitInitStateSystemGroup : ComponentSystemGroup
+	public class UnitPhysicSystemGroup : BaseGhostPredictionSystemGroup
 	{
 	}
 }

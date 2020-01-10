@@ -152,11 +152,15 @@ namespace package.patapon.core.Models.InGame.UIDrum
 				engine = PlayerComponentFinder.FindPlayerComponent(m_EngineQuery, player);
 
 			if (engine == default)
-				return inputDeps;
+				return default;
 			
 			var process  = EntityManager.GetComponentData<FlowEngineProcess>(engine);
 			var settings = EntityManager.GetComponentData<RhythmEngineSettings>(engine);
+			var state = EntityManager.GetComponentData<RhythmEngineState>(engine);
 
+			if (state.IsPaused || process.GetFlowBeat(settings.BeatInterval) < 0)
+				return default;
+				
 			var key = 1;
 			foreach (var ac in playerCommand.Base.GetRhythmActions())
 			{

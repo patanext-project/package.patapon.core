@@ -1,18 +1,21 @@
+using GmMachine;
 using GmMachine.Blocks;
 using Misc.GmMachine.Contexts;
 using Patapon.Mixed.GameModes.VSHeadOn;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Components;
+using Unity.Collections;
 using Unity.Transforms;
 using UnityEngine;
 
 namespace Patapon.Server.GameModes.VSHeadOn
 {
-	public class PlayLoopBlock : BlockCollection
+	public class PlayLoopBlock : Block
 	{
-		private GameEventRuleSystemGroup           m_GameEventRuleSystemGroup;
-		private MpVersusHeadOnGameMode.ModeContext m_HeadOnModeContext;
+		private GameEventRuleSystemGroup              m_GameEventRuleSystemGroup;
+		private MpVersusHeadOnGameMode.ModeContext    m_HeadOnModeContext;
+		private MpVersusHeadOnGameMode.QueriesContext m_Queries;
 
 		private VersusHeadOnRuleGroup m_VersusHeadOnRuleGroup;
 		private WorldContext          m_WorldContext;
@@ -48,7 +51,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 			// -- clear elimination events
 			eliminationEvents.Clear();
-			
+
 			// ----------------------------- //
 			// Respawn events
 			var respawnEvents = m_HeadOnModeContext.RespawnEvents;
@@ -64,7 +67,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 			// -- clear respawn events
 			respawnEvents.Clear();
-			
+
 			// ----------------------------- //
 			// Capture events (from towers and walls)
 			var captureEvents = m_HeadOnModeContext.CaptureEvents;
@@ -75,9 +78,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				var team         = relativeTeam == gameModeData.Team0 ? 0 : 1;
 
 				ref var points = ref gameModeData.GetPoints(team);
-				points += structure.Type == HeadOnStructure.EType.TowerControl ? 50 :
-					structure.Type == HeadOnStructure.EType.Tower              ? 25 :
-					                                                             10;
+				points += structure.ScoreType == HeadOnStructure.EScoreType.TowerControl ? 50 :
+					structure.ScoreType == HeadOnStructure.EScoreType.Tower              ? 25 :
+					                                                                       10;
 
 				// Get structure and set health...
 				var healthContainer = entityMgr.GetBuffer<HealthContainer>(captureEvents[i].Source);
@@ -106,14 +109,45 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			// -- clear capture events
 			captureEvents.Clear();
 
-			// press U to finish the loop :)
-			// todo: there should be a real way to finish this xd
-			if (Input.GetKeyDown(KeyCode.U) && Executor is BlockAutoLoopCollection collection)
+			// ----------------------------- //
+			// Set winning team
+			var winningTeam = -1;
+
+			// Check if an unit touched the enemy flag
+			using (var entities = m_Queries.Unit.ToEntityArray(Allocator.TempJob))
+			using (var translations = m_Queries.Unit.ToComponentDataArray<Translation>(Allocator.TempJob))
+			using (var gmUnitArray = m_Queries.Unit.ToComponentDataArray<VersusHeadOnUnit>(Allocator.TempJob))
+			{
+				var teams = m_HeadOnModeContext.Teams;
+				for (var i = 0; i != entities.Length; i++)
+				{
+					var oppositeTeam   = teams[1 - gmUnitArray[i].Team];
+					var oppositeFlagTr = m_WorldContext.EntityMgr.GetComponentData<Translation>(oppositeTeam.Flag).Value;
+					var side           = gmUnitArray[i].Team == 0 ? -1 : 1;
+					if ((oppositeFlagTr.x - translations[i].Value.x) * side >= 0)
+					{
+						winningTeam = gmUnitArray[i].Team;
+					}
+				}
+			}
+
+			// If no team are currently winning, check if the time has been ended
+			if (winningTeam < 0 && m_HeadOnModeContext.GetTick().Ms > m_HeadOnModeContext.Data.EndTime)
+			{
+				for (var i = 0; i != m_HeadOnModeContext.Teams.Length && winningTeam < 0; i++)
+				{
+					if (gameModeData.GetPointReadOnly(i) > gameModeData.GetPoints(1 - i))
+						winningTeam = i;
+				}
+			}
+
+			// -- End this.
+			if (winningTeam >= 0 && Executor is BlockAutoLoopCollection collection)
 			{
 				collection.Break();
 			}
 
-			return true;
+			return false;
 		}
 
 		protected override void OnReset()
@@ -126,6 +160,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				m_GameEventRuleSystemGroup = m_WorldContext.GetOrCreateSystem<GameEventRuleSystemGroup>();
 			}
 			m_HeadOnModeContext = Context.GetExternal<MpVersusHeadOnGameMode.ModeContext>();
+			m_Queries = Context.GetExternal<MpVersusHeadOnGameMode.QueriesContext>();
 		}
 	}
 }

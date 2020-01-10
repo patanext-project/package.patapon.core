@@ -12,9 +12,9 @@ using UnityEngine;
 
 namespace Systems.GamePlay
 {
-	[UpdateInGroup(typeof(ActionSystemGroup))]
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
-	public class DefaultBackwardRetreatSystem : JobGameBaseSystem
+	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
+	//[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
+	public class DefaultRetreatAbilitySystem : JobGameBaseSystem
 	{
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{

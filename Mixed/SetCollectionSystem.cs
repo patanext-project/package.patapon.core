@@ -29,7 +29,7 @@ namespace DefaultNamespace
 		private static List<Type> m_AssembliesTypes;
 
 		private static void SetSystems(SystemType type, Type interfaceType, Type subclass)
-		{
+		{ 
 			Type[] result;
 
 			var directoryPath = $"{Application.streamingAssetsPath}/collections/";
@@ -72,7 +72,7 @@ namespace DefaultNamespace
 		}
 
 		protected override void OnCreate()
-		{
+		{ 
 			if (s_DynamicTypes == null)
 			{
 				var stopwatch = new Stopwatch();

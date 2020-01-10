@@ -58,12 +58,12 @@ namespace Patapon.Client.RhythmEngine
 			m_CommandVfxSource.loop = false;
 
 			m_SongSystem                 = World.GetOrCreateSystem<SongSystem>();
-			m_SongSystem.MapTargetSongId = "test_song";
+			m_SongSystem.MapTargetSongId = "dottama_gacheen";
 
 			RegisterAsyncOperations();
 		}
 
-		protected override void OnUpdate()
+		protected override void OnUpdate() 
 		{
 			UpdateAsyncOperations();
 

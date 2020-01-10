@@ -1,5 +1,7 @@
 using GmMachine;
 using Misc.GmMachine.Contexts;
+using Patapon.Mixed.RhythmEngine;
+using Patapon.Mixed.RhythmEngine.Flow;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
@@ -21,6 +23,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			m_QueriesContext.GetEntityQueryBuilder()
 			                .With(m_QueriesContext.Unit)
 			                .ForEach((Entity entity) => { m_WorldContext.EntityMgr.DestroyEntity(entity); });
+
+			m_QueriesContext.GetEntityQueryBuilder().ForEach((ref RhythmEngineState state) => { state.IsPaused = true; });
 
 			return true;
 		}

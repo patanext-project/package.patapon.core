@@ -59,8 +59,11 @@ namespace Systems.RhythmEngine
 				Entity                     rpcEnt;
 				PressureEventFromClientRpc pressureEvent = default;
 
-				if (state.IsPaused || process.Milliseconds <= 0)
+				if (state.IsPaused || process.GetFlowBeat(settings.BeatInterval) < 0)
+				{
+					Debug.Log($"NOPE   paused? {state.IsPaused}, ms? {process.Milliseconds}");
 					return;
+				}
 
 				var flowBeat = process.GetFlowBeat(settings.BeatInterval);
 

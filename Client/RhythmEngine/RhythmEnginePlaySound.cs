@@ -24,7 +24,10 @@ namespace RhythmEngine
 	[UpdateInGroup(typeof(PresentationSystemGroup))]
 	public class RhythmEnginePlaySound : GameBaseSystem
 	{
-		public bool IsNewBeat;
+		public float DelayTillNextBeat;
+		public int PreviousBeat;
+		public bool RequestSchedule;
+		
 		public bool IsNewPressure;
 
 		private AsyncOperationModule m_AsyncOpModule;
@@ -37,6 +40,7 @@ namespace RhythmEngine
 		private AudioSource m_AudioSourceOnNewBeat;
 		private AudioSource m_AudioSourceOnNewPressureDrum;
 		private AudioSource m_AudioSourceOnNewPressureVoice;
+		private AudioSource m_AudioSourceOnPerfect;
 
 		private EntityQuery m_EngineQuery;
 
@@ -63,9 +67,13 @@ namespace RhythmEngine
 				return audioSource;
 			}
 
-			m_AudioSourceOnNewBeat          = CreateAudioSource("On New Beat", 1);
+			m_AudioSourceOnNewBeat          = CreateAudioSource("On New Beat", 0.75f);
 			m_AudioSourceOnNewPressureDrum  = CreateAudioSource("On New Pressure -> Drum", 1);
 			m_AudioSourceOnNewPressureVoice = CreateAudioSource("On New Pressure -> Voice", 1);
+			m_AudioSourceOnPerfect = CreateAudioSource("On Perfect Pressure", 1);
+
+			m_AudioSourceOnNewPressureVoice.priority = m_AudioSourceOnNewPressureDrum.priority + 1;
+			m_AudioSourceOnPerfect.priority = m_AudioSourceOnNewPressureVoice.priority + 1;
 
 			GetModule(out m_AsyncOpModule);
 
@@ -134,7 +142,11 @@ namespace RhythmEngine
 
 			InitializeValues();
 
-			if (IsNewBeat && m_AudioOnNewBeat != null) m_AudioSourceOnNewBeat.PlayOneShot(m_AudioOnNewBeat);
+			if (RequestSchedule && DelayTillNextBeat > 0 && m_AudioOnNewBeat != null)
+			{
+				m_AudioSourceOnNewBeat.PlayScheduled(AudioSettings.dspTime + DelayTillNextBeat);
+				m_AudioSourceOnNewBeat.clip = m_AudioOnNewBeat;
+			}
 
 			ClearValues();
 		}
@@ -159,17 +171,24 @@ namespace RhythmEngine
 			var settings    = EntityManager.GetComponentData<RhythmEngineSettings>(engine);
 
 			// don't do player sounds if it's paused or it didn't started yet
-			if (engineState.IsPaused || process.Milliseconds <= 0)
+			if (engineState.IsPaused || process.GetFlowBeat(settings.BeatInterval) < 0)
 				return;
-
-			IsNewBeat = engineState.IsNewBeat;
+			
+			var activationBeat = process.GetActivationBeat(settings.BeatInterval);
+			var targetBeat = process.GetFlowBeat(settings.BeatInterval);
+			DelayTillNextBeat = (settings.BeatInterval - ((targetBeat + 1) * settings.BeatInterval - process.Milliseconds)) * 0.001f;
+			if (DelayTillNextBeat > 0 && PreviousBeat != activationBeat)
+			{
+				PreviousBeat = activationBeat;
+				RequestSchedule = true;
+			}
 
 			var playerOfEngine = EntityManager.GetComponentData<Relative<PlayerDescription>>(engine).Target;
 			if (EntityManager.TryGetComponentData(playerOfEngine, out GamePlayerCommand playerCommand))
 			{
 				var localTick = World.GetExistingSystem<ClientSimulationSystemGroup>().ServerTick;
 
-				process.Milliseconds -= (int) (localTick - playerCommand.Base.Tick);
+				//process.Milliseconds -= (int) (localTick - playerCommand.Base.Tick);
 
 				var key = 1;
 				foreach (var ac in playerCommand.Base.GetRhythmActions())
@@ -201,11 +220,15 @@ namespace RhythmEngine
 					                       || predictedCommand.State.IsGamePlayActive(process.Milliseconds);
 
 					var shouldFail        = commandIsRunning && !inputActive || engineState.IsRecovery(currFlowBeat) || absRealScore > FlowPressure.Error;
-					if (shouldFail) score = 2;
+					if (shouldFail)
+					{
+						Debug.Log($"{commandIsRunning}, {inputActive}, {engineState.IsRecovery(currFlowBeat)}, {currFlowBeat} < {engineState.NextBeatRecovery} ({process.Milliseconds})");
+						score = 2;
+					}
 
 					// do the perfect sound
 					var isPerfect = !shouldFail && currentCommand.ActiveAtTime >= process.Milliseconds && currentCommand.Power >= 100;
-					if (isPerfect) m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPerfect, 1.25f);
+					if (isPerfect) m_AudioSourceOnPerfect.PlayOneShot(m_AudioOnPerfect, 1.25f);
 
 					m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPressureDrum[key][score]);
 
@@ -224,7 +247,8 @@ namespace RhythmEngine
 
 		private void ClearValues()
 		{
-			IsNewBeat = false;
+			RequestSchedule = false;
+			DelayTillNextBeat = -1;
 		}
 
 		private enum DataType

@@ -26,13 +26,7 @@ namespace Patapon.Mixed.Units
 
 	public struct UnitTargetDescription : IEntityDescription
 	{
-		public struct Exclude : IComponentData
-		{
-		}
-
-		public class SynchronizeSnapshot : ComponentSnapshotSystemEmpty<UnitTargetDescription>
-		{
-			public override ComponentType ExcludeComponent => typeof(Exclude);
-		}
+		public class RelativeSync : RelativeSynchronize<UnitTargetDescription>
+		{}
 	}
 }

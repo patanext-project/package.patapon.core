@@ -159,7 +159,7 @@ namespace Patapon.Client.RhythmEngine
 				targetAudio = CurrentSong.BgmEntranceClips[commandLength % CurrentSong.BgmEntranceClips.Count];
 			}
 
-			var nextBeatDelay          = ((activationBeat + 1) * EngineSettings.BeatInterval - EngineProcess.Milliseconds) * 0.001f;
+			var nextBeatDelay          = (EngineSettings.BeatInterval - ((activationBeat + 1) * EngineSettings.BeatInterval - EngineProcess.Milliseconds)) * 0.001f;
 			var cmdStartActivationBeat = FlowEngineProcess.CalculateActivationBeat(CommandStartTime, EngineSettings.BeatInterval);
 			if (cmdStartActivationBeat >= activationBeat) // we have a planned command
 				nextBeatDelay = (cmdStartActivationBeat * EngineSettings.BeatInterval - EngineProcess.Milliseconds) * 0.001f;
@@ -169,15 +169,16 @@ namespace Patapon.Client.RhythmEngine
 			if (m_LastClip != targetAudio // switch audio if we are requested to
 			    || forceSongChange)       // play an audio if we got forced
 			{
-				Debug.Log($"Switch from {m_LastClip?.name} to {targetAudio?.name}, delay: {nextBeatDelay} (b: {activationBeat}, f: {flowBeat}, s: {cmdStartActivationBeat})");
+				//Debug.Log($"Switch from {m_LastClip?.name} to {targetAudio?.name}, delay: {nextBeatDelay} (b: {activationBeat}, f: {flowBeat}, s: {cmdStartActivationBeat})");
 				hasSwitched = Switch(targetAudio, nextBeatDelay);
 			}
-
+			
 			// It's loop time
-			if (!hasSwitched && targetAudio != null && m_BgmSources[1 - m_Flip].time + nextBeatDelay + 0.25f >= targetAudio.length)
+			if (!hasSwitched && targetAudio != null && m_BgmSources[1 - m_Flip].time + nextBeatDelay >= targetAudio.length)
 			{
-				Debug.Log($"Looping {m_LastClip?.name}");
-				hasSwitched = Switch(targetAudio, nextBeatDelay + 0.25f);
+				Debug.Log(m_BgmSources[1 - m_Flip].time + ", " + nextBeatDelay.ToString("F3"));
+				//Debug.Log($"Looping {m_LastClip?.name}");
+				hasSwitched = Switch(targetAudio, nextBeatDelay);
 			}
 
 			var currBgmSource = m_BgmSources[1 - m_Flip];

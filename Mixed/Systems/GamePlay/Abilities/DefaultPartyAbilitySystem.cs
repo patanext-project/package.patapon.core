@@ -8,7 +8,7 @@ using Unity.NetCode;
 
 namespace Systems.GamePlay
 {
-	[UpdateInGroup(typeof(ActionSystemGroup))]
+	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	public class DefaultPartyAbilitySystem : JobGameBaseSystem
 	{

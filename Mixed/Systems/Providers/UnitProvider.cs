@@ -24,6 +24,7 @@ namespace Patapon.Mixed.Units
 
 				typeof(UnitStatistics),
 				typeof(UnitPlayState),
+				typeof(UnitEnemySeekingState),
 				typeof(UnitControllerState),
 				typeof(UnitDirection),
 				typeof(UnitTargetOffset),

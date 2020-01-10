@@ -4,7 +4,7 @@ using Unity.Entities;
 namespace Patapon.Client.OrderSystems
 {
 	[UpdateInGroup(typeof(OrderInterfaceSystemGroup))]
-	[UpdateAfter(typeof(UIHeadOnInterfaceOrderSystem))]
+	[UpdateAfter(typeof(UIGameModeOrderingSystem))]
 	public class FeverWormOrderingSystem : OrderingSystem
 	{
 	}

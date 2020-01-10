@@ -51,55 +51,28 @@ namespace Bootstraps
 	[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
 	public class DiscordToMasterServerClientTestSystem : ComponentSystem
 	{
-		private MasterServerSystem m_MasterServerSystem;
-		private bool               runOnce;
-
-		private EntityQuery m_UserConnectionQuery;
+		private P4ConnectToMasterServerFromDiscord m_ConnectionSystem;
+		private EntityQuery                        m_ExistingOrPendingConnectionQuery;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
 			RequireSingletonForUpdate<DiscordToMasterServerBootstrap.IsActive>();
+			m_ConnectionSystem = World.GetOrCreateSystem<P4ConnectToMasterServerFromDiscord>();
 
-			m_UserConnectionQuery = GetEntityQuery(typeof(ConnectedMasterServerClient));
+			m_ExistingOrPendingConnectionQuery = GetEntityQuery(new EntityQueryDesc
+			{
+				Any = new ComponentType[] {typeof(RequestUserLogin), typeof(ConnectedMasterServerClient)}
+			});
 		}
 
 		protected override void OnUpdate()
 		{
-			if (!(BaseDiscordSystem.Instance is P4DiscordSystem discordSystem))
+			if (m_ConnectionSystem.IsCurrentlyRequesting || m_ExistingOrPendingConnectionQuery.CalculateEntityCount() != 0)
 				return;
 
-			if (runOnce)
-			{
-				if (m_UserConnectionQuery.CalculateEntityCount() != 0 && discordSystem.ConnectionLobby.Id > 0)
-				{
-					discordSystem.DeleteConnectionLobby();
-				}
-
-				return;
-			}
-
-			if (discordSystem.ConnectionLobby.Id == 0)
-			{
-				if (!discordSystem.IsConnectionLobbyRequested)
-					discordSystem.CreateConnectionLobby();
-
-				return;
-			}
-
-			var localUser = discordSystem.GetLocalUser();
-			var request   = EntityManager.CreateEntity(typeof(RequestUserLogin));
-			{
-				EntityManager.SetComponentData(request, new RequestUserLogin
-				{
-					Login          = $"DISCORD_{localUser.Id}",
-					HashedPassword = string.Empty,
-					Type           = UserLoginRequest.Types.RequestType.Player,
-					RoutedData     = new NativeString512("{\"lobby_id\"=\"" + discordSystem.ConnectionLobby.Id + "\"}")
-				});
-			}
-			runOnce = true;
+			m_ConnectionSystem.Request();
 		}
 	}
 }

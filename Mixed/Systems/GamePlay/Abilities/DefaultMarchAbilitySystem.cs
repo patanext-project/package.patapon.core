@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace Systems.GamePlay
 {
-	[UpdateInGroup(typeof(ActionSystemGroup))]
+	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	public class DefaultMarchAbilitySystem : JobGameBaseSystem
 	{

@@ -31,7 +31,7 @@ namespace Patapon.Client.Graphics.Animation.Units
 		{
 			m_UpdateArchetypeList.Clear();
 
-			var __i        = 0;
+			var __i        = 1;
 			var indexArray = UnsafeAllocation.From(ref __i);
 			Entities.ForEach((Transform transform, UnitVisualBackend backend) =>
 			{

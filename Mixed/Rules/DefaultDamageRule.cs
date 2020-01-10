@@ -4,10 +4,12 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace StormiumTeam.GameBase
 {
 	[UpdateInGroup(typeof(GameEventRuleSystemGroup))]
+	[AlwaysSynchronizeSystem]
 	public class DefaultDamageRule : RuleBaseSystem
 	{
 		public RuleProperties<Data>                CustomProperties;
@@ -42,7 +44,7 @@ namespace StormiumTeam.GameBase
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			inputDeps = new JobCreateEvents
+			new JobCreateEvents
 			{
 				Data                    = GetSingleton<Data>(),
 				Tick                    = GetTick(true),
@@ -50,11 +52,11 @@ namespace StormiumTeam.GameBase
 				ModifyHealthArchetype   = m_ModifyHealthArchetype,
 				TeamOwnerFromEntity     = GetComponentDataFromEntity<Relative<TeamDescription>>(),
 				HealthHistoryFromEntity = GetBufferFromEntity<HealthModifyingHistory>()
-			}.Schedule(m_EntityQuery, inputDeps);
+			}.Run(m_EntityQuery);
 
 			AddJobHandleForProducer(inputDeps);
 
-			return inputDeps;
+			return default;
 		}
 
 		public struct Data : IComponentData
@@ -84,9 +86,11 @@ namespace StormiumTeam.GameBase
 				var victimTeam  = TeamOwnerFromEntity.Exists(damageEvent.Destination) ? TeamOwnerFromEntity[damageEvent.Destination].Target : default;
 
 				if (damageEvent.Origin == damageEvent.Destination && math.abs(Data.SelfDamageFactor) > math.FLT_MIN_NORMAL)
-					damageEvent.Damage                                                                                                                                                 = (int) math.round(damageEvent.Damage * Data.SelfDamageFactor);
-				else if (shooterTeam != default && victimTeam != default && shooterTeam == victimTeam && math.abs(Data.SameTeamDamageFactor) > math.FLT_MIN_NORMAL) damageEvent.Damage = (int) math.round(damageEvent.Damage * Data.SameTeamDamageFactor);
+					damageEvent.Damage = (int) math.round(damageEvent.Damage * Data.SelfDamageFactor);
+				else if (shooterTeam != default && victimTeam != default && shooterTeam == victimTeam && math.abs(Data.SameTeamDamageFactor) > math.FLT_MIN_NORMAL)
+					damageEvent.Damage = (int) math.round(damageEvent.Damage * Data.SameTeamDamageFactor);
 
+				Debug.Log(damageEvent.Damage);
 				if (damageEvent.Damage == 0 && Data.DisableEventForNoDamage)
 				{
 					Ecb.DestroyEntity(index, entity);

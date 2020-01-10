@@ -86,6 +86,7 @@ namespace Patapon4TLB.Core.MasterServer
 				}
 
 				request.ErrorCode = result.Error;
+				Debug.Log("error? " + request.error);
 				if (!request.error)
 				{
 					EntityManager.RemoveComponent<RequestUserLogin>(item.Entity);
@@ -94,9 +95,14 @@ namespace Patapon4TLB.Core.MasterServer
 					var ent    = EntityManager.CreateEntity(typeof(ConnectedMasterServerClient), isType);
 					EntityManager.SetComponentData(ent, new ConnectedMasterServerClient
 					{
-						ClientId = result.ClientId,
-						Token    = new NativeString64(result.Token)
+						ClientId  = result.ClientId,
+						UserId    = result.UserId,
+						UserLogin = request.Login,
+
+						Token = new NativeString64(result.Token)
 					});
+
+					Debug.Log("Creating: " + ent + ", " + World);
 				}
 
 				EntityManager.AddComponentData(item.Entity, new ResultUserLogin

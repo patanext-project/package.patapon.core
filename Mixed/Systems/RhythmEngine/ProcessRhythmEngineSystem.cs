@@ -1,6 +1,7 @@
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
+using Patapon.Mixed.Rules;
 using StormiumTeam.GameBase;
 using Unity.Burst;
 using Unity.Entities;
@@ -36,7 +37,7 @@ namespace Patapon.Mixed.Systems
 		{
 			var spawnEcb   = this.L(ref m_SpawnBarrier).CreateCommandBuffer().ToConcurrent();
 			var destroyEcb = this.L(ref m_DeleteBarrier).CreateCommandBuffer();
-			var tick       = GetTick(true);
+			var tick       = GetTick(GetSingleton<P4NetworkRules.Data>().RhythmEngineUsePredicted);
 			var isServer = IsServer;
 
 			destroyEcb.DestroyEntity(m_DestroyEventQuery);
@@ -45,7 +46,20 @@ namespace Patapon.Mixed.Systems
 			// I don't remember why this tag was needed
 			inputDeps = Entities
 			            .ForEach((Entity entity, int nativeThreadIndex, ref FlowEngineProcess process, ref RhythmEngineState state, in RhythmEngineSettings settings) =>
-			            {				            
+			            {
+				            if (state.IsPaused || process.Milliseconds < 0)
+				            {
+					            if (isServer)
+					            {
+						            state.RecoveryTick     = 0;
+						            state.NextBeatRecovery = -1;
+					            }
+					            else
+					            {
+						            state.NextBeatRecovery = -1;
+					            }
+				            }
+
 				            var previousBeat = process.GetActivationBeat(settings.BeatInterval);
 
 				            process.Milliseconds = tick.Ms - process.StartTime;

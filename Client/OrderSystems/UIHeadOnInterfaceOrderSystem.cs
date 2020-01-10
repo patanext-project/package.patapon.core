@@ -3,9 +3,11 @@ using Unity.Entities;
 
 namespace Patapon.Client.OrderSystems
 {
-	[UpdateInGroup(typeof(OrderInterfaceSystemGroup))]
+	[UpdateInGroup(typeof(OrderSystemGroup))]
+	[UpdateAfter(typeof(UIGameModeOrderingSystem))]
+	[UpdateBefore(typeof(UIGameModeOrderingSystem.End))]
 	public class UIHeadOnInterfaceOrderSystem : OrderingSystem
 	{
-		
+
 	}
 }

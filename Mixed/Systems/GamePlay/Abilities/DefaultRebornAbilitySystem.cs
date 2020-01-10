@@ -12,6 +12,7 @@ using UnityEngine;
 
 namespace Systems.GamePlay
 {
+	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
 	[AlwaysSynchronizeSystem]
 	public class DefaultRebornAbilitySystem : JobComponentSystem
 	{

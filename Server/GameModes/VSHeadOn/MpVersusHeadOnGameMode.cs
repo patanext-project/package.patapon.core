@@ -78,7 +78,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				}),
 				Unit = GetEntityQuery(new EntityQueryDesc
 				{
-					All = new ComponentType[] {typeof(UnitDescription), typeof(VersusHeadOnUnit)}
+					All = new ComponentType[] {typeof(UnitDescription), typeof(Translation), typeof(VersusHeadOnUnit)}
 				})
 			});
 			machine.SetCollection(new InstantChainLoopBlock("Execution", new List<Block>
@@ -90,7 +90,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				}),
 
 				// main operations
-				new BlockOnceCollection("VersusHeadOn GameMode", new List<Block>
+				new BlockAutoLoopCollection("VersusHeadOn GameMode", new List<Block>
 				{
 					new SetStateBlock("Set state to Init", MpVersusHeadOn.State.OnInitialization),
 					new InitializationBlock("Init"),

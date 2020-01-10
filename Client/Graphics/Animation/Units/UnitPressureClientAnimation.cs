@@ -1,6 +1,8 @@
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Graphics.Animation.Units;
 using Patapon.Mixed;
+using Patapon.Mixed.RhythmEngine;
+using Patapon.Mixed.RhythmEngine.Flow;
 using Patapon.Mixed.Units;
 using Patapon4TLB.Default.Player;
 using StormiumTeam.GameBase;
@@ -73,6 +75,15 @@ namespace package.patapon.core.Animation.Units
 			    || !EntityManager.TryGetComponentData(relativePlayer.Target, out GamePlayerCommand playerCommand))
 				return;
 
+			if (!EntityManager.TryGetComponentData(targetEntity, out Relative<RhythmEngineDescription> relativeEngine))
+				return;
+			
+			var process  = EntityManager.GetComponentData<FlowEngineProcess>(relativeEngine.Target);
+			var state    = EntityManager.GetComponentData<RhythmEngineState>(relativeEngine.Target);
+
+			if (state.IsPaused || process.Milliseconds <= 0)
+				return;
+				
 			var pressureKey   = -1;
 			var rhythmActions = playerCommand.Base.GetRhythmActions();
 			for (var i = 0; pressureKey < 0 && i != rhythmActions.Length; i++)

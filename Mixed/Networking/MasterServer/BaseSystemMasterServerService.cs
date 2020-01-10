@@ -54,13 +54,13 @@ namespace Patapon4TLB.Core.MasterServer
 
 			if (!m_IsShutdown)
 			{
+				m_IsShutdown = true;
 				OnShutdown();
 			}
 		}
 
 		protected virtual void OnShutdown()
 		{
-			m_IsShutdown = true;
 		}
 
 		private void OnBeforeShutdown()
@@ -68,6 +68,7 @@ namespace Patapon4TLB.Core.MasterServer
 			MasterServerSystem.Instance.BeforeShutdown -= OnBeforeShutdown;
 			if (!m_IsShutdown)
 			{
+				m_IsShutdown = true;
 				OnShutdown();
 			}
 		}

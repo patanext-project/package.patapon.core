@@ -1,3 +1,4 @@
+using Revolution;
 using Unity.Entities;
 using Unity.Mathematics;
 
@@ -12,5 +13,10 @@ namespace Patapon.Mixed.Units
 		public float TargetPosition;
 
 		internal float3 PreviousPosition;
+		
+		public class NetSynchronize : ComponentSnapshotSystemEmpty<UnitControllerState>
+		{
+			public override ComponentType ExcludeComponent => typeof(ExcludeFromTagging);
+		}
 	}
 }

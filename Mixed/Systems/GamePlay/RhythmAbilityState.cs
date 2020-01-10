@@ -13,6 +13,7 @@ namespace Patapon.Mixed.GamePlay
 {
 	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
 	[UpdateBefore(typeof(ActionSystemGroup))]
+	[UpdateBefore(typeof(UnitInitStateSystemGroup))]
 	public class UpdateRhythmAbilityState : JobComponentSystem
 	{
 		[BurstDiscard]

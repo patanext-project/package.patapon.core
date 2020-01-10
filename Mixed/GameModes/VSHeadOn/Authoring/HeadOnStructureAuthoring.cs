@@ -2,20 +2,23 @@ using Revolution;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Patapon.Mixed.GameModes.VSHeadOn
 {
 	public class HeadOnStructureAuthoring : MonoBehaviour, IConvertGameObjectToEntity
 	{
-		public int CaptureTime;
+		public float CaptureTime;
 
 		public int                       HealthPercentage;
 		public HeadOnDefineTeamAuthoring TeamDefine;
-		public HeadOnStructure.EType     Type;
+		
+		[FormerlySerializedAs("Type")]
+		public HeadOnStructure.EScoreType     scoreType;
 
 		public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
 		{
-			dstManager.AddComponentData(entity, new HeadOnStructure {Type = Type, TimeToCapture = CaptureTime});
+			dstManager.AddComponentData(entity, new HeadOnStructure {ScoreType = scoreType, HealthPercentage = HealthPercentage, TimeToCapture = (int)(CaptureTime * 1000)});
 			dstManager.AddComponentData(entity, new Relative<TeamDescription>());
 			if (TeamDefine != null)
 				dstManager.AddComponentData(entity, TeamDefine.FindOrCreate(dstManager));
@@ -28,14 +31,14 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 		/// <summary>
 		///     A type will give different points
 		/// </summary>
-		public enum EType
+		public enum EScoreType
 		{
 			TowerControl,
 			Tower,
 			Wall
 		}
 
-		public EType Type;
+		public EScoreType ScoreType;
 		public int   HealthPercentage;
 
 		public       int TimeToCapture;

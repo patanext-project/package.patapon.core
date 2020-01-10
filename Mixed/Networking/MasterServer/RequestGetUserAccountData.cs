@@ -28,7 +28,9 @@ namespace Patapon4TLB.Core.MasterServer
 		/// NEVER SHARE IT
 		public NativeString64 Token;
 
-		public int ClientId;
+		public int            ClientId;
+		public ulong          UserId;
+		public NativeString64 UserLogin;
 	}
 
 	public struct MasterServerIsPlayer : IComponentData

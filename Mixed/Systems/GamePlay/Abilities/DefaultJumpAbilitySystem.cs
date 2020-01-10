@@ -10,7 +10,7 @@ using Unity.NetCode;
 
 namespace Systems.GamePlay
 {
-	[UpdateInGroup(typeof(ActionSystemGroup))]
+	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	public class DefaultJumpAbilitySystem : JobGameBaseSystem
 	{
@@ -53,14 +53,17 @@ namespace Systems.GamePlay
 						ability.IsJumping = ability.ActiveTime <= 0.5f;
 
 						if (!wasJumping && ability.IsJumping)
-							velocity.Value.y                                                 = math.max(velocity.Value.y + 30, 30);
+							velocity.Value.y                                                 = math.max(velocity.Value.y + 25, 30);
 						else if (ability.IsJumping && velocity.Value.y > 0) velocity.Value.y = math.max(velocity.Value.y - 60 * tick.Delta, 0);
 
 						if (ability.ActiveTime < 3.25f)
 							velocity.Value.x = math.lerp(velocity.Value.x, 0, tick.Delta * (ability.ActiveTime + 1));
 
-						if (!ability.IsJumping && wasJumping)
-							velocity.Value.y = 0;
+						if (!ability.IsJumping && velocity.Value.y > 0)
+						{
+							velocity.Value.y = math.max(velocity.Value.y - 10 * tick.Delta, 0);
+							velocity.Value.y = math.lerp(velocity.Value.y, 0, 5 * tick.Delta);
+						}
 
 						ability.ActiveTime += tick.Delta;
 

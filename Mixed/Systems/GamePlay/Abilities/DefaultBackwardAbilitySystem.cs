@@ -12,7 +12,7 @@ using Unity.Transforms;
 
 namespace Systems.GamePlay
 {
-	[UpdateInGroup(typeof(ActionSystemGroup))]
+	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	public class DefaultBackwardAbilitySystem : JobGameBaseSystem
 	{

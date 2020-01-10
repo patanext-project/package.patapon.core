@@ -12,7 +12,7 @@ using Unity.Transforms;
 
 namespace Patapon.Mixed.GamePlay
 {
-	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
+	[UpdateInGroup(typeof(UnitPhysicSystemGroup))]
 	[UpdateAfter(typeof(UnitPhysicsSystem))]
 	public class UnitPhysicsAfterBlockUpdateSystem : JobComponentSystem
 	{

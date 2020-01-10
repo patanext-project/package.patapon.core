@@ -4,6 +4,7 @@ using Misc.GmMachine.Blocks;
 using Misc.GmMachine.Contexts;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GameModes.VSHeadOn;
+using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
 using Patapon.Mixed.Units;
 using Patapon4TLB.Default;
@@ -40,6 +41,12 @@ namespace Patapon.Server.GameModes.VSHeadOn
 		{
 			if (RunNext(CreateUnitBlock))
 			{
+				for (var i = 0; i != m_ModeContext.Teams.Length; i++)
+				{
+					m_ModeContext.Data.GetPoints(i)       = 0;
+					m_ModeContext.Data.GetEliminations(i) = 0;
+				}
+
 				CreateUnits();
 				return false;
 			}
@@ -47,17 +54,22 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			if (RunNext(SpawnUnitBlock))
 			{
 				SpawnUnits();
-				CounterBlock.SetTicksFromMs(3000);
+				CounterBlock.SetTicksFromMs(5000);
 
-				m_QueriesContext.GetEntityQueryBuilder().ForEach((ref FlowEngineProcess process) => { process.StartTime = CounterBlock.Target.Ms; });
-
-				m_ModeContext.HudSettings.EnableUnitSounds = true;
-				
+				m_QueriesContext.GetEntityQueryBuilder().ForEach((ref FlowEngineProcess process, ref RhythmEngineState state) =>
+				{
+					process.StartTime = CounterBlock.Target.Ms;
+					state.IsPaused    = false;
+				});
+				m_ModeContext.Data.EndTime = CounterBlock.Target.Ms + 480_000;
 				return false;
 			}
 
 			if (RunNext(CounterBlock))
+			{
+				m_ModeContext.HudSettings.EnableUnitSounds = true;
 				return false;
+			}
 
 			return true;
 		}
@@ -103,7 +115,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				else m_TeamAttackAverage[ti] = stat.Health;
 
 				var healthEvent = entityMgr.CreateEntity(typeof(ModifyHealthEvent));
-				entityMgr.SetComponentData(healthEvent, new ModifyHealthEvent(ModifyHealthType.SetNone, 0, unit));
+				entityMgr.SetComponentData(healthEvent, new ModifyHealthEvent(ModifyHealthType.SetMax, 0, unit));
 
 				m_TeamUnitCount[ti]++;
 			}

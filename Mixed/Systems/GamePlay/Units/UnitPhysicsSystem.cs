@@ -1,4 +1,5 @@
 using Patapon.Mixed.GamePlay.Team;
+using Patapon.Mixed.Rules;
 using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
@@ -11,9 +12,9 @@ using UnityEngine;
 
 namespace Patapon.Mixed.GamePlay
 {
-	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
+	[UpdateInGroup(typeof(UnitPhysicSystemGroup))]
 	[UpdateAfter(typeof(TeamBlockMovableAreaSystem))]
-	public class UnitPhysicsSystem : JobComponentSystem
+	public class UnitPhysicsSystem : JobGameBaseSystem
 	{
 		private static float MoveTowards(float current, float target, float maxDelta)
 		{
@@ -29,6 +30,10 @@ namespace Patapon.Mixed.GamePlay
 			var livableHealthFromEntity  = GetComponentDataFromEntity<LivableHealth>(true);
 			var relativeTargetFromEntity = GetComponentDataFromEntity<Relative<UnitTargetDescription>>(true);
 			var translationFromEntity    = GetComponentDataFromEntity<Translation>(true);
+			var isServer = IsServer;
+
+			if (!isServer && GetSingleton<P4NetworkRules.Data>().AbilityUsePredicted == false)
+				return inputDeps;
 
 			inputDeps =
 				Entities
@@ -54,6 +59,7 @@ namespace Patapon.Mixed.GamePlay
 
 						if (!controllerState.ControlOverVelocity.x)
 						{
+							// todo: find a good way for client to predict that nicely
 							if (groundState.Value)
 							{
 								var speed = math.lerp(math.abs(velocity.Value.x), unitPlayState.MovementAttackSpeed, math.rcp(unitPlayState.Weight) * 30 * dt);

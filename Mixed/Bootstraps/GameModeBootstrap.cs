@@ -74,7 +74,7 @@ namespace Bootstraps
 
 		private void SetAsYarida(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities)
 		{
-			statistics.Health = 160;
+			statistics.Health = 16;
 			statistics.Attack = 30;
 			statistics.Defense = 0;
 			statistics.Weight = 6;
@@ -84,7 +84,7 @@ namespace Bootstraps
 
 		private void SetAsTaterazay(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities)
 		{
-			statistics.Health  = 225;
+			statistics.Health  = 22;
 			statistics.Attack  = 24;
 			statistics.Defense = 7;
 			statistics.Weight  = 8.5f;
@@ -145,12 +145,12 @@ namespace Bootstraps
 							AttackSpeed         = 2.0f,
 							MovementAttackSpeed = 2.22f,
 							Weight              = 8.5f,
-							AttackSeekRange     = 20f
+							AttackSeekRange     = 16f
 						};
 
 						if (playerEntities.Length > i && playerEntities[i] != Entity.Null)
 						{
-							SetAsTaterazay(ref statistics, definedAbilities);
+							SetAsYarida(ref statistics, definedAbilities);
 							EntityManager.ReplaceOwnerData(unitEntity, playerEntities[i]);
 						}
 						else

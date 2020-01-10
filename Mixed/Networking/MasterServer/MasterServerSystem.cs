@@ -153,8 +153,8 @@ namespace Patapon4TLB.Core.MasterServer
 
 	public class MasterServerRequestModule<TRequest, TProcessing, TCompleted> : BaseSystemModule
 		where TRequest : struct, IMasterServerRequest, IComponentData
-		where TProcessing : struct, IComponentData
-		where TCompleted : struct, IComponentData
+		where TProcessing : IComponentData
+		where TCompleted : IComponentData
 	{
 		private NativeList<Request> m_Requests;
 		private bool                m_Update;
@@ -219,6 +219,12 @@ namespace Patapon4TLB.Core.MasterServer
 		{
 			public Entity   Entity;
 			public TRequest Value;
+
+			public void Deconstruct(out Entity entity, out TRequest request)
+			{
+				entity = Entity;
+				request = Value;
+			}
 		}
 	}
 }
