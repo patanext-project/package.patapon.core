@@ -8,7 +8,6 @@ using UnityEngine;
 
 namespace Patapon4TLB.Core.MasterServer
 {
-	[AlwaysUpdateSystem]
 	public class MasterServerManagePendingEventSystem : BaseSystemMasterServerService
 	{
 		private double                             m_NextCheck;

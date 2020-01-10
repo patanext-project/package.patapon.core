@@ -1,4 +1,5 @@
 using System.Net;
+using P4TLB.MasterServer;
 using package.stormiumteam.shared.ecs;
 using Patapon4TLB.Core;
 using Patapon4TLB.Core.MasterServer;
@@ -96,6 +97,19 @@ namespace Bootstraps
 					Debug.Log("Formation name: " + result.Root.Name);
 
 					EntityManager.DestroyEntity(m_FormationRequest);
+
+					foreach (var army in result.Armies)
+					{
+						foreach (var unit in army.Units)
+						{
+							var setUnitKit = EntityManager.CreateEntity(typeof(RequestSetUnitKit));
+							EntityManager.SetComponentData(setUnitKit, new RequestSetUnitKit
+							{
+								UnitId = unit,
+								KitId  = P4OfficialKit.Shurika
+							});
+						}
+					}
 				}
 			}
 		}

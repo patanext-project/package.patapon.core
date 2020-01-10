@@ -9,6 +9,7 @@ using UnityEngine;
 namespace Patapon4TLB.Core.MasterServer
 {
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
+	[AlwaysUpdateSystem]
 	public abstract class BaseSystemMasterServerService : GameBaseSystem
 	{
 		private static bool m_IgnoreAddSystem;

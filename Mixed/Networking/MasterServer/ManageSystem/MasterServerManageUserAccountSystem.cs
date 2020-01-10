@@ -40,8 +40,7 @@ namespace Patapon4TLB.Core.MasterServer
 		public int            ClientId;
 		public ulong          UserId;
 	}
-
-	[AlwaysUpdateSystem]
+	
 	public class MasterServerManageUserAccountSystem : BaseSystemMasterServerService
 	{
 		private EntityQuery                                                                               m_ClientQuery;

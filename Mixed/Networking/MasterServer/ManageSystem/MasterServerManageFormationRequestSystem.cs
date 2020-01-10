@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace Patapon4TLB.Core.MasterServer
 {
-	[AlwaysUpdateSystem]
 	public class MasterServerManageFormationRequestSystem : BaseSystemMasterServerService
 	{
 		private MasterServerRequestModule<RequestGetUserFormationData, RequestGetUserFormationData.Processing, ResultGetUserFormationData> m_RequestUserLoginModule;
