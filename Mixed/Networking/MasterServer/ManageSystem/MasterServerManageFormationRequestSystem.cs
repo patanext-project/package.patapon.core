@@ -6,7 +6,7 @@ namespace Patapon4TLB.Core.MasterServer
 {
 	public class MasterServerManageFormationRequestSystem : BaseSystemMasterServerService
 	{
-		private MasterServerRequestModule<RequestGetUserFormationData, RequestGetUserFormationData.Processing, ResultGetUserFormationData> m_RequestUserLoginModule;
+		private MsRequestModule<RequestGetUserFormationData, RequestGetUserFormationData.Processing, ResultGetUserFormationData, RequestGetUserFormationData.CompletionStatus> m_RequestUserLoginModule;
 
 		protected override void OnCreate()
 		{
@@ -26,8 +26,10 @@ namespace Patapon4TLB.Core.MasterServer
 			m_RequestUserLoginModule.AddProcessTagToAllRequests();
 
 			var requestArray = m_RequestUserLoginModule.GetRequests();
-			foreach (var (entity, request) in requestArray)
+			foreach (var kvp in requestArray)
 			{
+				var entity  = kvp.Entity;
+				var request = kvp.Value;
 				var rpc = new DataOfPlayerRequest
 				{
 					UserId    = request.UserId,
@@ -41,19 +43,10 @@ namespace Patapon4TLB.Core.MasterServer
 					continue;
 				}
 
-				if (result.Error != GetFormationOfPlayerResult.Types.ErrorCode.Success)
+				if (m_RequestUserLoginModule.InvokeDefaultOnResult(entity, new RequestGetUserFormationData.CompletionStatus {ErrorCode = result.Error}, out var responseEntity))
 				{
-					var requestMut = request;
-					requestMut.ErrorCode = (int) result.Error;
-					EntityManager.SetComponentData(entity, requestMut);
-				}
-				else
-				{
-					EntityManager.RemoveComponent<RequestGetUserFormationData>(entity);
-					EntityManager.AddComponentObject(entity, new ResultGetUserFormationData
-					{
-						Root = result.Result
-					});
+					var data = EntityManager.GetComponentData<ResultGetUserFormationData>(responseEntity);
+					data.Root = result.Result;
 				}
 			}
 		}

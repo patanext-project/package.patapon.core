@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Grpc.Core;
+using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
@@ -21,7 +22,7 @@ namespace Patapon4TLB.Core.MasterServer
 	public class MasterServerSystem : ComponentSystem
 	{
 		public static MasterServerSystem Instance;
-		
+
 		public delegate void ShutDownEvent();
 
 		private Dictionary<Type, object> m_ExistingClients;
@@ -46,10 +47,10 @@ namespace Patapon4TLB.Core.MasterServer
 		protected override async void OnDestroy()
 		{
 			base.OnDestroy();
-			
+
 			Disconnect().Wait();
 			m_ExistingClients.Clear();
-			
+
 			Instance = null;
 		}
 
@@ -151,10 +152,11 @@ namespace Patapon4TLB.Core.MasterServer
 		}
 	}
 
-	public class MasterServerRequestModule<TRequest, TProcessing, TCompleted> : BaseSystemModule
-		where TRequest : struct, IMasterServerRequest, IComponentData
+	public class MsRequestModule<TRequest, TProcessing, TResponse, TCompletion> : BaseSystemModule
+		where TRequest : struct, IComponentData
 		where TProcessing : IComponentData
-		where TCompleted : IComponentData
+		where TResponse : IComponentData
+		where TCompletion : struct, IComponentData, IRequestCompletionStatus
 	{
 		private NativeList<Request> m_Requests;
 		private bool                m_Update;
@@ -166,9 +168,9 @@ namespace Patapon4TLB.Core.MasterServer
 		protected override void OnEnable()
 		{
 			// hack
-			RequestQuery    = System.EntityManager.CreateEntityQuery(typeof(TRequest), ComponentType.Exclude<TProcessing>(), ComponentType.Exclude<TCompleted>());
+			RequestQuery    = System.EntityManager.CreateEntityQuery(typeof(TRequest), ComponentType.Exclude<TProcessing>(), ComponentType.Exclude<TResponse>());
 			ProcessingQuery = System.EntityManager.CreateEntityQuery(typeof(TRequest), typeof(TProcessing));
-			ResultQuery     = System.EntityManager.CreateEntityQuery(typeof(TCompleted));
+			ResultQuery     = System.EntityManager.CreateEntityQuery(typeof(TResponse));
 
 			m_Requests = new NativeList<Request>(Allocator.Persistent);
 		}
@@ -210,6 +212,44 @@ namespace Patapon4TLB.Core.MasterServer
 			return m_Requests;
 		}
 
+		/// <summary>
+		/// Invoke a default execution for request results...
+		/// </summary>
+		/// <param name="entity">The request entity</param>
+		/// <param name="request">The request</param>
+		/// <returns>True if there was a result, false if error</returns>
+		public bool InvokeDefaultOnResult(Entity entity, TCompletion completion, out Entity targetResponseEntity)
+		{
+			targetResponseEntity = entity;
+			if (EntityManager.HasComponent<SpawnedAsAutomaticRequest>(entity))
+			{
+				targetResponseEntity = EntityManager.GetComponentData<SpawnedAsAutomaticRequest>(entity)
+				                                    .Origin;
+			}
+
+			System.EntityManager.SetOrAddComponentData(entity, completion);
+			if (completion.error)
+			{
+				if (System.EntityManager.HasComponent<TProcessing>(entity))
+					System.EntityManager.RemoveComponent<TProcessing>(entity);
+
+				return false;
+			}
+
+			System.EntityManager.RemoveComponent<TRequest>(entity);
+			if (System.EntityManager.HasComponent<TProcessing>(entity))
+				System.EntityManager.RemoveComponent<TProcessing>(entity);
+			if (!System.EntityManager.HasComponent<TResponse>(targetResponseEntity))
+				System.EntityManager.AddComponent<TResponse>(targetResponseEntity);
+
+			// if we leave the request as-is, it will be an almost empty entity and almost unremovable...
+			if (EntityManager.HasComponent<SpawnedAsAutomaticRequest>(entity)
+			    && targetResponseEntity != entity)
+				EntityManager.DestroyEntity(entity);
+
+			return true;
+		}
+
 		protected override void OnDisable()
 		{
 			m_Requests.Dispose();
@@ -222,7 +262,7 @@ namespace Patapon4TLB.Core.MasterServer
 
 			public void Deconstruct(out Entity entity, out TRequest request)
 			{
-				entity = Entity;
+				entity  = Entity;
 				request = Value;
 			}
 		}

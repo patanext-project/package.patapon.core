@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using EcsComponents.MasterServer;
 using Grpc.Core;
 using P4TLB.MasterServer;
 using Unity.Entities;

@@ -1,6 +1,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using EcsComponents.MasterServer;
 using P4TLB.MasterServer;
 using Patapon4TLB.Core.MasterServer;
 using Unity.Collections;

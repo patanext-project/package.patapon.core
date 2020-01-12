@@ -1,16 +1,25 @@
+using EcsComponents.MasterServer;
 using P4TLB.MasterServer;
 using package.stormiumteam.shared.ecs;
+using Patapon4TLB.Core.MasterServer.Data;
 using Patapon4TLB.Core.MasterServer.Implementations;
+using Patapon4TLB.Core.MasterServer.P4;
+using Patapon4TLB.Core.MasterServer.P4.EntityDescription;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
 namespace Patapon4TLB.Core.MasterServer
 {
+	[UpdateAfter(typeof(MasterServerManageUnitSystem))]
 	public class MasterServerManageUnitKitSystem : BaseSystemMasterServerService
 	{
-		private MasterServerRequestModule<RequestGetUnitKit, RequestGetUnitKit.Processing, ResponseGetUnitKit> m_GetUnitKitModule;
-		private MasterServerRequestModule<RequestSetUnitKit, RequestSetUnitKit.Processing, ResponseSetUnitKit> m_SetUnitKitModule;
+		private BaseMsAutoRequestModule m_AutomaticGetUnitKitModule;
+
+		private MsRequestModule<RequestGetUnitKit, RequestGetUnitKit.Processing, ResponseGetUnitKit, RequestGetUnitKit.CompletionStatus> m_GetUnitKitModule;
+		private MsRequestModule<RequestSetUnitKit, RequestSetUnitKit.Processing, ResponseSetUnitKit, RequestSetUnitKit.CompletionStatus> m_SetUnitKitModule;
+
+		private MasterServerManageUnitSystem m_UnitSystem;
 
 		protected override void OnCreate()
 		{
@@ -18,6 +27,11 @@ namespace Patapon4TLB.Core.MasterServer
 
 			GetModule(out m_GetUnitKitModule);
 			GetModule(out m_SetUnitKitModule);
+
+			m_AutomaticGetUnitKitModule = MsAutomatedRequestModule.From(default(RequestGetUnitKit.Automatic), m_GetUnitKitModule);
+			m_AutomaticGetUnitKitModule.SetPushComponents(typeof(RequestGetUnitKit.PushRequest), typeof(MasterServerGlobalUnitPush));
+
+			m_UnitSystem = World.GetOrCreateSystem<MasterServerManageUnitSystem>();
 		}
 
 		protected override async void OnUpdate()
@@ -25,21 +39,32 @@ namespace Patapon4TLB.Core.MasterServer
 			if (!StaticMasterServer.TryGetClient<P4UnitKitService.P4UnitKitServiceClient>(out var service))
 				return;
 
+			Entities.ForEach((ref RequestGetUnitKit.Automatic automatic, ref MasterServerP4UnitMasterServerEntity masterServerEntity) => { automatic.UnitId = masterServerEntity.UnitId; });
+
+			if (m_UnitSystem.Match.IsCreated)
+			{
+				foreach (var entityMatch in m_UnitSystem.Match)
+				{
+					if (EntityManager.HasComponent<RequestGetUnitKit.Automatic>(entityMatch))
+						m_AutomaticGetUnitKitModule.AddRequest(entityMatch);
+				}
+			}
+
+			m_AutomaticGetUnitKitModule.Update();
+
 			m_GetUnitKitModule.Update();
 			m_GetUnitKitModule.AddProcessTagToAllRequests();
 			foreach (var kvp in m_GetUnitKitModule.GetRequests())
 			{
 				var (entity, request) = kvp;
+				// If there is a MasterServer target, use it.
+				if (EntityManager.TryGetComponentData(entity, out MasterServerP4UnitMasterServerEntity masterServerEntity))
+					request.UnitId = masterServerEntity.UnitId;
+
 				var response = await service.GetCurrentKitAsync(new GetKitRequest {UnitId = request.UnitId});
-				request.ErrorCode = response.Error;
-				if (request.error)
+				if (m_GetUnitKitModule.InvokeDefaultOnResult(entity, new RequestGetUnitKit.CompletionStatus {ErrorCode = response.Error}, out var targetResponseEntity))
 				{
-					EntityManager.SetComponentData(entity, request);
-				}
-				else
-				{
-					EntityManager.RemoveComponent<RequestGetUnitKit>(entity);
-					EntityManager.SetOrAddComponentData(entity, new ResponseGetUnitKit
+					EntityManager.SetComponentData(targetResponseEntity, new ResponseGetUnitKit
 					{
 						KitId           = (P4OfficialKit) response.KitId,
 						KitCustomNameId = response.KitCustomNameId
@@ -57,6 +82,10 @@ namespace Patapon4TLB.Core.MasterServer
 			foreach (var kvp in m_SetUnitKitModule.GetRequests())
 			{
 				var (entity, request) = kvp;
+				// If there is a MasterServer target, use it.
+				if (EntityManager.TryGetComponentData(entity, out MasterServerP4UnitMasterServerEntity masterServerEntity))
+					request.UnitId = masterServerEntity.UnitId;
+
 				var response = await service.SetCurrentKitAsync(new SetKitRequest
 				{
 					ClientToken     = client.Token.ToString(),
@@ -64,56 +93,11 @@ namespace Patapon4TLB.Core.MasterServer
 					KitId           = (uint) request.KitId,
 					KitCustomNameId = request.KitCustomNameId.ToString()
 				});
-				request.ErrorCode = response.Error;
-				if (request.error)
+				if (m_SetUnitKitModule.InvokeDefaultOnResult(entity, new RequestSetUnitKit.CompletionStatus {ErrorCode = response.Error}, out _))
 				{
-					EntityManager.SetComponentData(entity, request);
-				}
-				else
-				{
-					EntityManager.RemoveComponent<RequestSetUnitKit>(entity);
-					EntityManager.SetOrAddComponentData(entity, new ResponseSetUnitKit());
+					// until there are more field into SetUnitKitResponse, it's useless to continue the execution...
 				}
 			}
 		}
-	}
-
-	public struct RequestGetUnitKit : IComponentData, IMasterServerRequest
-	{
-		public bool error => ErrorCode != GetKitResponse.Types.ErrorCode.Ok;
-
-		public GetKitResponse.Types.ErrorCode ErrorCode;
-
-		public ulong UnitId;
-
-		public struct Processing : IComponentData
-		{
-		}
-	}
-
-	public struct ResponseGetUnitKit : IComponentData
-	{
-		public P4OfficialKit   KitId;
-		public NativeString512 KitCustomNameId;
-	}
-
-	public struct RequestSetUnitKit : IComponentData, IMasterServerRequest
-	{
-		public bool error => ErrorCode != SetKitResponse.Types.ErrorCode.Ok;
-
-		public SetKitResponse.Types.ErrorCode ErrorCode;
-
-		public ulong           UnitId;
-		public P4OfficialKit   KitId;
-		public NativeString512 KitCustomNameId;
-
-		public struct Processing : IComponentData
-		{
-		}
-	}
-
-	public struct ResponseSetUnitKit : IComponentData
-	{
-
 	}
 }

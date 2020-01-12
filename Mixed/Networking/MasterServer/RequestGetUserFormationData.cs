@@ -5,16 +5,20 @@ using Unity.Entities;
 
 namespace Patapon4TLB.Core.MasterServer
 {
-	public struct RequestGetUserFormationData : IMasterServerRequest, IComponentData
+	public struct RequestGetUserFormationData : IComponentData
 	{
-		public bool error => ErrorCode != 0;
-
 		public ulong          UserId;
 		public NativeString64 UserLogin;
 
-		public int ErrorCode;
-		
-		public struct Processing : IComponentData {}
+		public struct Processing : IComponentData
+		{
+		}
+
+		public struct CompletionStatus : IRequestCompletionStatus
+		{
+			public bool                                       error => ErrorCode != 0;
+			public GetFormationOfPlayerResult.Types.ErrorCode ErrorCode;
+		}
 	}
 
 	public class ResultGetUserFormationData : IComponentData

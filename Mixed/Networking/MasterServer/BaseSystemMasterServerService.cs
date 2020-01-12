@@ -15,16 +15,11 @@ namespace Patapon4TLB.Core.MasterServer
 		private static bool m_IgnoreAddSystem;
 
 		private bool m_IsShutdown;
-
-		protected override void OnCreate()
-		{
-			base.OnCreate();
-
-			MasterServerSystem.Instance.BeforeShutdown += OnBeforeShutdown;
-		}
-
+		
 		protected override void OnStartRunning()
 		{
+			MasterServerSystem.Instance.BeforeShutdown += OnBeforeShutdown;
+			
 			if (!m_IgnoreAddSystem)
 			{
 				m_IgnoreAddSystem = true;

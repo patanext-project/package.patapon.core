@@ -5,39 +5,23 @@ using Unity.Entities;
 
 namespace Patapon4TLB.Core.MasterServer
 {
-	public struct RequestGetUserAccountData : IMasterServerRequest, IComponentData
+	public struct RequestGetUserAccountData : IComponentData
 	{
 		public struct Processing : IComponentData
 		{
 		}
 
-		public int ErrorCode; // enum?
-
-		public bool error => ErrorCode != 0;
-
 		public long UserGuid;
+
+		public struct CompletionStatus : IRequestCompletionStatus
+		{
+			public bool error => ErrorCode != 0;
+			public int  ErrorCode;
+		}
 	}
 
 	public struct ResultGetUserAccountData : IComponentData
 	{
 		public NativeString64 Login;
-	}
-
-	public struct ConnectedMasterServerClient : IComponentData
-	{
-		/// NEVER SHARE IT
-		public NativeString64 Token;
-
-		public int            ClientId;
-		public ulong          UserId;
-		public NativeString64 UserLogin;
-	}
-
-	public struct MasterServerIsPlayer : IComponentData
-	{
-	}
-
-	public struct MasterServerIsServer : IComponentData
-	{
 	}
 }

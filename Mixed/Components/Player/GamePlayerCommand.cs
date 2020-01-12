@@ -1,5 +1,6 @@
 using System;
 using Revolution;
+using Scripts.Utilities;
 using StormiumTeam.GameBase;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
@@ -12,7 +13,7 @@ namespace Patapon4TLB.Default.Player
 	// similar to UserCommand except it's synced between all clients
 	public unsafe struct GamePlayerCommand : IComponentData
 	{
-		public UserCommand Base { get; set; }
+		public UserCommand Base;
 
 		// there seems to be a bug on mono backend with Span on outer struct.
 		//public Span<UserCommand.RhythmAction> RhythmActions => Base.GetRhythmActions();
@@ -37,7 +38,9 @@ namespace Patapon4TLB.Default.Player
 
 			public bool DidChange(Snapshot baseline)
 			{
-				return UnsafeUtility.MemCmp(UnsafeUtility.AddressOf(ref this), &baseline, sizeof(Snapshot)) != 0;
+				baseline.Tick      = Tick;
+				baseline.Base.Tick = Base.Tick;
+				return UnsafeUtilityOp.AreNotEquals(ref this, ref baseline);
 			}
 
 			public void SynchronizeFrom(in GamePlayerCommand component, in DefaultSetup setup, in SerializeClientData serializeData)
@@ -98,6 +101,18 @@ namespace Patapon4TLB.Default.Player
 			}).WithReadOnly(localFromEntity).Schedule(inputDeps);
 
 			return inputDeps;
+		}
+	}
+
+	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
+	[UpdateAfter(typeof(CommandReceiveSystem))]
+	[UpdateBefore(typeof(SnapshotSendSystem))]
+	public class ServerCopyUserCommandToPlayer : JobComponentSystem
+	{
+		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		{
+			var targetTick = World.GetExistingSystem<ServerSimulationSystemGroup>().ServerTick;
+			return Entities.ForEach((DynamicBuffer<UserCommand> buffer, ref GamePlayerCommand command) => { buffer.GetDataAtTick(targetTick, out command.Base); }).Schedule(inputDeps);
 		}
 	}
 }

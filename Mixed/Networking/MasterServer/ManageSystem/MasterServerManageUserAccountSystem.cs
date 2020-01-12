@@ -1,3 +1,4 @@
+using EcsComponents.MasterServer;
 using P4TLB.MasterServer;
 using Patapon4TLB.Core.MasterServer.Implementations;
 using StormiumTeam.GameBase;
@@ -8,7 +9,7 @@ using UnityEngine;
 
 namespace Patapon4TLB.Core.MasterServer
 {
-	public struct RequestUserLogin : IMasterServerRequest, IComponentData
+	public struct RequestUserLogin : IComponentData
 	{
 		public struct Processing : IComponentData
 		{
@@ -32,6 +33,13 @@ namespace Patapon4TLB.Core.MasterServer
 
 			ErrorCode = UserLoginResponse.Types.ErrorCode.Invalid;
 		}
+
+		public struct CompletionStatus : IRequestCompletionStatus
+		{
+			public UserLoginResponse.Types.ErrorCode ErrorCode;
+
+			public bool error => ErrorCode != UserLoginResponse.Types.ErrorCode.Success;
+		}
 	}
 
 	public struct ResultUserLogin : IComponentData
@@ -40,11 +48,11 @@ namespace Patapon4TLB.Core.MasterServer
 		public int            ClientId;
 		public ulong          UserId;
 	}
-	
+
 	public class MasterServerManageUserAccountSystem : BaseSystemMasterServerService
 	{
-		private EntityQuery                                                                               m_ClientQuery;
-		private MasterServerRequestModule<RequestUserLogin, RequestUserLogin.Processing, ResultUserLogin> m_RequestUserLoginModule;
+		private EntityQuery                                                                                                                  m_ClientQuery;
+		private MsRequestModule<RequestUserLogin, RequestUserLogin.Processing, ResultUserLogin, RequestUserLogin.CompletionStatus> m_RequestUserLoginModule;
 
 		protected override void OnCreate()
 		{

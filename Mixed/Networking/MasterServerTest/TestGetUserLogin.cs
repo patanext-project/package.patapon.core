@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace Patapon4TLB.Core.MasterServerTest
 {
+#if EARLY_TEST
 	/* BEHAVIOR OF THIS TEST:
 	 * 
 	 * Connect to the MasterServer
@@ -35,7 +36,7 @@ namespace Patapon4TLB.Core.MasterServerTest
 			// If there is a result, then there shouldn't be any Request* component anymore on it.
 			m_ResultQuery = GetEntityQuery(new EntityQueryDesc
 			{
-				All  = new ComponentType[] {typeof(CustomRequestTag), typeof(ResultGetUserAccountData)},
+				All = new ComponentType[] {typeof(CustomRequestTag), typeof(ResultGetUserAccountData)},
 				None = new ComponentType[] {typeof(RequestGetUserAccountData)}
 			});
 		}
@@ -64,4 +65,5 @@ namespace Patapon4TLB.Core.MasterServerTest
 		{
 		}
 	}
+#endif
 }
