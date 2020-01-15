@@ -9,6 +9,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace Patapon.Mixed.GamePlay
 {
@@ -19,7 +20,7 @@ namespace Patapon.Mixed.GamePlay
 		{
 			var rhythmEngineRelativeFromEntity = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(true);
 			var comboStateFromEntity           = GetComponentDataFromEntity<GameComboState>(true);
-
+			
 			inputDeps = Entities
 			            .ForEach((Entity entity, ref UnitPlayState state, in UnitStatistics original) =>
 			            {
@@ -28,10 +29,15 @@ namespace Patapon.Mixed.GamePlay
 					            comboState = comboStateFromEntity[engineRelative.Target];
 
 				            state.MovementSpeed       = comboState.IsFever ? original.FeverWalkSpeed : original.BaseWalkSpeed;
+				            state.Defense             = original.Defense;
+				            state.Attack              = original.Attack;
 				            state.AttackSpeed         = original.AttackSpeed;
-				            state.MovementAttackSpeed = original.MovementAttackSpeed;
 				            state.AttackSeekRange     = original.AttackSeekRange;
+				            state.MovementAttackSpeed = original.MovementAttackSpeed;
+				            state.MovementReturnSpeed = comboState.IsFever ? original.MovementAttackSpeed * 1.5f : original.MovementAttackSpeed;
 				            state.Weight              = original.Weight;
+
+				            state.ReceiveDamagePercentage = 1;
 			            })
 			            .WithReadOnly(rhythmEngineRelativeFromEntity)
 			            .WithReadOnly(comboStateFromEntity)
@@ -79,7 +85,7 @@ namespace Patapon.Mixed.GamePlay
 					            translationFromEntity[relativeTarget.Target].Value, state.AttackSeekRange, allEnemies,
 					            out var nearestEnemy, out var targetPosition, out var enemyDistance
 				            );
-
+				            
 				            seekingState.Enemy    = nearestEnemy;
 				            seekingState.Distance = enemyDistance;
 			            })

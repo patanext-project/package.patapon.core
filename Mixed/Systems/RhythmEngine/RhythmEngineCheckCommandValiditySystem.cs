@@ -80,7 +80,6 @@ namespace Patapon.Mixed.Systems
 				    && commandSequence[seq].MaxTimeDifference > 0
 				    && (currentCommand[seq].Time - currentCommand[seq - 1].Time) * 0.001f >= commandSequence[seq].MaxTimeDifference)
 				{
-					Debug.Log((currentCommand[seq].Time - currentCommand[seq - 1].Time));
 					return false;
 				}
 
@@ -125,12 +124,15 @@ namespace Patapon.Mixed.Systems
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			if (!HasSingleton<NetworkIdComponent>())
+			if (!IsServer && !HasSingleton<NetworkIdComponent>())
 				return inputDeps;
 
 			m_AvailableCommandQuery.AddDependency(inputDeps);
 
-			var targetConnection       = GetSingletonEntity<NetworkIdComponent>();
+			Entity targetConnection = default;
+			if (!IsServer)
+				targetConnection       = GetSingletonEntity<NetworkIdComponent>();
+			
 			var outgoingDataFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>();
 
 			//var commandDefinition = GetComponentDataFromEntity<RhythmCommandDefinition>(true); // debug only
@@ -148,7 +150,7 @@ namespace Patapon.Mixed.Systems
 					          ref FlowEngineProcess                             process,           ref RhythmCurrentCommand rhythmCurrentCommand,
 					          ref DynamicBuffer<RhythmEngineCommandProgression> commandProgression) =>
 					{
-						if (state.IsPaused || process.Milliseconds < 0 || !isServer && !state.IsNewPressure)
+						if (state.IsPaused || process.Milliseconds < 0 || (!isServer && !state.IsNewPressure))
 						{
 							if (state.IsPaused || process.Milliseconds < 0)
 							{
@@ -158,7 +160,9 @@ namespace Patapon.Mixed.Systems
 						}
 
 						if (isServer && settings.UseClientSimulation && !state.VerifyCommand)
+						{
 							return;
+						}
 
 						var cmdOutput = new NativeList<Entity>(1, Allocator.Temp);
 						GetCommand(commandProgression.Reinterpret<FlowPressure>(), cmdOutput, false,
@@ -189,7 +193,8 @@ namespace Patapon.Mixed.Systems
 
 						state.IsNewPressure = false;
 
-						var targetBeat = process.GetFlowBeat(settings.BeatInterval) + 1;
+						// this is so laggy clients don't have a weird things when their command has been on another beat on the server
+						var targetBeat = commandProgression[commandProgression.Length - 1].Data.RenderBeat + 1;
 
 						if (isServer)
 						{

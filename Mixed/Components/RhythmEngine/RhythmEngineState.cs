@@ -103,8 +103,6 @@ namespace Patapon.Mixed.RhythmEngine
 					component.IsPaused = last.IsPaused;
 					if (component.RecoveryTick < last.RecoveryTick || component.NextBeatRecovery < last.NextBeatRecovery)
 					{
-						Debug.Log($"Recover at {last.RecoveryTick}");
-
 						component.RecoveryTick     = last.RecoveryTick;
 						component.NextBeatRecovery = last.NextBeatRecovery;
 					}

@@ -3,6 +3,7 @@ using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Systems;
 using Patapon.Mixed.Units;
+using Patapon.Mixed.Units.Statistics;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
@@ -53,7 +54,12 @@ namespace Patapon.Client.Graphics.Animation.Units
 				transform.localScale = new Vector3(direction.Value, 1, 1);
 
 				// Load presentation
-				const string unitArchetype = "UH.basic"; // this will be dynamic in the future (based on entity class)
+				var unitArchetype = "UH.basic"; // this will be dynamic in the future (based on entity class)
+				if (EntityManager.TryGetComponentData(backend.DstEntity, out UnitCurrentKit currentKit))
+				{
+					unitArchetype = $"UH.{currentKit.Value}";
+				}
+				
 				if (backend.CurrentArchetype != unitArchetype)
 				{
 					backend.CurrentArchetype = unitArchetype;

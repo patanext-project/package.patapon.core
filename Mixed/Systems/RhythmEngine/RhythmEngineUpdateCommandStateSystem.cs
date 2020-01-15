@@ -1,9 +1,11 @@
+using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.GamePlay.Units;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Definitions;
 using Patapon.Mixed.RhythmEngine.Flow;
 using Patapon.Mixed.RhythmEngine.Rpc;
+using Patapon4TLB.Default.Player;
 using Revolution;
 using StormiumTeam.GameBase;
 using Unity.Entities;
@@ -41,6 +43,9 @@ namespace Patapon.Mixed.Systems
 			var outgoingDataFromEntity      = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>();
 			var replicatedDataFromEntity    = GetComponentDataFromEntity<ReplicatedEntity>(true);
 
+			var playerRelativeFromEntity = GetComponentDataFromEntity<Relative<PlayerDescription>>(true);
+			var commandFromEntity = GetComponentDataFromEntity<GamePlayerCommand>(true);
+
 			inputDeps =
 				Entities
 					.ForEach((Entity               entity,       ref RhythmEngineSettings settings, ref RhythmEngineState state, ref FlowEngineProcess process,
@@ -50,7 +55,33 @@ namespace Patapon.Mixed.Systems
 						if (state.IsPaused
 						    || !isServer && settings.UseClientSimulation && !simulateTagFromEntity.Exists(entity)
 						    || process.Milliseconds < 0)
+						{
+							if (process.Milliseconds < 0)
+							{
+								comboState.Chain        = 0;
+								comboState.Score        = 0;
+								comboState.IsFever      = false;
+								comboState.JinnEnergy   = 0;
+								comboState.ChainToFever = 0;
+
+								commandState.ChainEndTime = -1;
+								commandState.StartTime    = -1;
+								commandState.EndTime      = -1;
+								
+								if (!isServer && simulateTagFromEntity.Exists(entity))
+								{
+									predictedCommandFromEntity[entity] = new GamePredictedCommandState {State = commandState};
+									predictedComboFromEntity[entity]   = new GameComboPredictedClient {State  = comboState};
+								}
+							}
 							return;
+						}
+
+						AbilitySelection playerCommandSelection = AbilitySelection.Horizontal;
+						if (playerRelativeFromEntity.TryGet(entity, out var relativePlayer))
+						{
+							playerCommandSelection = commandFromEntity[relativePlayer.Target].Base.Ability;
+						}
 
 						var mercy = 1;
 						if (isServer)
@@ -147,6 +178,7 @@ namespace Patapon.Mixed.Systems
 
 								previousPrediction.StartTime = rhythm.ActiveAtTime;
 								previousPrediction.EndTime   = rhythm.CustomEndTime == 0 || rhythm.CustomEndTime == -1 ? madOp : rhythm.CustomEndTime;
+								previousPrediction.Selection = playerCommandSelection;
 							}
 
 							predictedCommandFromEntity[entity] = new GamePredictedCommandState {State = previousPrediction};
@@ -158,6 +190,7 @@ namespace Patapon.Mixed.Systems
 
 							if (isNew)
 							{
+								commandState.Selection = playerCommandSelection;
 								commandState.StartTime = rhythm.ActiveAtTime;
 								commandState.EndTime   = rhythm.CustomEndTime == -1 ? madOp : rhythm.CustomEndTime;
 								commandState.ChainEndTime = rhythm.CustomEndTime == -1
@@ -177,6 +210,8 @@ namespace Patapon.Mixed.Systems
 					.WithReadOnly(simulateTagFromEntity)
 					.WithReadOnly(commandDefinitionFromEntity)
 					.WithReadOnly(replicatedDataFromEntity)
+					.WithReadOnly(playerRelativeFromEntity)
+					.WithReadOnly(commandFromEntity)
 					.WithNativeDisableParallelForRestriction(predictedComboFromEntity)
 					.WithNativeDisableParallelForRestriction(predictedCommandFromEntity)
 					.WithNativeDisableParallelForRestriction(outgoingDataFromEntity)

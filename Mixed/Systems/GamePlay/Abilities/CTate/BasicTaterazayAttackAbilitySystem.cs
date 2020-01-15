@@ -1,14 +1,12 @@
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay;
 using Patapon.Mixed.GamePlay.Abilities.CTate;
-using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.Units;
 using Patapon.Mixed.Utilities;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Entities.CodeGeneratedJobForEach;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
@@ -47,15 +45,15 @@ namespace Systems.GamePlay.CTate
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			var tick                      = GetTick(true);
+			var tick                      = ServerTick;
 			var enemiesFromTeam           = GetBufferFromEntity<TeamEnemies>(true);
 			var physicsColliderFromEntity = GetComponentDataFromEntity<PhysicsCollider>(true);
 			var impl                      = new BasicUnitAbilityImplementation(this);
 			var seekEnemies               = new SeekEnemies(this);
+			var seekingStateFromEntity    = GetComponentDataFromEntity<UnitEnemySeekingState>(true);
 
-			var colliderQuery            = m_HitQuery;
-			var relativeTeamFromEntity   = GetComponentDataFromEntity<Relative<TeamDescription>>(true);
-			var relativeTargetFromEntity = GetComponentDataFromEntity<Relative<UnitTargetDescription>>(true);
+			var colliderQuery          = m_HitQuery;
+			var relativeTeamFromEntity = GetComponentDataFromEntity<Relative<TeamDescription>>(true);
 
 			var damageEvArchetype = m_DamageEventProvider.EntityArchetype;
 			var ecb = m_DamageEventProvider.CreateEntityCommandBuffer()
@@ -63,20 +61,13 @@ namespace Systems.GamePlay.CTate
 
 			inputDeps =
 				Entities
-					.ForEach((Entity entity, int nativeThreadIndex, ref RhythmAbilityState state, ref BasicTaterazayAttackAbility ability, in UnitEnemySeekingState seekingState, in Owner owner) =>
+					.ForEach((Entity entity, int nativeThreadIndex, ref RhythmAbilityState state, ref BasicTaterazayAttackAbility ability, in Owner owner) =>
 					{
-						const float attackRange = 3f;
+						Entity* tryGetChain = stackalloc[] {entity, owner.Target};
+						if (!relativeTeamFromEntity.TryGetChain(tryGetChain, 2, out var relativeTeam))
+							return;
 
-						Relative<TeamDescription> relativeTeam;
-						if (!relativeTeamFromEntity.TryGet(entity, out relativeTeam))
-							if (!relativeTeamFromEntity.TryGet(owner.Target, out relativeTeam))
-								return;
-
-						Relative<UnitTargetDescription> relativeTarget;
-						if (!relativeTargetFromEntity.TryGet(entity, out relativeTarget))
-							if (!relativeTargetFromEntity.TryGet(owner.Target, out relativeTarget))
-								return;
-
+						var seekingState = seekingStateFromEntity[owner.Target];
 						var teamEnemies  = enemiesFromTeam[relativeTeam.Target];
 						var statistics   = impl.UnitSettingsFromEntity[owner.Target];
 						var playState    = impl.UnitPlayStateFromEntity[owner.Target];
@@ -84,33 +75,31 @@ namespace Systems.GamePlay.CTate
 
 						var velocityUpdater   = impl.VelocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
 						var controllerUpdater = impl.ControllerFromEntity.GetUpdater(owner.Target).Out(out var controller);
-						if (state.IsStillChaining && !state.IsActive && seekingState.Enemy != default)
-						{
-							var acceleration = math.clamp(math.rcp(playState.Weight), 0, 1) * 50;
-							acceleration = math.min(acceleration * tick.Delta, 1);
-
-							velocity.Value.x = math.lerp(velocity.Value.x, 0, acceleration);
-						}
-
-						if (state.IsStillChaining && seekingState.Enemy != default)
-							controller.ControlOverVelocity.x = true;
 
 						var attackStartTick = UTick.CopyDelta(tick, ability.AttackStartTick);
+
+						if (state.IsStillChaining && !state.IsActive)
+						{
+							controller.ControlOverVelocity.x = true;
+							velocity.Value.x                 = math.lerp(velocity.Value.x, 0, playState.GetAcceleration() * 50 * tick.Delta);
+						}
 
 						ability.NextAttackDelay -= tick.Delta;
 						if (ability.AttackStartTick > 0)
 						{
+							controller.ControlOverVelocity.x = true;
+							
 							// slash!
 							if (tick >= UTick.AddMs(attackStartTick, BasicTaterazayAttackAbility.DelaySlashMs) && !ability.HasSlashed)
 							{
 								ability.HasSlashed = true;
 
-								var   damage      = statistics.Attack;
+								int   damage      = playState.Attack;
 								float damageFever = damage;
 								if (state.Combo.IsFever)
 								{
 									damageFever *= 1.2f;
-									if (state.Combo.Score >= 50)
+									if (state.Combo.IsPerfect)
 										damageFever *= 1.2f;
 
 									damage += (int) damageFever - damage;
@@ -125,35 +114,23 @@ namespace Systems.GamePlay.CTate
 								for (var ent = 0; ent != allEnemies.Length; ent++)
 								{
 									var enemy = allEnemies[ent];
-									if (seekEnemies.LivableHealthFromEntity.TryGet(enemy, out var enemyHealth) && enemyHealth.IsDead)
-										continue;
-									if (!seekEnemies.HitShapeContainerFromEntity.Exists(enemy))
+									if (!seekEnemies.CanHitTarget(enemy))
 										continue;
 
 									rigidBodies.Clear();
-
-									var hitShapes = seekEnemies.HitShapeContainerFromEntity[enemy];
-									CreateRigidBody.Execute(ref rigidBodies, hitShapes.AsNativeArray(),
+									CreateRigidBody.Execute(ref rigidBodies, seekEnemies.HitShapeContainerFromEntity[enemy].AsNativeArray(),
 										enemy,
 										impl.LocalToWorldFromEntity, impl.TranslationFromEntity, physicsColliderFromEntity);
 									for (var i = 0; i != rigidBodies.Length; i++)
 									{
-										var rb = rigidBodies[i];
-										var cc = new CustomCollide(rb);
-										cc.WorldFromMotion.pos.z = 0;
-
-										var collection = new CustomCollideCollection(ref cc);
-										Debug.DrawRay(distanceInput.Transform.pos, Vector3.up, Color.red, 2f);
-										if (!collection.CalculateDistance(distanceInput, out var closestHit))
+										var cc = new CustomCollide(rigidBodies[i]) {WorldFromMotion = {pos = {z = 0}}};
+										if (!new CustomCollideCollection(ref cc).CalculateDistance(distanceInput, out var closestHit))
 											continue;
 
-										// dat pun 
 										var evEnt = ecb.CreateEntity(nativeThreadIndex, damageEvArchetype);
 										ecb.SetComponent(nativeThreadIndex, evEnt, new TargetDamageEvent
 										{
-											Origin      = owner.Target,
-											Destination = enemy,
-											Damage      = -damage,
+											Origin = owner.Target, Destination = enemy, Damage = -damage,
 										});
 										ecb.AddComponent(nativeThreadIndex, evEnt, new Translation {Value = closestHit.Position});
 									}
@@ -162,12 +139,7 @@ namespace Systems.GamePlay.CTate
 
 							// stop moving
 							if (ability.HasSlashed)
-							{
-								var acceleration = math.clamp(math.rcp(playState.Weight), 0, 1) * 150;
-								acceleration = math.min(acceleration * tick.Delta, 1);
-
-								velocity.Value.x = math.lerp(velocity.Value.x, 0, acceleration);
-							}
+								velocity.Value.x = math.lerp(velocity.Value.x, 0, playState.GetAcceleration() * 30 * tick.Delta);
 
 							// stop attacking once the animation is done
 							if (tick >= UTick.AddMs(attackStartTick, 500))
@@ -180,40 +152,33 @@ namespace Systems.GamePlay.CTate
 						// if inactive or no enemy are present, continue...
 						if (!state.IsActive || seekingState.Enemy == default)
 							return;
+						
+						controller.ControlOverVelocity.x = true;
 
 						if (state.Combo.IsFever)
 						{
 							playState.MovementAttackSpeed *= 1.8f;
-							if (state.Combo.Score >= 50)
+							if (state.Combo.IsPerfect)
 								playState.MovementAttackSpeed *= 1.2f;
 						}
 
 						// if all conditions are ok, start attacking.
 						var targetPosition = impl.LocalToWorldFromEntity[seekingState.Enemy].Position;
-						var enemyDistance  = math.distance(unitPosition.x, targetPosition.x);
-						if (enemyDistance <= attackRange && ability.NextAttackDelay <= 0.0f && ability.AttackStartTick <= 0)
+						var attackDistance = math.distance(targetPosition.x, unitPosition.x);
+						if (attackDistance <= statistics.AttackMeleeRange && ability.NextAttackDelay <= 0.0f && ability.AttackStartTick <= 0)
 						{
 							var atkSpeed = playState.AttackSpeed;
-							if (state.Combo.IsFever && state.Combo.Score >= 50)
-							{
+							if (state.Combo.IsFever && state.Combo.IsPerfect)
 								atkSpeed *= 0.75f;
-							}
 
 							ability.NextAttackDelay = atkSpeed;
-							ability.AttackStartTick = (uint) tick.Value;
+							ability.AttackStartTick = tick.AsUInt;
 							ability.HasSlashed      = false;
-
-							Debug.Log("Start..." + tick.Value);
 						}
 						else if (tick >= UTick.AddMs(attackStartTick, BasicTaterazayAttackAbility.DelaySlashMs))
 						{
-							controller.ControlOverVelocity.x = true;
-
-							var acceleration = math.clamp(math.rcp(playState.Weight), 0, 1) * 50;
-							acceleration = math.min(acceleration * tick.Delta, 1);
-
 							var direction = math.sign(targetPosition.x - unitPosition.x);
-							velocity.Value.x = math.lerp(velocity.Value.x, playState.MovementAttackSpeed * direction, acceleration);
+							velocity.Value.x = math.lerp(velocity.Value.x, playState.MovementAttackSpeed * direction, playState.GetAcceleration() * 50 * tick.Delta);
 						}
 
 						velocityUpdater.CompareAndUpdate(velocity);
@@ -221,7 +186,7 @@ namespace Systems.GamePlay.CTate
 					})
 					.WithReadOnly(enemiesFromTeam)
 					.WithReadOnly(physicsColliderFromEntity)
-					.WithReadOnly(relativeTargetFromEntity)
+					.WithReadOnly(seekingStateFromEntity)
 					.WithReadOnly(relativeTeamFromEntity)
 					.Schedule(inputDeps);
 

@@ -6,7 +6,7 @@ namespace Patapon.Mixed.GamePlay
 {
 	[UpdateInGroup(typeof(OrderGroup.Simulation.UpdateEntities))]
 	[UpdateBefore(typeof(ActionSystemGroup))]
-	public class UnitInitStateSystemGroup : BaseGhostPredictionSystemGroup
+	public class UnitInitStateSystemGroup : ComponentSystemGroup
 	{
 	}
 

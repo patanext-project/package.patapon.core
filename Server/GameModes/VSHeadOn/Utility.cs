@@ -3,6 +3,7 @@ using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay.Abilities;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.Units;
+using Patapon.Mixed.Units.Statistics;
 using Patapon4TLB.Core;
 using Patapon4TLB.Default;
 using Revolution;
@@ -54,7 +55,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 							{
 								Radius  = 0.5f,
 								Vertex0 = 0,
-								Vertex1 = math.up() * 2
+								Vertex1 = math.up() * 1.6f
 							});
 							var spawnedUnit = unitProvider.SpawnLocalEntityWithArguments(new UnitProvider.Create
 							{
@@ -65,6 +66,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 							});
 
 							entityMgr.AddComponent(spawnedUnit, typeof(GhostEntity));
+							entityMgr.SetOrAddComponentData(spawnedUnit, entityMgr.GetComponentData<UnitCurrentKit>(units[unt].Value));
+							entityMgr.SetOrAddComponentData(spawnedUnit, entityMgr.GetComponentData<UnitDisplayedEquipment>(units[unt].Value));
+
 							if (entityMgr.TryGetComponentData(units[unt].Value, out Relative<PlayerDescription> relativePlayer))
 							{
 								entityMgr.ReplaceOwnerData(spawnedUnit, relativePlayer.Target);
@@ -91,6 +95,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 								owner = spawnedUnit
 							});
 							entityMgr.AddComponent(healthEntity, typeof(GhostEntity));
+							//if (entityMgr.HasComponent<Relative<RhythmEngineDescription>>(spawnedUnit))
 							MasterServerAbilities.Convert(dummySystem, spawnedUnit, entityMgr.GetBuffer<UnitDefinedAbilities>(units[unt].Value));
 
 							worldOrigin.GetExistingSystem<DefaultRebornAbility.Provider>()
@@ -136,7 +141,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			entityMgr.SetComponentData(unitTargetRelative, new Translation {Value = spawnPointPos.x});
 			entityMgr.SetOrAddComponentData(unitTargetRelative, entityMgr.GetComponentData<UnitDirection>(unit));
 			entityMgr.SetOrAddComponentData(unitTargetRelative, entityMgr.GetComponentData<Relative<TeamDescription>>(unit));
-				
+
 			Debug.Log("Spawning at " + spawnPointPos.x);
 		}
 	}

@@ -8,11 +8,13 @@ using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.NetCode;
 using UnityEngine;
 
 namespace Systems.GamePlay
 {
 	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
+	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	[AlwaysSynchronizeSystem]
 	public class DefaultRebornAbilitySystem : JobComponentSystem
 	{

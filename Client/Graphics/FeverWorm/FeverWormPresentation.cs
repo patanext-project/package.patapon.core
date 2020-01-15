@@ -14,6 +14,7 @@ namespace package.patapon.core.FeverWorm
 		private static readonly int Progression       = Shader.PropertyToID("_SummonPercentage");
 		private static readonly int DirectProgression = Shader.PropertyToID("_SummonDirectPercentage");
 		private static readonly int IsFever           = Shader.PropertyToID("_IsFever");
+		private static readonly int SummonReady           = Shader.PropertyToID("_SummonReady");
 		private static readonly int SummonPosition    = Shader.PropertyToID("_SummonPosition");
 
 		private static readonly int OutlineColor = Shader.PropertyToID("_OutlineColor");
@@ -113,6 +114,7 @@ namespace package.patapon.core.FeverWorm
 					mpb.SetFloat(Progression, interpolatedProgression);
 					mpb.SetFloat(DirectProgression, directProgression);
 					mpb.SetInt(IsFever, isFever ? 1 : 0);
+					mpb.SetInt(SummonReady, interpolatedProgression >= directProgression ? 1 : 0);
 					//mpb.SetVector(SummonPosition, new Vector4(ranges[0].position.x, ranges[1].position.x, 0, 0));
 				}
 				r.SetPropertyBlock(mpb);

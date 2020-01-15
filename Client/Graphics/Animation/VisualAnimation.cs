@@ -162,6 +162,7 @@ namespace package.patapon.core.Animation
 				Graph    = m_PlayableGraph
 			};
 			var systemData = new T();
+			m_SystemData[type] = new SystemData<T> {Data = systemData};
 
 			addDelegate(ref data, ref systemData);
 

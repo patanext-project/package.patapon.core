@@ -62,7 +62,7 @@ namespace Patapon.Mixed.GamePlay
 							// todo: find a good way for client to predict that nicely
 							if (groundState.Value)
 							{
-								var speed = math.lerp(math.abs(velocity.Value.x), unitPlayState.MovementAttackSpeed, math.rcp(unitPlayState.Weight) * 30 * dt);
+								var speed = math.lerp(math.abs(velocity.Value.x), unitPlayState.MovementReturnSpeed, math.rcp(unitPlayState.Weight) * 30 * dt);
 
 								// Instead of just assigning the translation value here, we calculate the velocity between the new position and the previous position.
 								var newPosX = MoveTowards(translation.Value.x, target, speed * dt);

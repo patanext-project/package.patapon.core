@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using P4TLB.MasterServer.GamePlay;
 using Patapon.Mixed.GamePlay.Abilities;
 using Patapon.Mixed.GamePlay.Abilities.CTate;
+using Patapon.Mixed.GamePlay.Abilities.CYari;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.Units;
+using Patapon4TLB.Default.Player;
 using Revolution;
 using StormiumTeam.GameBase;
 using Unity.Collections;
@@ -17,7 +19,7 @@ namespace Patapon4TLB.Core
 	{
 		private const string InternalFormat = "p4:{0}";
 
-		private static void _c(ComponentSystemBase system, Entity entity, string typeId)
+		private static void _c(ComponentSystemBase system, Entity entity, string typeId, AbilitySelection selection)
 		{
 			Entity FindCommand(Type type)
 			{
@@ -114,6 +116,36 @@ namespace Patapon4TLB.Core
 						Command = FindCommand(typeof(AttackCommand))
 					});
 					break;
+				case string _ when typeId == GetInternal("tate/basic_defend"):
+					CreateAbility<BasicTaterazayDefendAbility.Provider, BasicTaterazayDefendAbility.Provider.Create>(new BasicTaterazayDefendAbility.Provider.Create
+					{
+						Owner   = entity,
+						Command = FindCommand(typeof(DefendCommand))
+					});
+					break;
+				case string _ when typeId == GetInternal("tate/basic_defend_frontal"):
+					CreateAbility<BasicTaterazayDefendFrontalAbility.Provider, BasicTaterazayDefendFrontalAbility.Provider.Create>(new BasicTaterazayDefendFrontalAbility.Provider.Create
+					{
+						Owner   = entity,
+						Command = FindCommand(typeof(DefendCommand)),
+						Data = new BasicTaterazayDefendFrontalAbility {Range = 10},
+						Selection = selection
+					});
+					break;
+				case string _ when typeId == GetInternal("yari/basic_attack"):
+					CreateAbility<BasicYaridaAttackAbility.Provider, BasicYaridaAttackAbility.Provider.Create>(new BasicYaridaAttackAbility.Provider.Create
+					{
+						Owner   = entity,
+						Command = FindCommand(typeof(AttackCommand))
+					});
+					break;
+				case string _ when typeId == GetInternal("yari/basic_defend"):
+					CreateAbility<BasicYaridaDefendAbility.Provider, BasicYaridaDefendAbility.Provider.Create>(new BasicYaridaDefendAbility.Provider.Create
+					{
+						Owner   = entity,
+						Command = FindCommand(typeof(DefendCommand))
+					});
+					break;
 				default:
 					Debug.LogError("No ability found with type: " + typeId);
 					break;
@@ -123,15 +155,15 @@ namespace Patapon4TLB.Core
 		public static void Convert(ComponentSystemBase system, Entity entity, DynamicBuffer<UnitDefinedAbilities> abilities)
 		{
 			var array = abilities.ToNativeArray(Allocator.TempJob);
-			foreach (var ab in array) _c(system, entity, ab.Type.ToString());
+			foreach (var ab in array) _c(system, entity, ab.Type.ToString(), ab.Selection);
 
 			array.Dispose();
 		}
 
-		public static void Convert(ComponentSystemBase system, Entity entity, List<Ability> abilities)
+		/*public static void Convert(ComponentSystemBase system, Entity entity, List<Ability> abilities)
 		{
-			foreach (var ab in abilities) _c(system, entity, ab.Type);
-		}
+			foreach (var ab in abilities) _c(system, entity, ab.Type. ab);
+		}*/
 
 		public static string GetInternal(string ability)
 		{

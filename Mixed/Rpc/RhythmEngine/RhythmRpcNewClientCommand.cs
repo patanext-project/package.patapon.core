@@ -168,6 +168,10 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 								var commandProgression          = commandProgressionArray[ent].Reinterpret<FlowPressure>();
 								var predictedCommandProgression = predictedCommandProgressionArray[ent].Reinterpret<FlowPressure>();
 
+								Debug.Log($"{requested[0].Data.RenderBeat}(time={requested[0].Data.Time}), {requested[requested.Length - 1].Data.RenderBeat}(time={requested[requested.Length - 1].Data.Time})");
+								if (requested[0].Data.RenderBeat != requested[requested.Length - 1].Data.RenderBeat - 3)
+									Debug.Log("WHAT?");
+								
 								if (allowCommandChange)
 								{
 									commandProgression.CopyFrom(requested.Reinterpret<FlowPressure>());

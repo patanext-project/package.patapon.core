@@ -29,7 +29,7 @@ namespace Patapon.Mixed.Systems
 							if (flowBeat >= currCommand.Data.RenderBeat + mercy + settings.MaxBeats
 							    || state.IsRecovery(flowBeat))
 							{
-								Debug.Log("Removed");
+								//Debug.Log("Removed");
 								progression.RemoveAt(j);
 								j--; // swap back method.
 							}

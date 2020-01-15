@@ -23,7 +23,7 @@ namespace DefaultNamespace
 			Command
 		}
 
-		private static Dictionary<SystemType, Type[]> s_DynamicTypes;
+		public static Dictionary<SystemType, Type[]> DynamicTypes;
 		private static Type[]                         s_CurrentTreatedArray;
 
 		private static List<Type> m_AssembliesTypes;
@@ -68,17 +68,17 @@ namespace DefaultNamespace
 				});
 			}
 
-			s_DynamicTypes[type] = result;
+			DynamicTypes[type] = result;
 		}
 
 		protected override void OnCreate()
 		{ 
-			if (s_DynamicTypes == null)
+			if (DynamicTypes == null)
 			{
 				var stopwatch = new Stopwatch();
 				stopwatch.Start();
 
-				s_DynamicTypes = new Dictionary<SystemType, Type[]>(4);
+				DynamicTypes = new Dictionary<SystemType, Type[]>(4);
 				SetSystems(SystemType.Dynamic, typeof(IDynamicSnapshotSystem), typeof(ComponentSystemBase));
 				SetSystems(SystemType.Description, typeof(IEntityDescription), null);
 				SetSystems(SystemType.Command, typeof(ICommandData), null);
@@ -90,13 +90,13 @@ namespace DefaultNamespace
 			World.GetOrCreateSystem<SnapshotManager>().SetFixedSystemsFromBuilder((world, builder) =>
 			{
 				var i = 1;
-				foreach (var type in s_DynamicTypes[SystemType.Dynamic])
+				foreach (var type in DynamicTypes[SystemType.Dynamic])
 				{
 					builder.Add(world.GetOrCreateSystem(type));
 					i++;
 				}
 
-				foreach (var type in s_DynamicTypes[SystemType.Description])
+				foreach (var type in DynamicTypes[SystemType.Description])
 				{
 					builder.Add(world.GetOrCreateSystem(typeof(ComponentSnapshotSystemTag<>).MakeGenericType(type)));
 					i++;
@@ -104,7 +104,7 @@ namespace DefaultNamespace
 			});
 			World.GetOrCreateSystem<CommandCollectionSystem>().SetFixedCollection((world, builder) =>
 			{
-				foreach (var type in s_DynamicTypes[SystemType.Command]) builder.Add((CommandProcessSystemBase) world.GetOrCreateSystem(typeof(DefaultCommandProcessSystem<>).MakeGenericType(type)));
+				foreach (var type in DynamicTypes[SystemType.Command]) builder.Add((CommandProcessSystemBase) world.GetOrCreateSystem(typeof(DefaultCommandProcessSystem<>).MakeGenericType(type)));
 			});
 		}
 

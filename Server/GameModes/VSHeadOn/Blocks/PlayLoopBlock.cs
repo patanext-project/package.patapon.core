@@ -86,7 +86,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				var healthContainer = entityMgr.GetBuffer<HealthContainer>(captureEvents[i].Source);
 				for (var h = 0; h != healthContainer.Length; h++)
 				{
-					var target = healthContainer[i].Target;
+					var target = healthContainer[h].Target;
 					if (!entityMgr.HasComponent<DefaultHealthData>(target))
 						continue;
 

@@ -89,8 +89,7 @@ namespace StormiumTeam.GameBase
 					damageEvent.Damage = (int) math.round(damageEvent.Damage * Data.SelfDamageFactor);
 				else if (shooterTeam != default && victimTeam != default && shooterTeam == victimTeam && math.abs(Data.SameTeamDamageFactor) > math.FLT_MIN_NORMAL)
 					damageEvent.Damage = (int) math.round(damageEvent.Damage * Data.SameTeamDamageFactor);
-
-				Debug.Log(damageEvent.Damage);
+				
 				if (damageEvent.Damage == 0 && Data.DisableEventForNoDamage)
 				{
 					Ecb.DestroyEntity(index, entity);

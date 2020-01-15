@@ -13,7 +13,7 @@ using UnityEngine;
 namespace Systems.GamePlay
 {
 	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
-	//[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
+	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	public class DefaultRetreatAbilitySystem : JobGameBaseSystem
 	{
 		protected override JobHandle OnUpdate(JobHandle inputDeps)

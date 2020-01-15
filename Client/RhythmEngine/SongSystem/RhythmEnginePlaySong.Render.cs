@@ -159,7 +159,12 @@ namespace Patapon.Client.RhythmEngine
 				targetAudio = CurrentSong.BgmEntranceClips[commandLength % CurrentSong.BgmEntranceClips.Count];
 			}
 
-			var nextBeatDelay          = (EngineSettings.BeatInterval - ((activationBeat + 1) * EngineSettings.BeatInterval - EngineProcess.Milliseconds)) * 0.001f;
+			//var nextBeatDelay          = (EngineSettings.BeatInterval - ((activationBeat + 1) * EngineSettings.BeatInterval - EngineProcess.Milliseconds)) * 0.001f;
+			var nextBeatDelayMs = (activationBeat + 1) * EngineSettings.BeatInterval - EngineProcess.Milliseconds;
+			if (nextBeatDelayMs >= 500)
+				nextBeatDelayMs = math.max(nextBeatDelayMs - EngineSettings.BeatInterval, 0);
+			
+			var nextBeatDelay          = nextBeatDelayMs * 0.001f;
 			var cmdStartActivationBeat = FlowEngineProcess.CalculateActivationBeat(CommandStartTime, EngineSettings.BeatInterval);
 			if (cmdStartActivationBeat >= activationBeat) // we have a planned command
 				nextBeatDelay = (cmdStartActivationBeat * EngineSettings.BeatInterval - EngineProcess.Milliseconds) * 0.001f;
@@ -172,11 +177,21 @@ namespace Patapon.Client.RhythmEngine
 				//Debug.Log($"Switch from {m_LastClip?.name} to {targetAudio?.name}, delay: {nextBeatDelay} (b: {activationBeat}, f: {flowBeat}, s: {cmdStartActivationBeat})");
 				hasSwitched = Switch(targetAudio, nextBeatDelay);
 			}
-			
+
 			// It's loop time
-			if (!hasSwitched && targetAudio != null && m_BgmSources[1 - m_Flip].time + nextBeatDelay >= targetAudio.length)
+			var currSource = m_BgmSources[1 - m_Flip];
+			if (!hasSwitched && targetAudio != null)
 			{
-				Debug.Log(m_BgmSources[1 - m_Flip].time + ", " + nextBeatDelay.ToString("F3"));
+				if (nextBeatDelayMs >= 450 && math.abs(currSource.clip.length - currSource.time) < 0.05f)
+					nextBeatDelay = 0;
+				else if (nextBeatDelay > 0 && currSource.clip.length + nextBeatDelay + 0.01f >= currSource.clip.length 
+				                           && !(currSource.time + nextBeatDelay >= currSource.clip.length))
+					nextBeatDelay += 0.01f;
+			}
+
+			if (!hasSwitched && targetAudio != null && currSource.time + nextBeatDelay >= currSource.clip.length)
+			{
+				//Debug.Log(currSource.time + ", " + nextBeatDelay.ToString("F3") + ", " + (EngineProcess.Milliseconds * 0.001f).ToString("F3") + ", " + ((activationBeat + 1) * EngineSettings.BeatInterval - EngineProcess.Milliseconds));
 				//Debug.Log($"Looping {m_LastClip?.name}");
 				hasSwitched = Switch(targetAudio, nextBeatDelay);
 			}

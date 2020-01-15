@@ -1,3 +1,4 @@
+using System;
 using Systems;
 using DataScripts.Interface.GameMode.Global;
 using DefaultNamespace;
@@ -21,6 +22,8 @@ namespace Patapon.Client.PoolingSystems
 			              .Folder("GameMode")
 			              .Folder("Global")
 			              .GetFile("UIGameModeIntro.prefab");
+
+		protected override Type[] AdditionalBackendComponents => new[] {typeof(RectTransform)};
 
 		protected override EntityQuery GetQuery()
 		{
@@ -59,8 +62,7 @@ namespace Patapon.Client.PoolingSystems
 			var backend = LastBackend;
 			backend.transform.SetParent(m_Canvas.transform, false);
 
-			if (!backend.TryGetComponent(out RectTransform rt)) rt = backend.gameObject.AddComponent<RectTransform>();
-
+			var rt = backend.GetComponent<RectTransform>();
 			rt.anchorMin        = new Vector2(0, 0);
 			rt.anchorMax        = new Vector2(1, 1);
 			rt.sizeDelta        = Vector2.zero;

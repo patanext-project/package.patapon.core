@@ -46,6 +46,7 @@ namespace Patapon.Client.RhythmEngine
 				audioSource.reverbZoneMix = 0f;
 				audioSource.spatialBlend  = 0f;
 				audioSource.volume        = volume;
+				audioSource.loop          = true;
 
 				return audioSource;
 			}

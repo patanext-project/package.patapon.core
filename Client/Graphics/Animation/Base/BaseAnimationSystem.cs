@@ -1,5 +1,6 @@
 using System;
 using Modules;
+using package.stormiumteam.shared.ecs;
 using Patapon.Client.Graphics.Animation.Units;
 using StormiumTeam.GameBase;
 using Unity.Collections;
@@ -15,6 +16,8 @@ namespace package.patapon.core.Animation.Units
 	{
 		protected AsyncOperationModule AsyncOp;
 		protected Type                 SystemType;
+
+		protected UnitVisualPresentation CurrentPresentation;
 
 		protected override void OnCreate()
 		{
@@ -39,13 +42,23 @@ namespace package.patapon.core.Animation.Units
 
 			Entities.ForEach((UnitVisualBackend backend, UnitVisualAnimation animation) =>
 			{
+				if (backend.Presentation == null)
+					return;
+
 				// main
+				CurrentPresentation = backend.Presentation;
 				OnUpdate(backend.DstEntity, backend, animation);
-			}).WithoutBurst().Run();
+			}).WithStructuralChanges().Run();
 			return default;
 		}
 
 		protected abstract void OnUpdate(Entity targetEntity, UnitVisualBackend backend, UnitVisualAnimation animation);
+
+		protected void ResetIdleTime(Entity targetEntity)
+		{
+			if (EntityManager.TryGetComponentData(targetEntity, out AnimationIdleTime idleTime))
+				EntityManager.SetComponentData(targetEntity, default(AnimationIdleTime));
+		}
 
 		protected virtual void OnAsyncOpUpdate(ref int index)
 		{
@@ -91,6 +104,10 @@ namespace package.patapon.core.Animation.Units
 	{
 		private TPlayableInit m_LastPlayableInit;
 
+		protected void SetInit(TPlayableInit init)
+		{
+			m_LastPlayableInit = init;}
+
 		protected void InjectAnimation(UnitVisualAnimation animation, TPlayableInit initData)
 		{
 			if (!animation.ContainsSystem(SystemType))
@@ -105,9 +122,9 @@ namespace package.patapon.core.Animation.Units
 			var playable = ScriptPlayable<TPlayable>.Create(data.Graph);
 			var behavior = playable.GetBehaviour();
 
+			behavior.Visual = ((UnitVisualAnimation) data.Handle).GetBehaviorData();
 			behavior.Initialize(this, data.Graph, playable, data.Index, data.Behavior.RootMixer, m_LastPlayableInit);
 			systemData.Behaviour = behavior;
-			systemData.Behaviour.Visual = ((UnitVisualAnimation) data.Handle).GetBehaviorData();
 		}
 
 		protected virtual void OnAnimationRemoved(VisualAnimation.ManageData data, TSystemData systemData)

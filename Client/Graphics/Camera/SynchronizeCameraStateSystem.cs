@@ -77,6 +77,7 @@ namespace package.patapon.core
 				.Run(); // use ScheduleSingle() when it will be out.
 
 			Entities
+				.WithAll<GamePlayerLocalTag>()
 				.ForEach((Entity entity, in ServerCameraState cameraState) =>
 				{
 					var camera                                        = defaultCamera;

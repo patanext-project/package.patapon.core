@@ -10,28 +10,25 @@ using UnityEngine;
 namespace Rules
 {
 	[UpdateInGroup(typeof(GameEventRuleSystemGroup))]
-	public class ApplyDefenseToDamageRuleSystem : RuleBaseSystem
+	public class ApplyDefensiveBonusToDamageRuleSystem : RuleBaseSystem
 	{
 		public override string Description => "Reduce damage with unit defense...";
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			var statisticsFromEntity = GetComponentDataFromEntity<UnitStatistics>(true);
+			var playstateFromEntity = GetComponentDataFromEntity<UnitPlayState>(true);
 			inputDeps =
 				Entities
 					.ForEach((ref TargetDamageEvent damageEvent) =>
 					{
-						Debug.Log("Yes 1");
 						if (damageEvent.Damage > 0 || damageEvent.Destination == default)
 							return;
-						Debug.Log("Yes 2");
-						if (!statisticsFromEntity.TryGet(damageEvent.Destination, out var statistics))
+						if (!playstateFromEntity.TryGet(damageEvent.Destination, out var playState))
 							return;
-
-						Debug.Log("Yes 3");
-						damageEvent.Damage = math.min(damageEvent.Damage + statistics.Defense, 0);
+						damageEvent.Damage = math.min(damageEvent.Damage + playState.Defense, 0);
+						damageEvent.Damage = (int) (damageEvent.Damage * playState.ReceiveDamagePercentage);
 					})
-					.WithReadOnly(statisticsFromEntity)
+					.WithReadOnly(playstateFromEntity)
 					.Schedule(inputDeps);
 
 			return inputDeps;

@@ -1,3 +1,4 @@
+using Patapon4TLB.Default.Player;
 using Revolution;
 using Unity.Entities;
 using Unity.NetCode;
@@ -15,6 +16,7 @@ namespace Patapon.Mixed.GamePlay.RhythmEngine
 		public int StartTime;
 		public int EndTime;
 		public int ChainEndTime;
+		public AbilitySelection Selection;
 
 		public bool IsGamePlayActive(int milliseconds)
 		{

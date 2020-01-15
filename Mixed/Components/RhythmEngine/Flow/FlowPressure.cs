@@ -5,8 +5,8 @@ namespace Patapon.Mixed.RhythmEngine.Flow
 {
 	public struct FlowPressure : IComponentData
 	{
-		public const float  Error   = 0.95f;
-		public const double Perfect = 0.21f;
+		public const float  Error   = 0.99f;
+		public const double Perfect = 0.25f;
 
 		/// <summary>
 		///     Our custom Rhythm Key (Pata 1, Pon 2, Don 3, Chaka 4)

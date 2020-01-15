@@ -54,7 +54,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			if (RunNext(SpawnUnitBlock))
 			{
 				SpawnUnits();
-				CounterBlock.SetTicksFromMs(5000);
+				CounterBlock.SetTicksFromMs(1000);
 
 				m_QueriesContext.GetEntityQueryBuilder().ForEach((ref FlowEngineProcess process, ref RhythmEngineState state) =>
 				{

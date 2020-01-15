@@ -7,6 +7,7 @@ using Patapon.Mixed.GameModes.VSHeadOn;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
 using Patapon.Mixed.Units;
+using Patapon4TLB.Core.Snapshots;
 using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
@@ -106,7 +107,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 						entMgr.ReplaceOwnerData(rhythmEnt, player);
 					}
 
-					var unitTarget = entMgr.CreateEntity(typeof(UnitTargetDescription), typeof(Translation), typeof(LocalToWorld), typeof(Relative<PlayerDescription>));
+					var unitTarget = entMgr.CreateEntity(typeof(UnitTargetDescription), typeof(Translation), typeof(LocalToWorld), typeof(Relative<PlayerDescription>)/*,
+						typeof(TranslationSnapshot.Exclude), typeof(InterpolatedTranslationSnapshot.Use)*/);
 					entMgr.AddComponent(unitTarget, typeof(GhostEntity));
 					entMgr.AddComponentData(unitTarget, EntityDescription.New<UnitTargetDescription>());
 					entMgr.ReplaceOwnerData(unitTarget, player);

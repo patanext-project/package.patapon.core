@@ -93,6 +93,11 @@ namespace package.patapon.core.Animation.Units
 			if (pressureKey < 0)
 				return;
 
+			if (EntityManager.TryGetComponentData(targetEntity, out AnimationIdleTime idleTime))
+			{
+				EntityManager.SetComponentData(targetEntity, default(AnimationIdleTime));
+			}
+
 			pressureKey++;
 
 			// invert keys...

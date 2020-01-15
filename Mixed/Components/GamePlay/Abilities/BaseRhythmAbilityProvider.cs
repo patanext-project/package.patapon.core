@@ -1,3 +1,4 @@
+using Patapon4TLB.Default.Player;
 using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
@@ -29,7 +30,7 @@ namespace Patapon.Mixed.GamePlay.Abilities
 		{
 			EntityManager.ReplaceOwnerData(entity, data.Owner);
 			EntityManager.SetComponentData(entity, EntityDescription.New<ActionDescription>());
-			EntityManager.SetComponentData(entity, new RhythmAbilityState {Command = data.Command});
+			EntityManager.SetComponentData(entity, new RhythmAbilityState {Command = data.Command, TargetSelection = data.Selection});
 			EntityManager.SetComponentData(entity, data.Data);
 			EntityManager.SetComponentData(entity, new Owner {Target = data.Owner});
 			EntityManager.SetComponentData(entity, new DestroyChainReaction(data.Owner));
@@ -37,9 +38,10 @@ namespace Patapon.Mixed.GamePlay.Abilities
 
 		public interface ICreate
 		{
-			Entity   Owner   { get; set; }
-			Entity   Command { get; set; }
-			TCommand Data    { get; set; }
+			Entity           Owner     { get; set; }
+			Entity           Command   { get; set; }
+			TCommand         Data      { get; set; }
+			AbilitySelection Selection { get; set; }
 		}
 	}
 
@@ -48,9 +50,10 @@ namespace Patapon.Mixed.GamePlay.Abilities
 	{
 		public struct Create : ICreate
 		{
-			public Entity   Owner   { get; set; }
-			public Entity   Command { get; set; }
-			public TCommand Data    { get; set; }
+			public Entity           Owner     { get; set; }
+			public Entity           Command   { get; set; }
+			public TCommand         Data      { get; set; }
+			public AbilitySelection Selection { get; set; }
 		}
 	}
 }

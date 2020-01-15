@@ -61,7 +61,7 @@ namespace Systems.RhythmEngine
 
 				if (state.IsPaused || process.GetFlowBeat(settings.BeatInterval) < 0)
 				{
-					Debug.Log($"NOPE   paused? {state.IsPaused}, ms? {process.Milliseconds}");
+					//Debug.Log($"NOPE   paused? {state.IsPaused}, ms? {process.Milliseconds}");
 					return;
 				}
 
@@ -94,7 +94,7 @@ namespace Systems.RhythmEngine
 				}
 				else if (failFlag0 || failFlag1 || failFlag2 || failFlag3 || pressureData.GetAbsoluteScore() > FlowPressure.Error)
 				{
-					Debug.Log($"{failFlag0} {failFlag1} {failFlag2} {failFlag3} (chainEnd={cmdChainEndFlow} end={cmdEndFlow} beat={flowBeat})");
+					//Debug.Log($"{failFlag0} {failFlag1} {failFlag2} {failFlag3} (chainEnd={cmdChainEndFlow} end={cmdEndFlow} beat={flowBeat})");
 					
 					pressureEvent.ShouldStartRecovery   = true;
 					state.NextBeatRecovery              = flowBeat + 1;

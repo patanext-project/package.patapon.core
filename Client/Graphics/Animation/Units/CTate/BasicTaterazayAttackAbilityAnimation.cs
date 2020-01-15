@@ -32,7 +32,7 @@ namespace package.patapon.core.Animation.Units.CTate
 		{
 			base.OnCreate();
 
-			LoadAssetAsync<AnimationClip, OperationHandleData>(m_AddrPath.GetFile("BasicAttack.anim"), new OperationHandleData());
+			LoadAssetAsync<AnimationClip, OperationHandleData>(m_AddrPath.GetFile("TaterazayBasicAttack.anim"), new OperationHandleData());
 		}
 
 		protected override void OnAsyncOpUpdate(ref int index)
@@ -71,6 +71,7 @@ namespace package.patapon.core.Animation.Units.CTate
 			if (attackAbility.AttackStartTick <= 0)
 				return;
 
+			ResetIdleTime(targetEntity);
 			InjectAnimation(animation, new PlayableInitData {Clip = m_AnimationClip});
 
 			ref var systemData = ref animation.GetSystemData<SystemData>(SystemType);

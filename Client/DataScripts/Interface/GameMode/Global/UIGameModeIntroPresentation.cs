@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using Misc;
 using Misc.Extensions;
@@ -9,6 +10,7 @@ using StormiumTeam.Shared;
 using TMPro;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.NetCode;
 using UnityEngine;
 using Entity = Unity.Entities.Entity;
 
@@ -23,13 +25,19 @@ namespace DataScripts.Interface.GameMode.Global
 		
 		public Color countdownColor;
 		public Color goColor;
+
+		private void OnEnable()
+		{
+			countdownAnimator.enabled = false;
+		}
 	}
 
 	public class UIGameModeIntroBackend : RuntimeAssetBackend<UIGameModeIntroPresentation>
 	{
-
+		public override bool PresentationWorldTransformStayOnSpawn => false;
 	}
 
+	[UpdateInGroup(typeof(OrderGroup.Presentation.InterfaceRendering))]
 	public class UIGameModeIntroRenderSystem : BaseRenderSystem<UIGameModeIntroPresentation>
 	{
 		private static readonly int         IsShownHashId = Animator.StringToHash("IsShown");
@@ -103,6 +111,7 @@ namespace DataScripts.Interface.GameMode.Global
 				definition.countdownAnimator.SetTrigger("Trigger");
 				definition.countdownLabel.color = CounterTarget == 0 ? definition.goColor : definition.countdownColor;
 			}
+			definition.countdownAnimator.Update(Time.DeltaTime);
 		}
 
 		protected override void ClearValues()

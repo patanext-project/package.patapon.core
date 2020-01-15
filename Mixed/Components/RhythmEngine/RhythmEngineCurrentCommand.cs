@@ -1,5 +1,9 @@
+using Patapon.Mixed.RhythmEngine.Flow;
 using Revolution;
+using StormiumTeam.GameBase;
 using Unity.Entities;
+using Unity.Jobs;
+using Unity.NetCode;
 using Unity.Networking.Transport;
 
 namespace Patapon.Mixed.GamePlay.Units
@@ -48,6 +52,27 @@ namespace Patapon.Mixed.GamePlay.Units
 		public class Synchronize : ComponentSnapshotSystemDelta<RhythmCurrentCommand, Snapshot, GhostSetup>
 		{
 			public override ComponentType ExcludeComponent => typeof(Exclude);
+		}
+
+		[UpdateInGroup(typeof(GhostUpdateSystemGroup))]
+		public class UpdateSystem : JobComponentSystem
+		{
+			private SnapshotReceiveSystem m_ReceiveSystem;
+
+			protected override void OnCreate()
+			{
+				m_ReceiveSystem = World.GetOrCreateSystem<SnapshotReceiveSystem>();
+			}
+
+			protected override JobHandle OnUpdate(JobHandle inputDeps)
+			{
+				var jobData = m_ReceiveSystem.JobData;
+				return Entities.WithNone<FlowSimulateProcess>().ForEach((DynamicBuffer<Snapshot> snapshots, ref RhythmCurrentCommand component) =>
+				{
+					var snapshot = snapshots.GetLastBaseline();
+					snapshot.SynchronizeTo(ref component, in jobData);
+				}).WithReadOnly(jobData).Schedule(inputDeps);
+			}
 		}
 
 		public struct Snapshot : IReadWriteSnapshot<Snapshot>, ISynchronizeImpl<RhythmCurrentCommand, GhostSetup>, ISnapshotDelta<Snapshot>

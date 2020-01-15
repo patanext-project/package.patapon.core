@@ -104,17 +104,11 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 
 		public unsafe ref int GetPoints(int team)
 		{
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-			Debug.Assert(team >= 0 && team <= 1, "team >= 0 && team <= 1");
-#endif
 			return ref UnsafeUtilityEx.ArrayElementAsRef<int>(UnsafeUtility.AddressOf(ref Team0Points), team);
 		}
 
 		public unsafe ref int GetEliminations(int team)
 		{
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-			Debug.Assert(team >= 0 && team <= 1, "team >= 0 && team <= 1");
-#endif
 			return ref UnsafeUtilityEx.ArrayElementAsRef<int>(UnsafeUtility.AddressOf(ref Team0Eliminations), team);
 		}
 

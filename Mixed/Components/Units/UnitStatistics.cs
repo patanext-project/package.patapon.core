@@ -1,8 +1,10 @@
 using Patapon4TLB.Default;
+using Patapon4TLB.Default.Player;
 using Revolution;
 using Scripts.Utilities;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.Networking.Transport;
 
 namespace Patapon.Mixed.Units
@@ -25,45 +27,48 @@ namespace Patapon.Mixed.Units
 		/// </summary>
 		public float Weight;
 
+		public float AttackMeleeRange;
 		public float AttackSeekRange;
-		
+
 		public void WriteTo(DataStreamWriter writer, ref UnitStatistics baseline, DefaultSetup setup, SerializeClientData jobData)
 		{
 			writer.WritePackedInt(Health, jobData.NetworkCompressionModel);
-			
+
 			writer.WritePackedInt(Attack, jobData.NetworkCompressionModel);
 			writer.WritePackedFloat(AttackSpeed, jobData.NetworkCompressionModel);
-			
+
 			writer.WritePackedInt(Defense, jobData.NetworkCompressionModel);
-			
+
 			writer.WritePackedFloat(MovementAttackSpeed, jobData.NetworkCompressionModel);
 			writer.WritePackedFloat(BaseWalkSpeed, jobData.NetworkCompressionModel);
 			writer.WritePackedFloat(FeverWalkSpeed, jobData.NetworkCompressionModel);
-			
+
 			writer.WritePackedFloat(Weight, jobData.NetworkCompressionModel);
-			
+
 			writer.WritePackedFloat(AttackSeekRange, jobData.NetworkCompressionModel);
 		}
 
 		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref UnitStatistics baseline, DeserializeClientData jobData)
 		{
 			Health = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
-			
-			Attack = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
+
+			Attack      = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
 			AttackSpeed = reader.ReadPackedFloat(ref ctx, jobData.NetworkCompressionModel);
-			
+
 			Defense = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
-			
+
 			MovementAttackSpeed = reader.ReadPackedFloat(ref ctx, jobData.NetworkCompressionModel);
-			BaseWalkSpeed = reader.ReadPackedFloat(ref ctx, jobData.NetworkCompressionModel);
-			FeverWalkSpeed = reader.ReadPackedFloat(ref ctx, jobData.NetworkCompressionModel);
-			
+			BaseWalkSpeed       = reader.ReadPackedFloat(ref ctx, jobData.NetworkCompressionModel);
+			FeverWalkSpeed      = reader.ReadPackedFloat(ref ctx, jobData.NetworkCompressionModel);
+
 			Weight = reader.ReadPackedFloat(ref ctx, jobData.NetworkCompressionModel);
-			
+
 			AttackSeekRange = reader.ReadPackedFloat(ref ctx, jobData.NetworkCompressionModel);
 		}
-		
-		public struct Exclude : IComponentData {}
+
+		public struct Exclude : IComponentData
+		{
+		}
 
 		public class NetSynchronize : MixedComponentSnapshotSystemDelta<UnitStatistics>
 		{
@@ -119,13 +124,24 @@ namespace Patapon.Mixed.Units
 
 	public struct UnitPlayState : IComponentData
 	{
+		public int Attack;
+		public int Defense;
+		
+		public float ReceiveDamagePercentage;
+
 		public float MovementSpeed;
 		public float MovementAttackSpeed;
+		public float MovementReturnSpeed;
 		public float AttackSpeed;
 
 		public float AttackSeekRange;
 
-		public float Weight; // not used for now
+		public float Weight;
+
+		public float GetAcceleration()
+		{
+			return math.clamp(math.rcp(Weight), 0, 1);
+		}
 
 		public class NetSynchronize : ComponentSnapshotSystemEmpty<UnitPlayState>
 		{
@@ -137,11 +153,13 @@ namespace Patapon.Mixed.Units
 	{
 		public NativeString512 Type;
 		public int             Level;
+		public AbilitySelection             Selection;
 
-		public UnitDefinedAbilities(string type, int level)
+		public UnitDefinedAbilities(string type, int level, AbilitySelection selection = AbilitySelection.Horizontal)
 		{
-			Type  = new NativeString512(type);
-			Level = level;
+			Type      = new NativeString512(type);
+			Level     = level;
+			Selection = selection;
 		}
 	}
 }

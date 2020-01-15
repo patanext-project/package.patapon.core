@@ -127,6 +127,7 @@ namespace Patapon4TLB.GameModes.Interface
 
 	public class UIHeadOnBackend : RuntimeAssetBackend<UIHeadOnPresentation>
 	{
+		public override bool PresentationWorldTransformStayOnSpawn => false;
 	}
 
 	[UpdateInGroup(typeof(OrderGroup.Presentation.InterfaceRendering))]
