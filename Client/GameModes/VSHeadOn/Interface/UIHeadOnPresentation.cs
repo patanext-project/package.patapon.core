@@ -1,6 +1,8 @@
 using System;
+using DataScripts.Interface.Menu;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.PoolingSystems;
+using Patapon.Mixed.GameModes;
 using Patapon.Mixed.GameModes.VSHeadOn;
 using Revolution;
 using StormiumTeam.GameBase;
@@ -22,13 +24,15 @@ namespace Patapon4TLB.GameModes.Interface
 		Center,
 		Bottom
 	}
-	
+
 	public class UIHeadOnPresentation : RuntimeAssetPresentation<UIHeadOnPresentation>
 	{
 		public UIHeadOnScoreFrame[] ScoreFrames;
 		public UIHeadOnDrawerFrame  DrawerFrame;
 
 		public TextMeshProUGUI ChronoLabel;
+		public Color endTimeChronoColor;
+		public Color normalChronoColor;
 
 		[NonSerialized]
 		public float[] FlagPositions;
@@ -37,14 +41,6 @@ namespace Patapon4TLB.GameModes.Interface
 		private int m_PreviousTime;
 
 		private ClubInformation[] m_ClubInformationArray;
-
-		public override void OnBackendSet()
-		{
-			base.OnBackendSet();
-
-			Backend.DstEntityManager.World.GetExistingSystem<UIHeadOnUnitStatusPoolingSystem>()
-			       .Reorder(DrawerFrame.UnitStatusFrame);
-		}
 
 		private void OnEnable()
 		{
@@ -69,12 +65,16 @@ namespace Patapon4TLB.GameModes.Interface
 
 			if (seconds < 0)
 			{
-				ChronoLabel.text = string.Empty;
+				ChronoLabel.text = "OVERTIME";
 				return;
 			}
 
 			var timespan = TimeSpan.FromSeconds(seconds);
 			ChronoLabel.text = $"<mspace=0.46em>{timespan:mm}</mspace>:<mspace=0.46em>{timespan:ss}</mspace>";
+			if (seconds <= 10)
+				ChronoLabel.color = endTimeChronoColor;
+			else
+				ChronoLabel.color = normalChronoColor;
 		}
 
 		public void SetScore(int category, int team, int score)
@@ -142,6 +142,8 @@ namespace Patapon4TLB.GameModes.Interface
 		private EntityQuery m_GameModeQuery;
 		private EntityQuery m_FlagQuery;
 
+		public bool HideInterface;
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -188,7 +190,7 @@ namespace Patapon4TLB.GameModes.Interface
 					PrimaryColor   = Color.cyan,
 					SecondaryColor = Color.yellow
 				});
-				
+
 				TeamPoints[i]       = gameMode.GetPoints(i);
 				TeamEliminations[i] = gameMode.GetEliminations(i);
 			}
@@ -202,10 +204,20 @@ namespace Patapon4TLB.GameModes.Interface
 			{
 				ArenaTimeMs = -1;
 			}
+
+			HideInterface = !EntityManager.GetComponentData<GameModeHudSettings>(m_GameModeQuery.GetSingletonEntity()).EnableGameModeInterface;
 		}
 
 		protected override void Render(UIHeadOnPresentation definition)
 		{
+			if (HideInterface)
+			{
+				definition.transform.localScale = Vector3.zero;
+				return;
+			}
+			else
+				definition.transform.localScale = Vector3.one;
+
 			definition.SetFlagPosition(FlagPositions[0], FlagPositions[1]);
 			definition.SetTime(ArenaTimeMs);
 			definition.UpdateClubInformation(Clubs[0], Clubs[1]);
@@ -218,7 +230,7 @@ namespace Patapon4TLB.GameModes.Interface
 
 		protected override void ClearValues()
 		{
-
+			HideInterface = false;
 		}
 	}
 }

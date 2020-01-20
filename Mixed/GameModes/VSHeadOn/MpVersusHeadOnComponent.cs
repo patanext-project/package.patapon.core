@@ -79,8 +79,18 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 			OnMapEnd
 		}
 
+		public enum WinStatus
+		{
+			FlagCaptured,
+			MorePoints,
+			Forced
+		}
+
 		public State PlayState;
 		public int   EndTime;
+
+		public int       WinningTeam;
+		public WinStatus WinReason;
 
 		public Entity Team0, Team1;
 
@@ -129,6 +139,8 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 				writer.WritePackedIntDelta(GetPointReadOnly(i), baseline.GetPointReadOnly(i), compression);
 				writer.WritePackedIntDelta(GetEliminationReadOnly(i), baseline.GetEliminationReadOnly(i), compression);
 			}
+
+			writer.WritePackedIntDelta(WinningTeam, baseline.WinningTeam, compression);
 		}
 
 		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref MpVersusHeadOn baseline, DeserializeClientData jobData)
@@ -146,6 +158,8 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 				GetPoints(i)       = reader.ReadPackedIntDelta(ref ctx, baseline.GetPointReadOnly(i), compression);
 				GetEliminations(i) = reader.ReadPackedIntDelta(ref ctx, baseline.GetEliminationReadOnly(i), compression);
 			}
+
+			WinningTeam = reader.ReadPackedIntDelta(ref ctx, baseline.WinningTeam, compression);
 		}
 	}
 }

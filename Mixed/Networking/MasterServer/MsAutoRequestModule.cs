@@ -134,20 +134,14 @@ namespace Patapon4TLB.Core.MasterServer
 					{
 						if (EntityManager.HasComponent<TProcessing>(buffer[i].Value))
 							continue;
-						// the request is still here, so it means there was an error
-						if (EntityManager.HasComponent<TOriginalRequest>(buffer[i].Value))
+
+						if (EntityManager.HasComponent<TCompletion>(buffer[i].Value))
 						{
 							EntityManager.SetOrAddComponentData(entity, EntityManager.GetComponentData<TCompletion>(buffer[i].Value));
 							buffer.RemoveAt(i);
 							i--;
 							continue;
 						}
-
-						if (!EntityManager.HasComponent<TResponse>(buffer[i].Value))
-							continue;
-
-						buffer.RemoveAt(i);
-						i--;
 					}
 				}
 			}

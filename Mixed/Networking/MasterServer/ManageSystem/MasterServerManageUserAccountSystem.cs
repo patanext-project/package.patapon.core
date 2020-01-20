@@ -1,5 +1,6 @@
 using EcsComponents.MasterServer;
 using P4TLB.MasterServer;
+using package.stormiumteam.shared.ecs;
 using Patapon4TLB.Core.MasterServer.Implementations;
 using StormiumTeam.GameBase;
 using Unity.Collections;
@@ -52,13 +53,17 @@ namespace Patapon4TLB.Core.MasterServer
 	public class MasterServerManageUserAccountSystem : BaseSystemMasterServerService
 	{
 		private EntityQuery                                                                                                                  m_ClientQuery;
+		
 		private MsRequestModule<RequestUserLogin, RequestUserLogin.Processing, ResultUserLogin, RequestUserLogin.CompletionStatus> m_RequestUserLoginModule;
+		private MsRequestModule<RequestGetUserAccountData, RequestGetUserAccountData.Processing, ResultGetUserAccountData, RequestGetUserAccountData.CompletionStatus> m_GetUserDataModule;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
 			GetModule(out m_RequestUserLoginModule);
+			GetModule(out m_GetUserDataModule);
+			
 			m_ClientQuery = GetEntityQuery(typeof(ConnectedMasterServerClient));
 		}
 
@@ -93,7 +98,7 @@ namespace Patapon4TLB.Core.MasterServer
 				}
 
 				request.ErrorCode = result.Error;
-				Debug.Log("error? " + request.error);
+				Debug.Log("error? " + request.ErrorCode);
 				if (!request.error)
 				{
 					EntityManager.RemoveComponent<RequestUserLogin>(item.Entity);
@@ -118,6 +123,23 @@ namespace Patapon4TLB.Core.MasterServer
 					ClientId = result.ClientId,
 					UserId   = result.UserId
 				});
+			}
+
+			m_GetUserDataModule.Update();
+			m_GetUserDataModule.AddProcessTagToAllRequests();
+			foreach (var kvp in m_GetUserDataModule.GetRequests())
+			{
+				var entity = kvp.Entity;
+				var request = kvp.Value;
+
+				var result = await client.GetUserLoginAsync(new GetUserLoginRequest
+				{
+					UserId = request.UserId
+				});
+				if (m_GetUserDataModule.InvokeDefaultOnResult(entity, new RequestGetUserAccountData.CompletionStatus {ErrorCode = 0}, out var responseEntity))
+				{
+					EntityManager.SetOrAddComponentData(responseEntity, new ResultGetUserAccountData {Login = result.UserLogin});
+				}
 			}
 		}
 

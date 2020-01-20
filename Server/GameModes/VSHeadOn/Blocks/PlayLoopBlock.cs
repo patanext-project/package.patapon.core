@@ -1,11 +1,16 @@
 using GmMachine;
 using GmMachine.Blocks;
 using Misc.GmMachine.Contexts;
+using package.stormiumteam.shared.ecs;
+using Patapon.Mixed.GameModes;
 using Patapon.Mixed.GameModes.VSHeadOn;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Components;
+using StormiumTeam.Shared;
 using Unity.Collections;
+using Unity.Entities;
+using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
 
@@ -20,6 +25,12 @@ namespace Patapon.Server.GameModes.VSHeadOn
 		private VersusHeadOnRuleGroup m_VersusHeadOnRuleGroup;
 		private WorldContext          m_WorldContext;
 
+		private float m_CheckLeadDelay;
+		private int m_TeamInLead;
+
+		private bool m_IsOverTime;
+		private bool m_OneMinuteMark;
+		
 		public PlayLoopBlock(string name) : base(name)
 		{
 		}
@@ -32,10 +43,27 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			var entityMgr = m_WorldContext.EntityMgr;
 
 			ref var gameModeData = ref m_HeadOnModeContext.Data;
+			ref var hud = ref m_HeadOnModeContext.HudSettings;
+			
+			// ----------------------------- //
+			// Check leader
+			m_CheckLeadDelay -= m_HeadOnModeContext.GetTick().Delta;
+			if (m_CheckLeadDelay <= 0)
+			{
+				for (var i = 0; i != 2; i++)
+				{
+					if (gameModeData.GetPoints(i) > gameModeData.GetPoints(1 - i)
+					    && m_TeamInLead != i)
+					{
+						m_TeamInLead = i;
+						hud.PushStatus(m_HeadOnModeContext.GetTick(), "comeback_upset", m_TeamInLead.ToString(), EGameModeStatusSound.NewLeader);
+					}
+				}
+			}
 
 			// ----------------------------- //
 			// Elimination events
-			var eliminationEvents = m_HeadOnModeContext.EliminationEvents;
+			var eliminationEvents = m_HeadOnModeContext.UnitEliminationEvents;
 			for (int i = 0, length = eliminationEvents.Length; i < length; i++)
 			{
 				var ev = eliminationEvents[i];
@@ -44,6 +72,14 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					ref var points = ref gameModeData.GetPoints(ev.InstigatorTeam);
 					points += 25;
 
+					if (gameModeData.GetEliminations(0) == 0 && gameModeData.GetEliminations(1) == 0)
+					{
+						var sound = EGameModeStatusSound.None;
+						if (hud.StatusSound == EGameModeStatusSound.NewLeader)
+							sound = EGameModeStatusSound.NewLeader;
+						hud.PushStatus(m_HeadOnModeContext.GetTick(), "First Takedown!", sound);
+					}
+
 					ref var eliminations = ref gameModeData.GetEliminations(ev.InstigatorTeam);
 					eliminations++;
 				}
@@ -51,6 +87,35 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 			// -- clear elimination events
 			eliminationEvents.Clear();
+
+			// ----------------------------- //
+			// Destroy events
+			var destroyEvents = m_HeadOnModeContext.DestroyAreaEvents;
+			for (int i = 0, length = destroyEvents.Length; i < length; i++)
+			{
+				var ev             = destroyEvents[i];
+				var instigatorTeam = -1;
+				var structureTeam  = -1;
+				for (var t = 0; t != m_HeadOnModeContext.Teams.Length; t++)
+				{
+					if (ev.EntityTeam == m_HeadOnModeContext.Teams[t].Target)
+						structureTeam = t;
+					if (ev.Instigator == m_HeadOnModeContext.Teams[t].Target)
+						instigatorTeam = t;
+				}
+
+				if (instigatorTeam >= 0 && instigatorTeam <= 1)
+				{
+					ref var points = ref gameModeData.GetPoints(instigatorTeam);
+					points += 25;
+
+					ref var eliminations = ref gameModeData.GetEliminations(instigatorTeam);
+					eliminations++;
+				}
+			}
+
+			// -- clear destroy events
+			destroyEvents.Clear();
 
 			// ----------------------------- //
 			// Respawn events
@@ -93,8 +158,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					var value = m_HeadOnModeContext.Teams[team].AveragePower;
 					entityMgr.SetComponentData(target, new DefaultHealthData
 					{
-						Value = value,
-						Max   = value
+						Value = (int) (math.max(value, 1) * structure.HealthModifier),
+						Max   = (int) (math.max(value, 1) * structure.HealthModifier)
 					});
 				}
 
@@ -104,6 +169,10 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				{
 					IsDead = false
 				});
+
+				if (structure.ScoreType == HeadOnStructure.EScoreType.TowerControl)
+					hud.PushStatus(m_HeadOnModeContext.GetTick(), "Control Tower Captured!", EGameModeStatusSound.TowerControlCaptured);
+				m_CheckLeadDelay = 1;
 			}
 
 			// -- clear capture events
@@ -126,7 +195,19 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					var side           = gmUnitArray[i].Team == 0 ? -1 : 1;
 					if ((oppositeFlagTr.x - translations[i].Value.x) * side >= 0)
 					{
-						winningTeam = gmUnitArray[i].Team;
+						winningTeam                        = gmUnitArray[i].Team;
+						m_HeadOnModeContext.Data.WinReason = MpVersusHeadOn.WinStatus.FlagCaptured;
+
+						if (m_WorldContext.EntityMgr.TryGetComponentData(oppositeTeam.Target, out Relative<ClubDescription> clubDesc))
+						{
+							hud.PushStatus(m_HeadOnModeContext.GetTick(), TL._("HeadOn", "{0} flag captured!"));
+							hud.StatusMessageArg0 = m_WorldContext.EntityMgr.GetComponentData<ClubInformation>(clubDesc.Target).Name;
+							hud.StatusSound       = EGameModeStatusSound.FlagCaptured;
+						}
+						else
+						{
+							hud.PushStatus(m_HeadOnModeContext.GetTick(), "Flag Captured!", EGameModeStatusSound.FlagCaptured);
+						}
 					}
 				}
 			}
@@ -137,13 +218,65 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				for (var i = 0; i != m_HeadOnModeContext.Teams.Length && winningTeam < 0; i++)
 				{
 					if (gameModeData.GetPointReadOnly(i) > gameModeData.GetPoints(1 - i))
+					{
 						winningTeam = i;
+						m_HeadOnModeContext.Data.WinReason = MpVersusHeadOn.WinStatus.MorePoints;
+						if (m_WorldContext.EntityMgr.TryGetComponentData(m_HeadOnModeContext.Teams[i].Target, out Relative<ClubDescription> clubDesc))
+						{
+							hud.PushStatus(m_HeadOnModeContext.GetTick(), TL._("HeadOn", "Team {0} wins!"), m_WorldContext.EntityMgr.GetComponentData<ClubInformation>(clubDesc.Target).Name);
+						}
+					}
 				}
 			}
+			
+			if (winningTeam < 0 && m_HeadOnModeContext.GetTick().Ms > m_HeadOnModeContext.Data.EndTime && !m_IsOverTime)
+			{
+				m_IsOverTime = true;
+				hud.PushStatus(m_HeadOnModeContext.GetTick(), "Overtime!");
+			}
 
+			if (!m_OneMinuteMark && (gameModeData.EndTime - m_HeadOnModeContext.GetTick().Ms) < 60 * 1000)
+			{
+				m_OneMinuteMark = true;
+				hud.PushStatus(m_HeadOnModeContext.GetTick(), "1 minute left!");
+			}
+			
+			// DEBUG START
+			if (Input.GetKeyDown(KeyCode.F))
+			{
+				m_HeadOnModeContext.Data.WinReason = MpVersusHeadOn.WinStatus.FlagCaptured;
+				hud.PushStatus(m_HeadOnModeContext.GetTick(), TL._("HeadOn", "{0} flag captured!"), "Blue");
+				//winningTeam                        = 0;
+			}
+
+			if (Input.GetKeyDown(KeyCode.E))
+			{
+				m_HeadOnModeContext.Data.WinReason = MpVersusHeadOn.WinStatus.Forced;
+				winningTeam = 0;
+			}
+			// DEBUG END
+
+			if (Input.GetKeyDown(KeyCode.L))
+			{
+				m_Queries.GetEntityQueryBuilder().With(m_Queries.Unit).ForEach(e =>
+				{
+					entityMgr.SetComponentData(entityMgr.CreateEntity(typeof(ModifyHealthEvent)), new ModifyHealthEvent
+					{
+						Type = ModifyHealthType.SetNone,
+						Target = e
+					});
+				});
+			}
+
+			m_Queries.GetEntityQueryBuilder().WithNone<HeadOnPlaying, HeadOnSpectating>().ForEach((Entity e, ref GamePlayer gp) =>
+			{
+				entityMgr.AddComponent(e, typeof(HeadOnSpectating));
+			});
+			
 			// -- End this.
 			if (winningTeam >= 0 && Executor is BlockAutoLoopCollection collection)
 			{
+				gameModeData.WinningTeam = winningTeam;
 				collection.Break();
 			}
 
@@ -154,13 +287,16 @@ namespace Patapon.Server.GameModes.VSHeadOn
 		{
 			base.OnReset();
 
+			m_TeamInLead   = -1;
+			m_IsOverTime = false;
+			m_OneMinuteMark = false;
 			m_WorldContext = Context.GetExternal<WorldContext>();
 			{
 				m_VersusHeadOnRuleGroup    = m_WorldContext.GetOrCreateSystem<VersusHeadOnRuleGroup>();
 				m_GameEventRuleSystemGroup = m_WorldContext.GetOrCreateSystem<GameEventRuleSystemGroup>();
 			}
 			m_HeadOnModeContext = Context.GetExternal<MpVersusHeadOnGameMode.ModeContext>();
-			m_Queries = Context.GetExternal<MpVersusHeadOnGameMode.QueriesContext>();
+			m_Queries           = Context.GetExternal<MpVersusHeadOnGameMode.QueriesContext>();
 		}
 	}
 }

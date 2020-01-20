@@ -45,16 +45,19 @@ namespace Systems.GamePlay.CYari
 				Entities
 					.ForEach((Entity entity, int nativeThreadIndex, ref RhythmAbilityState state, ref BasicYaridaDefendAbility ability, in Owner owner) =>
 					{
+						if (!impl.CanExecuteAbility(owner.Target))
+							return;
+						
 						Entity* tryGetChain = stackalloc[] {entity, owner.Target};
 						if (!relativeTeamFromEntity.TryGetChain(tryGetChain, 2, out var relativeTeam))
 							return;
 
 						var seekingState = seekingStateFromEntity[owner.Target];
 						var statistics   = impl.UnitSettingsFromEntity[owner.Target];
-						var playState    = impl.UnitPlayStateFromEntity[owner.Target];
 						var unitPosition = impl.TranslationFromEntity[owner.Target].Value;
 						var direction    = impl.UnitDirectionFromEntity[owner.Target].Value;
 
+						var playStateUpdater = impl.UnitPlayStateFromEntity.GetUpdater(owner.Target).Out(out var playState);
 						var velocityUpdater   = impl.VelocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
 						var controllerUpdater = impl.ControllerFromEntity.GetUpdater(owner.Target).Out(out var controller);
 
@@ -108,7 +111,7 @@ namespace Systems.GamePlay.CYari
 								{
 									Owner       = owner.Target,
 									Position    = unitPosition + throwOffset,
-									Velocity    = new float3(ability.ThrowVec, 0),
+									Velocity    = new float3(ability.ThrowVec.x * direction, ability.ThrowVec.y, 0),
 									StartDamage = damage,
 									Gravity     = gravity
 								});
@@ -127,11 +130,31 @@ namespace Systems.GamePlay.CYari
 								ability.AttackStartTick = 0;
 						}
 
+						playStateUpdater.CompareAndUpdate(playState);
 						velocityUpdater.CompareAndUpdate(velocity);
 						controllerUpdater.CompareAndUpdate(controller);
 
-						if (!state.IsActive || seekingState.Enemy == default || seekingState.Distance > statistics.AttackSeekRange * 0.7f)
+						impl.LocalToWorldFromEntity.TryGet(seekingState.Enemy, out var enemyLtw);
+						var targetPosition = enemyLtw.Position;
+						
+						var throwDeltaPosition = PredictTrajectory.Simple(throwOffset, new float3(ability.ThrowVec.x * direction, ability.ThrowVec.y, 0), new float3(0, -22, 0));
+						targetPosition.x -= throwDeltaPosition.x;
+
+						var outOfRange = seekingState.Distance > statistics.AttackSeekRange * 0.7f;
+						if (!state.IsActive || seekingState.Enemy == default
+						                    || outOfRange && math.abs(targetPosition.x - unitPosition.x) > statistics.AttackSeekRange * 0.7f)
+						{
+							if (state.IsActive && state.Combo.IsFever)
+							{
+								playState.MovementReturnSpeed *= 1.8f;
+								if (state.Combo.IsPerfect)
+									playState.MovementReturnSpeed *= 1.2f;
+								
+								controller.ControlOverVelocity.x = true;
+							}
+							
 							return;
+						}
 
 						if (state.Combo.IsFever)
 						{
@@ -140,12 +163,8 @@ namespace Systems.GamePlay.CYari
 								playState.MovementAttackSpeed *= 1.2f;
 						}
 
-						var targetPosition     = impl.LocalToWorldFromEntity[seekingState.Enemy].Position;
-						var throwDeltaPosition = PredictTrajectory.Simple(throwOffset, new float3(ability.ThrowVec, 0), new float3(0, -22, 0));
-						targetPosition.x -= throwDeltaPosition.x;
-
 						float distanceMercy = 1.8f;
-						if ((targetPosition.x - unitPosition.x * direction) < distanceMercy && ability.NextAttackDelay <= 0 && ability.AttackStartTick <= 0)
+						if (math.abs(targetPosition.x - unitPosition.x) < distanceMercy && ability.NextAttackDelay <= 0 && ability.AttackStartTick <= 0)
 						{
 							var atkSpeed = playState.AttackSpeed;
 							if (state.Combo.IsFever && state.Combo.IsPerfect)
@@ -158,19 +177,25 @@ namespace Systems.GamePlay.CYari
 							var speed   = math.lerp(math.abs(velocity.Value.x), playState.MovementAttackSpeed, playState.GetAcceleration() * 5 * tick.Delta);
 							var newPosX = Mathf.MoveTowards(unitPosition.x, targetPosition.x, speed * tick.Delta);
 
-							var targetVelocityX = (newPosX - unitPosition.x) / tick.Delta;
-							velocity.Value.x = targetVelocityX;
+							if (!outOfRange)
+							{
+								var targetVelocityX = (newPosX - unitPosition.x) / tick.Delta;
+								velocity.Value.x = targetVelocityX;
+							}
 						}
 						else if (tick >= UTick.AddMs(attackStartTick, BasicYaridaDefendAbility.DelayThrowMs))
 						{
 							var speed   = math.lerp(math.abs(velocity.Value.x), playState.MovementAttackSpeed, playState.GetAcceleration() * 20 * tick.Delta);
 							var newPosX = Mathf.MoveTowards(unitPosition.x, targetPosition.x, speed * tick.Delta);
 
-							var targetVelocityX = (newPosX - unitPosition.x) / tick.Delta;
-							velocity.Value.x = targetVelocityX;
+							if (!outOfRange)
+							{
+								var targetVelocityX = (newPosX - unitPosition.x) / tick.Delta;
+								velocity.Value.x = targetVelocityX;
+							}
 						}
 
-						controller.ControlOverVelocity.x = true;
+						controller.ControlOverVelocity.x = !outOfRange;
 
 						velocityUpdater.CompareAndUpdate(velocity);
 						controllerUpdater.CompareAndUpdate(controller);

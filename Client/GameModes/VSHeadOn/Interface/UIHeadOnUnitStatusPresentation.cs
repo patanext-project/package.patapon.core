@@ -88,6 +88,8 @@ namespace Patapon4TLB.GameModes.Interface
 
 	public class UIHeadOnUnitStatusBackend : RuntimeAssetBackend<UIHeadOnUnitStatusPresentation>
 	{
+		public UIHeadOnDrawerType DrawerType;
+
 		private RectTransform m_RectTransform;
 		public  RectTransform rectTransform => m_RectTransform;
 
@@ -108,6 +110,8 @@ namespace Patapon4TLB.GameModes.Interface
 	public class UIHeadOnUnitStatusRenderSystem : BaseRenderSystem<UIHeadOnUnitStatusPresentation>
 	{
 		public Entity               LocalPlayer;
+		public Entity LocalTeam;
+
 		public UIHeadOnPresentation Hud;
 
 		private EntityQuery m_HudQuery;
@@ -125,6 +129,12 @@ namespace Patapon4TLB.GameModes.Interface
 		{
 			LocalPlayer = this.GetFirstSelfGamePlayer();
 			Hud         = EntityManager.GetComponentObject<UIHeadOnPresentation>(m_HudQuery.GetSingletonEntity());
+
+			if (this.TryGetCurrentCameraState(LocalPlayer, out var cameraState)
+			    && EntityManager.TryGetComponentData(cameraState.Target, out Relative<TeamDescription> relativeTeam))
+			{
+				LocalTeam = relativeTeam.Target;
+			}
 		}
 
 		protected override void Render(UIHeadOnUnitStatusPresentation definition)
@@ -132,11 +142,8 @@ namespace Patapon4TLB.GameModes.Interface
 			var backend      = (UIHeadOnUnitStatusBackend) definition.Backend;
 			var targetEntity = definition.Backend.DstEntity;
 			var armyIndex    = 0;
-			if (EntityManager.TryGetComponentData(targetEntity, out LivableHealth livableHealth))
-			{
-				definition.SetHealth(livableHealth.Value, livableHealth.Max);
-			}
 
+			var targetDrawerType = UIHeadOnDrawerType.Enemy;
 			if (EntityManager.TryGetComponentData(targetEntity, out Relative<TeamDescription> relativeTeam))
 			{
 				if (EntityManager.HasComponent<Relative<ClubDescription>>(relativeTeam.Target))
@@ -146,6 +153,16 @@ namespace Patapon4TLB.GameModes.Interface
 
 					definition.SetTeamColor(clubInfo.PrimaryColor);
 				}
+
+				if (relativeTeam.Target == LocalTeam)
+					targetDrawerType = UIHeadOnDrawerType.Ally;
+			}
+
+			if (EntityManager.TryGetComponentData(targetEntity, out LivableHealth livableHealth))
+			{
+				definition.SetHealth(livableHealth.Value, livableHealth.Max);
+				if (livableHealth.ShouldBeDead())
+					targetDrawerType = UIHeadOnDrawerType.DeadUnit;
 			}
 
 			if (EntityManager.TryGetComponentData(targetEntity, out Relative<PlayerDescription> relativePlayer))
@@ -180,6 +197,12 @@ namespace Patapon4TLB.GameModes.Interface
 			drawerPosition.z =  0;
 
 			backend.rectTransform.localPosition = drawerPosition;
+
+			if (backend.DrawerType != targetDrawerType)
+			{
+				backend.DrawerType = targetDrawerType;
+				backend.transform.SetParent(Hud.DrawerFrame.GetDrawer(targetDrawerType), false);
+			}
 		}
 
 		protected override void ClearValues()

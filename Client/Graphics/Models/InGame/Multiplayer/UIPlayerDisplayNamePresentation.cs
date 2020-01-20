@@ -17,16 +17,18 @@ namespace package.patapon.core.Models.InGame.Multiplayer
 		public TextMeshPro[] NameLabels;
 
 		private NativeString512 m_LastName;
+		private int m_LastIndex;
 
-		public void SetName(NativeString512 str)
+		public void SetName(int index, NativeString512 str)
 		{
-			if (m_LastName.Equals(str))
+			if (m_LastName.Equals(str) && m_LastIndex != index)
 				return;
 
 			m_LastName = str;
+			m_LastIndex = index;
 			foreach (var label in NameLabels)
 			{
-				label.SetText(str.ToString());
+				label.SetText(index + ". " + str.ToString());
 			}
 		}
 
@@ -50,11 +52,15 @@ namespace package.patapon.core.Models.InGame.Multiplayer
 		public Color  OwnedColor;
 		public Entity LocalPlayer;
 
+		private int m_Index;
+
 		protected override void PrepareValues()
 		{
 			DefaultColor = GetSingleton<P4ColorRules.Data>().UnitNoTeamColor;
 			OwnedColor   = GetSingleton<P4ColorRules.Data>().UnitOwnedColor;
 			LocalPlayer  = this.GetFirstSelfGamePlayer();
+			
+			m_Index = 1;
 		}
 
 		protected override void Render(UIPlayerDisplayNamePresentation definition)
@@ -84,6 +90,9 @@ namespace package.patapon.core.Models.InGame.Multiplayer
 
 				definition.SetColor(clubInfo.PrimaryColor);
 			}
+			
+			if (EntityManager.TryGetComponent(relativePlayer.Target, out PlayerName pn))
+				definition.SetName(m_Index, pn.Value);
 		}
 
 		protected override void ClearValues()

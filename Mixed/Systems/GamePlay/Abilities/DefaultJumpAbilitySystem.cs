@@ -19,6 +19,8 @@ namespace Systems.GamePlay
 			var tick                          = ServerTick;
 			var unitControllerStateFromEntity = GetComponentDataFromEntity<UnitControllerState>();
 			var velocityFromEntity            = GetComponentDataFromEntity<Velocity>();
+			
+			var impl = new BasicUnitAbilityImplementation(this);
 
 			inputDeps =
 				Entities
@@ -26,6 +28,9 @@ namespace Systems.GamePlay
 					.WithNativeDisableParallelForRestriction(velocityFromEntity)
 					.ForEach((Entity entity, ref RhythmAbilityState state, ref DefaultJumpAbility ability, in Owner owner) =>
 					{
+						if (!impl.CanExecuteAbility(owner.Target))
+							return;
+					
 						var controllerStateUpdater = unitControllerStateFromEntity.GetUpdater(owner.Target).Out(out var controllerState);
 						var velocityUpdater        = velocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
 

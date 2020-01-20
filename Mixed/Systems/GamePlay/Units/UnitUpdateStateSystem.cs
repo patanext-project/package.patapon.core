@@ -83,11 +83,13 @@ namespace Patapon.Mixed.GamePlay
 				            seekEnemies.SeekNearest
 				            (
 					            translationFromEntity[relativeTarget.Target].Value, state.AttackSeekRange, allEnemies,
-					            out var nearestEnemy, out var targetPosition, out var enemyDistance
+					            out seekingState.Enemy, out _, out seekingState.Distance
 				            );
-				            
-				            seekingState.Enemy    = nearestEnemy;
-				            seekingState.Distance = enemyDistance;
+				            seekEnemies.SeekNearest
+				            (
+					            translationFromEntity[entity].Value, state.AttackSeekRange, allEnemies,
+					            out seekingState.SelfEnemy, out seekingState.SelfPosition, out seekingState.SelfDistance
+				            );
 			            })
 			            .WithReadOnly(enemiesFromTeam)
 			            .WithReadOnly(translationFromEntity)

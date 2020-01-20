@@ -3,6 +3,7 @@ using GmMachine.Blocks;
 using Misc.GmMachine.Blocks;
 using Misc.GmMachine.Contexts;
 using package.stormiumteam.shared.ecs;
+using Patapon.Mixed.GameModes;
 using Patapon.Mixed.GameModes.VSHeadOn;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
@@ -39,6 +40,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 		protected override bool OnRun()
 		{
+			m_ModeContext.HudSettings.EnableGameModeInterface = true;
+			m_ModeContext.HudSettings.EnablePreMatchInterface = false;
+
 			if (RunNext(CreateUnitBlock))
 			{
 				for (var i = 0; i != m_ModeContext.Teams.Length; i++)
@@ -46,6 +50,16 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					m_ModeContext.Data.GetPoints(i)       = 0;
 					m_ModeContext.Data.GetEliminations(i) = 0;
 				}
+				
+				// Reset towers...
+				m_QueriesContext.GetEntityQueryBuilder().ForEach((Entity entity, ref HeadOnStructure structure) =>
+				{
+					unsafe
+					{
+						structure.CaptureProgress[0] = 0;
+						structure.CaptureProgress[1] = 0;
+					}
+				});
 
 				CreateUnits();
 				return false;
@@ -54,19 +68,25 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			if (RunNext(SpawnUnitBlock))
 			{
 				SpawnUnits();
-				CounterBlock.SetTicksFromMs(1000);
+				CounterBlock.SetTicksFromMs(6000);
 
 				m_QueriesContext.GetEntityQueryBuilder().ForEach((ref FlowEngineProcess process, ref RhythmEngineState state) =>
 				{
-					process.StartTime = CounterBlock.Target.Ms;
-					state.IsPaused    = false;
+					process.StartTime      = CounterBlock.Target.Ms;
+					state.IsPaused         = false;
+					state.RecoveryTick     = CounterBlock.TickGetter.GetTick().AsInt;
+					state.NextBeatRecovery = -1;
 				});
-				m_ModeContext.Data.EndTime = CounterBlock.Target.Ms + 480_000;
+				m_ModeContext.Data.EndTime = CounterBlock.Target.Ms + 600_000;
+				//m_ModeContext.Data.EndTime = CounterBlock.Target.Ms + 5_000;
 				return false;
 			}
 
 			if (RunNext(CounterBlock))
 			{
+				m_ModeContext.Data.WinningTeam = -1;
+				
+				m_ModeContext.HudSettings.PushStatus(m_ModeContext.GetTick(), "VS START!");
 				m_ModeContext.HudSettings.EnableUnitSounds = true;
 				return false;
 			}
@@ -112,7 +132,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					m_TeamAttackAverage[ti] = stat.Attack;
 				if (m_TeamHealthAverage[ti] > 0)
 					m_TeamHealthAverage[ti]  = (int) math.lerp(m_TeamHealthAverage[ti], stat.Health, 0.5f);
-				else m_TeamAttackAverage[ti] = stat.Health;
+				else 
+					m_TeamHealthAverage[ti] = stat.Health;
 
 				var healthEvent = entityMgr.CreateEntity(typeof(ModifyHealthEvent));
 				entityMgr.SetComponentData(healthEvent, new ModifyHealthEvent(ModifyHealthType.SetMax, 0, unit));
@@ -128,7 +149,11 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			Utility.CreateUnitsBase(m_QueriesContext.GameModeSystem, worldCtx.World, m_QueriesContext.Formation, IsFormationValid, _ => true, OnUnitCreated);
 
 			var teams                                                    = m_ModeContext.Teams;
-			for (var i = 0; i < teams.Length; i++) teams[i].AveragePower = m_TeamHealthAverage[1 - i] * m_TeamUnitCount[1 - i] - m_TeamAttackAverage[i] * m_TeamUnitCount[i];
+			for (var i = 0; i < teams.Length; i++)
+			{
+				teams[i].AveragePower = m_TeamHealthAverage[1 - i] * m_TeamUnitCount[1 - i] - m_TeamAttackAverage[i] * m_TeamUnitCount[i];
+				Debug.Log($"{i} => Power={teams[i].AveragePower} Health={m_TeamHealthAverage[1 - i]} Attack={m_TeamAttackAverage[i]}");
+			}
 		}
 
 		private void SpawnUnits()

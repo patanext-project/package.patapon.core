@@ -47,19 +47,29 @@ namespace Patapon4TLB.Core.MasterServer
 				if (m_ServerTask.ResponseAsync.IsCompleted)
 				{
 					if (m_ServerTask.ResponseAsync.Exception != null)
+					{
 						Debug.LogException(m_ServerTask.ResponseAsync.Exception.Flatten());
+					}
 					else
 					{
 						var response = m_ServerTask.ResponseAsync.Result;
-						foreach (var ev in response.Events)
+						if (response.Success)
 						{
-							m_PendingEvents[ev.Name] = true;
-							Debug.Log($"{GetSingleton<ConnectedMasterServerClient>().UserLogin} -> {ev.Name}");
+							foreach (var ev in response.Events)
+							{
+								m_PendingEvents[ev.Name] = true;
+								Debug.Log($"{GetSingleton<ConnectedMasterServerClient>().UserLogin} -> {ev.Name}");
+							}
+						}
+						else
+						{
+							Debug.LogError("Disconnecting from masterserver...");
+							MasterServerSystem.Instance.Disconnect();
 						}
 					}
 
 					m_ServerTask = null;
-					m_NextCheck  = Time.ElapsedTime + 1;
+					m_NextCheck  = Time.ElapsedTime + 0.4;
 				}
 
 				return;

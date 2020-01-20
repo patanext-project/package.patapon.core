@@ -21,8 +21,8 @@ namespace Patapon.Mixed.GamePlay
 		[BurstDiscard]
 		private static void NonBurst_ErrorNoOwnerOrNoRelative(Entity owner, Entity entity)
 		{
-			if (owner == default)
-				Debug.LogError("Default owner found on " + entity);
+			/*if (owner == default)
+				Debug.LogError("Default owner found on " + entity);*/
 		}
 
 		[BurstDiscard]

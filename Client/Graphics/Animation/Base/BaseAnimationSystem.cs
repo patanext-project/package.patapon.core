@@ -42,7 +42,7 @@ namespace package.patapon.core.Animation.Units
 
 			Entities.ForEach((UnitVisualBackend backend, UnitVisualAnimation animation) =>
 			{
-				if (backend.Presentation == null)
+				if (backend.Presentation == null || !EntityManager.Exists(backend.DstEntity))
 					return;
 
 				// main
@@ -153,7 +153,7 @@ namespace package.patapon.core.Animation.Units
 			where THandleData : struct
 		{
 			var handleDataPair = module.Get<TComponent, THandleData>(index);
-			if (handleDataPair.Handle.Result == null)
+			if (handleDataPair?.Handle.Result == null)
 				return null;
 
 			module.Handles.RemoveAtSwapBack(index);

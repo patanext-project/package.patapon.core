@@ -167,6 +167,8 @@ namespace Patapon.Mixed.Systems
 						var cmdOutput = new NativeList<Entity>(1, Allocator.Temp);
 						GetCommand(commandProgression.Reinterpret<FlowPressure>(), cmdOutput, false,
 							availableCommands, entityType, commandSequenceType);
+						
+						state.IsNewPressure = false;
 
 						rhythmCurrentCommand.HasPredictedCommands = cmdOutput.Length == 1;
 						if (cmdOutput.Length == 0)
@@ -190,8 +192,6 @@ namespace Patapon.Mixed.Systems
 
 							return;
 						}
-
-						state.IsNewPressure = false;
 
 						// this is so laggy clients don't have a weird things when their command has been on another beat on the server
 						var targetBeat = commandProgression[commandProgression.Length - 1].Data.RenderBeat + 1;

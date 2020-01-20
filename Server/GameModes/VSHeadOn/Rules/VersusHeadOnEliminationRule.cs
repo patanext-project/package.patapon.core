@@ -26,7 +26,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 		{
 			var rule              = GetSingleton<VersusHeadOnEliminationRule>();
 			var tick              = ServerTick;
-			var eliminationEvents = World.GetExistingSystem<MpVersusHeadOnGameMode>().EliminationEvents;
+			var eliminationEvents = World.GetExistingSystem<MpVersusHeadOnGameMode>().UnitEliminationEvents;
 			Entities.ForEach((Entity entity, ref LivableHealth health, ref VersusHeadOnUnit gmUnit, in DynamicBuffer<HealthModifyingHistory> healthHistory) =>
 			{
 				if (!health.ShouldBeDead() || health.IsDead)

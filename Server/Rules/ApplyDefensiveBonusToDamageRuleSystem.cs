@@ -1,5 +1,6 @@
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.Units;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Components;
 using Unity.Entities;
@@ -10,6 +11,7 @@ using UnityEngine;
 namespace Rules
 {
 	[UpdateInGroup(typeof(GameEventRuleSystemGroup))]
+	[UpdateBefore(typeof(DefaultDamageRule))]
 	public class ApplyDefensiveBonusToDamageRuleSystem : RuleBaseSystem
 	{
 		public override string Description => "Reduce damage with unit defense...";

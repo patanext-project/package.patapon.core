@@ -6,6 +6,7 @@ using Patapon.Client.Graphics.Animation.Units;
 using Patapon.Client.Systems;
 using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
@@ -62,8 +63,11 @@ namespace Components.Archetypes
 			{
 				var root = kvp.Value;
 				if (root.UnitEquipmentBackend != null)
+				{
+					root.UnitEquipmentBackend.gameObject.SetActive(true);
 					continue;
-				
+				}
+
 				var backendGameObject = new GameObject($"'{kvp.Key}' Equipment backend", typeof(UnitEquipmentBackend), typeof(GameObjectEntity));
 				root.UnitEquipmentBackend = backendGameObject.GetComponent<UnitEquipmentBackend>();
 				root.UnitEquipmentBackend.transform.SetParent(root.transform, false);
@@ -142,12 +146,21 @@ namespace Components.Archetypes
 								throw new ArgumentOutOfRangeException();
 						}
 
-						if (!root.EquipmentId.Equals(equipmentTarget))
+						if (!root.EquipmentId.Equals(equipmentTarget) || !root.UnitEquipmentBackend.HasIncomingPresentation)
 						{
 							root.EquipmentId = equipmentTarget;
 							if (m_EquipmentManager.TryGetPool(equipmentTarget.ToString(), out var pool))
 								root.UnitEquipmentBackend.SetPresentationFromPool(pool);
 						}
+					}
+
+					if (EntityManager.TryGetComponentData(backend.DstEntity, out LivableHealth health))
+					{
+						var scale = 1;
+						if (health.IsDead)
+							scale = 0;
+
+						presentation.transform.localScale = Vector3.one * scale;
 					}
 				});
 			}

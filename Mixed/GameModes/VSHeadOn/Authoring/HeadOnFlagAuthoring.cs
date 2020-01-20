@@ -45,27 +45,12 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 		}
 	}
 
-	public struct HeadOnFlag : IComponentData, IReadWriteComponentSnapshot<HeadOnFlag>
+	public struct HeadOnFlag : IComponentData
 	{
-		public struct Exclude : IComponentData
-		{
-		}
-
 		public int foo;
-
-		public void WriteTo(DataStreamWriter writer, ref HeadOnFlag baseline, DefaultSetup setup, SerializeClientData jobData)
+		
+		public class Synchronize : ComponentSnapshotSystemTag<HeadOnFlag>
 		{
-			writer.WritePackedInt(foo, jobData.NetworkCompressionModel);
-		}
-
-		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref HeadOnFlag baseline, DeserializeClientData jobData)
-		{
-			foo = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
-		}
-
-		public class Synchronize : MixedComponentSnapshotSystem<HeadOnFlag, DefaultSetup>
-		{
-			public override ComponentType ExcludeComponent => typeof(Exclude);
 		}
 	}
 }

@@ -1,4 +1,5 @@
 using System;
+using P4TLB.MasterServer;
 using Revolution;
 using Scripts.Utilities;
 using Unity.Collections;
@@ -40,5 +41,20 @@ namespace Patapon.Mixed.Units.Statistics
 	{
 		public static readonly NativeString64 Taterazay = new NativeString64("taterazay");
 		public static readonly NativeString64 Yarida    = new NativeString64("yarida");
+
+		public static NativeString64 FromEnum(P4OfficialKit kit)
+		{
+			switch (kit)
+			{
+				case P4OfficialKit.Taterazay:
+					return Taterazay;
+				case P4OfficialKit.Yarida:
+					return Yarida;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(kit), kit, null);
+			}
+
+			return default;
+		}
 	}
 }

@@ -60,6 +60,8 @@ namespace Patapon4TLB.Core.MasterServer
 				// If there is a MasterServer target, use it.
 				if (EntityManager.TryGetComponentData(entity, out MasterServerP4UnitMasterServerEntity masterServerEntity))
 					request.UnitId = masterServerEntity.UnitId;
+				
+				Debug.Log($"Requesting for {request.UnitId} ");
 
 				var response = await service.GetCurrentKitAsync(new GetKitRequest {UnitId = request.UnitId});
 				if (m_GetUnitKitModule.InvokeDefaultOnResult(entity, new RequestGetUnitKit.CompletionStatus {ErrorCode = response.Error}, out var targetResponseEntity))

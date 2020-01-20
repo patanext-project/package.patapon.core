@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
@@ -16,6 +17,22 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 		private readonly Dictionary<World, Entity> m_CurrentEntity = new Dictionary<World, Entity>();
 		public           EHeadOnTeamTarget         PredefinedTeam;
 
+		private Entity FindOrCreateEntity(EntityManager entityManager)
+		{
+			var query = entityManager.CreateEntityQuery(typeof(HeadOnTeam));
+			using (var entities = query.ToEntityArray(Allocator.TempJob))
+			using (var team = query.ToComponentDataArray<HeadOnTeam>(Allocator.TempJob))
+			{
+				for (var i = 0; i != team.Length; i++)
+				{
+					if (team[i].TeamIndex == (int) PredefinedTeam - 1)
+						return entities[i];
+				}
+			}
+
+			return entityManager.CreateEntity(typeof(HeadOnTeam));
+		}
+		
 		public HeadOnTeamTarget FindOrCreate(EntityManager dstManager)
 		{
 			Debug.Assert(Application.isPlaying, "Application.isPlaying");
@@ -24,7 +41,7 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 			if (!m_CurrentEntity.ContainsKey(dstManager.World))
 			{
 				// Create...
-				ent = m_CurrentEntity[dstManager.World] = dstManager.CreateEntity(typeof(HeadOnTeam));
+				ent = m_CurrentEntity[dstManager.World] = FindOrCreateEntity(dstManager);
 				dstManager.SetComponentData(ent, new HeadOnTeam
 				{
 					IsPredefinedTeam = PredefinedTeam != EHeadOnTeamTarget.Undefined,

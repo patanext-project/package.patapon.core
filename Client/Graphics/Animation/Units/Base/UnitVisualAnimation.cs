@@ -155,14 +155,14 @@ namespace Patapon.Client.Graphics.Animation.Units
 			Presentation.Animator.runtimeAnimatorController = null;
 		}
 
-		public override void ReturnPresentation()
+		public override void ReturnPresentation(bool unsetChildren = true)
 		{
 			if (Presentation != null && Presentation.Animator != null)
 			{
 				Presentation.Animator.WriteDefaultValues();
 				Presentation.Animator.Rebind();
 			}
-			base.ReturnPresentation();
+			base.ReturnPresentation(unsetChildren);
 		}
 
 		public override void OnReset()

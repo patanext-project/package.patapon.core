@@ -77,26 +77,51 @@ namespace package.patapon.core.Animation.Units
 
 			if (!EntityManager.TryGetComponentData(targetEntity, out Relative<RhythmEngineDescription> relativeEngine))
 				return;
-			
+
 			var process  = EntityManager.GetComponentData<FlowEngineProcess>(relativeEngine.Target);
+			var settings = EntityManager.GetComponentData<RhythmEngineSettings>(relativeEngine.Target);
 			var state    = EntityManager.GetComponentData<RhythmEngineState>(relativeEngine.Target);
 
-			if (state.IsPaused || process.Milliseconds <= 0)
+			if (state.IsPaused || process.GetFlowBeat(settings.BeatInterval) < 0)
 				return;
-				
-			var pressureKey   = -1;
-			var rhythmActions = playerCommand.Base.GetRhythmActions();
-			for (var i = 0; pressureKey < 0 && i != rhythmActions.Length; i++)
-				if (rhythmActions[i].WasPressed)
-					pressureKey = i;
 
-			if (pressureKey < 0)
-				return;
+			NativeArray<UserCommand> commands;
+			if (EntityManager.HasComponent<CommandInterFrame>(relativePlayer.Target))
+			{
+				commands = EntityManager.GetBuffer<CommandInterFrame>(relativePlayer.Target)
+				                        .Reinterpret<UserCommand>()
+				                        .AsNativeArray();
+			}
+			else
+				commands = new NativeArray<UserCommand>(1, Allocator.Temp) {[0] = playerCommand.Base};
+
+			var pressureKey = -1;
+			for (var cmd = 0; cmd != commands.Length; cmd++)
+			{
+				var rhythmActions = commands[cmd].GetRhythmActions();
+				for (var i = 0; pressureKey < 0 && i != rhythmActions.Length; i++)
+					if (rhythmActions[i].WasPressed)
+						pressureKey = i;
+			}
 
 			if (EntityManager.TryGetComponentData(targetEntity, out AnimationIdleTime idleTime))
 			{
 				EntityManager.SetComponentData(targetEntity, default(AnimationIdleTime));
 			}
+
+			if (!animation.ContainsSystem(SystemType)) animation.InsertSystem<SystemData>(SystemType, AddAnimationData, RemoveAnimationData);
+
+			ref var data = ref animation.GetSystemData<SystemData>(SystemType);
+
+			if (pressureKey < 0 && data.LastActionFrame != playerCommand.Base.LastActionFrame 
+			                    && !EntityManager.HasComponent<GamePlayerLocalTag>(relativePlayer.Target))
+			{
+				pressureKey          = playerCommand.Base.LastActionIndex;
+				data.LastActionFrame = playerCommand.Base.LastActionFrame;
+			}
+
+			if (pressureKey < 0)
+				return;
 
 			pressureKey++;
 
@@ -107,10 +132,6 @@ namespace package.patapon.core.Animation.Units
 				if (pressureKey == RhythmKeys.Left) pressureKey       = RhythmKeys.Right;
 				else if (pressureKey == RhythmKeys.Right) pressureKey = RhythmKeys.Left;
 			}
-
-			if (!animation.ContainsSystem(SystemType)) animation.InsertSystem<SystemData>(SystemType, AddAnimationData, RemoveAnimationData);
-
-			ref var data = ref animation.GetSystemData<SystemData>(SystemType);
 
 			var transitionStart = m_AnimationClips[pressureKey - 1].length * 0.825f + animation.RootTime;
 			var transitionEnd   = m_AnimationClips[pressureKey - 1].length + animation.RootTime;
@@ -180,6 +201,8 @@ namespace package.patapon.core.Animation.Units
 		{
 			public ScriptPlayable<SystemPlayable> Playable;
 			public SystemPlayable                 Behaviour;
+
+			public uint LastActionFrame;
 
 			public AnimationMixerPlayable Mixer => Behaviour.Mixer;
 

@@ -50,11 +50,11 @@ namespace Systems.RhythmEngine
 				return inputDeps;
 
 			var ecb = m_EndBarrier.Get(World).CreateCommandBuffer().ToConcurrent();
-			inputDeps = Entities.ForEach((Entity                                            entity, int                           nativeThreadIndex,
-			                              ref RhythmEngineState                             state,  ref GamePredictedCommandState predictedCommand,
-			                              ref DynamicBuffer<RhythmEngineCommandProgression> progression,
-			                              in  RhythmEngineSettings                          settings, in FlowEngineProcess process,
-			                              in  ReplicatedEntity                              replicatedEntity) =>
+			inputDeps = Entities.WithAll<FlowSimulateProcess>().ForEach((Entity                                            entity, int                           nativeThreadIndex,
+			                                                             ref RhythmEngineState                             state,  ref GamePredictedCommandState predictedCommand,
+			                                                             ref DynamicBuffer<RhythmEngineCommandProgression> progression,
+			                                                             in  RhythmEngineSettings                          settings, in FlowEngineProcess process,
+			                                                             in  ReplicatedEntity                              replicatedEntity) =>
 			{
 				Entity                     rpcEnt;
 				PressureEventFromClientRpc pressureEvent = default;
@@ -95,7 +95,7 @@ namespace Systems.RhythmEngine
 				else if (failFlag0 || failFlag1 || failFlag2 || failFlag3 || pressureData.GetAbsoluteScore() > FlowPressure.Error)
 				{
 					//Debug.Log($"{failFlag0} {failFlag1} {failFlag2} {failFlag3} (chainEnd={cmdChainEndFlow} end={cmdEndFlow} beat={flowBeat})");
-					
+
 					pressureEvent.ShouldStartRecovery   = true;
 					state.NextBeatRecovery              = flowBeat + 1;
 					predictedCommand.State.ChainEndTime = default;

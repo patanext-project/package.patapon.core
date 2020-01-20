@@ -139,6 +139,14 @@ namespace Patapon4TLB.Core
 						Command = FindCommand(typeof(AttackCommand))
 					});
 					break;
+				case string _ when typeId == GetInternal("yari/jump_attack"):
+					CreateAbility<JumpYaridaAttackAbility.Provider, JumpYaridaAttackAbility.Provider.Create>(new JumpYaridaAttackAbility.Provider.Create
+					{
+						Owner   = entity,
+						Command = FindCommand(typeof(AttackCommand)),
+						Selection = selection
+					});
+					break;
 				case string _ when typeId == GetInternal("yari/basic_defend"):
 					CreateAbility<BasicYaridaDefendAbility.Provider, BasicYaridaDefendAbility.Provider.Create>(new BasicYaridaDefendAbility.Provider.Create
 					{

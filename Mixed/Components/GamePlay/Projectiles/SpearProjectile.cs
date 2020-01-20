@@ -71,8 +71,8 @@ namespace Systems.GamePlay.CYari
 
 				EntityManager.SetComponentData(entity, new ProjectileDefaultExplosion
 				{
-					DamageRadius = 0.1f,
-					BumpRadius   = 0.1f,
+					DamageRadius = 0.01f,
+					BumpRadius   = 0.01f,
 
 					MinDamage = -1,
 					MaxDamage = -1,

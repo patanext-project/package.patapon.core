@@ -95,6 +95,10 @@ namespace Patapon.Mixed.Units
 		public Entity Enemy;
 		public float  Distance;
 
+		public Entity SelfEnemy;
+		public float3 SelfPosition;
+		public float SelfDistance;
+
 		public void WriteTo(DataStreamWriter writer, ref UnitEnemySeekingState baseline, GhostSetup setup, SerializeClientData jobData)
 		{
 			writer.WritePackedUInt(setup[Enemy], jobData.NetworkCompressionModel);

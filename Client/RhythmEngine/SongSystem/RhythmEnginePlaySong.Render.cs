@@ -134,7 +134,8 @@ namespace Patapon.Client.RhythmEngine
 					}
 					catch
 					{
-						Debug.Log($"failed with score of {score}");
+						Debug.LogError($"failed with score of {score}, combo of {ComboState.Chain}");
+						targetAudio = CurrentSong.BgmComboParts[0].Clips[0];
 					}
 				}
 				else
@@ -160,12 +161,13 @@ namespace Patapon.Client.RhythmEngine
 			}
 
 			//var nextBeatDelay          = (EngineSettings.BeatInterval - ((activationBeat + 1) * EngineSettings.BeatInterval - EngineProcess.Milliseconds)) * 0.001f;
-			var nextBeatDelayMs = (activationBeat + 1) * EngineSettings.BeatInterval - EngineProcess.Milliseconds;
-			if (nextBeatDelayMs >= 500)
-				nextBeatDelayMs = math.max(nextBeatDelayMs - EngineSettings.BeatInterval, 0);
-			
-			var nextBeatDelay          = nextBeatDelayMs * 0.001f;
 			var cmdStartActivationBeat = FlowEngineProcess.CalculateActivationBeat(CommandStartTime, EngineSettings.BeatInterval);
+			if (cmdStartActivationBeat > activationBeat)
+				activationBeat = cmdStartActivationBeat;
+
+			var nextBeatDelayMs = (activationBeat + 1) * EngineSettings.BeatInterval - EngineProcess.Milliseconds;
+			var nextBeatDelay   = nextBeatDelayMs * 0.001f;
+
 			if (cmdStartActivationBeat >= activationBeat) // we have a planned command
 				nextBeatDelay = (cmdStartActivationBeat * EngineSettings.BeatInterval - EngineProcess.Milliseconds) * 0.001f;
 
@@ -174,7 +176,7 @@ namespace Patapon.Client.RhythmEngine
 			if (m_LastClip != targetAudio // switch audio if we are requested to
 			    || forceSongChange)       // play an audio if we got forced
 			{
-				//Debug.Log($"Switch from {m_LastClip?.name} to {targetAudio?.name}, delay: {nextBeatDelay} (b: {activationBeat}, f: {flowBeat}, s: {cmdStartActivationBeat})");
+				Debug.Log($"Switch from {m_LastClip?.name} to {targetAudio?.name}, delay: {nextBeatDelay} (b: {activationBeat}, f: {flowBeat}, s: {cmdStartActivationBeat})");
 				hasSwitched = Switch(targetAudio, nextBeatDelay);
 			}
 
@@ -184,7 +186,7 @@ namespace Patapon.Client.RhythmEngine
 			{
 				if (nextBeatDelayMs >= 450 && math.abs(currSource.clip.length - currSource.time) < 0.05f)
 					nextBeatDelay = 0;
-				else if (nextBeatDelay > 0 && currSource.clip.length + nextBeatDelay + 0.01f >= currSource.clip.length 
+				else if (nextBeatDelay > 0 && currSource.clip.length + nextBeatDelay + 0.01f >= currSource.clip.length
 				                           && !(currSource.time + nextBeatDelay >= currSource.clip.length))
 					nextBeatDelay += 0.01f;
 			}
@@ -253,12 +255,19 @@ namespace Patapon.Client.RhythmEngine
 			}
 
 			m_CommandChain[hash] = m_CommandChain[hash] + 1;
-			
+
 			if (commandTarget == null)
 				return;
 
-			var cmdStartActivationBeat = FlowEngineProcess.CalculateActivationBeat(CommandStartTime, EngineSettings.BeatInterval);
-			var nextBeatDelay          = (cmdStartActivationBeat * EngineSettings.BeatInterval - EngineProcess.Milliseconds) * 0.001f;
+			/*var cmdStartActivationBeat = FlowEngineProcess.CalculateActivationBeat(CommandStartTime, EngineSettings.BeatInterval);
+			var nextBeatDelayMs        = (cmdStartActivationBeat + 1) * EngineSettings.BeatInterval - EngineProcess.Milliseconds;
+			if (nextBeatDelayMs >= 500)
+				nextBeatDelayMs = math.max(nextBeatDelayMs - EngineSettings.BeatInterval, 0);
+			if (nextBeatDelayMs >= 500)
+				nextBeatDelayMs = 0;*/
+
+			var nextBeatDelay = (CommandStartTime - EngineProcess.Milliseconds) * 0.001f;
+
 			m_CommandSource.clip  = commandTarget;
 			m_CommandSource.pitch = TargetCommandDefinition.BeatLength == 3 ? 1.25f : 1f;
 			m_CommandSource.PlayScheduled(AudioSettings.dspTime + nextBeatDelay);

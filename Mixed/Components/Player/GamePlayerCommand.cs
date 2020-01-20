@@ -7,6 +7,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
 using Unity.Networking.Transport;
+using UnityEngine;
 
 namespace Patapon4TLB.Default.Player
 {
@@ -64,40 +65,46 @@ namespace Patapon4TLB.Default.Player
 		}
 	}
 
+	[InternalBufferCapacity(16)]
+	public struct CommandInterFrame : IBufferElementData
+	{
+		public UserCommand Base;
+	}
+
+	[UpdateInGroup(typeof(InitializationSystemGroup))]
+	public class ResetGamePlayerCommandInterFrameSystem : JobGameBaseSystem
+	{
+		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		{
+			Entities.WithNone<CommandInterFrame>().WithAll<GamePlayerCommand.Snapshot>().ForEach((Entity ent) =>
+			{
+				// commands interframe can be useful
+				// todo: say why it's useful
+				EntityManager.AddBuffer<CommandInterFrame>(ent);
+			}).WithStructuralChanges().Run();
+			
+			inputDeps = Entities.ForEach((ref DynamicBuffer<CommandInterFrame> cmds , in DynamicBuffer<GamePlayerCommand.Snapshot> snapshots) =>
+			{
+				cmds.Clear();
+			}).Schedule(inputDeps);
+
+			return inputDeps;
+		}
+	}
+
 	[UpdateInGroup(typeof(AfterSnapshotIsAppliedSystemGroup))]
 	public class SynchronizeGamePlayerCommandSystem : JobGameBaseSystem
 	{
-		private uint m_PreviousClientTick;
-
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			var currentTick = World.GetExistingSystem<ClientSimulationSystemGroup>().ServerTick;
-
-			var isSameTick      = m_PreviousClientTick == currentTick;
 			var localFromEntity = GetComponentDataFromEntity<GamePlayerLocalTag>(true);
-
-			m_PreviousClientTick = currentTick;
 
 			inputDeps = Entities.ForEach((Entity entity, ref GamePlayerCommand command, in DynamicBuffer<GamePlayerCommand.Snapshot> snapshots) =>
 			{
 				if (localFromEntity.Exists(entity))
 					return;
 
-				var previousCommand = command.Base;
 				command.Base = snapshots.GetLastBaseline().Base;
-				if (isSameTick)
-				{
-					var prevSpan = previousCommand.GetRhythmActions();
-					var currSpan = command.Base.GetRhythmActions();
-					for (var i = 0; i != prevSpan.Length; i++)
-					{
-						var     prev = prevSpan[i];
-						ref var curr = ref currSpan.AsRef(i);
-
-						if (!curr.FrameUpdate && prev.FrameUpdate)
-							curr.FrameUpdate = true;
-					}
-				}
 			}).WithReadOnly(localFromEntity).Schedule(inputDeps);
 
 			return inputDeps;

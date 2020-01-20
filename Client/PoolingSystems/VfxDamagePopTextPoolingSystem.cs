@@ -1,12 +1,16 @@
 using DefaultNamespace;
 using package.patapon.core.Models.InGame.VFXDamage;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Systems;
 using Unity.Entities;
+using Unity.NetCode;
 using UnityEngine;
 
 namespace Patapon.Client.PoolingSystems
 {
+	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
+	[UpdateInGroup(typeof(OrderGroup.Simulation))]
 	public class VfxDamagePopTextPoolingSystem : PoolingSystem<VfxDamagePopTextBackend, VfxDamagePopTextPresentation>
 	{
 		protected override string AddressableAsset =>

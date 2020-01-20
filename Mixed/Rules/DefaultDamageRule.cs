@@ -85,9 +85,9 @@ namespace StormiumTeam.GameBase
 				var shooterTeam = TeamOwnerFromEntity.Exists(damageEvent.Origin) ? TeamOwnerFromEntity[damageEvent.Origin].Target : default;
 				var victimTeam  = TeamOwnerFromEntity.Exists(damageEvent.Destination) ? TeamOwnerFromEntity[damageEvent.Destination].Target : default;
 
-				if (damageEvent.Origin == damageEvent.Destination && math.abs(Data.SelfDamageFactor) > math.FLT_MIN_NORMAL)
+				if (damageEvent.Origin == damageEvent.Destination && math.abs(Data.SelfDamageFactor) > math.FLT_MIN_NORMAL && damageEvent.Damage < 0)
 					damageEvent.Damage = (int) math.round(damageEvent.Damage * Data.SelfDamageFactor);
-				else if (shooterTeam != default && victimTeam != default && shooterTeam == victimTeam && math.abs(Data.SameTeamDamageFactor) > math.FLT_MIN_NORMAL)
+				else if (shooterTeam != default && victimTeam != default && shooterTeam == victimTeam && math.abs(Data.SameTeamDamageFactor) > math.FLT_MIN_NORMAL && damageEvent.Damage < 0)
 					damageEvent.Damage = (int) math.round(damageEvent.Damage * Data.SameTeamDamageFactor);
 				
 				if (damageEvent.Damage == 0 && Data.DisableEventForNoDamage)

@@ -26,7 +26,7 @@ namespace Patapon.Mixed.GamePlay
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
 			var dt                       = Time.DeltaTime;
-			var gravity                  = new float3(0, -20f, 0);
+			var gravity                  = new float3(0, -26f, 0);
 			var livableHealthFromEntity  = GetComponentDataFromEntity<LivableHealth>(true);
 			var relativeTargetFromEntity = GetComponentDataFromEntity<Relative<UnitTargetDescription>>(true);
 			var translationFromEntity    = GetComponentDataFromEntity<Translation>(true);

@@ -39,7 +39,8 @@ namespace Systems.GamePlay
 					}
 
 					var engineState = engineStateFromEntity[state.Engine];
-					if (!(ability.LastPressureBeat <= engineState.LastPressureBeat + 1))
+					//Debug.Log($"{ability.LastPressureBeat} {engineState.LastPressureBeat + 1}");
+					if (ability.LastPressureBeat + 1 < engineState.LastPressureBeat)
 					{
 						state.PreviousActiveCombo = default;
 						ability.WasFever          = false;
@@ -55,7 +56,10 @@ namespace Systems.GamePlay
 					{
 						var comboUpdater = comboStateFromEntity.GetUpdater(state.Engine)
 						                                       .Out(out var comboState);
+
+						var max = comboState.JinnEnergyMax;
 						comboState = default;
+						comboState.JinnEnergyMax = max;
 						comboUpdater.Update(comboState);
 
 						eventQueue.Enqueue(new TargetRebornEvent
@@ -100,7 +104,7 @@ namespace Systems.GamePlay
 
 			protected override void OnUpdate()
 			{
-				m_Query = m_Query ?? GetEntityQuery(typeof(GameEvent), typeof(TargetImpulseEvent));
+				m_Query = m_Query ?? GetEntityQuery(typeof(GameEvent), typeof(TargetRebornEvent));
 				EntityManager.DestroyEntity(m_Query);
 
 				base.OnUpdate();

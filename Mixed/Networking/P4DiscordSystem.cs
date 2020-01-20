@@ -2,6 +2,7 @@ using System;
 using Discord;
 using P4TLB.MasterServer;
 using Patapon4TLB.Core.MasterServer;
+using Patapon4TLB.Core.MasterServer.Data;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.External.Discord;
 using Unity.Collections;
@@ -18,6 +19,22 @@ namespace Patapon4TLB.Core
 			base.OnCreate();
 
 			Push(default);
+			
+			GetDiscord().GetActivityManager().OnActivityJoinRequest += delegate(ref User user)
+			{
+				Debug.Log("Join request from: " + user.Id);
+				GetDiscord().GetActivityManager().SendRequestReply(user.Id, ActivityJoinRequestReply.Yes, delegate(Result result) {  });
+			};
+
+			GetDiscord().GetActivityManager().OnActivityJoin += delegate(string secret)
+			{
+				var serverstr = secret.Replace("join:", string.Empty);
+				if (ulong.TryParse(serverstr, out var serverid))
+				{
+					var ent = EntityManager.CreateEntity(typeof(RequestConnectToServer));
+					EntityManager.SetComponentData(ent, new RequestConnectToServer {ServerUserId = serverid});
+				}
+			};
 		}
 
 		protected override void OnUpdate()
@@ -32,6 +49,11 @@ namespace Patapon4TLB.Core
 		public             bool  IsConnectionLobbyRequested { get; set; }
 		public             Lobby ConnectionLobby            { get; set; }
 
+		public void PushActivity(Activity activity)
+		{
+			Push(activity);
+		}
+		
 		public void CreateConnectionLobby()
 		{
 			IsConnectionLobbyRequested = true;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using DefaultNamespace;
 using Newtonsoft.Json;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.RhythmEngine;
@@ -54,6 +55,9 @@ namespace Patapon.Client
 
 		protected override void OnUpdate()
 		{
+			if (MapTargetSongId == null)
+				MapTargetSongId = GetSingleton<ForcedSongRule>().SongId.ToString();
+
 			//MapTargetSongId = null;
 			if (!HasSingleton<ExecutingMapData>())
 				return;

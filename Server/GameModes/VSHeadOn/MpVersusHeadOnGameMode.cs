@@ -26,7 +26,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 	{
 		public NativeList<HeadOnStructureOnCapture> CaptureEvents;
 
-		public NativeList<HeadOnOnUnitElimination> EliminationEvents;
+		public NativeList<HeadOnOnUnitElimination> UnitEliminationEvents;
+		public NativeList<HeadOnOnDestroyArea>     DestroyAreaEvents;
 		public NativeList<Entity>                  RespawnEvents;
 
 		private EntityQuery m_EventOnCaptureQuery;
@@ -36,12 +37,14 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 		protected override void OnCreateMachine(ref Machine machine)
 		{
-			EliminationEvents = new NativeList<HeadOnOnUnitElimination>(Allocator.Persistent);
-			CaptureEvents     = new NativeList<HeadOnStructureOnCapture>(Allocator.Persistent);
-			RespawnEvents     = new NativeList<Entity>(Allocator.Persistent);
+			UnitEliminationEvents = new NativeList<HeadOnOnUnitElimination>(Allocator.Persistent);
+			DestroyAreaEvents     = new NativeList<HeadOnOnDestroyArea>(Allocator.Persistent);
+			CaptureEvents         = new NativeList<HeadOnStructureOnCapture>(Allocator.Persistent);
+			RespawnEvents         = new NativeList<Entity>(Allocator.Persistent);
 
 			machine.AddContext(new ModeContext
 			{
+				RunPreMatch    = false,
 				GameModeSystem = this,
 
 				ServerSimulationSystemGroup = World.GetOrCreateSystem<ServerSimulationSystemGroup>(),
@@ -96,6 +99,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					new InitializationBlock("Init"),
 					new BlockAutoLoopCollection("MapLoop", new List<Block>
 					{
+						// Always do prematch!
+						new PreMatchBlock("PreMatch"),
 						// -- On Map Load
 						new InstantChainLoopBlock("Don't skip frame", new List<Block>
 						{
@@ -132,8 +137,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 						{
 							ResetOnBeginning = true
 						},
-						new Block("EndMap"),
-						new Block("UnloadMap")
+						new EndMapBlock("EndMap"),
+						new UnloadMapBlock("UnloadMap")
 					})
 					{
 						ResetOnBeginning = true
@@ -144,14 +149,17 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 		protected override void OnLoop(Entity gameModeEntity)
 		{
+			var gmContext = Machine.GetContext<ModeContext>();
 			if (IsInitialization())
 			{
 				EntityManager.SetOrAddComponentData(gameModeEntity, new GameModeHudSettings());
 				FinishInitialization();
+
+				if (HasSingleton<GameModePreMatch>())
+					gmContext.RunPreMatch = true;
 			}
 
 			Machine.Update();
-			var gmContext = Machine.GetContext<ModeContext>();
 			{
 				gmContext.Data.Team0 = gmContext.Teams[0].Target;
 				gmContext.Data.Team1 = gmContext.Teams[1].Target;
@@ -186,6 +194,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 		public class ModeContext : ExternalContextBase, ITickGetter
 		{
+			public bool RunPreMatch;
+			public int RoundPerMatch;
+			
 			public MpVersusHeadOn              Data;
 			public Entity                      Entity;
 			public MpVersusHeadOnGameMode      GameModeSystem;
@@ -194,9 +205,10 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			public MpVersusHeadOnTeam[] Teams;
 			public GameModeHudSettings  HudSettings;
 
-			public NativeList<HeadOnOnUnitElimination>  EliminationEvents => GameModeSystem.EliminationEvents;
-			public NativeList<HeadOnStructureOnCapture> CaptureEvents     => GameModeSystem.CaptureEvents;
-			public NativeList<Entity>                   RespawnEvents     => GameModeSystem.RespawnEvents;
+			public NativeList<HeadOnOnUnitElimination>  UnitEliminationEvents => GameModeSystem.UnitEliminationEvents;
+			public NativeList<HeadOnOnDestroyArea>  DestroyAreaEvents => GameModeSystem.DestroyAreaEvents;
+			public NativeList<HeadOnStructureOnCapture> CaptureEvents         => GameModeSystem.CaptureEvents;
+			public NativeList<Entity>                   RespawnEvents         => GameModeSystem.RespawnEvents;
 
 			public UTick GetTick()
 			{
@@ -212,6 +224,17 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 		public Entity Entity;
 		public Entity Instigator;
+	}
+
+	public struct HeadOnOnDestroyArea : IComponentData
+	{
+		public Entity EntityTeam;
+		public Entity InstigatorTeam;
+
+		public Entity Entity;
+		public Entity Instigator;
+
+		public int Score;
 	}
 
 	public struct MpVersusHeadOnTeam

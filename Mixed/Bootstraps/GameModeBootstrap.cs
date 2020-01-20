@@ -43,10 +43,10 @@ namespace Bootstraps
 				if (world.GetExistingSystem<SimpleRhythmTestSystem>() != null)
 				{
 					var ent = world.EntityManager.CreateEntity(typeof(IsActive));
-					world.EntityManager.SetComponentData(ent, new IsActive {RequiredPlayers = 2});
+					world.EntityManager.SetComponentData(ent, new IsActive {RequiredPlayers = 1});
 				}
 
-				if (world.GetExistingSystem<ClientSimulationSystemGroup>() != null && CreationType >= 1)
+				/*if (world.GetExistingSystem<ClientSimulationSystemGroup>() != null && CreationType >= 1)
 				{
 					// Client worlds automatically connect to localhost
 					var ep = NetworkEndPoint.LoopbackIpv4;
@@ -59,7 +59,7 @@ namespace Bootstraps
 					var ep = NetworkEndPoint.AnyIpv4;
 					ep.Port = 7979;
 					network.Listen(ep);
-				}
+				}*/
 			}
 
 			EntityManager.DestroyEntity(bootstrapSingleton);
@@ -217,11 +217,11 @@ namespace Bootstraps
 
 		private void FaceToFace()
 		{
-						var playerEntities = m_PlayerQuery.ToEntityArray(Allocator.TempJob);
-			var count = playerEntities.Length;
-			var teamSize = count / 2;
-			var playerIndex = 0;
-			
+			var playerEntities = m_PlayerQuery.ToEntityArray(Allocator.TempJob);
+			var count          = playerEntities.Length;
+			var teamSize       = count / 2;
+			var playerIndex    = 0;
+
 			// Create formation
 			const int formationCount = 2;
 			for (var _ = 0; _ != formationCount; _++)
@@ -232,7 +232,7 @@ namespace Bootstraps
 					{
 						if (playerEntities[playerIndex] == default)
 							continue;
-						
+
 						var armyEntity = EntityManager.CreateEntity(typeof(ArmyFormation), typeof(FormationParent), typeof(FormationChild));
 						EntityManager.SetComponentData(armyEntity, new FormationParent {Value = formationRoot});
 
@@ -252,7 +252,7 @@ namespace Bootstraps
 							Weight              = 8.5f,
 							AttackSeekRange     = 16f
 						};
-						
+
 						var displayEquipment = new UnitDisplayedEquipment();
 						var targetKit        = UnitKnownTypes.Taterazay;
 						if (playerEntities.Length > playerIndex && playerEntities[playerIndex] != Entity.Null)
@@ -296,7 +296,7 @@ namespace Bootstraps
 
 			playerEntities.Dispose();
 		}
-		
+
 		protected override void OnUpdate()
 		{
 			if (!IsServer || m_Created)
@@ -307,7 +307,7 @@ namespace Bootstraps
 
 			m_Created = true;
 			
-			FaceToFace();
+			SingleTeam();
 
 			// START THE GAMEMODE
 			var gamemodeMgr = World.GetOrCreateSystem<GameModeManager>();

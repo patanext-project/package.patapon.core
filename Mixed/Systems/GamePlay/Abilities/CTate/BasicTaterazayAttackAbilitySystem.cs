@@ -63,6 +63,9 @@ namespace Systems.GamePlay.CTate
 				Entities
 					.ForEach((Entity entity, int nativeThreadIndex, ref RhythmAbilityState state, ref BasicTaterazayAttackAbility ability, in Owner owner) =>
 					{
+						if (!impl.CanExecuteAbility(owner.Target))
+							return;
+						
 						Entity* tryGetChain = stackalloc[] {entity, owner.Target};
 						if (!relativeTeamFromEntity.TryGetChain(tryGetChain, 2, out var relativeTeam))
 							return;
@@ -133,6 +136,7 @@ namespace Systems.GamePlay.CTate
 											Origin = owner.Target, Destination = enemy, Damage = -damage,
 										});
 										ecb.AddComponent(nativeThreadIndex, evEnt, new Translation {Value = closestHit.Position});
+										break;
 									}
 								}
 							}
@@ -163,9 +167,7 @@ namespace Systems.GamePlay.CTate
 						}
 
 						// if all conditions are ok, start attacking.
-						var targetPosition = impl.LocalToWorldFromEntity[seekingState.Enemy].Position;
-						var attackDistance = math.distance(targetPosition.x, unitPosition.x);
-						if (attackDistance <= statistics.AttackMeleeRange && ability.NextAttackDelay <= 0.0f && ability.AttackStartTick <= 0)
+						if (seekingState.SelfDistance <= statistics.AttackMeleeRange && ability.NextAttackDelay <= 0.0f && ability.AttackStartTick <= 0)
 						{
 							var atkSpeed = playState.AttackSpeed;
 							if (state.Combo.IsFever && state.Combo.IsPerfect)
@@ -177,7 +179,7 @@ namespace Systems.GamePlay.CTate
 						}
 						else if (tick >= UTick.AddMs(attackStartTick, BasicTaterazayAttackAbility.DelaySlashMs))
 						{
-							var direction = math.sign(targetPosition.x - unitPosition.x);
+							var direction = math.sign(seekingState.SelfPosition.x - unitPosition.x);
 							velocity.Value.x = math.lerp(velocity.Value.x, playState.MovementAttackSpeed * direction, playState.GetAcceleration() * 50 * tick.Delta);
 						}
 

@@ -59,7 +59,6 @@ namespace Patapon.Client.RhythmEngine
 			m_CommandVfxSource.loop = false;
 
 			m_SongSystem                 = World.GetOrCreateSystem<SongSystem>();
-			m_SongSystem.MapTargetSongId = "dottama_gacheen";
 
 			RegisterAsyncOperations();
 		}
@@ -121,8 +120,7 @@ namespace Patapon.Client.RhythmEngine
 			var isCommandClient                                                          = false;
 			var isCommandServer                                                          = serverCommandState.StartTime <= EngineProcess.Milliseconds && serverCommandState.EndTime > EngineProcess.Milliseconds;
 			if (EntityManager.HasComponent<FlowSimulateProcess>(engine)) isCommandClient = currentCommand.ActiveAtTime <= EngineProcess.Milliseconds && clientCommandState.State.EndTime > EngineProcess.Milliseconds;
-
-			var tmp = serverCommandState.StartTime <= EngineProcess.Milliseconds && serverCommandState.StartTime > EngineProcess.Milliseconds
+			var tmp = serverCommandState.StartTime <= EngineProcess.Milliseconds && serverCommandState.EndTime > EngineProcess.Milliseconds
 			          || clientCommandState.State.StartTime <= EngineProcess.Milliseconds && clientCommandState.State.EndTime > EngineProcess.Milliseconds;
 
 			CommandStartTime = math.max(clientCommandState.State.StartTime, serverCommandState.StartTime);

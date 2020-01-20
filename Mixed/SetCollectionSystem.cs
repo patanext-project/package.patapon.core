@@ -23,13 +23,13 @@ namespace DefaultNamespace
 			Command
 		}
 
-		public static Dictionary<SystemType, Type[]> DynamicTypes;
+		public static  Dictionary<SystemType, Type[]> DynamicTypes;
 		private static Type[]                         s_CurrentTreatedArray;
 
 		private static List<Type> m_AssembliesTypes;
 
 		private static void SetSystems(SystemType type, Type interfaceType, Type subclass)
-		{ 
+		{
 			Type[] result;
 
 			var directoryPath = $"{Application.streamingAssetsPath}/collections/";
@@ -72,7 +72,7 @@ namespace DefaultNamespace
 		}
 
 		protected override void OnCreate()
-		{ 
+		{
 			if (DynamicTypes == null)
 			{
 				var stopwatch = new Stopwatch();
@@ -152,7 +152,8 @@ namespace DefaultNamespace
 	{
 		protected override void OnCreate()
 		{
-			GameStatic.Version = 3;
+			// Year_Month_Day_SubVersion
+			GameStatic.Version = 2020_01_20_01;
 		}
 
 		protected override void OnUpdate()

@@ -11,7 +11,7 @@ namespace Patapon4TLB.Core.MasterServer
 		{
 		}
 
-		public long UserGuid;
+		public ulong UserId;
 
 		public struct CompletionStatus : IRequestCompletionStatus
 		{

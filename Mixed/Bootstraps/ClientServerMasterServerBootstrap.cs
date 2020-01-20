@@ -42,7 +42,7 @@ namespace Bootstraps
 
 			foreach (var world in World.AllWorlds)
 			{
-				if (world.GetExistingSystem<ClientSimulationSystemGroup>() != null)
+				/*if (world.GetExistingSystem<ClientSimulationSystemGroup>() != null)
 				{
 					world.EntityManager.CreateEntity(typeof(IsActive));
 				}
@@ -54,7 +54,7 @@ namespace Bootstraps
 					var ep = NetworkEndPoint.AnyIpv4;
 					ep.Port = 7979;
 					world.GetOrCreateSystem<NetworkStreamReceiveSystem>().Listen(ep);
-				}
+				}*/
 			}
 
 			EntityManager.DestroyEntity(bootstrapSingleton);

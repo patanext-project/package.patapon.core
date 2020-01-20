@@ -45,8 +45,9 @@ namespace Patapon4TLB.Core.MasterServer
 
 				if (m_RequestUserLoginModule.InvokeDefaultOnResult(entity, new RequestGetUserFormationData.CompletionStatus {ErrorCode = result.Error}, out var responseEntity))
 				{
-					var data = EntityManager.GetComponentData<ResultGetUserFormationData>(responseEntity);
+					var data = EntityManager.GetComponentData<ResultGetUserFormationData>(responseEntity) ?? new ResultGetUserFormationData();
 					data.Root = result.Result;
+					EntityManager.SetComponentData(responseEntity, data);
 				}
 			}
 		}

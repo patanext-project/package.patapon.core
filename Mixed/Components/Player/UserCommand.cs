@@ -46,6 +46,9 @@ namespace Patapon4TLB.Default.Player
 		public bool             IsSelectingAbility;
 		public AbilitySelection Ability;
 
+		public int  LastActionIndex;
+		public uint LastActionFrame;
+
 		public UnsafeAllocationLength<RhythmAction> GetRhythmActions()
 		{
 			fixed (byte* fx = m_RhythmActions)
@@ -66,24 +69,31 @@ namespace Patapon4TLB.Default.Player
 
 		public void ReadFrom(DataStreamReader reader, ref DataStreamReader.Context ctx, UserCommand baseline, NetworkCompressionModel compressionModel)
 		{
-			var baselineActions                                         = baseline.GetRhythmActions();
-			var i                                                       = 0;
-			foreach (ref var action in GetRhythmActions()) action.flags = (byte) reader.ReadPackedUIntDelta(ref ctx, baselineActions[i++].flags, compressionModel);
+			var baselineActions = baseline.GetRhythmActions();
+
+			for (var i = 0; i < 4; i++)
+				m_RhythmActions[i] = (byte) reader.ReadPackedUIntDelta(ref ctx, baseline.m_RhythmActions[i++], compressionModel);
 
 			Panning            = reader.ReadPackedFloat(ref ctx, compressionModel);
 			IsSelectingAbility = reader.ReadBitBool(ref ctx);
 			Ability            = (AbilitySelection) reader.ReadPackedUIntDelta(ref ctx, (uint) baseline.Ability, compressionModel);
+
+			LastActionIndex = reader.ReadPackedIntDelta(ref ctx, baseline.LastActionIndex, compressionModel);
+			LastActionFrame = reader.ReadPackedUIntDelta(ref ctx, baseline.LastActionFrame, compressionModel);
 		}
 
 		public void WriteTo(DataStreamWriter writer, UserCommand baseline, NetworkCompressionModel compressionModel)
 		{
 			var baselineActions = baseline.GetRhythmActions();
-			var i               = 0;
-			foreach (ref readonly var action in GetRhythmActions()) writer.WritePackedUIntDelta(action.flags, baselineActions[i++].flags, compressionModel);
+			for (var i = 0; i < 4; i++)
+				writer.WritePackedUIntDelta(m_RhythmActions[i], baseline.m_RhythmActions[i++], compressionModel);
 
 			writer.WritePackedFloat(Panning, compressionModel);
 			writer.WriteBitBool(IsSelectingAbility);
 			writer.WritePackedUIntDelta((uint) Ability, (uint) baseline.Ability, compressionModel);
+
+			writer.WritePackedIntDelta(LastActionIndex, baseline.LastActionIndex, compressionModel);
+			writer.WritePackedUIntDelta(LastActionFrame, baseline.LastActionFrame, compressionModel);
 		}
 	}
 

@@ -30,10 +30,12 @@ namespace package.patapon.core.FeverWorm
 				Presentation.gameObject.SetActive(value);
 			}
 		}
-	}
 
-	public struct CreateFeverWormData : IComponentData
-	{
+		public override void OnReset()
+		{
+			base.OnReset();
+			m_IsEnabled = null;
+		}
 	}
 
 	// we do process on the backend instead of presentation since we do disable/enabled the presentation (aka removing it from the entity list)
@@ -147,9 +149,7 @@ namespace package.patapon.core.FeverWorm
 		protected override void OnCreate()
 		{
 			base.OnCreate();
-
-			EntityManager.CreateEntity(typeof(CreateFeverWormData));
-
+			
 			m_EngineQuery    = GetEntityQuery(typeof(RhythmEngineDescription), typeof(Relative<PlayerDescription>));
 			m_PlaySongSystem = World.GetOrCreateSystem<RhythmEnginePlaySong>();
 		}
@@ -163,7 +163,7 @@ namespace package.patapon.core.FeverWorm
 
 		protected override EntityQuery GetQuery()
 		{
-			return GetEntityQuery(typeof(CreateFeverWormData));
+			return GetEntityQuery(typeof(RhythmEngineDescription), typeof(FlowSimulateProcess));
 		}
 
 		protected override void SpawnBackend(Entity target)

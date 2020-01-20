@@ -237,7 +237,7 @@ namespace RhythmEngine
 
 		protected override EntityQuery GetQuery()
 		{
-			return GetEntityQuery(typeof(CreateFeverWormData));
+			return GetEntityQuery(typeof(RhythmEngineDescription), typeof(FlowSimulateProcess));
 		}
 
 		protected override void SpawnBackend(Entity target)

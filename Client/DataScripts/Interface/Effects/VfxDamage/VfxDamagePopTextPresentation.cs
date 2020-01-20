@@ -4,6 +4,7 @@ using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Systems;
 using TMPro;
 using Unity.Mathematics;
+using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -15,10 +16,8 @@ namespace package.patapon.core.Models.InGame.VFXDamage
 		public TextMeshPro[] damageLabels;
 		public Animator      animator;
 
-		private void OnEnable()
-		{
-			animator.enabled = false;
-		}
+		public Color damageColor;
+		public Color healColor;
 	}
 
 	public class VfxDamagePopTextBackend : RuntimeAssetBackend<VfxDamagePopTextPresentation>
@@ -37,6 +36,7 @@ namespace package.patapon.core.Models.InGame.VFXDamage
 		}
 	}
 
+	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class VfxDamagePopTextRenderSystem : BaseRenderSystem<VfxDamagePopTextPresentation>
 	{
 		protected override void PrepareValues()
@@ -49,8 +49,6 @@ namespace package.patapon.core.Models.InGame.VFXDamage
 			var backend = (VfxDamagePopTextBackend) definition.Backend;
 			if (!backend.isPlayQueued)
 			{
-				definition.animator.Update(Time.DeltaTime);
-
 				var count = (int) ((Time.ElapsedTime - backend.startTime) * 15);
 				foreach (var label in definition.damageLabels)
 				{
@@ -111,6 +109,11 @@ namespace package.patapon.core.Models.InGame.VFXDamage
 				y = translationTarget.Value.y,
 				z = -10
 			};
+
+			foreach (var label in definition.damageLabels)
+			{
+				label.color = backend.eventData.Damage > 0 ? definition.healColor : definition.damageColor;
+			}
 		}
 
 		protected override void ClearValues()

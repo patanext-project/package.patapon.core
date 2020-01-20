@@ -107,7 +107,11 @@ namespace Patapon.Server.GameModes.VSHeadOn
 						entMgr.ReplaceOwnerData(rhythmEnt, player);
 					}
 
-					var unitTarget = entMgr.CreateEntity(typeof(UnitTargetDescription), typeof(Translation), typeof(LocalToWorld), typeof(Relative<PlayerDescription>)/*,
+					if (entMgr.HasComponent<HeadOnSpectating>(player))
+						entMgr.RemoveComponent<HeadOnSpectating>(player);
+					entMgr.AddComponent<HeadOnPlaying>(player);
+
+					var unitTarget = entMgr.CreateEntity(typeof(UnitTargetDescription), typeof(Translation), typeof(LocalToWorld), typeof(Relative<PlayerDescription>) /*,
 						typeof(TranslationSnapshot.Exclude), typeof(InterpolatedTranslationSnapshot.Use)*/);
 					entMgr.AddComponent(unitTarget, typeof(GhostEntity));
 					entMgr.AddComponentData(unitTarget, EntityDescription.New<UnitTargetDescription>());

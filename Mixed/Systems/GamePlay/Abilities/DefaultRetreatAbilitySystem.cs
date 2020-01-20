@@ -25,6 +25,8 @@ namespace Systems.GamePlay
 			var unitControllerStateFromEntity = GetComponentDataFromEntity<UnitControllerState>();
 			var velocityFromEntity            = GetComponentDataFromEntity<Velocity>();
 
+			var impl = new BasicUnitAbilityImplementation(this);
+
 			inputDeps =
 				Entities
 					.WithReadOnly(unitPlayStateFromEntity)
@@ -34,6 +36,9 @@ namespace Systems.GamePlay
 					.WithNativeDisableParallelForRestriction(velocityFromEntity)
 					.ForEach((Entity entity, ref RhythmAbilityState state, ref DefaultRetreatAbility ability, in Owner owner) =>
 					{
+						if (!impl.CanExecuteAbility(owner.Target))
+							return;
+
 						if (state.ActiveId != ability.LastActiveId)
 						{
 							ability.IsRetreating = false;

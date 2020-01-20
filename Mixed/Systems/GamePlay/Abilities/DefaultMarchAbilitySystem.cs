@@ -29,6 +29,8 @@ namespace Systems.GamePlay
 			var unitControllerStateFromEntity = GetComponentDataFromEntity<UnitControllerState>();
 			var velocityFromEntity            = GetComponentDataFromEntity<Velocity>();
 			var relativeTargetFromEntity      = GetComponentDataFromEntity<Relative<UnitTargetDescription>>(true);
+			
+			var impl = new BasicUnitAbilityImplementation(this);
 
 			inputDeps =
 				Entities
@@ -43,6 +45,9 @@ namespace Systems.GamePlay
 					.WithNativeDisableParallelForRestriction(velocityFromEntity)
 					.ForEach((Entity entity, ref RhythmAbilityState state, ref DefaultMarchAbility marchAbility, in Owner owner) =>
 					{
+						if (!impl.CanExecuteAbility(owner.Target))
+							return;
+						
 						if (!state.IsActive)
 						{
 							marchAbility.Delta = 0.0f;

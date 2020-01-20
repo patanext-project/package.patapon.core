@@ -151,6 +151,8 @@ namespace RhythmEngine
 			ClearValues();
 		}
 
+		private int m_LastFrame;
+
 		private void InitializeValues()
 		{
 			var player = this.GetFirstSelfGamePlayer();
@@ -190,15 +192,22 @@ namespace RhythmEngine
 
 				//process.Milliseconds -= (int) (localTick - playerCommand.Base.Tick);
 
-				var key = 1;
-				foreach (var ac in playerCommand.Base.GetRhythmActions())
-				{
-					if (!ac.WasPressed)
-					{
-						key++;
-						continue;
-					}
+				var pressureKey   = -1;
+				var rhythmActions = playerCommand.Base.GetRhythmActions();
+				for (var i = 0; pressureKey < 0 && i != rhythmActions.Length; i++)
+					if (rhythmActions[i].WasPressed)
+						pressureKey = i;
 
+				if (!EntityManager.HasComponent<GamePlayerLocalTag>(playerOfEngine) && m_LastFrame != playerCommand.Base.LastActionIndex
+				    && playerCommand.Base.GetRhythmActions()[playerCommand.Base.LastActionIndex].IsActive)
+				{
+					m_LastFrame = playerCommand.Base.LastActionIndex;
+					pressureKey = playerCommand.Base.LastActionIndex;
+				}
+
+				pressureKey++;
+				if (pressureKey > 0)
+				{
 					IsNewPressure = true;
 
 
@@ -219,7 +228,7 @@ namespace RhythmEngine
 					var commandIsRunning = gameCommandState.IsGamePlayActive(process.Milliseconds)
 					                       || predictedCommand.State.IsGamePlayActive(process.Milliseconds);
 
-					var shouldFail        = commandIsRunning && !inputActive || engineState.IsRecovery(currFlowBeat) || absRealScore > FlowPressure.Error;
+					var shouldFail = commandIsRunning && !inputActive || engineState.IsRecovery(currFlowBeat) || absRealScore > FlowPressure.Error;
 					if (shouldFail)
 					{
 						Debug.Log($"{commandIsRunning}, {inputActive}, {engineState.IsRecovery(currFlowBeat)}, {currFlowBeat} < {engineState.NextBeatRecovery} ({process.Milliseconds})");
@@ -230,17 +239,15 @@ namespace RhythmEngine
 					var isPerfect = !shouldFail && currentCommand.ActiveAtTime >= process.Milliseconds && currentCommand.Power >= 100;
 					if (isPerfect) m_AudioSourceOnPerfect.PlayOneShot(m_AudioOnPerfect, 1.25f);
 
-					m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPressureDrum[key][score]);
+					m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPressureDrum[pressureKey][score]);
 
 					if (GetSingleton<P4SoundRules.Data>().EnableDrumVoices) // voiceoverlay
 					{
 						var id         = score;
 						if (id > 0) id = Mathf.Clamp(new Random((uint) Environment.TickCount).NextInt(-1, 3), 1, 2); // more chance to have a 1
 
-						m_AudioSourceOnNewPressureVoice.PlayOneShot(m_AudioOnPressureVoice[key][id]);
+						m_AudioSourceOnNewPressureVoice.PlayOneShot(m_AudioOnPressureVoice[pressureKey][id]);
 					}
-
-					break;
 				}
 			}
 		}

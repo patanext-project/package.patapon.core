@@ -75,6 +75,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					{
 						structure.CaptureProgress[0] = 0;
 						structure.CaptureProgress[1] = 0;
+						
+						//structure.CaptureProgress[1] = 1;
 
 						for (var t = 0; t != teamArray.Length; t++)
 						{
@@ -113,6 +115,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 						{
 							Source = entity
 						});
+						
+						structure.CaptureProgress[0] = 0;
+						structure.CaptureProgress[1] = 0;
 					}
 					else
 					{
@@ -143,10 +148,15 @@ namespace Patapon.Server.GameModes.VSHeadOn
 							}
 						}
 
+						var initialProgress = stackalloc[] {structure.CaptureProgress[0], structure.CaptureProgress[1]};
+
 						// Apply capture progression...
 						for (var t = 0; t != teamArray.Length; t++)
 						{
-							var speed = playerOnPointCount[t] - playerOnPointCount[1 - t];
+							var speed = playerOnPointCount[t];
+							if (initialProgress[1 - t] > initialProgress[t] && playerOnPointCount[1 - t] > playerOnPointCount[t])
+								speed -= playerOnPointCount[1 - t];
+							
 							if (speed < 0)
 								continue;
 							structure.CaptureProgress[t] += (int) (tick.DeltaMs * speed);
@@ -163,6 +173,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 								{
 									Source = entity
 								});
+
+								structure.CaptureProgress[0] = 0;
+								structure.CaptureProgress[1] = 0;
 
 								return;
 							}

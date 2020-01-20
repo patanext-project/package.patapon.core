@@ -29,45 +29,20 @@ namespace Patapon.Client.PoolingSystems
 
 		protected override EntityQuery GetQuery()
 		{
+			RequireForUpdate(GetEntityQuery(typeof(HeadOnFlag)));
+			
 			return GetEntityQuery(typeof(MpVersusHeadOn));
 		}
 
 		protected override void SpawnBackend(Entity target)
 		{
 			if (m_Canvas == null)
-			{
-				var interfaceOrder = World.GetExistingSystem<UIHeadOnInterfaceOrderSystem>().Order;
-				var canvasSystem   = World.GetExistingSystem<ClientCanvasSystem>();
-
-				m_Canvas                = canvasSystem.CreateCanvas(out _, "VSHeadOn Canvas", defaultAddRaycaster: false);
-				m_Canvas.renderMode     = RenderMode.ScreenSpaceCamera;
-				m_Canvas.worldCamera    = World.GetExistingSystem<ClientCreateCameraSystem>().Camera;
-				m_Canvas.planeDistance  = 1;
-				m_Canvas.sortingLayerID = SortingLayer.NameToID("OverlayUI");
-				m_Canvas.sortingOrder   = interfaceOrder;
-				// svg need them additional channels 👌
-				m_Canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.TexCoord1
-				                                    | AdditionalCanvasShaderChannels.TexCoord2
-				                                    | AdditionalCanvasShaderChannels.TexCoord3;
-
-				var scaler = m_Canvas.GetComponent<CanvasScaler>();
-				scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-				scaler.referenceResolution = new Vector2(1920, 1080);
-				scaler.screenMatchMode     = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-				scaler.matchWidthOrHeight  = 1;
-			}
+				m_Canvas = CanvasUtility.Create(World, World.GetExistingSystem<UIHeadOnInterfaceOrderSystem>().Order, "VSHeadOn", scalerMatchWidthOrHeight: 1f);
 
 			base.SpawnBackend(target);
 
-			var backend = LastBackend;
-			backend.transform.SetParent(m_Canvas.transform, false);
-
-			var rt = backend.GetComponent<RectTransform>();
-			rt.anchorMin        = new Vector2(0, 0);
-			rt.anchorMax        = new Vector2(1, 1);
-			rt.sizeDelta        = Vector2.zero;
-			rt.anchoredPosition = Vector2.zero;
-			rt.pivot            = new Vector2(0.5f, 0.5f);
+			LastBackend.transform.SetParent(m_Canvas.transform, false);
+			CanvasUtility.ExtendRectTransform(LastBackend.GetComponent<RectTransform>());
 		}
 	}
 }

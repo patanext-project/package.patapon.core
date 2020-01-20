@@ -68,6 +68,12 @@ namespace DefaultNamespace
 					ref var ac = ref actions.AsRef(targetKey);
 					ac.FrameUpdate |= ev.Phase == InputActionPhase.Started || ev.Phase == InputActionPhase.Canceled;
 					ac.IsActive    =  ev.Data.IsActive;
+
+					if (ac.WasPressed)
+					{
+						m_LocalCommand.LastActionIndex = targetKey;
+						m_LocalCommand.LastActionFrame = ServerTick.AsUInt;
+					}
 				}
 			}
 
@@ -95,6 +101,12 @@ namespace DefaultNamespace
 
 			command.Base = m_LocalCommand;
 			EntityManager.SetComponentData(gamePlayer, command);
+
+			if (EntityManager.HasComponent<CommandInterFrame>(gamePlayer))
+			{
+				var interframeBuffer = EntityManager.GetBuffer<CommandInterFrame>(gamePlayer);
+				interframeBuffer.Add(new CommandInterFrame {Base = m_LocalCommand});
+			}
 		}
 
 		private static void update_distance(ref float distance, Vector2 curr, Vector2 target, ref AbilitySelection currentSelection, in AbilitySelection targetSelection)

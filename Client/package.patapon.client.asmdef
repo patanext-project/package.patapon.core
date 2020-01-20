@@ -6,6 +6,7 @@
         "package.patapon.masterserver.shared",
         "package.stormiumteam.gamebase",
         "package.stormiumteam.networking",
+        "patapon.masterserver.shared",
         "Unity.VectorGraphics",
         "Revolution.NetCode",
         "Revolution.Snapshot",
@@ -24,7 +25,8 @@
         "Unity.Mathematics",
         "Unity.Collections",
         "Unity.Jobs",
-        "Unity.Burst"
+        "Unity.Burst",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -52,12 +52,14 @@ namespace Patapon.Mixed.RhythmEngine.Definitions
 
 		public void WriteTo(DataStreamWriter writer, ref RhythmCommandDefinition baseline, DefaultSetup setup, SerializeClientData jobData)
 		{
-			writer.WritePackedStringDelta(Identifier, baseline.Identifier, jobData.NetworkCompressionModel);
+			writer.WritePackedStringDelta(Identifier, default(NativeString64), jobData.NetworkCompressionModel);
+			writer.WritePackedInt(BeatLength, jobData.NetworkCompressionModel);
 		}
 
 		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref RhythmCommandDefinition baseline, DeserializeClientData jobData)
 		{
-			Identifier = reader.ReadPackedStringDelta(ref ctx, baseline.Identifier, jobData.NetworkCompressionModel);
+			Identifier = reader.ReadPackedStringDelta(ref ctx, default(NativeString64), jobData.NetworkCompressionModel);
+			BeatLength = reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
 		}
 
 		public bool DidChange(RhythmCommandDefinition baseline)

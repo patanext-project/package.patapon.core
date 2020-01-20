@@ -5,6 +5,14 @@ using UnityEngine.UI;
 
 namespace Patapon4TLB.GameModes.Interface
 {
+	public enum UIHeadOnDrawerType
+	{
+		Structure,
+		DeadUnit,
+		Enemy,
+		Ally
+	}
+
 	public class UIHeadOnDrawerFrame : MonoBehaviour
 	{
 		[Serializable]
@@ -12,9 +20,13 @@ namespace Patapon4TLB.GameModes.Interface
 		{
 			public MaskableGraphic circleGraphic;
 		}
+
+		[SerializeField] private RectTransform drawerSpace;
 		
-		public RectTransform Drawer;
-		public RectTransform UnitStatusFrame;
+		[SerializeField] private RectTransform structureDrawer;
+		[SerializeField] private RectTransform deadUnitDrawer;
+		[SerializeField] private RectTransform enemyDrawer;
+		[SerializeField] private RectTransform allyDrawer;
 
 		public TeamFlagSide[] FlagSides;
 
@@ -33,7 +45,24 @@ namespace Patapon4TLB.GameModes.Interface
 			Debug.Assert(FlagSides.Length == 2, "FlagSides == 2");
 			
 			m_Corners = new Vector3[4];
-			Drawer.GetLocalCorners(m_Corners);
+			drawerSpace.GetLocalCorners(m_Corners);
+		}
+
+		public Transform GetDrawer(UIHeadOnDrawerType type)
+		{
+			switch (type)
+			{
+				case UIHeadOnDrawerType.Structure:
+					return structureDrawer;
+				case UIHeadOnDrawerType.DeadUnit:
+					return deadUnitDrawer;
+				case UIHeadOnDrawerType.Enemy:
+					return enemyDrawer;
+				case UIHeadOnDrawerType.Ally:
+					return allyDrawer;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(type), type, null);
+			}
 		}
 		
 		public Vector3 GetPosition(float t, DrawerAlignment alignment)

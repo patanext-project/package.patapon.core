@@ -31,6 +31,9 @@ namespace Systems.GamePlay.CTate
 				Entities
 					.ForEach((Entity entity, int nativeThreadIndex, ref RhythmAbilityState state, ref BasicTaterazayDefendFrontalAbility ability, in Owner owner) =>
 					{
+						if (!impl.CanExecuteAbility(owner.Target))
+							return;
+						
 						Entity* tryGetChain = stackalloc[] {entity, owner.Target};
 						if (!relativeTargetFromEntity.TryGetChain(tryGetChain, 2, out var relativeTarget))
 						{
@@ -53,16 +56,16 @@ namespace Systems.GamePlay.CTate
 								velocity.Value.x                 = math.lerp(velocity.Value.x, 0, playState.GetAcceleration() * 50 * tick.Delta);
 							}
 
-							float defense = playState.Defense * 0.25f;
+							float defense = playState.Defense * 0.5f;
 
-							playState.ReceiveDamagePercentage *= 0.75f;
+							playState.ReceiveDamagePercentage *= 0.7f;
 							if (state.Combo.IsFever)
 							{
 								playState.ReceiveDamagePercentage *= 0.8f;
 								defense                           *= 1.2f;
 								if (state.Combo.IsPerfect)
 								{
-									playState.ReceiveDamagePercentage *= 0.8f;
+									playState.ReceiveDamagePercentage *= 0.9f;
 									defense                           *= 1.2f;
 								}
 							}

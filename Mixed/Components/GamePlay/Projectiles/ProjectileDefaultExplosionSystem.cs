@@ -65,9 +65,9 @@ namespace Components.GamePlay.Projectiles
 				ImpulseFallOfType = GetArchetypeChunkBufferType<DistanceImpulseFallOf>(true),
 				DamageFallOfType  = GetArchetypeChunkBufferType<DistanceDamageFallOf>(true),
 
-				LivableDescFromEntity = GetComponentDataFromEntity<LivableDescription>(true),
-				MovableDescFromEntity = GetComponentDataFromEntity<MovableDescription>(true),
-				
+				LivableHealthFromEntity = GetComponentDataFromEntity<LivableHealth>(true),
+				MovableDescFromEntity   = GetComponentDataFromEntity<MovableDescription>(true),
+
 				DamageFrameFromEntity = GetComponentDataFromEntity<DamageFrame>(true),
 
 				RelativeMovableFromEntity = GetComponentDataFromEntity<Relative<MovableDescription>>(true),
@@ -102,9 +102,9 @@ namespace Components.GamePlay.Projectiles
 			[ReadOnly] public ArchetypeChunkBufferType<DistanceImpulseFallOf>         ImpulseFallOfType;
 			[ReadOnly] public ArchetypeChunkBufferType<DistanceDamageFallOf>          DamageFallOfType;
 
-			[ReadOnly] public ComponentDataFromEntity<LivableDescription> LivableDescFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<MovableDescription> MovableDescFromEntity;
-			
+			[ReadOnly] public ComponentDataFromEntity<LivableHealth>      LivableHealthFromEntity;
+
 			[ReadOnly] public ComponentDataFromEntity<DamageFrame> DamageFrameFromEntity;
 
 			[ReadOnly] public ComponentDataFromEntity<Relative<MovableDescription>> RelativeMovableFromEntity;
@@ -167,7 +167,7 @@ namespace Components.GamePlay.Projectiles
 				}
 			}
 
-			private void DoDamage(ref PointDistanceInput input, Entity source, in ProjectileDefaultExplosion explosion, DynamicBuffer<DistanceDamageFallOf> buffer)
+			private bool DoDamage(ref PointDistanceInput input, Entity source, in ProjectileDefaultExplosion explosion, DynamicBuffer<DistanceDamageFallOf> buffer)
 			{
 				input.MaxDistance = explosion.DamageRadius;
 
@@ -176,7 +176,7 @@ namespace Components.GamePlay.Projectiles
 				for (var i = 0; i != rbCount; i++)
 				{
 					var rb = rigidBodies[i];
-					if (!rb.HasCollider || rb.Entity == default || !MovableDescFromEntity.Exists(rb.Entity))
+					if (!rb.HasCollider || rb.Entity == default || (LivableHealthFromEntity.Exists(rb.Entity) && LivableHealthFromEntity[rb.Entity].IsDead))
 						continue;
 
 					var cc         = new CustomCollide(rb);
@@ -185,12 +185,12 @@ namespace Components.GamePlay.Projectiles
 						continue;
 
 					var targetDamage = explosion.MaxDamage;
-					var minDamage = explosion.MinDamage;
-					var maxDamage = explosion.MaxDamage;
+					var minDamage    = explosion.MinDamage;
+					var maxDamage    = explosion.MaxDamage;
 					if (DamageFrameFromEntity.TryGet(source, out var damageFrame))
 					{
 						targetDamage = damageFrame.Damage;
-						maxDamage = math.max(targetDamage, maxDamage);
+						maxDamage    = math.max(targetDamage, maxDamage);
 						if (minDamage < 0)
 							minDamage = 0;
 					}
@@ -209,6 +209,8 @@ namespace Components.GamePlay.Projectiles
 
 					Debug.Log($"Damage to {rb.Entity} -> {damage:F2} to {(int) damage}");
 				}
+
+				return false;
 			}
 
 			public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
@@ -229,9 +231,11 @@ namespace Components.GamePlay.Projectiles
 					var translation = translationArray[ent];
 					input.Position = translation.Value;
 
-					if (chunk.Has(ImpulseFallOfType)) DoImpulse(ref input, entityArray[ent], explosionArray[ent], impulseFallOfArray[ent]);
+					if (chunk.Has(ImpulseFallOfType))
+						DoImpulse(ref input, entityArray[ent], explosionArray[ent], impulseFallOfArray[ent]);
 
-					if (chunk.Has(DamageFallOfType)) DoDamage(ref input, entityArray[ent], explosionArray[ent], damageFallOfArray[ent]);
+					if (chunk.Has(DamageFallOfType))
+						DoDamage(ref input, entityArray[ent], explosionArray[ent], damageFallOfArray[ent]);
 				}
 			}
 		}

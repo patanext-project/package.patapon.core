@@ -24,7 +24,7 @@ namespace Bootstraps
 				var network = world.GetExistingSystem<NetworkStreamReceiveSystem>();
 				if (world.GetExistingSystem<SimpleRhythmTestSystem>() != null) world.EntityManager.CreateEntity(typeof(IsActive));
 
-				if (world.GetExistingSystem<ClientSimulationSystemGroup>() != null)
+				/*if (world.GetExistingSystem<ClientSimulationSystemGroup>() != null)
 				{
 					// Client worlds automatically connect to localhost
 					var ep = NetworkEndPoint.LoopbackIpv4;
@@ -37,7 +37,7 @@ namespace Bootstraps
 					var ep = NetworkEndPoint.AnyIpv4;
 					ep.Port = 7979;
 					network.Listen(ep);
-				}
+				}*/
 			}
 
 			EntityManager.DestroyEntity(bootstrapSingleton);
