@@ -3,6 +3,7 @@ using Components.GamePlay.Projectiles;
 using Patapon.Mixed.GamePlay;
 using Patapon.Mixed.Projectiles;
 using Patapon.Mixed.Units;
+using Patapon4TLB.Core.Snapshots;
 using Revolution;
 using Stormium.Core.Projectiles;
 using StormiumTeam.GameBase;
@@ -47,7 +48,10 @@ namespace Systems.GamePlay.CYari
 					typeof(ProjectileAgeTime),
 					typeof(DistanceDamageFallOf),
 					typeof(DistanceImpulseFallOf),
-					typeof(GhostEntity)
+					typeof(GhostEntity),
+					
+					typeof(TranslationSnapshot.Exclude),
+					typeof(VelocityPredictedTranslation.Use)
 				};
 			}
 

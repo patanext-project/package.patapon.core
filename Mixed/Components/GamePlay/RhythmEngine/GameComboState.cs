@@ -19,6 +19,7 @@ namespace Patapon.Mixed.GamePlay.RhythmEngine
 	public struct GameComboState : IReadWriteComponentSnapshot<GameComboState>
 	{
 		public bool IsPerfect => Score >= 50;
+		public bool CanSummon => IsFever && JinnEnergy + 1 >= JinnEnergyMax;
 
 		/// <summary>
 		///     The score of the current combo. A perfect combo do a +5

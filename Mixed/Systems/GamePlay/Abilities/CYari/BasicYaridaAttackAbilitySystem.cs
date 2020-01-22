@@ -149,7 +149,7 @@ namespace Systems.GamePlay.CYari
 						var throwDeltaPosition = PredictTrajectory.Simple(throwOffset, new float3 {x = ability.ThrowSpeed * direction, y = ability.ThrowHeight}, gravity);
 						targetPosition.x -= throwDeltaPosition.x;
 
-						float distanceMercy = 1.8f;
+						float distanceMercy = 4f;
 						if (math.abs(targetPosition.x - unitPosition.x) < distanceMercy && ability.NextAttackDelay <= 0 && ability.AttackStartTick <= 0)
 						{
 							var atkSpeed = playState.AttackSpeed;

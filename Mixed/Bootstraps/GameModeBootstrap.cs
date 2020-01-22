@@ -1,3 +1,4 @@
+using ENet;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GameModes.VSHeadOn;
 using Patapon.Mixed.Units;
@@ -46,20 +47,21 @@ namespace Bootstraps
 					world.EntityManager.SetComponentData(ent, new IsActive {RequiredPlayers = 1});
 				}
 
-				/*if (world.GetExistingSystem<ClientSimulationSystemGroup>() != null && CreationType >= 1)
+				if (world.GetExistingSystem<ClientSimulationSystemGroup>() != null && CreationType >= 1)
 				{
 					// Client worlds automatically connect to localhost
-					var ep = NetworkEndPoint.LoopbackIpv4;
+					var ep = new Address();
+					ep.SetIP("127.0.0.1");
 					ep.Port = 7979;
 					network.Connect(ep);
 				}
 				else if (world.GetExistingSystem<ServerSimulationSystemGroup>() != null && CreationType == 1)
 				{
 					// Server world automatically listen for connections from any host
-					var ep = NetworkEndPoint.AnyIpv4;
+					var ep = new Address();
 					ep.Port = 7979;
 					network.Listen(ep);
-				}*/
+				}
 			}
 
 			EntityManager.DestroyEntity(bootstrapSingleton);
@@ -108,6 +110,7 @@ namespace Bootstraps
 			statistics.AttackMeleeRange = 2.6f;
 			
 			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("yari/basic_attack"), 0));
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("yari/jump_attack"), 0, AbilitySelection.Top));
 			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("yari/basic_defend"), 0));
 			
 			display.Mask = new NativeString64("Masks/n_yarida");
@@ -141,6 +144,7 @@ namespace Bootstraps
 		{
 						var playerEntities = m_PlayerQuery.ToEntityArray(Allocator.TempJob);
 			var count = playerEntities.Length;
+			count = 12;
 			
 			// Create formation
 			const int formationCount = 2;
@@ -150,8 +154,8 @@ namespace Bootstraps
 				{
 					for (var i = 0; i != count; i++)
 					{
-						if (playerEntities[i] == default)
-							continue;
+						/*if (playerEntities[i] == default)
+							continue;*/
 						
 						var armyEntity = EntityManager.CreateEntity(typeof(ArmyFormation), typeof(FormationParent), typeof(FormationChild));
 						EntityManager.SetComponentData(armyEntity, new FormationParent {Value = formationRoot});
@@ -177,7 +181,7 @@ namespace Bootstraps
 						var targetKit        = UnitKnownTypes.Taterazay;
 						if (playerEntities.Length > i && playerEntities[i] != Entity.Null)
 						{
-							targetKit = UnitKnownTypes.Taterazay;
+							targetKit = UnitKnownTypes.Yarida;
 							EntityManager.ReplaceOwnerData(unitEntity, playerEntities[i]);
 						}
 						else

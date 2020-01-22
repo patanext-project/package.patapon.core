@@ -67,13 +67,14 @@ namespace RhythmEngine
 				return audioSource;
 			}
 
-			m_AudioSourceOnNewBeat          = CreateAudioSource("On New Beat", 0.75f);
+			m_AudioSourceOnNewBeat          = CreateAudioSource("On New Beat", 0.7f);
 			m_AudioSourceOnNewPressureDrum  = CreateAudioSource("On New Pressure -> Drum", 1);
 			m_AudioSourceOnNewPressureVoice = CreateAudioSource("On New Pressure -> Voice", 1);
 			m_AudioSourceOnPerfect = CreateAudioSource("On Perfect Pressure", 1);
 
-			m_AudioSourceOnNewPressureVoice.priority = m_AudioSourceOnNewPressureDrum.priority + 1;
-			m_AudioSourceOnPerfect.priority = m_AudioSourceOnNewPressureVoice.priority + 1;
+			m_AudioSourceOnNewPressureDrum.priority = m_AudioSourceOnNewBeat.priority - 1;
+			m_AudioSourceOnNewPressureVoice.priority = m_AudioSourceOnNewPressureDrum.priority - 1;
+			m_AudioSourceOnPerfect.priority = m_AudioSourceOnNewPressureDrum.priority + 1;
 
 			GetModule(out m_AsyncOpModule);
 

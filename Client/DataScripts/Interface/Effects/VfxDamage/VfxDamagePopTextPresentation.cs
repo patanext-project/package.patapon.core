@@ -1,8 +1,10 @@
+using Misc.Extensions;
 using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Systems;
 using TMPro;
+using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
@@ -23,6 +25,7 @@ namespace package.patapon.core.Models.InGame.VFXDamage
 	public class VfxDamagePopTextBackend : RuntimeAssetBackend<VfxDamagePopTextPresentation>
 	{
 		public bool isPlayQueued;
+		public int lastDamage;
 
 		public TargetDamageEvent eventData;
 
@@ -39,9 +42,11 @@ namespace package.patapon.core.Models.InGame.VFXDamage
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class VfxDamagePopTextRenderSystem : BaseRenderSystem<VfxDamagePopTextPresentation>
 	{
+		public Entity LocalPlayer;
+
 		protected override void PrepareValues()
 		{
-
+			LocalPlayer = this.GetFirstSelfGamePlayer();
 		}
 
 		protected override void Render(VfxDamagePopTextPresentation definition)
@@ -88,11 +93,17 @@ namespace package.patapon.core.Models.InGame.VFXDamage
 				return;
 			}
 
+			var dmg = backend.eventData.Damage;
 			foreach (var label in definition.damageLabels)
 			{
-				label.text                 = math.abs(backend.eventData.Damage).ToString();
+				if (backend.lastDamage != dmg)
+				{
+					label.text = (dmg > 0 ? "+" : string.Empty) + math.abs(dmg);
+				}
 				label.maxVisibleCharacters = 0;
 			}
+
+			backend.lastDamage = dmg;
 
 			definition.animator.SetTrigger("OnHit");
 
@@ -110,9 +121,18 @@ namespace package.patapon.core.Models.InGame.VFXDamage
 				z = -10
 			};
 
+			var selfRelated = EntityManager.TryGetComponentData(backend.eventData.Destination, out Relative<PlayerDescription> destPlayer) && destPlayer.Target == LocalPlayer
+			                   || EntityManager.TryGetComponentData(backend.eventData.Origin, out Relative<PlayerDescription> originPlayer) && originPlayer.Target == LocalPlayer;
+
+			selfRelated = false;
 			foreach (var label in definition.damageLabels)
 			{
-				label.color = backend.eventData.Damage > 0 ? definition.healColor : definition.damageColor;
+				var color = backend.eventData.Damage > 0 ? definition.healColor : definition.damageColor;
+				if (!selfRelated)
+					color = Color.Lerp(color, Color.black, 0.175f);
+
+				label.color = Color.white;
+				label.faceColor = color;
 			}
 		}
 

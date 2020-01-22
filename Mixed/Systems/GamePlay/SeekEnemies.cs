@@ -51,14 +51,13 @@ namespace Patapon.Mixed.GamePlay
 			return !LivableHealthFromEntity.TryGet(target, out var enemyHealth) || !enemyHealth.IsDead;
 		}
 
-		public void SeekNearest(float3 from, float seekRange, NativeList<Entity> enemies, out Entity nearestEnemy, out float3 target, out float targetDistance)
+		public unsafe void SeekNearest(float3 from, float seekRange, NativeList<Entity> enemies, out Entity nearestEnemy, out float3 target, out float targetDistance)
 		{
 			nearestEnemy   = Entity.Null;
 			target         = float3.zero;
 			targetDistance = default;
 
 			var shortestDistance = float.MaxValue;
-			var rigidBodies = new NativeList<RigidBody>(16, Allocator.Temp);
 			for (var ent = 0; ent != enemies.Length; ent++)
 			{
 				var entity = enemies[ent];
@@ -72,43 +71,73 @@ namespace Patapon.Mixed.GamePlay
 				var transform = LocalToWorldFromEntity[entity];
 				var distance = math.distance(from.x, transform.Position.x);
 				var hitShapes = HitShapeContainerFromEntity[entity];
-				var direction = math.sign(transform.Position.x - from.x);
-				CreateRigidBody.Execute(ref rigidBodies, hitShapes.AsNativeArray(), entity, LocalToWorldFromEntity, TranslationFromEntity, ColliderFromEntity, false);
-				for (var rb = 0; rb != rigidBodies.Length; rb++)
+				var direction = (int) math.sign(transform.Position.x - from.x);
+				var hsArray = hitShapes.AsNativeArray();
+				for (var hs = 0; hs != hsArray.Length; hs++)
 				{
-					var rigidBody = rigidBodies[rb];
-					var aabb      = rigidBody.CalculateAabb();
+					var hitShape = hsArray[hs];
+					var translation = TranslationFromEntity[hitShape.Value].Value;
+					if (!LocalToWorldFromEntity.TryGet(hitShape.Value, out var ltw))
+					{
+						ltw = new LocalToWorld {Value = new float4x4(quaternion.identity, translation)};
+					}
+					else
+					{
+						// translation is always updated after ltw!
+						ltw.Value = new float4x4(ltw.Rotation, translation);
+					}
+					
+					RigidBody rigidBody = default;
+					rigidBody.Entity        = hitShape.Value;
+					rigidBody.Collider      = ColliderFromEntity[hitShape.Value].ColliderPtr;
+					rigidBody.WorldFromBody = new RigidTransform(ltw.Value);
 
+					if (hitShape.AttachedToParent)
+					{
+						var hasTranslation = TranslationFromEntity.TryGet(entity, out var ownerTranslation);
+						if (!LocalToWorldFromEntity.TryGet(entity, out ltw))
+						{
+							ltw = new LocalToWorld {Value = new float4x4(quaternion.identity, ownerTranslation.Value)};
+						}
+						else if (hasTranslation)
+						{
+							ltw.Value = new float4x4(ltw.Rotation, ownerTranslation.Value);
+						}
+
+						rigidBody.WorldFromBody.pos += ltw.Position;
+					}
+					
+					var aabb = rigidBody.CalculateAabb();
 					if (direction > 0)
 						distance = math.distance(from.x, aabb.Min.x);
 					else
 						distance = math.distance(from.x, aabb.Max.x);
+					
+					if (distance > seekRange)
+						continue;
+					if (distance > shortestDistance)
+						continue;
+					
+					target           = transform.Position;
+					targetDistance   = distance;
+					shortestDistance = distance;
+					nearestEnemy     = entity;
 				}
 
-				rigidBodies.Clear();
-				
 				if (distance > seekRange)
 					continue;
 
 				if (distance > shortestDistance)
 					continue;
-
-				target           = transform.Position;
-				targetDistance   = distance;
-				shortestDistance = distance;
-				nearestEnemy     = entity;
 			}
 		}
 
 		public void GetAllEnemies(ref NativeList<Entity> output, DynamicBuffer<TeamEnemies> enemies)
 		{
-			for (var team = 0; team != enemies.Length; team++)
+			for (int team = 0, teamLength = enemies.Length; team != teamLength; team++)
 			{
 				var entities = EntitiesFromTeam[enemies[team].Target];
-				for (var ent = 0; ent != entities.Length; ent++)
-				{
-					output.Add(entities[ent].Value);
-				}
+				output.AddRange(entities.Reinterpret<Entity>().AsNativeArray());
 			}
 		}
 

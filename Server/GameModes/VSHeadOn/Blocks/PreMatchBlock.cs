@@ -75,7 +75,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				WorldCtx.EntityMgr.DestroyEntity(entity);
 
 				var commandTarget = WorldCtx.EntityMgr.GetComponentData<CommandTargetComponent>(receive.SourceConnection);
-				if (commandTarget.targetEntity == default || WorldCtx.EntityMgr.HasComponent<PreMatchPlayerIsReady>(commandTarget.targetEntity))
+				if (commandTarget.targetEntity == default || WorldCtx.EntityMgr.HasComponent<PreMatchPlayerIsReady>(commandTarget.targetEntity)
+				                                          || !WorldCtx.EntityMgr.HasComponent<OwnerChild>(commandTarget.targetEntity))
 					return;
 
 				WorldCtx.EntityMgr.SetOrAddComponentData(commandTarget.targetEntity, new Relative<TeamDescription>(GameModeCtx.Teams[rpc.Team].Target));

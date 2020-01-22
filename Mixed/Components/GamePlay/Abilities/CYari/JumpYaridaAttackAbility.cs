@@ -21,7 +21,7 @@ namespace Patapon.Mixed.GamePlay.Abilities.CYari
 			public override void SetEntityData(Entity entity, Create data)
 			{
 				base.SetEntityData(entity, data);
-				EntityManager.SetComponentData(entity, new JumpYaridaAttackAbility {ThrowVec = new float2(20, -25)});
+				EntityManager.SetComponentData(entity, new JumpYaridaAttackAbility {ThrowVec = new float2(20f, -6f)});
 			}
 		}
 

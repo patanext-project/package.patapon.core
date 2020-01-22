@@ -63,9 +63,11 @@ namespace SnapshotArchetypes
 			            {
 				            var direction = directionFromEntity.TryGet(entity, out _, UnitDirection.Right);
 
-				            var targetFocal = seekingState.Enemy != default ? 7f : 5f;
+				            var targetFocal = seekingState.Enemy != default ? 7.8f : 5.7f;
+				            var targetOffset = seekingState.Enemy != default ? 0.66f : 0.33f;
+				            
 				            cameraModifier.FieldOfView = Mathf.SmoothDamp(cameraModifier.FieldOfView, targetFocal, ref cameraData.FocalVelocity, 0.35f, 100, dt); // add enemies seeking...
-				            cameraModifier.FieldOfView = math.clamp(cameraModifier.FieldOfView, 5, 7);
+				            cameraModifier.FieldOfView = math.max(cameraModifier.FieldOfView, 4);
 
 				            ownerFromEntity.TryGet(entity, out var owner);
 
@@ -84,8 +86,8 @@ namespace SnapshotArchetypes
 				            // in future, set y and z
 				            float3 positionResult = default;
 				            positionResult.x =  useTargetPosition ? targetPosition : translation.Value.x;
-				            positionResult.x += userCommand.Panning * (cameraModifier.FieldOfView + 2.5f * direction.Value);
-				            positionResult.x += cameraModifier.FieldOfView * 0.375f * direction.Value;
+				            positionResult.x += userCommand.Panning * (cameraModifier.FieldOfView + 4f * direction.Value);
+				            positionResult.x += cameraModifier.FieldOfView * targetOffset * direction.Value;
 
 				            cameraModifier.Position.x = Mathf.SmoothDamp(cameraModifier.Position.x, positionResult.x, ref cameraData.PositionVelocity, 0.4f, 100, dt);
 				            if (math.isnan(cameraModifier.Position.x) || math.abs(cameraModifier.Position.x) > 4000.0f) cameraModifier.Position.x = 0;

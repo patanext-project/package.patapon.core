@@ -30,7 +30,7 @@ namespace Systems.GamePlay
 			Entities
 				.ForEach((ref DefaultRebornAbility ability, ref RhythmAbilityState state, ref Owner owner) =>
 				{
-					if ((!ability.WasFever && !state.PreviousActiveCombo.IsFever)
+					if ((!ability.WasFever && !state.PreviousActiveCombo.CanSummon)
 					    || state.Engine == default
 					    || !healthFromEntity[owner.Target].IsDead)
 					{
@@ -45,7 +45,7 @@ namespace Systems.GamePlay
 						state.PreviousActiveCombo = default;
 						ability.WasFever          = false;
 					}
-					else if (state.PreviousActiveCombo.IsFever)
+					else if (state.PreviousActiveCombo.CanSummon)
 					{
 						ability.WasFever = true;
 					}

@@ -65,14 +65,8 @@ namespace Systems.GamePlay.CTate
 					{
 						if (!impl.CanExecuteAbility(owner.Target))
 							return;
-						
-						Entity* tryGetChain = stackalloc[] {entity, owner.Target};
-						if (!relativeTeamFromEntity.TryGetChain(tryGetChain, 2, out var relativeTeam))
-							return;
 
 						var seekingState = seekingStateFromEntity[owner.Target];
-						var teamEnemies  = enemiesFromTeam[relativeTeam.Target];
-						var statistics   = impl.UnitSettingsFromEntity[owner.Target];
 						var playState    = impl.UnitPlayStateFromEntity[owner.Target];
 						var unitPosition = impl.TranslationFromEntity[owner.Target].Value;
 
@@ -80,7 +74,7 @@ namespace Systems.GamePlay.CTate
 						var controllerUpdater = impl.ControllerFromEntity.GetUpdater(owner.Target).Out(out var controller);
 
 						var attackStartTick = UTick.CopyDelta(tick, ability.AttackStartTick);
-
+						
 						if (state.IsStillChaining && !state.IsActive)
 						{
 							controller.ControlOverVelocity.x = true;
@@ -111,6 +105,13 @@ namespace Systems.GamePlay.CTate
 								var unitDirection = impl.UnitDirectionFromEntity[owner.Target];
 								var distanceInput = CreateDistanceFlatInput.ColliderWithOffset(colliderQuery.Ptr, unitPosition.xy, new float2(unitDirection.Value, 1));
 								var allEnemies    = new NativeList<Entity>(Allocator.Temp);
+								
+								Entity* tryGetChain = stackalloc[] {entity, owner.Target};
+								if (!relativeTeamFromEntity.TryGetChain(tryGetChain, 2, out var relativeTeam))
+									return;
+								
+								var teamEnemies = enemiesFromTeam[relativeTeam.Target];
+								
 								seekEnemies.GetAllEnemies(ref allEnemies, teamEnemies);
 
 								var rigidBodies = new NativeList<RigidBody>(allEnemies.Length, Allocator.Temp);
@@ -156,6 +157,8 @@ namespace Systems.GamePlay.CTate
 						// if inactive or no enemy are present, continue...
 						if (!state.IsActive || seekingState.Enemy == default)
 							return;
+						
+						var statistics = impl.UnitSettingsFromEntity[owner.Target];
 						
 						controller.ControlOverVelocity.x = true;
 

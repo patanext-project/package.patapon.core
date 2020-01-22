@@ -21,10 +21,10 @@ namespace Systems.GamePlay.CTate
 	{
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			var tick                   = ServerTick;
-			var impl                   = new BasicUnitAbilityImplementation(this);
+			var tick                     = ServerTick;
+			var impl                     = new BasicUnitAbilityImplementation(this);
 			var relativeTargetFromEntity = GetComponentDataFromEntity<Relative<UnitTargetDescription>>(true);
-			var isPredicted = World.GetExistingSystem<RhythmAbilitySystemGroup>().IsPredicted;
+			var isPredicted              = World.GetExistingSystem<RhythmAbilitySystemGroup>().IsPredicted;
 
 			inputDeps =
 				Entities
@@ -32,14 +32,6 @@ namespace Systems.GamePlay.CTate
 					{
 						if (!impl.CanExecuteAbility(owner.Target))
 							return;
-						
-						Entity* tryGetChain = stackalloc[] {entity, owner.Target};
-						if (!relativeTargetFromEntity.TryGetChain(tryGetChain, 2, out var relativeTarget))
-							return;
-
-						var statistics   = impl.UnitSettingsFromEntity[owner.Target];
-						var unitPosition = impl.TranslationFromEntity[owner.Target].Value;
-						var direction    = impl.UnitDirectionFromEntity[owner.Target].Value;
 
 						var playStateUpdater  = impl.UnitPlayStateFromEntity.GetUpdater(owner.Target).Out(out var playState);
 						var velocityUpdater   = impl.VelocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
@@ -58,7 +50,7 @@ namespace Systems.GamePlay.CTate
 							playState.ReceiveDamagePercentage *= 0.7f;
 							if (state.Combo.IsFever)
 							{
-								playState.ReceiveDamagePercentage *= 0.75f;
+								playState.ReceiveDamagePercentage *= 0.8f;
 								defense                           *= 1.2f;
 								if (state.Combo.IsPerfect)
 								{
@@ -76,6 +68,14 @@ namespace Systems.GamePlay.CTate
 
 						if (!state.IsActive)
 							return;
+
+						Entity* tryGetChain = stackalloc[] {entity, owner.Target};
+						if (!relativeTargetFromEntity.TryGetChain(tryGetChain, 2, out var relativeTarget))
+						{
+							return;
+						}
+
+						var unitPosition = impl.TranslationFromEntity[owner.Target].Value;
 
 						if (state.Combo.IsFever)
 						{

@@ -97,7 +97,7 @@ namespace Patapon.Mixed.Systems
 						if (!isServer && simulateTagFromEntity.Exists(entity)) checkStopBeat = math.max(checkStopBeat, FlowEngineProcess.CalculateFlowBeat(predictedCommandFromEntity[entity].State.EndTime, settings.BeatInterval));
 
 						var flowBeat       = process.GetFlowBeat(settings.BeatInterval);
-						var activationBeat = process.GetActivationBeat(settings.BeatInterval);
+						var activationBeat = process.GetFlowBeat(settings.BeatInterval);
 						if (state.IsRecovery(flowBeat) || (rhythmActiveAtFlowBeat < flowBeat && checkStopBeat < activationBeat)
 						                               || (rhythm.CommandTarget == default && rhythm.HasPredictedCommands && rhythmActiveAtFlowBeat < state.LastPressureBeat)
 						                               || (!rhythm.HasPredictedCommands && !isServer))

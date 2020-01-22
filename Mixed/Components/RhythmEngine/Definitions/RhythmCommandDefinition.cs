@@ -120,6 +120,7 @@ namespace Patapon.Mixed.RhythmEngine.Definitions
 						var replicated = EntityManager.GetComponentData<ReplicatedEntity>(serverCommandsEntityArray[serverEnt]);
 						jobData.SetEntityForGhost(replicated.GhostId, commandsEntityArray[ent]);
 						EntityManager.SetOrAddComponentData(commandsEntityArray[ent], replicated);
+						EntityManager.AddComponent(commandsEntityArray[ent], typeof(ManualDestroy));
 						EntityManager.DestroyEntity(serverCommandsEntityArray[serverEnt]);
 					}
 				}

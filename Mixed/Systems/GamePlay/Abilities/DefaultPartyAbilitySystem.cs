@@ -67,7 +67,7 @@ namespace Systems.GamePlay
 							ecb.AddComponent(nativeThreadIndex, evEnt, new TargetDamageEvent {Destination = owner.Target, Origin = owner.Target, Damage = gainHealth});
 							ecb.AddComponent(nativeThreadIndex, evEnt, new Translation
 							{
-								Value = new float3(position.x + math.lerp(-0.2f, 0.2f, rand.NextFloat()), position.y + math.lerp(0.8f, 1.2f, rand.NextFloat()), 0)
+								Value = new float3(position.x + math.lerp(-0.4f, 0.25f, rand.NextFloat()), position.y + math.lerp(0.8f, 1.2f, rand.NextFloat()), 0)
 							});
 						}
 

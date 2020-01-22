@@ -68,23 +68,23 @@ namespace Systems.GamePlay.CYari
 							if (!state.IsActive)
 							{
 								controller.ControlOverVelocity.x = true;
-								velocity.Value.x                 = math.lerp(velocity.Value.x, 0, playState.GetAcceleration() * 50 * tick.Delta);	
+								velocity.Value.x                 = math.lerp(velocity.Value.x, 0, playState.GetAcceleration() * 50 * tick.Delta);
 							}
-							
+
 							float defense = playState.Defense * 0.25f;
-							
-							playState.ReceiveDamagePercentage *= 0.75f;
+
+							playState.ReceiveDamagePercentage *= 0.8f;
 							if (state.Combo.IsFever)
 							{
 								playState.ReceiveDamagePercentage *= 0.8f;
-								defense *= 1.2f;
+								defense                           *= 1.2f;
 								if (state.Combo.IsPerfect)
 								{
-									playState.ReceiveDamagePercentage *= 0.8f;
-									defense *= 1.2f;
+									playState.ReceiveDamagePercentage *= 0.9f;
+									defense                           *= 1.2f;
 								}
 							}
-							
+
 							playState.Defense += (int) defense;
 						}
 

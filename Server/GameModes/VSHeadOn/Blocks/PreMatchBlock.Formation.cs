@@ -187,7 +187,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 		private void SetAsTaterazay(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities, ref UnitDisplayedEquipment display)
 		{
-			statistics.Health           = 260;
+			statistics.Health           = 225;
 			statistics.Attack           = 24;
 			statistics.Defense          = 7;
 			statistics.Weight           = 8.5f;

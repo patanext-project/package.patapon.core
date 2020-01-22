@@ -77,7 +77,7 @@ namespace Systems.GamePlay.CYari
 						ability.NextAttackDelay -= tick.Delta;
 
 						var throwOffset = new float3 {x = direction, y = 1.8f + 1.75f};
-						var gravity = new float3 {y = -10};
+						var gravity = new float3 {y = -24.5f};
 						if (ability.AttackStartTick > 0)
 						{
 							if (tick >= UTick.AddMs(attackStartTick, JumpYaridaAttackAbility.DelayThrowMs) && !ability.HasThrown)

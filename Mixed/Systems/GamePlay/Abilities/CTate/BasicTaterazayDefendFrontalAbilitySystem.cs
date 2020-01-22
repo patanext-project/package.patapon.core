@@ -33,16 +33,6 @@ namespace Systems.GamePlay.CTate
 					{
 						if (!impl.CanExecuteAbility(owner.Target))
 							return;
-						
-						Entity* tryGetChain = stackalloc[] {entity, owner.Target};
-						if (!relativeTargetFromEntity.TryGetChain(tryGetChain, 2, out var relativeTarget))
-						{
-							Debug.Log("no");
-							return;
-						}
-
-						var unitPosition = impl.TranslationFromEntity[owner.Target].Value;
-						var direction    = impl.UnitDirectionFromEntity[owner.Target].Value;
 
 						var playStateUpdater = impl.UnitPlayStateFromEntity.GetUpdater(owner.Target).Out(out var playState);
 						var velocityUpdater   = impl.VelocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
@@ -56,9 +46,9 @@ namespace Systems.GamePlay.CTate
 								velocity.Value.x                 = math.lerp(velocity.Value.x, 0, playState.GetAcceleration() * 50 * tick.Delta);
 							}
 
-							float defense = playState.Defense * 0.5f;
+							float defense = playState.Defense * 0.2f;
 
-							playState.ReceiveDamagePercentage *= 0.7f;
+							playState.ReceiveDamagePercentage *= 0.75f;
 							if (state.Combo.IsFever)
 							{
 								playState.ReceiveDamagePercentage *= 0.8f;
@@ -79,6 +69,15 @@ namespace Systems.GamePlay.CTate
 
 						if (!state.IsActive)
 							return;
+						
+						Entity* tryGetChain = stackalloc[] {entity, owner.Target};
+						if (!relativeTargetFromEntity.TryGetChain(tryGetChain, 2, out var relativeTarget))
+						{
+							return;
+						}
+						
+						var unitPosition = impl.TranslationFromEntity[owner.Target].Value;
+						var direction    = impl.UnitDirectionFromEntity[owner.Target].Value;
 
 						if (state.Combo.IsFever)
 						{
