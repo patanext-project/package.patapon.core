@@ -2,10 +2,10 @@
 
 # Ignore folders that are currently being upgraded...
 ObsoleteRuntime/
-Snapshots/
+/Snapshots/
 TestD/
 MoveToDefault/
-Code/
+/Code/
 
 # Not yet, not yet!
 #AddressableData/
