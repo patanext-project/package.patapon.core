@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="64"
+   height="64"
+   viewBox="0 0 16.933333 16.933334"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   sodipodi:docname="vector_ability_middle.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#000000"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="11.2"
+     inkscape:cx="24.013185"
+     inkscape:cy="36.293376"
+     inkscape:document-units="mm"
+     inkscape:current-layer="g839"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-280.06665)">
+    <g
+       id="g839"
+       transform="matrix(1.2953349,0,0,1.2953349,-2.2627581,-86.803793)">
+      <path
+         style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:3.30378985;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="M 44.068359 20.244141 A 1.6520601 1.6520601 0 0 0 43.273438 23.322266 L 43.3125 23.341797 L 43.322266 23.351562 C 43.342828 23.361354 47.681641 25.492525 47.681641 31.996094 C 47.681641 38.499613 43.342632 40.640403 43.322266 40.650391 L 43.3125 40.660156 L 43.273438 40.679688 A 1.6520601 1.6520601 0 0 0 44.871094 43.566406 C 44.871094 43.566406 44.899901 43.546875 44.900391 43.546875 L 62.732422 33.439453 A 1.6520601 1.6520601 0 0 0 62.732422 30.5625 L 44.900391 20.455078 C 44.90018 20.45498 44.871094 20.435547 44.871094 20.435547 A 1.6520601 1.6520601 0 0 0 44.068359 20.244141 z "
+         transform="matrix(0.20425863,0,0,0.20425863,1.7468518,283.22439)"
+         id="path815" />
+      <circle
+         r="1.4616302"
+         cy="289.76068"
+         cx="8.2831278"
+         id="path819"
+         style="opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers" />
+      <path
+         style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:3.30378985;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="M 19.935547 20.238281 A 1.6520601 1.6520601 0 0 0 19.771484 20.244141 A 1.6520601 1.6520601 0 0 0 19.130859 20.435547 C 19.130859 20.435547 19.101856 20.464844 19.101562 20.464844 L 19.091797 20.455078 L 1.2675781 30.5625 A 1.6520601 1.6520601 0 0 0 1.2675781 33.439453 L 19.091797 43.546875 L 19.101562 43.537109 C 19.101859 43.537256 19.128906 43.566406 19.128906 43.566406 A 1.6520601 1.6520601 0 0 0 20.726562 40.679688 L 20.6875 40.660156 L 20.679688 40.650391 C 20.659321 40.640599 16.318359 38.499613 16.318359 31.996094 C 16.318359 25.492525 20.659322 23.36155 20.679688 23.351562 C 20.679735 23.351562 20.6875 23.341797 20.6875 23.341797 L 20.726562 23.322266 A 1.6520601 1.6520601 0 0 0 19.935547 20.238281 z "
+         transform="matrix(0.20425863,0,0,0.20425863,1.7468518,283.22439)"
+         id="path815-8" />
+    </g>
+  </g>
+</svg>

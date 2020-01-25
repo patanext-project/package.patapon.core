@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="59.860973mm"
+   height="15.380819mm"
+   viewBox="0 0 59.860973 15.380819"
+   version="1.1"
+   id="svg2694"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   sodipodi:docname="woodbarricade_plank0.svg">
+  <defs
+     id="defs2688" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#b4b4b4"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="30.159001"
+     inkscape:cy="74.239678"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata2691">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-63.051655,-89.738161)">
+    <path
+       style="display:inline;fill:#000000;stroke:none;stroke-width:0.11410538px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 123.03125,102.68344 -1.42513,-0.62182 -0.36164,-8.003445 -5.7773,-2.54137 -27.223756,-1.45877 -1.24152,2.21741 -1.19049,-0.96484 -0.74331,1.12832 -6.52865,-0.40245 -6.19131,2.54499 -5.58971,-0.20745 -1.54901,2.00101 c 0,0 0.0169,1.11285 0.81464,1.25077 0.79769,0.13795 2.31615,0.35966 2.31615,0.35966 l -5.16994,0.46906 0.16467,1.979005 0.52351,0.58021 7.46605,2.41713 51.169456,2.00799 z"
+       id="path5330-3-4-3-0-0-2-0-7"
+       inkscape:connector-curvature="0" />
+    <path
+       transform="scale(-1,1)"
+       inkscape:transform-center-y="-1.8767385e-006"
+       inkscape:transform-center-x="1.7299661e-006"
+       d="m -108.53415,98.293409 -0.90465,0 -0.45233,-0.783453 0.45233,-0.783452 0.90465,0 0.45233,0.783452 z"
+       inkscape:randomized="0"
+       inkscape:rounded="0"
+       inkscape:flatsided="true"
+       sodipodi:arg2="1.5707963"
+       sodipodi:arg1="1.0471976"
+       sodipodi:r2="0.78345257"
+       sodipodi:r1="0.90465325"
+       sodipodi:cy="97.50996"
+       sodipodi:cx="-108.98647"
+       sodipodi:sides="6"
+       id="path6136-5-7-3"
+       style="display:inline;opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.09717457;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:normal"
+       sodipodi:type="star" />
+    <path
+       inkscape:transform-center-y="5.4485136e-006"
+       transform="matrix(0.54318053,-0.33482148,-0.33482148,-0.54318053,34.00679,314.56737)"
+       inkscape:transform-center-x="-3.8475009e-006"
+       d="m 234.91284,255.88042 -0.90466,0 -0.45232,-0.78345 0.45232,-0.78345 0.90466,0 0.45232,0.78345 z"
+       inkscape:randomized="0"
+       inkscape:rounded="0"
+       inkscape:flatsided="true"
+       sodipodi:arg2="1.5707963"
+       sodipodi:arg1="1.0471976"
+       sodipodi:r2="0.78345257"
+       sodipodi:r1="0.90465325"
+       sodipodi:cy="255.09697"
+       sodipodi:cx="234.46051"
+       sodipodi:sides="6"
+       id="path6136-3-2-8-4-0"
+       style="display:inline;opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.09717457;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:normal"
+       sodipodi:type="star" />
+  </g>
+</svg>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="11.450792mm"
+   height="58.467945mm"
+   viewBox="0 0 11.450792 58.467944"
+   version="1.1"
+   id="svg2694"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   sodipodi:docname="woodbarricade_plank_support0.svg">
+  <defs
+     id="defs2688" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#b4b4b4"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="12.123932"
+     inkscape:cy="142.42602"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="958"
+     inkscape:window-height="1008"
+     inkscape:window-x="-7"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata2691">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-98.533998,-64.692004)">
+    <path
+       style="display:inline;fill:#000000;stroke:none;stroke-width:0.0784848px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 99.620298,119.07999 0.434492,-0.9195 3.39061,4.99946 1.76996,-3.71384 3.94333,-24.51436 -0.7751,-2.64125 0.54917,-0.47107 -0.38076,-1.44842 0.96761,-5.84383 -0.30599,-7.49382 0.77117,-5.094796 -0.64697,-2.7848 c 0,0 -0.46736,-0.72637 -0.62272,-0.0715 -0.15538,0.65479 -0.43396,1.92853 -0.43396,1.92853 l 0.43691,-5.153 -0.84761,-1.16579 -0.3067,0.10312 -1.92477,5.37769 -7.104972,46.566426 z"
+       id="path5330-3-3-0-9-9-1-0-0"
+       inkscape:connector-curvature="0" />
+  </g>
+</svg>

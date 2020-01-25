@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="256"
+   height="256"
+   viewBox="0 0 67.733332 67.733336"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   sodipodi:docname="eye_effect.svg"
+   inkscape:export-filename="C:\Users\guerr\Documents\Projets\Patapon\Experiments\PataponMPExperiment_RythmAndMovement\Assets\Models\FeverWorm\Tex\eye_effect.png"
+   inkscape:export-xdpi="96.000008"
+   inkscape:export-ydpi="96.000008">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="3.959798"
+     inkscape:cx="194.73799"
+     inkscape:cy="169.23573"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     units="px"
+     inkscape:snap-nodes="false"
+     showguides="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid815"
+       spacingx="33.866667"
+       spacingy="33.866667" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-229.26665)">
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 40.915923,236.05132 c 1.112461,4.55745 11.858147,13.43701 21.166666,15.59152 l -2.456846,-12.56771 z"
+       id="path4506"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc" />
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 3.771995,274.48189 c 5.4662335,2.02396 13.616538,4.18195 26.020296,-0.62333 0,0 -1.199061,-6.27851 -13.463934,-5.87283 -12.2648729,0.40568 -12.556362,6.49616 -12.556362,6.49616 z"
+       id="path4506-7"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cczc" />
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 29.697797,284.23249 c -5.466234,-2.02396 -13.616538,-4.18195 -26.020296,0.62333 0,0 1.199061,6.27851 13.463934,5.87283 12.264873,-0.40568 12.556362,-6.49616 12.556362,-6.49616 z"
+       id="path4506-7-5"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cczc" />
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 37.109497,272.89439 c 6.535312,1.28897 13.750174,1.77652 26.020297,-0.62333 0,0 -1.199061,-4.69101 -13.463934,-4.28533 -12.264874,0.40568 -12.556363,4.90866 -12.556363,4.90866 z"
+       id="path4506-7-2"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cczc" />
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 63.0353,285.81999 c -6.268043,-1.75669 -16.556503,-1.97698 -26.020297,0.62333 0,0 1.199062,4.69101 13.463935,4.28533 12.264873,-0.40568 12.556362,-4.90866 12.556362,-4.90866 z"
+       id="path4506-7-5-9"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cczc" />
+  </g>
+</svg>
