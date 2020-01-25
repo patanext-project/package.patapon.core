@@ -70,7 +70,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 						return;
 
 					var cc         = new CustomCollide(collider, ltw);
-					var collection = new CustomCollideCollection(ref cc);
+					var aabb = cc.Collider->CalculateAabb(cc.WorldFromMotion);
+					aabb.Expand(0.1f);
+					
 					if (captureArea.CaptureType == CaptureAreaType.Instant || structure.TimeToCapture <= 1)
 					{
 						structure.CaptureProgress[0] = 0;
@@ -86,7 +88,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 								if (!movableDescFromEntity.Exists(entities[ent].Value)
 								    || !physicsColliderFromEntity.Exists(entities[ent].Value))
 									continue;
-								var otherTransform = ltwFromEntity[entities[ent].Value];
+								/*var otherTransform = ltwFromEntity[entities[ent].Value];
 								var otherCollider  = physicsColliderFromEntity[entities[ent].Value];
 
 								var input = new ColliderDistanceInput
@@ -99,7 +101,10 @@ namespace Patapon.Server.GameModes.VSHeadOn
 								var collector = new ClosestHitCollector<DistanceHit>(0);
 								if (!collection.CalculateDistance(input, ref collector))
 									continue;
-
+*/
+								if (!aabb.Contains(ltwFromEntity[entities[ent].Value].Position))
+									continue;
+								
 								structure.CaptureProgress[t] = 1;
 							}
 						}
@@ -130,7 +135,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 								if (!movableDescFromEntity.Exists(entities[ent].Value)
 								    || !physicsColliderFromEntity.Exists(entities[ent].Value))
 									continue;
-								var otherTransform = ltwFromEntity[entities[ent].Value];
+								/*var otherTransform = ltwFromEntity[entities[ent].Value];
 								var otherCollider  = physicsColliderFromEntity[entities[ent].Value];
 
 								var input = new ColliderDistanceInput
@@ -142,6 +147,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 								var collector = new ClosestHitCollector<DistanceHit>(0);
 								if (!collection.CalculateDistance(input, ref collector))
+									continue;*/
+								
+								if (!aabb.Contains(ltwFromEntity[entities[ent].Value].Position))
 									continue;
 
 								playerOnPointCount[t]++;

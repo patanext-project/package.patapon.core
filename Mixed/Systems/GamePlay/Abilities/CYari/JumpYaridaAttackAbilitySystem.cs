@@ -1,18 +1,14 @@
 using System;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay;
-using Patapon.Mixed.GamePlay.Abilities.CTate;
 using Patapon.Mixed.GamePlay.Abilities.CYari;
 using Patapon.Mixed.GamePlay.Physics;
 using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
-using Unity.Physics;
-using Unity.Transforms;
 using UnityEngine;
 using Random = Unity.Mathematics.Random;
 
@@ -50,8 +46,8 @@ namespace Systems.GamePlay.CYari
 					{
 						if (!impl.CanExecuteAbility(owner.Target))
 							return;
-						
-						Entity* tryGetChain = stackalloc[] {entity, owner.Target};
+
+						var tryGetChain = stackalloc[] {entity, owner.Target};
 						if (!relativeTeamFromEntity.TryGetChain(tryGetChain, 2, out var relativeTeam))
 							return;
 
@@ -77,12 +73,12 @@ namespace Systems.GamePlay.CYari
 						ability.NextAttackDelay -= tick.Delta;
 
 						var throwOffset = new float3 {x = direction, y = 1.8f + 1.75f};
-						var gravity = new float3 {y = -24.5f};
+						var gravity     = new float3 {y = -24.5f};
 						if (ability.AttackStartTick > 0)
 						{
 							if (tick >= UTick.AddMs(attackStartTick, JumpYaridaAttackAbility.DelayThrowMs) && !ability.HasThrown)
 							{
-								int   damage      = playState.Attack;
+								var   damage      = playState.Attack;
 								float damageFever = damage;
 
 								var accuracy = 0.01f;
@@ -106,13 +102,15 @@ namespace Systems.GamePlay.CYari
 									Position    = unitPosition + new float3(throwOffset.x, 0, 0),
 									Velocity    = {x = ability.ThrowVec.x * direction + accuracy * rand.NextFloat(), y = ability.ThrowVec.y},
 									StartDamage = damage,
-									Gravity = gravity
+									Gravity     = gravity
 								});
 
 								ability.HasThrown = true;
 							}
 							else if (!ability.HasThrown)
+							{
 								controller.ControlOverVelocity.x = true;
+							}
 
 							// stop moving
 							if (ability.HasThrown)
@@ -133,10 +131,10 @@ namespace Systems.GamePlay.CYari
 								playState.MovementReturnSpeed *= 1.8f;
 								if (state.Combo.IsPerfect)
 									playState.MovementReturnSpeed *= 1.2f;
-								
+
 								controller.ControlOverVelocity.x = true;
 							}
-							
+
 							return;
 						}
 
@@ -151,7 +149,7 @@ namespace Systems.GamePlay.CYari
 						var throwDeltaPosition = PredictTrajectory.Simple(throwOffset, new float3 {x = ability.ThrowVec.x * direction, y = ability.ThrowVec.y}, gravity);
 						targetPosition.x -= throwDeltaPosition.x;
 
-						float distanceMercy = 2.25f;
+						var distanceMercy = 2.25f;
 						if (math.abs(targetPosition.x - unitPosition.x) < distanceMercy && ability.NextAttackDelay <= 0 && ability.AttackStartTick <= 0 && unitPosition.y < 0.25f)
 						{
 							var atkSpeed = playState.AttackSpeed;
@@ -162,7 +160,7 @@ namespace Systems.GamePlay.CYari
 							ability.NextAttackDelay = atkSpeed;
 							ability.AttackStartTick = tick.AsUInt;
 							ability.HasThrown       = false;
-							
+
 							var speed   = math.lerp(math.abs(velocity.Value.x), playState.MovementAttackSpeed, playState.GetAcceleration() * 5 * tick.Delta);
 							var newPosX = Mathf.MoveTowards(unitPosition.x, targetPosition.x, speed * tick.Delta);
 

@@ -144,8 +144,7 @@ namespace Bootstraps
 		{
 						var playerEntities = m_PlayerQuery.ToEntityArray(Allocator.TempJob);
 			var count = playerEntities.Length;
-			count = 12;
-			
+
 			// Create formation
 			const int formationCount = 2;
 			for (var _ = 0; _ != formationCount; _++)

@@ -28,90 +28,89 @@ namespace Systems.GamePlay
 			var unitControllerStateFromEntity = GetComponentDataFromEntity<UnitControllerState>();
 			var velocityFromEntity            = GetComponentDataFromEntity<Velocity>();
 			var relativeTargetFromEntity      = GetComponentDataFromEntity<Relative<UnitTargetDescription>>(true);
-			
+
 			var impl = new BasicUnitAbilityImplementation(this);
 
-			inputDeps =
-				Entities
-					.WithReadOnly(unitTargetControlFromEntity)
-					.WithReadOnly(unitPlayStateFromEntity)
-					.WithReadOnly(groundStateFromEntity)
-					.WithReadOnly(unitDirectionFromEntity)
-					.WithReadOnly(targetOffsetFromEntity)
-					.WithReadOnly(relativeTargetFromEntity)
-					.WithNativeDisableParallelForRestriction(translationFromEntity)
-					.WithNativeDisableParallelForRestriction(unitControllerStateFromEntity)
-					.WithNativeDisableParallelForRestriction(velocityFromEntity)
-					.ForEach((Entity entity, ref RhythmAbilityState state, ref DefaultBackwardAbility backwardAbility, in Owner owner) =>
+			Entities
+				.WithReadOnly(unitTargetControlFromEntity)
+				.WithReadOnly(unitPlayStateFromEntity)
+				.WithReadOnly(groundStateFromEntity)
+				.WithReadOnly(unitDirectionFromEntity)
+				.WithReadOnly(targetOffsetFromEntity)
+				.WithReadOnly(relativeTargetFromEntity)
+				.WithNativeDisableParallelForRestriction(translationFromEntity)
+				.WithNativeDisableParallelForRestriction(unitControllerStateFromEntity)
+				.WithNativeDisableParallelForRestriction(velocityFromEntity)
+				.ForEach((Entity entity, ref RhythmAbilityState state, ref DefaultBackwardAbility backwardAbility, in Owner owner) =>
+				{
+					if (!impl.CanExecuteAbility(owner.Target))
+						return;
+
+					if (!state.IsActive)
 					{
-						if (!impl.CanExecuteAbility(owner.Target))
-							return;
-						
-						if (!state.IsActive)
-						{
-							backwardAbility.Delta = 0.0f;
-							return;
-						}
+						backwardAbility.Delta = 0.0f;
+						return;
+					}
 
-						var targetOffset                                                                = targetOffsetFromEntity[owner.Target];
-						var groundState                                                                 = groundStateFromEntity[owner.Target];
-						var unitPlayState                                                               = unitPlayStateFromEntity[owner.Target];
-						if (state.Combo.IsFever && state.Combo.Score >= 50) unitPlayState.MovementSpeed *= 1.2f;
+					var targetOffset                                                                = targetOffsetFromEntity[owner.Target];
+					var groundState                                                                 = groundStateFromEntity[owner.Target];
+					var unitPlayState                                                               = unitPlayStateFromEntity[owner.Target];
+					if (state.Combo.IsFever && state.Combo.Score >= 50) unitPlayState.MovementSpeed *= 1.2f;
 
-						if (!groundState.Value)
+					if (!groundState.Value)
+						return;
+
+					Relative<UnitTargetDescription> relativeTarget;
+					if (!relativeTargetFromEntity.TryGet(entity, out relativeTarget))
+						if (!relativeTargetFromEntity.TryGet(owner.Target, out relativeTarget))
 							return;
 
-						Relative<UnitTargetDescription> relativeTarget;
-						if (!relativeTargetFromEntity.TryGet(entity, out relativeTarget))
-							if (!relativeTargetFromEntity.TryGet(owner.Target, out relativeTarget))
-								return;
+					backwardAbility.Delta += dt;
+
+					var   targetTranslationUpdater = translationFromEntity.GetUpdater(relativeTarget.Target).Out(out var targetPosition);
+					float acceleration, walkSpeed;
+					int   direction;
+
+					if (unitTargetControlFromEntity.Exists(owner.Target))
+					{
+						direction = unitDirectionFromEntity[owner.Target].Value;
+
+						// a different acceleration (not using the unit weight)
+						acceleration = backwardAbility.AccelerationFactor;
+						acceleration = math.min(acceleration * dt, 1);
 
 						backwardAbility.Delta += dt;
 
-						var   targetTranslationUpdater = translationFromEntity.GetUpdater(relativeTarget.Target).Out(out var targetPosition);
-						float acceleration, walkSpeed;
-						int   direction;
+						walkSpeed            =  unitPlayState.MovementSpeed * -0.5f;
+						targetPosition.Value += walkSpeed * direction * (backwardAbility.Delta > 0.5f ? 1 : math.lerp(4, 1, backwardAbility.Delta + 0.5f)) * acceleration;
+						targetTranslationUpdater.Update(targetPosition);
+					}
 
-						if (unitTargetControlFromEntity.Exists(owner.Target))
-						{
-							direction = unitDirectionFromEntity[owner.Target].Value;
+					var velocityUpdater        = velocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
+					var controllerStateUpdater = unitControllerStateFromEntity.GetUpdater(owner.Target).Out(out var controllerState);
 
-							// a different acceleration (not using the unit weight)
-							acceleration = backwardAbility.AccelerationFactor;
-							acceleration = math.min(acceleration * dt, 1);
+					// to not make tanks op, we need to get the weight from entity and use it as an acceleration factor
+					acceleration = math.clamp(math.rcp(unitPlayState.Weight), 0, 1) * backwardAbility.AccelerationFactor * 50;
+					acceleration = math.min(acceleration * dt, 1);
 
-							backwardAbility.Delta += dt;
+					walkSpeed = unitPlayState.MovementSpeed * 0.5f;
+					// if we're near, let's slow down
+					var dist                   = math.distance(targetPosition.Value.x, translationFromEntity[owner.Target].Value.x);
+					if (dist < 0.5f) walkSpeed *= math.clamp(dist * 0.5f, 0.5f, 1.0f);
 
-							walkSpeed            =  unitPlayState.MovementSpeed * -0.5f;
-							targetPosition.Value += walkSpeed * direction * (backwardAbility.Delta > 0.5f ? 1 : math.lerp(4, 1, backwardAbility.Delta + 0.5f)) * acceleration;
-							targetTranslationUpdater.Update(targetPosition);
-						}
+					direction = Math.Sign(targetPosition.Value.x + targetOffset.Value - translationFromEntity[owner.Target].Value.x);
 
-						var velocityUpdater        = velocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
-						var controllerStateUpdater = unitControllerStateFromEntity.GetUpdater(owner.Target).Out(out var controllerState);
+					velocity.Value.x                 = math.lerp(velocity.Value.x, walkSpeed * direction, acceleration);
+					velocityFromEntity[owner.Target] = velocity;
 
-						// to not make tanks op, we need to get the weight from entity and use it as an acceleration factor
-						acceleration = math.clamp(math.rcp(unitPlayState.Weight), 0, 1) * backwardAbility.AccelerationFactor * 50;
-						acceleration = math.min(acceleration * dt, 1);
+					controllerState.ControlOverVelocity.x = true;
 
-						walkSpeed = unitPlayState.MovementSpeed * 0.5f;
-						// if we're near, let's slow down
-						var dist                   = math.distance(targetPosition.Value.x, translationFromEntity[owner.Target].Value.x);
-						if (dist < 0.5f) walkSpeed *= math.clamp(dist * 0.5f, 0.5f, 1.0f);
+					velocityUpdater.CompareAndUpdate(velocity);
+					controllerStateUpdater.CompareAndUpdate(controllerState);
+				})
+				.Run();
 
-						direction = Math.Sign(targetPosition.Value.x + targetOffset.Value - translationFromEntity[owner.Target].Value.x);
-
-						velocity.Value.x                 = math.lerp(velocity.Value.x, walkSpeed * direction, acceleration);
-						velocityFromEntity[owner.Target] = velocity;
-
-						controllerState.ControlOverVelocity.x = true;
-
-						velocityUpdater.CompareAndUpdate(velocity);
-						controllerStateUpdater.CompareAndUpdate(controllerState);
-					})
-					.Schedule(inputDeps);
-
-			return inputDeps;
+			return default;
 		}
 	}
 }

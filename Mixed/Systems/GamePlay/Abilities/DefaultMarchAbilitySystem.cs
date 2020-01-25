@@ -9,12 +9,12 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
-using UnityEngine;
 
 namespace Systems.GamePlay
 {
 	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
+	[AlwaysSynchronizeSystem]
 	public class DefaultMarchAbilitySystem : JobGameBaseSystem
 	{
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -29,85 +29,84 @@ namespace Systems.GamePlay
 			var unitControllerStateFromEntity = GetComponentDataFromEntity<UnitControllerState>();
 			var velocityFromEntity            = GetComponentDataFromEntity<Velocity>();
 			var relativeTargetFromEntity      = GetComponentDataFromEntity<Relative<UnitTargetDescription>>(true);
-			
+
 			var impl = new BasicUnitAbilityImplementation(this);
 
-			inputDeps =
-				Entities
-					.WithReadOnly(unitTargetControlFromEntity)
-					.WithReadOnly(unitPlayStateFromEntity)
-					.WithReadOnly(groundStateFromEntity)
-					.WithReadOnly(unitDirectionFromEntity)
-					.WithReadOnly(targetOffsetFromEntity)
-					.WithReadOnly(relativeTargetFromEntity)
-					.WithNativeDisableParallelForRestriction(translationFromEntity)
-					.WithNativeDisableParallelForRestriction(unitControllerStateFromEntity)
-					.WithNativeDisableParallelForRestriction(velocityFromEntity)
-					.ForEach((Entity entity, ref RhythmAbilityState state, ref DefaultMarchAbility marchAbility, in Owner owner) =>
+			Entities
+				.WithReadOnly(unitTargetControlFromEntity)
+				.WithReadOnly(unitPlayStateFromEntity)
+				.WithReadOnly(groundStateFromEntity)
+				.WithReadOnly(unitDirectionFromEntity)
+				.WithReadOnly(targetOffsetFromEntity)
+				.WithReadOnly(relativeTargetFromEntity)
+				.WithNativeDisableParallelForRestriction(translationFromEntity)
+				.WithNativeDisableParallelForRestriction(unitControllerStateFromEntity)
+				.WithNativeDisableParallelForRestriction(velocityFromEntity)
+				.ForEach((Entity entity, ref RhythmAbilityState state, ref DefaultMarchAbility marchAbility, in Owner owner) =>
+				{
+					if (!impl.CanExecuteAbility(owner.Target))
+						return;
+
+					if (!state.IsActive)
 					{
-						if (!impl.CanExecuteAbility(owner.Target))
-							return;
-						
-						if (!state.IsActive)
-						{
-							marchAbility.Delta = 0.0f;
-							return;
-						}
-						
-						var targetOffset                                                                = targetOffsetFromEntity[owner.Target];
-						var groundState                                                                 = groundStateFromEntity[owner.Target];
-						var unitPlayState                                                               = unitPlayStateFromEntity[owner.Target];
-						if (state.Combo.IsFever && state.Combo.Score >= 50) unitPlayState.MovementSpeed *= 1.2f;
+						marchAbility.Delta = 0.0f;
+						return;
+					}
 
-						if (!groundState.Value)
+					var targetOffset                                                                = targetOffsetFromEntity[owner.Target];
+					var groundState                                                                 = groundStateFromEntity[owner.Target];
+					var unitPlayState                                                               = unitPlayStateFromEntity[owner.Target];
+					if (state.Combo.IsFever && state.Combo.Score >= 50) unitPlayState.MovementSpeed *= 1.2f;
+
+					if (!groundState.Value)
+						return;
+
+					Relative<UnitTargetDescription> relativeTarget;
+					if (!relativeTargetFromEntity.TryGet(entity, out relativeTarget))
+						if (!relativeTargetFromEntity.TryGet(owner.Target, out relativeTarget))
 							return;
 
-						Relative<UnitTargetDescription> relativeTarget;
-						if (!relativeTargetFromEntity.TryGet(entity, out relativeTarget))
-							if (!relativeTargetFromEntity.TryGet(owner.Target, out relativeTarget))
-								return;
+					marchAbility.Delta += dt;
+
+					var   targetPosition = translationFromEntity[relativeTarget.Target].Value;
+					float acceleration, walkSpeed;
+					int   direction;
+
+					if (unitTargetControlFromEntity.Exists(owner.Target) && marchAbility.Delta <= 3.75f)
+					{
+						direction = unitDirectionFromEntity[owner.Target].Value;
+
+						// a different acceleration (not using the unit weight)
+						acceleration = marchAbility.AccelerationFactor;
+						acceleration = math.min(acceleration * dt, 1);
 
 						marchAbility.Delta += dt;
 
-						var   targetPosition = translationFromEntity[relativeTarget.Target].Value;
-						float acceleration, walkSpeed;
-						int   direction;
+						walkSpeed      =  unitPlayState.MovementSpeed;
+						targetPosition += walkSpeed * direction * (marchAbility.Delta > 0.5f ? 1 : math.lerp(4, 1, marchAbility.Delta + 0.5f)) * acceleration;
 
-						if (unitTargetControlFromEntity.Exists(owner.Target) && marchAbility.Delta <= 3.75f)
-						{
-							direction = unitDirectionFromEntity[owner.Target].Value;
+						translationFromEntity[relativeTarget.Target] = new Translation {Value = targetPosition};
+					}
 
-							// a different acceleration (not using the unit weight)
-							acceleration = marchAbility.AccelerationFactor;
-							acceleration = math.min(acceleration * dt, 1);
+					var velocity = velocityFromEntity[owner.Target];
 
-							marchAbility.Delta += dt;
+					// to not make tanks op, we need to get the weight from entity and use it as an acceleration factor
+					acceleration = math.clamp(math.rcp(unitPlayState.Weight), 0, 1) * marchAbility.AccelerationFactor * 50;
+					acceleration = math.min(acceleration * dt, 1);
 
-							walkSpeed      =  unitPlayState.MovementSpeed;
-							targetPosition += walkSpeed * direction * (marchAbility.Delta > 0.5f ? 1 : math.lerp(4, 1, marchAbility.Delta + 0.5f)) * acceleration;
+					walkSpeed = unitPlayState.MovementSpeed;
+					direction = Math.Sign(targetPosition.x + targetOffset.Value - translationFromEntity[owner.Target].Value.x);
 
-							translationFromEntity[relativeTarget.Target] = new Translation {Value = targetPosition};
-						}
+					velocity.Value.x                 = math.lerp(velocity.Value.x, walkSpeed * direction, acceleration);
+					velocityFromEntity[owner.Target] = velocity;
 
-						var velocity = velocityFromEntity[owner.Target];
+					var controllerState = unitControllerStateFromEntity[owner.Target];
+					controllerState.ControlOverVelocity.x       = true;
+					unitControllerStateFromEntity[owner.Target] = controllerState;
+				})
+				.Run();
 
-						// to not make tanks op, we need to get the weight from entity and use it as an acceleration factor
-						acceleration = math.clamp(math.rcp(unitPlayState.Weight), 0, 1) * marchAbility.AccelerationFactor * 50;
-						acceleration = math.min(acceleration * dt, 1);
-
-						walkSpeed = unitPlayState.MovementSpeed;
-						direction = Math.Sign(targetPosition.x + targetOffset.Value - translationFromEntity[owner.Target].Value.x);
-
-						velocity.Value.x                 = math.lerp(velocity.Value.x, walkSpeed * direction, acceleration);
-						velocityFromEntity[owner.Target] = velocity;
-
-						var controllerState = unitControllerStateFromEntity[owner.Target];
-						controllerState.ControlOverVelocity.x       = true;
-						unitControllerStateFromEntity[owner.Target] = controllerState;
-					})
-					.Schedule(inputDeps);
-
-			return inputDeps;
+			return default;
 		}
 	}
 }

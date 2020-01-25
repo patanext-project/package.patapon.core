@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.GamePlay.Units;
 using Patapon.Mixed.RhythmEngine;
@@ -93,6 +94,7 @@ namespace Patapon.Mixed.GamePlay
 			public override ComponentType ExcludeComponent => typeof(Exclude);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void WriteTo(DataStreamWriter writer, ref RhythmAbilityState baseline, GhostSetup setup, SerializeClientData jobData)
 		{
 			writer.WritePackedUInt(setup[Command], jobData.NetworkCompressionModel);
@@ -103,6 +105,7 @@ namespace Patapon.Mixed.GamePlay
 			jobData.GhostToEntityMap.TryGetValue(reader.ReadPackedUInt(ref ctx, jobData.NetworkCompressionModel), out Command);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool DidChange(RhythmAbilityState baseline)
 		{
 			return Command != baseline.Command;

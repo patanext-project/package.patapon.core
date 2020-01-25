@@ -71,57 +71,62 @@ namespace Patapon.Mixed.GamePlay
 				var transform = LocalToWorldFromEntity[entity];
 				var distance = math.distance(from.x, transform.Position.x);
 				var hitShapes = HitShapeContainerFromEntity[entity];
-				var direction = (int) math.sign(transform.Position.x - from.x);
-				var hsArray = hitShapes.AsNativeArray();
-				for (var hs = 0; hs != hsArray.Length; hs++)
+				if (hitShapes.Length > 0 && false)
 				{
-					var hitShape = hsArray[hs];
-					var translation = TranslationFromEntity[hitShape.Value].Value;
-					if (!LocalToWorldFromEntity.TryGet(hitShape.Value, out var ltw))
+					var direction = (int) math.sign(transform.Position.x - from.x);
+					var hsArray   = hitShapes.AsNativeArray();
+					for (var hs = 0; hs != hsArray.Length; hs++)
 					{
-						ltw = new LocalToWorld {Value = new float4x4(quaternion.identity, translation)};
-					}
-					else
-					{
-						// translation is always updated after ltw!
-						ltw.Value = new float4x4(ltw.Rotation, translation);
-					}
-					
-					RigidBody rigidBody = default;
-					rigidBody.Entity        = hitShape.Value;
-					rigidBody.Collider      = ColliderFromEntity[hitShape.Value].ColliderPtr;
-					rigidBody.WorldFromBody = new RigidTransform(ltw.Value);
-
-					if (hitShape.AttachedToParent)
-					{
-						var hasTranslation = TranslationFromEntity.TryGet(entity, out var ownerTranslation);
-						if (!LocalToWorldFromEntity.TryGet(entity, out ltw))
+						var hitShape    = hsArray[hs];
+						var translation = TranslationFromEntity[hitShape.Value].Value;
+						if (!LocalToWorldFromEntity.TryGet(hitShape.Value, out var ltw))
 						{
-							ltw = new LocalToWorld {Value = new float4x4(quaternion.identity, ownerTranslation.Value)};
+							ltw = new LocalToWorld {Value = new float4x4(quaternion.identity, translation)};
 						}
-						else if (hasTranslation)
+						else
 						{
-							ltw.Value = new float4x4(ltw.Rotation, ownerTranslation.Value);
+							// translation is always updated after ltw!
+							ltw.Value = new float4x4(ltw.Rotation, translation);
 						}
 
-						rigidBody.WorldFromBody.pos += ltw.Position;
+						RigidBody rigidBody = default;
+						rigidBody.Entity        = hitShape.Value;
+						rigidBody.Collider      = ColliderFromEntity[hitShape.Value].ColliderPtr;
+						rigidBody.WorldFromBody = new RigidTransform(ltw.Value);
+
+						if (hitShape.AttachedToParent)
+						{
+							var hasTranslation = TranslationFromEntity.TryGet(entity, out var ownerTranslation);
+							if (!LocalToWorldFromEntity.TryGet(entity, out ltw))
+							{
+								ltw = new LocalToWorld {Value = new float4x4(quaternion.identity, ownerTranslation.Value)};
+							}
+							else if (hasTranslation)
+							{
+								ltw.Value = new float4x4(ltw.Rotation, ownerTranslation.Value);
+							}
+
+							rigidBody.WorldFromBody.pos += ltw.Position;
+						}
+
+						var aabb = rigidBody.CalculateAabb();
+						if (direction > 0)
+							distance = math.distance(from.x, aabb.Min.x);
+						else
+							distance = math.distance(from.x, aabb.Max.x);
+
+						if (distance > seekRange)
+							continue;
+						if (distance > shortestDistance)
+							continue;
+
+						target           = transform.Position;
+						targetDistance   = distance;
+						shortestDistance = distance;
+						nearestEnemy     = entity;
 					}
-					
-					var aabb = rigidBody.CalculateAabb();
-					if (direction > 0)
-						distance = math.distance(from.x, aabb.Min.x);
-					else
-						distance = math.distance(from.x, aabb.Max.x);
-					
-					if (distance > seekRange)
-						continue;
-					if (distance > shortestDistance)
-						continue;
-					
-					target           = transform.Position;
-					targetDistance   = distance;
-					shortestDistance = distance;
-					nearestEnemy     = entity;
+
+					continue;
 				}
 
 				if (distance > seekRange)
@@ -129,6 +134,11 @@ namespace Patapon.Mixed.GamePlay
 
 				if (distance > shortestDistance)
 					continue;
+				
+				target           = transform.Position;
+				targetDistance   = distance;
+				shortestDistance = distance;
+				nearestEnemy     = entity;
 			}
 		}
 

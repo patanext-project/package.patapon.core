@@ -180,8 +180,6 @@ namespace Patapon.Mixed.Systems
 								previousPrediction.StartTime = rhythm.ActiveAtTime;
 								previousPrediction.EndTime   = rhythm.CustomEndTime == 0 || rhythm.CustomEndTime == -1 ? madOp : rhythm.CustomEndTime;
 								previousPrediction.Selection = playerCommandSelection;
-								
-								Debug.Log("Target EndTime: " + previousPrediction.EndTime);
 							}
 
 							predictedCommandFromEntity[entity] = new GamePredictedCommandState {State = previousPrediction};

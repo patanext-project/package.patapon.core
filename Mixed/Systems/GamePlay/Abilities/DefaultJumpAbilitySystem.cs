@@ -12,6 +12,7 @@ namespace Systems.GamePlay
 {
 	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
+	[AlwaysSynchronizeSystem]
 	public class DefaultJumpAbilitySystem : JobGameBaseSystem
 	{
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -19,68 +20,67 @@ namespace Systems.GamePlay
 			var tick                          = ServerTick;
 			var unitControllerStateFromEntity = GetComponentDataFromEntity<UnitControllerState>();
 			var velocityFromEntity            = GetComponentDataFromEntity<Velocity>();
-			
+
 			var impl = new BasicUnitAbilityImplementation(this);
 
-			inputDeps =
-				Entities
-					.WithNativeDisableParallelForRestriction(unitControllerStateFromEntity)
-					.WithNativeDisableParallelForRestriction(velocityFromEntity)
-					.ForEach((Entity entity, ref RhythmAbilityState state, ref DefaultJumpAbility ability, in Owner owner) =>
+			Entities
+				.WithNativeDisableParallelForRestriction(unitControllerStateFromEntity)
+				.WithNativeDisableParallelForRestriction(velocityFromEntity)
+				.ForEach((Entity entity, ref RhythmAbilityState state, ref DefaultJumpAbility ability, in Owner owner) =>
+				{
+					if (!impl.CanExecuteAbility(owner.Target))
+						return;
+
+					var controllerStateUpdater = unitControllerStateFromEntity.GetUpdater(owner.Target).Out(out var controllerState);
+					var velocityUpdater        = velocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
+
+					if (state.ActiveId != ability.LastActiveId)
 					{
-						if (!impl.CanExecuteAbility(owner.Target))
-							return;
-					
-						var controllerStateUpdater = unitControllerStateFromEntity.GetUpdater(owner.Target).Out(out var controllerState);
-						var velocityUpdater        = velocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
+						ability.IsJumping    = false;
+						ability.ActiveTime   = 0;
+						ability.LastActiveId = state.ActiveId;
+					}
 
-						if (state.ActiveId != ability.LastActiveId)
+					if (!state.IsActive && !state.IsStillChaining)
+					{
+						if (ability.IsJumping)
 						{
-							ability.IsJumping    = false;
-							ability.ActiveTime   = 0;
-							ability.LastActiveId = state.ActiveId;
+							velocity.Value.y = math.max(0, velocity.Value.y - 60 * (ability.ActiveTime * 2));
+							velocityUpdater.CompareAndUpdate(velocity);
 						}
 
-						if (!state.IsActive && !state.IsStillChaining)
-						{
-							if (ability.IsJumping)
-							{
-								velocity.Value.y = math.max(0, velocity.Value.y - 60 * (ability.ActiveTime * 2));
-								velocityUpdater.CompareAndUpdate(velocity);
-							}
+						ability.ActiveTime = 0;
+						ability.IsJumping  = false;
+						return;
+					}
 
-							ability.ActiveTime = 0;
-							ability.IsJumping  = false;
-							return;
-						}
+					var wasJumping = ability.IsJumping;
+					ability.IsJumping = ability.ActiveTime <= 0.5f;
 
-						var wasJumping = ability.IsJumping;
-						ability.IsJumping = ability.ActiveTime <= 0.5f;
+					if (!wasJumping && ability.IsJumping)
+						velocity.Value.y                                                 = math.max(velocity.Value.y + 25, 30);
+					else if (ability.IsJumping && velocity.Value.y > 0) velocity.Value.y = math.max(velocity.Value.y - 60 * tick.Delta, 0);
 
-						if (!wasJumping && ability.IsJumping)
-							velocity.Value.y                                                 = math.max(velocity.Value.y + 25, 30);
-						else if (ability.IsJumping && velocity.Value.y > 0) velocity.Value.y = math.max(velocity.Value.y - 60 * tick.Delta, 0);
+					if (ability.ActiveTime < 3.25f)
+						velocity.Value.x = math.lerp(velocity.Value.x, 0, tick.Delta * (ability.ActiveTime + 1));
 
-						if (ability.ActiveTime < 3.25f)
-							velocity.Value.x = math.lerp(velocity.Value.x, 0, tick.Delta * (ability.ActiveTime + 1));
+					if (!ability.IsJumping && velocity.Value.y > 0)
+					{
+						velocity.Value.y = math.max(velocity.Value.y - 10 * tick.Delta, 0);
+						velocity.Value.y = math.lerp(velocity.Value.y, 0, 5 * tick.Delta);
+					}
 
-						if (!ability.IsJumping && velocity.Value.y > 0)
-						{
-							velocity.Value.y = math.max(velocity.Value.y - 10 * tick.Delta, 0);
-							velocity.Value.y = math.lerp(velocity.Value.y, 0, 5 * tick.Delta);
-						}
+					ability.ActiveTime += tick.Delta;
 
-						ability.ActiveTime += tick.Delta;
+					controllerState.ControlOverVelocity.x = ability.ActiveTime < 3.25f;
+					controllerState.ControlOverVelocity.y = ability.ActiveTime < 2.5f;
 
-						controllerState.ControlOverVelocity.x = ability.ActiveTime < 3.25f;
-						controllerState.ControlOverVelocity.y = ability.ActiveTime < 2.5f;
+					controllerStateUpdater.CompareAndUpdate(controllerState);
+					velocityUpdater.CompareAndUpdate(velocity);
+				})
+				.Run();
 
-						controllerStateUpdater.CompareAndUpdate(controllerState);
-						velocityUpdater.CompareAndUpdate(velocity);
-					})
-					.Schedule(inputDeps);
-
-			return inputDeps;
+			return default;
 		}
 	}
 }

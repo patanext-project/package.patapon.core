@@ -123,8 +123,7 @@ namespace package.patapon.core.Models.InGame.VFXDamage
 
 			var selfRelated = EntityManager.TryGetComponentData(backend.eventData.Destination, out Relative<PlayerDescription> destPlayer) && destPlayer.Target == LocalPlayer
 			                   || EntityManager.TryGetComponentData(backend.eventData.Origin, out Relative<PlayerDescription> originPlayer) && originPlayer.Target == LocalPlayer;
-
-			selfRelated = false;
+			
 			foreach (var label in definition.damageLabels)
 			{
 				var color = backend.eventData.Damage > 0 ? definition.healColor : definition.damageColor;

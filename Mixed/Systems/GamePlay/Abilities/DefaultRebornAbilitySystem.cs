@@ -9,7 +9,6 @@ using StormiumTeam.GameBase.Components;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
-using UnityEngine;
 
 namespace Systems.GamePlay
 {
@@ -30,7 +29,7 @@ namespace Systems.GamePlay
 			Entities
 				.ForEach((ref DefaultRebornAbility ability, ref RhythmAbilityState state, ref Owner owner) =>
 				{
-					if ((!ability.WasFever && !state.PreviousActiveCombo.CanSummon)
+					if (!ability.WasFever && !state.PreviousActiveCombo.CanSummon
 					    || state.Engine == default
 					    || !healthFromEntity[owner.Target].IsDead)
 					{
@@ -58,7 +57,7 @@ namespace Systems.GamePlay
 						                                       .Out(out var comboState);
 
 						var max = comboState.JinnEnergyMax;
-						comboState = default;
+						comboState               = default;
 						comboState.JinnEnergyMax = max;
 						comboUpdater.Update(comboState);
 
@@ -81,10 +80,12 @@ namespace Systems.GamePlay
 	public struct TargetRebornEvent : IComponentData
 	{
 		public Entity Target;
-		
+
 		[UpdateInGroup(typeof(OrderGroup.Simulation.SpawnEntities.SpawnEvent))]
 		public class Provider : BaseProviderBatch<TargetRebornEvent>
 		{
+			private EntityQuery m_Query;
+
 			public override void GetComponents(out ComponentType[] entityComponents)
 			{
 				entityComponents = new ComponentType[]
@@ -99,8 +100,6 @@ namespace Systems.GamePlay
 			{
 				EntityManager.SetComponentData(entity, data);
 			}
-
-			private EntityQuery m_Query;
 
 			protected override void OnUpdate()
 			{
