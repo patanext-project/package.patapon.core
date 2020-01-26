@@ -1,10 +1,10 @@
 
 
 # Ignore folders that are currently being upgraded...
-ObsoleteRuntime/
+/ObsoleteRuntime/
 /Snapshots/
-TestD/
-MoveToDefault/
+/TestD/
+/MoveToDefault/
 /Code/
 
 # Not yet, not yet!
