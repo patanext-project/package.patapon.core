@@ -1,4 +1,4 @@
-*.png
+
 
 # Ignore folders that are currently being upgraded...
 ObsoleteRuntime/

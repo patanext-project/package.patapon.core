@@ -68,8 +68,8 @@ namespace RhythmEngine
 			}
 
 			m_AudioSourceOnNewBeat          = CreateAudioSource("On New Beat", 0.7f);
-			m_AudioSourceOnNewPressureDrum  = CreateAudioSource("On New Pressure -> Drum", 1);
-			m_AudioSourceOnNewPressureVoice = CreateAudioSource("On New Pressure -> Voice", 1);
+			m_AudioSourceOnNewPressureDrum  = CreateAudioSource("On New Pressure -> Drum", 0.9f);
+			m_AudioSourceOnNewPressureVoice = CreateAudioSource("On New Pressure -> Voice", 0.8f);
 			m_AudioSourceOnPerfect = CreateAudioSource("On Perfect Pressure", 1);
 
 			m_AudioSourceOnNewPressureDrum.priority = m_AudioSourceOnNewBeat.priority - 1;
@@ -240,14 +240,16 @@ namespace RhythmEngine
 					var isPerfect = !shouldFail && currentCommand.ActiveAtTime >= process.Milliseconds && currentCommand.Power >= 100;
 					if (isPerfect) m_AudioSourceOnPerfect.PlayOneShot(m_AudioOnPerfect, 1.25f);
 
-					m_AudioSourceOnNewPressureDrum.PlayOneShot(m_AudioOnPressureDrum[pressureKey][score]);
+					m_AudioSourceOnNewPressureDrum.clip = m_AudioOnPressureDrum[pressureKey][score];
+					m_AudioSourceOnNewPressureDrum.PlayScheduled(AudioSettings.dspTime + Time.DeltaTime);
 
 					if (GetSingleton<P4SoundRules.Data>().EnableDrumVoices) // voiceoverlay
 					{
 						var id         = score;
 						if (id > 0) id = Mathf.Clamp(new Random((uint) Environment.TickCount).NextInt(-1, 3), 1, 2); // more chance to have a 1
 
-						m_AudioSourceOnNewPressureVoice.PlayOneShot(m_AudioOnPressureVoice[pressureKey][id]);
+						m_AudioSourceOnNewPressureVoice.clip = m_AudioOnPressureVoice[pressureKey][id];
+						m_AudioSourceOnNewPressureVoice.PlayScheduled(AudioSettings.dspTime + Time.DeltaTime);
 					}
 				}
 			}
