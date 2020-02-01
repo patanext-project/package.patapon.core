@@ -14,6 +14,7 @@ using UnityEngine;
 namespace Patapon.Mixed.GamePlay
 {
 	[UpdateInGroup(typeof(UnitInitStateSystemGroup))]
+	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)] // todo: should we calculate stat on client?
 	public class UnitCalculatePlayStateSystem : JobComponentSystem
 	{
 		protected override JobHandle OnUpdate(JobHandle inputDeps)

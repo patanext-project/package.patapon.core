@@ -6,6 +6,7 @@ using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
+using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Playables;
 
@@ -106,7 +107,8 @@ namespace package.patapon.core.Animation.Units
 
 		protected void SetInit(TPlayableInit init)
 		{
-			m_LastPlayableInit = init;}
+			m_LastPlayableInit = init;
+		}
 
 		protected void InjectAnimation(UnitVisualAnimation animation, TPlayableInit initData)
 		{
@@ -154,7 +156,9 @@ namespace package.patapon.core.Animation.Units
 		{
 			var handleDataPair = module.Get<TComponent, THandleData>(index);
 			if (handleDataPair?.Handle.Result == null)
-				return null;
+			{
+				return new AsyncOperationModule.HandleDataPair<TComponent, THandleData>();
+			}
 
 			module.Handles.RemoveAtSwapBack(index);
 			index--;

@@ -17,5 +17,10 @@ namespace Patapon.Mixed.GamePlay.Physics
 
 			return start;
 		}
+
+		public static float3 GetDisplacement(float3 velocity, float3 gravity, float time)
+		{
+			return velocity * time + (gravity * math.pow(time, 2)) / 2;
+		}
 	}
 }

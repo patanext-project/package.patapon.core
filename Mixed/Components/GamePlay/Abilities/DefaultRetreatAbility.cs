@@ -1,3 +1,6 @@
+using System;
+using P4TLB.MasterServer;
+using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
 using Patapon.Mixed.Systems;
 using Revolution;
@@ -42,7 +45,7 @@ namespace Patapon.Mixed.GamePlay.Abilities
 		[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
 		[UpdateAfter(typeof(RhythmEngineGroup))]
 		[UpdateAfter(typeof(GhostSimulationSystemGroup))]
-		[UpdateAfter(typeof(UpdateRhythmAbilityState))]
+		[UpdateAfter(typeof(UpdateAbilityRhythmStateSystem))]
 		[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 		public class LocalUpdate : JobComponentSystem
 		{
@@ -50,11 +53,11 @@ namespace Patapon.Mixed.GamePlay.Abilities
 			{
 				var engineProcessFromEntity = GetComponentDataFromEntity<FlowEngineProcess>(true);
 
-				return Entities.ForEach((ref DefaultRetreatAbility ability, in RhythmAbilityState state) =>
+				return Entities.ForEach((ref DefaultRetreatAbility ability, in AbilityState controller, in AbilityEngineSet engineSet) =>
 				{
-					if (state.IsActive || state.IsStillChaining)
+					if ((controller.Phase & EAbilityPhase.ActiveOrChaining) != 0)
 					{
-						ability.ActiveTime   = (engineProcessFromEntity[state.Engine].Milliseconds - state.StartTime) * 0.001f;
+						ability.ActiveTime   = (engineProcessFromEntity[engineSet.Engine].Milliseconds - engineSet.CommandState.StartTime) * 0.001f;
 						ability.IsRetreating = ability.ActiveTime <= MaxActiveTime;
 					}
 					else
@@ -69,5 +72,15 @@ namespace Patapon.Mixed.GamePlay.Abilities
 
 	public class RetreatAbilityProvider : BaseRhythmAbilityProvider<DefaultRetreatAbility>
 	{
+		public const string MapPath = "retreat_data";
+
+		public override string MasterServerId  => nameof(P4OfficialAbilities.BasicRetreat);
+		public override Type   ChainingCommand => typeof(RetreatCommand);
+
+		public override void SetEntityData(Entity entity, CreateAbility data)
+		{
+			base.SetEntityData(entity, data);
+			EntityManager.SetComponentData(entity, GetValue(MapPath, new DefaultRetreatAbility {AccelerationFactor = 1}));
+		}
 	}
 }

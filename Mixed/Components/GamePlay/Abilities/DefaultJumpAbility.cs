@@ -1,3 +1,6 @@
+using System;
+using P4TLB.MasterServer;
+using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
 using Patapon.Mixed.Systems;
 using Revolution;
@@ -56,7 +59,7 @@ namespace Patapon.Mixed.GamePlay.Abilities
 		[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
 		[UpdateAfter(typeof(RhythmEngineGroup))]
 		[UpdateAfter(typeof(GhostSimulationSystemGroup))]
-		[UpdateAfter(typeof(UpdateRhythmAbilityState))]
+		[UpdateAfter(typeof(UpdateAbilityRhythmStateSystem))]
 		[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 		public class LocalUpdate : JobComponentSystem
 		{
@@ -64,11 +67,11 @@ namespace Patapon.Mixed.GamePlay.Abilities
 			{
 				var engineProcessFromEntity = GetComponentDataFromEntity<FlowEngineProcess>(true);
 
-				return Entities.ForEach((ref DefaultJumpAbility ability, in RhythmAbilityState state) =>
+				return Entities.ForEach((ref DefaultJumpAbility ability, in AbilityState controller, in AbilityEngineSet engineSet) =>
 				{
-					if (state.IsActive || state.IsStillChaining)
+					if ((controller.Phase & EAbilityPhase.ActiveOrChaining) != 0)
 					{
-						ability.ActiveTime = (engineProcessFromEntity[state.Engine].Milliseconds - state.StartTime) * 0.001f;
+						ability.ActiveTime = (engineProcessFromEntity[engineSet.Engine].Milliseconds - engineSet.CommandState.StartTime) * 0.001f;
 						ability.IsJumping  = ability.ActiveTime <= 0.5f;
 					}
 					else
@@ -83,5 +86,7 @@ namespace Patapon.Mixed.GamePlay.Abilities
 
 	public class DefaultJumpAbilityProvider : BaseRhythmAbilityProvider<DefaultJumpAbility>
 	{
+		public override string MasterServerId  => nameof(P4OfficialAbilities.BasicJump);
+		public override Type   ChainingCommand => typeof(JumpCommand);
 	}
 }

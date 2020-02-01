@@ -1,3 +1,4 @@
+using Patapon.Mixed.GamePlay.Abilities;
 using Patapon.Mixed.GamePlay.Team;
 using Patapon4TLB.Core.Snapshots;
 using StormiumTeam.GameBase;
@@ -28,6 +29,8 @@ namespace Patapon.Mixed.Units
 				typeof(UnitControllerState),
 				typeof(UnitDirection),
 				typeof(UnitTargetOffset),
+
+				typeof(OwnerActiveAbility),
 
 				typeof(TeamAgainstMovable),
 

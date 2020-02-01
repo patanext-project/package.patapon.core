@@ -1,5 +1,7 @@
 using ENet;
+using P4TLB.MasterServer;
 using package.stormiumteam.shared.ecs;
+using Patapon.Mixed.GameModes;
 using Patapon.Mixed.GameModes.VSHeadOn;
 using Patapon.Mixed.Units;
 using Patapon.Mixed.Units.Statistics;
@@ -88,58 +90,6 @@ namespace Bootstraps
 			RequireSingletonForUpdate<GameModeBootstrap.IsActive>();
 		}
 
-		private void SetClass(NativeString64 kit, ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities, ref UnitDisplayedEquipment display)
-		{
-			switch (kit)
-			{
-				case NativeString64 _ when kit.Equals(UnitKnownTypes.Taterazay):
-					SetAsTaterazay(ref statistics, definedAbilities, ref display);
-					break;
-				case NativeString64 _ when kit.Equals(UnitKnownTypes.Yarida):
-					SetAsYarida(ref statistics, definedAbilities, ref display);
-					break;
-			}
-		}
-
-		private void SetAsYarida(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities, ref UnitDisplayedEquipment display)
-		{
-			statistics.Health = 160;
-			statistics.Attack = 30;
-			statistics.Defense = 0;
-			statistics.Weight = 6;
-			statistics.AttackMeleeRange = 2.6f;
-			
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("yari/basic_attack"), 0));
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("yari/jump_attack"), 0, AbilitySelection.Top));
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("yari/basic_defend"), 0));
-			
-			display.Mask = new NativeString64("Masks/n_yarida");
-			display.RightEquipment = new NativeString64("Spears/default_spear");
-		}
-
-		private void SetAsTaterazay(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities, ref UnitDisplayedEquipment display)
-		{
-			statistics.Health  = 220;
-			statistics.Attack  = 24;
-			statistics.Defense = 7;
-			statistics.Weight  = 8.5f;
-			statistics.AttackMeleeRange = 2.3f;
-
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_attack"), 0));
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_defend"), 0));
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_defend_frontal"), 0, AbilitySelection.Bottom));
-			
-			display.Mask = new NativeString64("Masks/n_taterazay");
-			display.LeftEquipment = new NativeString64("Shields/default_shield");
-			display.RightEquipment = new NativeString64("Swords/default_sword");
-		}
-
-		enum ClassType
-		{
-			Taterazay,
-			Yarida
-		}
-
 		private void SingleTeam()
 		{
 						var playerEntities = m_PlayerQuery.ToEntityArray(Allocator.TempJob);
@@ -180,7 +130,7 @@ namespace Bootstraps
 						var targetKit        = UnitKnownTypes.Taterazay;
 						if (playerEntities.Length > i && playerEntities[i] != Entity.Null)
 						{
-							targetKit = UnitKnownTypes.Yarida;
+							targetKit = UnitKnownTypes.Taterazay;
 							EntityManager.ReplaceOwnerData(unitEntity, playerEntities[i]);
 						}
 						else
@@ -196,13 +146,8 @@ namespace Bootstraps
 							EntityManager.ReplaceOwnerData(unitEntity, playerEntity);
 						}
 
-						var definedAbilities = EntityManager.GetBuffer<UnitDefinedAbilities>(unitEntity);
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_march"), 0));
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_backward"), 0));
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_retreat"), 0));
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_jump"), 0));
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_party"), 0));
-						SetClass(targetKit, ref statistics, definedAbilities, ref displayEquipment);
+						var definedAbilities = EntityManager.GetBuffer<UnitDefinedAbilities>(unitEntity); 
+						KitTempUtility.Set(targetKit, ref statistics, definedAbilities, ref displayEquipment);
 
 						EntityManager.SetOrAddComponentData(unitEntity, new UnitCurrentKit {Value = targetKit});
 						EntityManager.SetOrAddComponentData(unitEntity, statistics);
@@ -277,12 +222,7 @@ namespace Bootstraps
 						}
 
 						var definedAbilities = EntityManager.GetBuffer<UnitDefinedAbilities>(unitEntity);
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_march"), 0));
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_backward"), 0));
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_retreat"), 0));
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_jump"), 0));
-						definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_party"), 0));
-						SetClass(targetKit, ref statistics, definedAbilities, ref displayEquipment);
+						KitTempUtility.Set(targetKit, ref statistics, definedAbilities, ref displayEquipment);
 
 						EntityManager.SetOrAddComponentData(unitEntity, new UnitCurrentKit {Value = targetKit});
 						EntityManager.SetOrAddComponentData(unitEntity, statistics);

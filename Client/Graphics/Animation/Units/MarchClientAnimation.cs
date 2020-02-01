@@ -150,8 +150,8 @@ namespace package.patapon.core.Animation.Units
 			var abilityActive = false;
 			if (abilityEntity != default)
 			{
-				var abilityState             = EntityManager.GetComponentData<RhythmAbilityState>(abilityEntity);
-				doAnimation |= abilityActive = abilityState.IsActive;
+				var abilityState             = EntityManager.GetComponentData<AbilityState>(abilityEntity);
+				doAnimation |= abilityActive = abilityState.Phase == EAbilityPhase.ActiveOrChaining;
 			}
 
 			if (abilityActive) systemData.Behaviour.ForceAnimation = true;

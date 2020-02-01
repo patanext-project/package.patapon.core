@@ -1,3 +1,6 @@
+using System;
+using P4TLB.MasterServer;
+using Patapon.Mixed.RhythmEngine;
 using Revolution;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
@@ -67,5 +70,18 @@ namespace Patapon.Mixed.GamePlay.Abilities
 
 	public class DefaultMarchAbilityProvider : BaseRhythmAbilityProvider<DefaultMarchAbility>
 	{
+		public const string MapPath = "march_data";
+
+		public override string MasterServerId  => nameof(P4OfficialAbilities.BasicMarch);
+		public override Type   ChainingCommand => typeof(MarchCommand);
+
+		public override void SetEntityData(Entity entity, CreateAbility data)
+		{
+			base.SetEntityData(entity, data);
+			EntityManager.SetComponentData(entity, GetValue(MapPath, new DefaultMarchAbility
+			{
+				AccelerationFactor = 1
+			}));
+		}
 	}
 }

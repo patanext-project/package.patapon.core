@@ -74,6 +74,12 @@ namespace Patapon4TLB.Default
 		///     Bulldozer effect.
 		///     Block physical attacks (except if the attacker had a higher power than the current resistence power)
 		/// </summary>
-		Bulldozer = 10
+		Piercing = 10,
+		
+		/// <summary>
+		/// 	Silence effect.
+		/// 	Deactivate ability switching and hero mode activation.
+		/// </summary>
+		Silence = 11
 	}
 }

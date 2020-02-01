@@ -2,6 +2,7 @@ using DefaultNamespace;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Graphics.Animation.Units;
 using Patapon.Mixed.GamePlay;
+using Patapon.Mixed.GamePlay.Abilities;
 using Patapon.Mixed.GamePlay.Abilities.CTate;
 using StormiumTeam.GameBase;
 using Unity.Entities;
@@ -58,16 +59,18 @@ namespace package.patapon.core.Animation.Units.CTate
 				animation.SetTargetAnimation(new TargetAnimation(default, previousType: currAnim.Type));
 
 			var abilityEntity = AbilityFinder.GetAbility(backend.DstEntity);
-			EntityManager.TryGetComponentData<RhythmAbilityState>(abilityEntity, out var abilityState);
-			if (abilityEntity == default || !abilityState.IsActive)
+			EntityManager.TryGetComponentData<AbilityState>(abilityEntity, out var abilityState);
+			EntityManager.TryGetComponentData<AbilityEngineSet>(abilityEntity, out var engineSet);
+			if (abilityEntity == default || (abilityState.Phase & EAbilityPhase.Active) == 0)
 			{
-				if (currAnim.Type == SystemType && !abilityState.IsStillChaining)
+				if (currAnim.Type == SystemType && (abilityState.Phase & EAbilityPhase.Chaining) == 0)
 					animation.SetTargetAnimation(new TargetAnimation(default, previousType: currAnim.Type));
 
 				return;
 			}
 
-			if (!currAnim.AllowOverride || (currAnim.Type != SystemType && abilityState.CanBeTransitioned))
+			var canBeTransitioned = engineSet.CommandState.IsInputActive(engineSet.Process.Milliseconds, engineSet.Settings.BeatInterval);
+			if (!currAnim.AllowOverride || (currAnim.Type != SystemType && canBeTransitioned))
 				return;
 
 			ResetIdleTime(targetEntity);
@@ -80,7 +83,7 @@ namespace package.patapon.core.Animation.Units.CTate
 		{
 			return GetEntityQuery(new EntityQueryDesc
 			{
-				All = new ComponentType[] {typeof(RhythmAbilityState), typeof(Owner)},
+				All = new ComponentType[] {typeof(AbilityState), typeof(Owner)},
 				Any = new ComponentType[] {typeof(BasicTaterazayDefendAbility), typeof(BasicTaterazayDefendFrontalAbility)}
 			});
 		}

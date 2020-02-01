@@ -1,3 +1,4 @@
+using System;
 using DefaultNamespace;
 using package.patapon.core.Models.InGame.VFXDamage;
 using StormiumTeam.GameBase;
@@ -6,6 +7,7 @@ using StormiumTeam.GameBase.Systems;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Patapon.Client.PoolingSystems
 {
@@ -13,6 +15,8 @@ namespace Patapon.Client.PoolingSystems
 	[UpdateInGroup(typeof(OrderGroup.Simulation))]
 	public class VfxDamagePopTextPoolingSystem : PoolingSystem<VfxDamagePopTextBackend, VfxDamagePopTextPresentation>
 	{
+		protected override Type[] AdditionalBackendComponents => new Type[] {typeof(SortingGroup)};
+		
 		protected override string AddressableAsset =>
 			AddressBuilder.Client()
 			              .Interface()
@@ -33,6 +37,9 @@ namespace Patapon.Client.PoolingSystems
 			LastBackend.Play(EntityManager.GetComponentData<TargetDamageEvent>(LastBackend.DstEntity));
 			LastBackend.setToPoolAt = Time.ElapsedTime + 2f;
 			LastBackend.transform.localScale = Vector3.one * 0.5f;
+			
+			var sortingGroup = LastBackend.GetComponent<SortingGroup>();
+			sortingGroup.sortingLayerName = "OverlayUI";
 		}
 
 		protected override void ReturnBackend(VfxDamagePopTextBackend backend)

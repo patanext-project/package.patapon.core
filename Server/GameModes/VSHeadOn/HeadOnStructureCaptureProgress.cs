@@ -62,7 +62,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				.WithReadOnly(ltwFromEntity)
 				.WithReadOnly(movableDescFromEntity)
 				.WithReadOnly(physicsColliderFromEntity)
-				.ForEach((Entity entity, ref HeadOnStructure structure, in CaptureAreaComponent captureArea, in LocalToWorld ltw, in PhysicsCollider collider) =>
+				.ForEach((Entity entity, ref HeadOnStructure structure, ref CaptureAreaComponent captureArea, in LocalToWorld ltw, in PhysicsCollider collider) =>
 				{
 					var relativeTeamUpdater = relativeTeamFromEntity.GetUpdater(entity)
 					                                                .Out(out var relativeTeam);
@@ -72,6 +72,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					var cc         = new CustomCollide(collider, ltw);
 					var aabb = cc.Collider->CalculateAabb(cc.WorldFromMotion);
 					aabb.Expand(0.1f);
+
+					captureArea.Aabb = aabb;
 					
 					if (captureArea.CaptureType == CaptureAreaType.Instant || structure.TimeToCapture <= 1)
 					{
@@ -162,10 +164,13 @@ namespace Patapon.Server.GameModes.VSHeadOn
 						for (var t = 0; t != teamArray.Length; t++)
 						{
 							var speed = playerOnPointCount[t];
-							if (initialProgress[1 - t] > initialProgress[t] && playerOnPointCount[1 - t] > playerOnPointCount[t])
-								speed -= playerOnPointCount[1 - t];
-							
-							if (speed < 0)
+							var otherCount = playerOnPointCount[1 - t];
+							// block the early progression if it shouldn't go further against the other team progression...
+							if (initialProgress[t] + speed >= structure.TimeToCapture - structure.CaptureProgress[1 - t]
+							    && otherCount >= speed)
+								speed = 0;
+
+							if (speed <= 0)
 								continue;
 							structure.CaptureProgress[t] += (int) (tick.DeltaMs * speed);
 						}

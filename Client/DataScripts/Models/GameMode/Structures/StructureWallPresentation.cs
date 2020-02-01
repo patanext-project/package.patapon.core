@@ -148,17 +148,15 @@ namespace DataScripts.Models.GameMode.Structures
 			var presentation = backend.Presentation;
 			var chunk        = EntityManager.GetChunk(backend.DstEntity);
 			var comps        = chunk.Archetype.GetComponentTypes();
-			for (var i = 0; i != comps.Length; i++)
-			{
-				if (comps[i].GetManagedType() == typeof(Relative<TeamDescription>))
-				{
-					var teamDesc = EntityManager.GetComponentData<Relative<TeamDescription>>(backend.DstEntity);
-					if (teamDesc.Target == default || !EntityManager.TryGetComponentData<Relative<ClubDescription>>(teamDesc.Target, out var relativeClub))
-					{
-						backend.HasTeam = false;
-						continue;
-					}
 
+			if (EntityManager.TryGetComponentData(backend.DstEntity, out Relative<TeamDescription> teamDesc))
+			{
+				if (teamDesc.Target == default || !EntityManager.TryGetComponentData<Relative<ClubDescription>>(teamDesc.Target, out var relativeClub))
+				{
+					backend.HasTeam = false;
+				}
+				else
+				{
 					var clubInfo = EntityManager.GetComponentData<ClubInformation>(relativeClub.Target);
 					presentation.SetTeamColor(clubInfo.PrimaryColor);
 
@@ -176,7 +174,7 @@ namespace DataScripts.Models.GameMode.Structures
 			backend.IsDead = health.ShouldBeDead();
 
 			var pos = EntityManager.GetComponentData<Translation>(backend.DstEntity).Value;
-			pos.z += 200;
+			pos.z += 300;
 
 			backend.transform.position   = pos;
 			backend.transform.localScale = new Vector3(direction, 1, 1);

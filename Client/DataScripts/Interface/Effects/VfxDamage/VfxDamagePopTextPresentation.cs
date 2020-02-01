@@ -1,5 +1,6 @@
 using Misc.Extensions;
 using package.stormiumteam.shared.ecs;
+using Patapon.Client.OrderSystems.Vfx;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Systems;
@@ -9,6 +10,7 @@ using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Serialization;
 
 namespace package.patapon.core.Models.InGame.VFXDamage
@@ -42,16 +44,27 @@ namespace package.patapon.core.Models.InGame.VFXDamage
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class VfxDamagePopTextRenderSystem : BaseRenderSystem<VfxDamagePopTextPresentation>
 	{
+		[UpdateAfter(typeof(ByOtherOrder))]
+		public class BySelfOrder : InGameVfxOrderingSystem {}
+		public class ByOtherOrder : InGameVfxOrderingSystem {}
+		
+		
 		public Entity LocalPlayer;
+		private int m_SelfOrder;
+		private int m_OtherOrder;
 
 		protected override void PrepareValues()
 		{
 			LocalPlayer = this.GetFirstSelfGamePlayer();
+			m_SelfOrder = World.GetExistingSystem<BySelfOrder>().Order;
+			m_SelfOrder = World.GetExistingSystem<ByOtherOrder>().Order;
 		}
 
 		protected override void Render(VfxDamagePopTextPresentation definition)
 		{
 			var backend = (VfxDamagePopTextBackend) definition.Backend;
+			var sortingGroup = backend.GetComponent<SortingGroup>();
+			
 			if (!backend.isPlayQueued)
 			{
 				var count = (int) ((Time.ElapsedTime - backend.startTime) * 15);
@@ -133,6 +146,11 @@ namespace package.patapon.core.Models.InGame.VFXDamage
 				label.color = Color.white;
 				label.faceColor = color;
 			}
+
+			if (selfRelated)
+				sortingGroup.sortingOrder = m_SelfOrder;
+			else
+				sortingGroup.sortingOrder = m_OtherOrder;
 		}
 
 		protected override void ClearValues()

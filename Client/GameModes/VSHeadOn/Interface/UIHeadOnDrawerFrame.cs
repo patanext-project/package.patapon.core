@@ -18,7 +18,7 @@ namespace Patapon4TLB.GameModes.Interface
 		[Serializable]
 		public struct TeamFlagSide
 		{
-			public MaskableGraphic circleGraphic;
+			public MaskableGraphic[] graphics;
 		}
 
 		[SerializeField] private RectTransform drawerSpace;
@@ -88,7 +88,7 @@ namespace Patapon4TLB.GameModes.Interface
 				default:
 					throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null);
 			}
-
+			
 			return math.lerp(left, right, t);
 		}
 	}

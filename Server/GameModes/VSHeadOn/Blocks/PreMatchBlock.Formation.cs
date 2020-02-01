@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using GmMachine;
 using Misc.GmMachine.Contexts;
+using P4TLB.MasterServer;
 using package.stormiumteam.shared.ecs;
+using Patapon.Mixed.GameModes;
 using Patapon.Mixed.GameModes.VSHeadOn;
 using Patapon.Mixed.Units;
 using Patapon.Mixed.Units.Statistics;
@@ -29,7 +31,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 		{
 			public Entity Player;
 		}
-		
+
 		public Entity[]                   FormationEntity;
 		public Dictionary<Entity, Entity> PlayerToFormationRequest;
 
@@ -56,7 +58,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				       abilities.Clear();
 
 				       var kitTarget = UnitKnownTypes.FromEnum(responseUnitKit.KitId);
-				       SetClass(kitTarget, ref statistics, abilities, ref displayedEquipment);
+				       KitTempUtility.Set(kitTarget, ref statistics, abilities, ref displayedEquipment);
 				       currentKit.Value = kitTarget;
 			       });
 		}
@@ -125,8 +127,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					foreach (var unit in army.Units)
 					{
 						var unitEntity = WorldCtx.EntityMgr.CreateEntity(typeof(UnitFormation), typeof(MasterServerP4UnitMasterServerEntity),
-							                          typeof(UnitStatistics), typeof(UnitDefinedAbilities), typeof(UnitDisplayedEquipment), typeof(UnitCurrentKit),
-							                          typeof(FormationParent), typeof(GhostEntity));
+							typeof(UnitStatistics), typeof(UnitDefinedAbilities), typeof(UnitDisplayedEquipment), typeof(UnitCurrentKit),
+							typeof(FormationParent), typeof(GhostEntity));
 						WorldCtx.EntityMgr.SetComponentData(unitEntity, new FormationParent {Value                       = armyEntity});
 						WorldCtx.EntityMgr.SetComponentData(unitEntity, new MasterServerP4UnitMasterServerEntity {UnitId = unit});
 						WorldCtx.EntityMgr.AddComponentData(unitEntity, new RequestGetUnitKit.Automatic());
@@ -137,69 +139,6 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 				WorldCtx.EntityMgr.DestroyEntity(entity);
 			});
-		}
-
-		private void SetClass(NativeString64 kit, ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities, ref UnitDisplayedEquipment display)
-		{
-			statistics.Health = 1000;
-			statistics.Attack = 24;
-			statistics.Defense = 7;
-			statistics.BaseWalkSpeed = 2f;
-			statistics.FeverWalkSpeed = 2.2f;
-			statistics.AttackSpeed = 2.0f;
-			statistics.MovementAttackSpeed = 3.1f;
-			statistics.Weight = 8.5f;
-			statistics.AttackSeekRange = 16f;
-			
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_march"), 0));
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_backward"), 0));
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_retreat"), 0));
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_jump"), 0));
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("basic_party"), 0));
-
-			display = default;
-			switch (kit)
-			{
-				case NativeString64 _ when kit.Equals(UnitKnownTypes.Taterazay):
-					SetAsTaterazay(ref statistics, definedAbilities, ref display);
-					break;
-				case NativeString64 _ when kit.Equals(UnitKnownTypes.Yarida):
-					SetAsYarida(ref statistics, definedAbilities, ref display);
-					break;
-			}
-		}
-
-		private void SetAsYarida(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities, ref UnitDisplayedEquipment display)
-		{
-			statistics.Health           = 175;
-			statistics.Attack           = 28;
-			statistics.Defense          = 0;
-			statistics.Weight           = 6;
-			statistics.AttackMeleeRange = 2.6f;
-
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("yari/basic_attack"), 0));
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("yari/jump_attack"), 0, AbilitySelection.Top));
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("yari/basic_defend"), 0));
-
-			display.Mask           = new NativeString64("Masks/n_yarida");
-			display.RightEquipment = new NativeString64("Spears/default_spear");
-		}
-
-		private void SetAsTaterazay(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities, ref UnitDisplayedEquipment display)
-		{
-			statistics.Health           = 225;
-			statistics.Attack           = 24;
-			statistics.Defense          = 7;
-			statistics.Weight           = 8.5f;
-			statistics.AttackMeleeRange = 2.3f;
-
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_attack"), 0));
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_defend"), 0));
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal("tate/basic_defend_frontal"), 0, AbilitySelection.Bottom));
-
-			display.Mask           = new NativeString64("Masks/n_taterazay");
-			display.LeftEquipment  = new NativeString64("Shields/default_shield");
-			display.RightEquipment = new NativeString64("Swords/default_sword");
 		}
 	}
 }

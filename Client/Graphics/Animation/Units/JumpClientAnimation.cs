@@ -113,50 +113,54 @@ namespace package.patapon.core.Animation.Units
 			if (!animation.ContainsSystem(SystemType))
 				animation.InsertSystem<SystemData>(SystemType, AddAnimation, RemoveAnimation);
 
-			var abilityState = EntityManager.GetComponentData<RhythmAbilityState>(abilityEntity);
+			var abilityState = EntityManager.GetComponentData<AbilityState>(abilityEntity);
+			var engineSet = EntityManager.GetComponentData<AbilityEngineSet>(abilityEntity);
 			var jumpAbility  = EntityManager.GetComponentData<DefaultJumpAbility>(abilityEntity);
 			var velocity     = EntityManager.GetComponentData<Velocity>(targetEntity);
 
-			if (!abilityState.IsStillChaining && !abilityState.IsActive && !abilityState.WillBeActive)
+			if (abilityState.Phase == EAbilityPhase.None)
 			{
 				if (currAnim.Type == SystemType)
 					animation.SetTargetAnimation(TargetAnimation.Null);
 
 				return;
 			}
+			
+			var process = EntityManager.GetComponentData<FlowEngineProcess>(EntityManager.GetComponentData<Relative<RhythmEngineDescription>>(backend.DstEntity).Target);
 
 			ref var data = ref animation.GetSystemData<SystemData>(SystemType);
-			if (abilityState.WillBeActive && data.StartAt < 0 && abilityState.ActiveId >= data.ActiveId && !abilityState.IsActive)
+			if ((abilityState.Phase & EAbilityPhase.WillBeActive) != 0 && data.StartAt < 0 && abilityState.UpdateVersion >= data.ActiveId)
 			{
-				var process = EntityManager.GetComponentData<FlowEngineProcess>(EntityManager.GetComponentData<Relative<RhythmEngineDescription>>(backend.DstEntity).Target);
-				var delay   = math.max(abilityState.StartTime - 200 - process.Milliseconds, 0) * 0.001f;
+				var delay   = math.max(engineSet.CommandState.StartTime - 200 - process.Milliseconds, 0) * 0.001f;
 				// StartTime - StartJump Animation Approx Length in ms - Time, aka delay 0.2s before the command
 
-				Debug.Log($"{abilityState.StartTime - process.Milliseconds} {delay} activeId:{abilityState.ActiveId + 1}");
+				//Debug.Log($"[{Time.ElapsedTime}] {engineSet.CommandState.StartTime - process.Milliseconds} {delay} activeId:{abilityState.UpdateVersion + 1} startAt {animation.RootTime + delay}");
 
 				data.StartAt             = animation.RootTime + delay;
-				data.ActiveId            = abilityState.ActiveId + 1;
+				data.ActiveId            = abilityState.UpdateVersion + 1;
 				data.Behaviour.Predicted = true;
 			}
 
 			// Start animation if Behavior.ActiveId and Jump.ActiveId is different... or if we need to start now
-			if (abilityState.IsActive && abilityState.ActiveId > data.ActiveId || data.StartAt > 0 && data.StartAt < data.Behaviour.Root.GetTime())
+			if ((abilityState.Phase & EAbilityPhase.Active) != 0 && abilityState.UpdateVersion > data.ActiveId
+			    || data.StartAt > 0 && data.StartAt < animation.RootTime)
 			{
-				var stopAt = animation.RootTime + 3.5f;
+				var stopAt = animation.RootTime + (engineSet.CommandState.ChainEndTime - process.Milliseconds) * 0.001f - 0.75f;
 				animation.SetTargetAnimation(new TargetAnimation(SystemType, false, false, stopAt: stopAt));
-				Debug.Log($"Start Animation [{abilityState.ActiveId} > {data.ActiveId}] || [0 < {data.StartAt} < {data.Behaviour.Root.GetTime()}]");
+				//Debug.Log($"[{Time.ElapsedTime}] Start Animation [{abilityState.UpdateVersion} > {data.ActiveId}] || [0 < {data.StartAt} < {data.Behaviour.Root.GetTime()}]");
+
+				data.Behaviour.Mixer.SetTime(0);
+				data.Behaviour.StartTime = animation.RootTime;
 
 				data.StartAt = -1;
-				if (abilityState.IsActive)
-					data.ActiveId = abilityState.ActiveId;
-				data.Behaviour.StartTime = animation.RootTime;
-				data.Behaviour.Mixer.SetTime(0);
+				if (abilityState.Phase == EAbilityPhase.Active)
+					data.ActiveId = abilityState.UpdateVersion;
+
 				data.Behaviour.Weight = 1;
-				//data.Behaviour.Predicted = false;
 			}
 
 			var targetPhase = Phase.Idle;
-			if (jumpAbility.IsJumping || abilityState.WillBeActive)
+			if (jumpAbility.IsJumping || abilityState.Phase == EAbilityPhase.WillBeActive)
 				targetPhase = Phase.Jumping;
 			else if (velocity.Value.y < 0)
 				targetPhase = Phase.Fall;

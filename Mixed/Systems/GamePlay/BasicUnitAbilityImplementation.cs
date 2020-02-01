@@ -20,6 +20,8 @@ namespace Patapon.Mixed.GamePlay
 		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Velocity>            VelocityFromEntity;
 		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitDirection>       UnitDirectionFromEntity;
 		
+		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GroundState> GroundStateFromEntity;
+		
 		[NativeDisableContainerSafetyRestriction] public ComponentDataFromEntity<LivableHealth>       HealthFromEntity;
 
 		public BasicUnitAbilityImplementation(ComponentSystemBase system)
@@ -32,8 +34,17 @@ namespace Patapon.Mixed.GamePlay
 			ControllerFromEntity    = system.GetComponentDataFromEntity<UnitControllerState>();
 			VelocityFromEntity      = system.GetComponentDataFromEntity<Velocity>();
 			UnitDirectionFromEntity = system.GetComponentDataFromEntity<UnitDirection>();
+			
+			GroundStateFromEntity = system.GetComponentDataFromEntity<GroundState>();
 
 			HealthFromEntity = system.GetComponentDataFromEntity<LivableHealth>(true);
+		}
+
+		public bool IsGrounded(Entity entity)
+		{
+			if (!GroundStateFromEntity.TryGet(entity, out var state))
+				return true;
+			return state.Value;
 		}
 
 		public bool CanExecuteAbility(Entity entity)

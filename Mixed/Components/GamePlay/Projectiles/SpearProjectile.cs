@@ -50,8 +50,8 @@ namespace Systems.GamePlay.CYari
 					typeof(DistanceImpulseFallOf),
 					typeof(GhostEntity),
 					
-					typeof(TranslationSnapshot.Exclude),
-					typeof(VelocityPredictedTranslation.Use)
+					//typeof(TranslationSnapshot.Exclude),
+					//typeof(VelocityPredictedTranslation.Use)
 				};
 			}
 

@@ -7,6 +7,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
+using UnityEngine;
 
 namespace Systems.GamePlay
 {
@@ -26,7 +27,7 @@ namespace Systems.GamePlay
 			Entities
 				.WithNativeDisableParallelForRestriction(unitControllerStateFromEntity)
 				.WithNativeDisableParallelForRestriction(velocityFromEntity)
-				.ForEach((Entity entity, ref RhythmAbilityState state, ref DefaultJumpAbility ability, in Owner owner) =>
+				.ForEach((Entity entity, ref DefaultJumpAbility ability, in AbilityState controller, in Owner owner) =>
 				{
 					if (!impl.CanExecuteAbility(owner.Target))
 						return;
@@ -34,14 +35,14 @@ namespace Systems.GamePlay
 					var controllerStateUpdater = unitControllerStateFromEntity.GetUpdater(owner.Target).Out(out var controllerState);
 					var velocityUpdater        = velocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
 
-					if (state.ActiveId != ability.LastActiveId)
+					if (controller.ActivationVersion != ability.LastActiveId)
 					{
 						ability.IsJumping    = false;
 						ability.ActiveTime   = 0;
-						ability.LastActiveId = state.ActiveId;
+						ability.LastActiveId = controller.ActivationVersion;
 					}
-
-					if (!state.IsActive && !state.IsStillChaining)
+					
+					if ((controller.Phase & EAbilityPhase.ActiveOrChaining) == 0)
 					{
 						if (ability.IsJumping)
 						{

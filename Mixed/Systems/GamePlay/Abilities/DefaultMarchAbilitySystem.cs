@@ -1,4 +1,5 @@
 using System;
+using Systems.GamePlay.CYari;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay;
 using Patapon.Mixed.GamePlay.Abilities;
@@ -12,10 +13,7 @@ using Unity.Transforms;
 
 namespace Systems.GamePlay
 {
-	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
-	[AlwaysSynchronizeSystem]
-	public class DefaultMarchAbilitySystem : JobGameBaseSystem
+	public class DefaultMarchAbilitySystem : BaseAbilitySystem
 	{
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
@@ -42,22 +40,21 @@ namespace Systems.GamePlay
 				.WithNativeDisableParallelForRestriction(translationFromEntity)
 				.WithNativeDisableParallelForRestriction(unitControllerStateFromEntity)
 				.WithNativeDisableParallelForRestriction(velocityFromEntity)
-				.ForEach((Entity entity, ref RhythmAbilityState state, ref DefaultMarchAbility marchAbility, in Owner owner) =>
+				.ForEach((Entity entity, ref DefaultMarchAbility marchAbility, in AbilityState controller, in Owner owner) =>
 				{
 					if (!impl.CanExecuteAbility(owner.Target))
 						return;
 
-					if (!state.IsActive)
+					if ((controller.Phase & EAbilityPhase.Active) == 0)
 					{
 						marchAbility.Delta = 0.0f;
 						return;
 					}
 
-					var targetOffset                                                                = targetOffsetFromEntity[owner.Target];
-					var groundState                                                                 = groundStateFromEntity[owner.Target];
-					var unitPlayState                                                               = unitPlayStateFromEntity[owner.Target];
-					if (state.Combo.IsFever && state.Combo.Score >= 50) unitPlayState.MovementSpeed *= 1.2f;
-
+					var targetOffset  = targetOffsetFromEntity[owner.Target];
+					var groundState   = groundStateFromEntity[owner.Target];
+					var unitPlayState = unitPlayStateFromEntity[owner.Target];
+					
 					if (!groundState.Value)
 						return;
 

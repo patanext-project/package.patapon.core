@@ -109,7 +109,8 @@ namespace Patapon4TLB.GameModes.Interface
 				var side = DrawerFrame.FlagSides[index];
 				var team = m_ClubInformationArray[index];
 
-				side.circleGraphic.color = team.PrimaryColor;
+				foreach (var graphic in side.graphics)
+					graphic.color = team.PrimaryColor;
 			}
 
 			for (var index = 0; index < ScoreFrames.Length; index++)

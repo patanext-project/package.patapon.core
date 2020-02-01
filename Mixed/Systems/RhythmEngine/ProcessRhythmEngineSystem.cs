@@ -40,6 +40,9 @@ namespace Patapon.Mixed.Systems
 			var tick       = GetTick(GetSingleton<P4NetworkRules.Data>().RhythmEngineUsePredicted);
 			var isServer = IsServer;
 
+			if (!isServer && !GetSingleton<P4NetworkRules.Data>().RhythmEngineUsePredicted)
+				tick.Value += (GetTick(true).Value - GetTick(false).Value) / 4;
+
 			destroyEcb.DestroyEntity(m_DestroyEventQuery);
 
 			// Originally, it was only tasked for systems with 'FlowProcessTag'

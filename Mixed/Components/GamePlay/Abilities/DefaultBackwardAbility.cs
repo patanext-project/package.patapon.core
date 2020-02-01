@@ -1,3 +1,6 @@
+using System;
+using P4TLB.MasterServer;
+using Patapon.Mixed.RhythmEngine;
 using Revolution;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
@@ -40,5 +43,18 @@ namespace Patapon.Mixed.GamePlay.Abilities
 
 	public class DefaultBackwardAbilityProvider : BaseRhythmAbilityProvider<DefaultBackwardAbility>
 	{
+		public const string MapPath = "backward_data";
+
+		public override string MasterServerId  => nameof(P4OfficialAbilities.BasicBackward);
+		public override Type   ChainingCommand => typeof(BackwardCommand);
+
+		public override void SetEntityData(Entity entity, CreateAbility data)
+		{
+			base.SetEntityData(entity, data);
+			EntityManager.SetComponentData(entity, GetValue(MapPath, new DefaultBackwardAbility
+			{
+				AccelerationFactor = 1
+			}));
+		}
 	}
 }

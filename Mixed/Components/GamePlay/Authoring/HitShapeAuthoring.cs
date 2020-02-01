@@ -72,7 +72,7 @@ namespace Patapon.Mixed.GamePlay.Authoring
 
 		public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
 		{
-			var ownerEntity = conversionSystem.TryGetPrimaryEntity(owner);
+			var ownerEntity = conversionSystem.TryGetPrimaryEntity(owner ? owner : transform.parent.gameObject);
 			if (ownerEntity == default)
 			{
 				Debug.LogError("The owner doesn't have an entity yet!");

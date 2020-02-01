@@ -8,10 +8,12 @@ namespace Patapon.Client.OrderSystems
 	[UpdateBefore(typeof(UIGameModeOrderingSystem.End))]
 	public class UIGameModeOrderingSystem : OrderingSystem
 	{
+		[UpdateInGroup(typeof(OrderSystemGroup))]
 		public class Begin : OrderingSystem
 		{
 		}
 
+		[UpdateInGroup(typeof(OrderSystemGroup))]
 		public class End : OrderingSystem
 		{
 		}

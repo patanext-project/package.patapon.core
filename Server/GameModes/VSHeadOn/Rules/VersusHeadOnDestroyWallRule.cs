@@ -46,8 +46,6 @@ namespace Patapon.Server.GameModes.VSHeadOn
 						lastInstigator = healthHistory[i].Instigator;
 
 				teamRelativeFromEntity.TryGet(lastInstigator, out var instigatorTeam);
-				if (instigatorTeam.Target == teamRelative.Target)
-					return; // ????
 
 				var score = 1;
 				switch (structure.ScoreType)

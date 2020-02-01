@@ -126,8 +126,7 @@ namespace DataScripts.Interface.GameMode.VSHeadOn
 				backend.transform.SetParent(Hud.DrawerFrame.GetDrawer(UIHeadOnDrawerType.Structure), false);
 			}
 
-			PositionOnDrawer = backend.PreviousHud.GetPositionOnDrawer(EntityManager.GetComponentData<Translation>(targetEntity).Value, DrawerAlignment.Center);
-			PositionOnDrawer.y = 0;
+			PositionOnDrawer = backend.PreviousHud.GetPositionOnDrawer(EntityManager.GetComponentData<Translation>(targetEntity).Value, DrawerAlignment.Bottom);
 			PositionOnDrawer.z = 0;
 
 			if (DefaultBehavior)

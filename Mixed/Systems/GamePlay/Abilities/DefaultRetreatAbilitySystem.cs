@@ -34,21 +34,21 @@ namespace Systems.GamePlay
 				.WithNativeDisableParallelForRestriction(translationFromEntity)
 				.WithNativeDisableParallelForRestriction(unitControllerStateFromEntity)
 				.WithNativeDisableParallelForRestriction(velocityFromEntity)
-				.ForEach((Entity entity, ref RhythmAbilityState state, ref DefaultRetreatAbility ability, in Owner owner) =>
+				.ForEach((Entity entity, ref DefaultRetreatAbility ability, in AbilityState controller, in Owner owner) =>
 				{
 					if (!impl.CanExecuteAbility(owner.Target))
 						return;
 
-					if (state.ActiveId != ability.LastActiveId)
+					if (controller.ActivationVersion != ability.LastActiveId)
 					{
 						ability.IsRetreating = false;
 						ability.ActiveTime   = 0;
-						ability.LastActiveId = state.ActiveId;
+						ability.LastActiveId = controller.ActivationVersion;
 					}
 
 					var velocityUpdater        = velocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
 					var controllerStateUpdater = unitControllerStateFromEntity.GetUpdater(owner.Target).Out(out var controllerState);
-					if (!state.IsActive && !state.IsStillChaining)
+					if ((controller.Phase & EAbilityPhase.ActiveOrChaining) == 0)
 					{
 						if (math.distance(ability.StartPosition, translationFromEntity[owner.Target].Value) > 2.5f && ability.ActiveTime > 0.1f)
 						{

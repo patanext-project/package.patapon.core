@@ -99,11 +99,9 @@ namespace Patapon.Server.GameModes.VSHeadOn
 							MasterServerAbilities.Convert(dummySystem, spawnedUnit, entityMgr.GetBuffer<UnitDefinedAbilities>(units[unt].Value));
 
 							worldOrigin.GetExistingSystem<DefaultRebornAbility.Provider>()
-							           .SpawnLocalEntityWithArguments(new BaseRhythmAbilityProvider<DefaultRebornAbility>.Create
+							           .SpawnLocalEntityWithArguments(new CreateAbility
 							           {
-								           Owner   = spawnedUnit,
-								           Command = FindCommand(dummySystem, typeof(SummonCommand)),
-								           Data    = new DefaultRebornAbility()
+								           Owner = spawnedUnit,
 							           });
 
 							onEntityCreated(entities[form], form, armies[arm].Value, arm, spawnedUnit, worldOrigin);

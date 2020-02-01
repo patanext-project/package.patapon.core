@@ -1,7 +1,9 @@
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay;
+using Patapon.Mixed.GamePlay.Abilities;
 using Patapon.Mixed.GamePlay.Abilities.CYari;
 using Patapon.Mixed.GamePlay.Physics;
+using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
 using Unity.Entities;
@@ -26,22 +28,16 @@ namespace Systems.GamePlay.CYari
 		{
 			var tick                   = ServerTick;
 			var impl                   = new BasicUnitAbilityImplementation(this);
-			var seekEnemies            = new SeekEnemies(this);
 			var seekingStateFromEntity = GetComponentDataFromEntity<UnitEnemySeekingState>(true);
-
-			var relativeTeamFromEntity = GetComponentDataFromEntity<Relative<TeamDescription>>(true);
+			var chargeCommandFromEntity = GetComponentDataFromEntity<ChargeCommand>(true);
 
 			var queueWriter = m_ProjectileProvider.GetEntityDelayedStream()
 			                                      .AsParallelWriter();
 
 			Entities
-				.ForEach((Entity entity, int nativeThreadIndex, ref RhythmAbilityState state, ref BasicYaridaDefendAbility ability, in Owner owner) =>
+				.ForEach((Entity entity, int nativeThreadIndex, ref BasicYaridaDefendAbility ability, in AbilityState state, in AbilityEngineSet engineSet, in Owner owner) =>
 				{
 					if (!impl.CanExecuteAbility(owner.Target))
-						return;
-
-					var tryGetChain = stackalloc[] {entity, owner.Target};
-					if (!relativeTeamFromEntity.TryGetChain(tryGetChain, 2, out var relativeTeam))
 						return;
 
 					var seekingState = seekingStateFromEntity[owner.Target];
@@ -55,29 +51,13 @@ namespace Systems.GamePlay.CYari
 
 					var attackStartTick = UTick.CopyDelta(tick, ability.AttackStartTick);
 
-					if (state.IsStillChaining)
+					if ((state.Phase & EAbilityPhase.ActiveOrChaining) != 0)
 					{
-						if (!state.IsActive)
+						if ((state.Phase & EAbilityPhase.Chaining) != 0)
 						{
 							controller.ControlOverVelocity.x = true;
 							velocity.Value.x                 = math.lerp(velocity.Value.x, 0, playState.GetAcceleration() * 50 * tick.Delta);
 						}
-
-						var defense = playState.Defense * 0.25f;
-
-						playState.ReceiveDamagePercentage *= 0.8f;
-						if (state.Combo.IsFever)
-						{
-							playState.ReceiveDamagePercentage *= 0.8f;
-							defense                           *= 1.2f;
-							if (state.Combo.IsPerfect)
-							{
-								playState.ReceiveDamagePercentage *= 0.9f;
-								defense                           *= 1.2f;
-							}
-						}
-
-						playState.Defense += (int) defense;
 					}
 
 					ability.NextAttackDelay -= tick.Delta;
@@ -88,23 +68,12 @@ namespace Systems.GamePlay.CYari
 					{
 						if (tick >= UTick.AddMs(attackStartTick, BasicYaridaDefendAbility.DelayThrowMs) && !ability.HasThrown)
 						{
-							var   damage      = playState.Attack / 2;
-							float damageFever = damage;
-							if (state.Combo.IsFever)
-							{
-								damageFever *= 1.2f;
-								if (state.Combo.IsPerfect)
-									damageFever *= 1.2f;
-
-								damage += (int) damageFever - damage;
-							}
-
 							queueWriter.Enqueue(new SpearProjectile.Create
 							{
 								Owner       = owner.Target,
 								Position    = unitPosition + throwOffset,
 								Velocity    = new float3(ability.ThrowVec.x * direction, ability.ThrowVec.y, 0),
-								StartDamage = damage,
+								StartDamage = playState.Attack,
 								Gravity     = gravity
 							});
 
@@ -135,13 +104,13 @@ namespace Systems.GamePlay.CYari
 					targetPosition.x -= throwDeltaPosition.x;
 
 					var outOfRange = seekingState.Distance > statistics.AttackSeekRange * 0.7f;
-					if (!state.IsActive || seekingState.Enemy == default
-					                    || outOfRange && math.abs(targetPosition.x - unitPosition.x) > statistics.AttackSeekRange * 0.7f)
+					if ((state.Phase & EAbilityPhase.Active) == 0 || seekingState.Enemy == default
+					                                        || outOfRange && math.abs(targetPosition.x - unitPosition.x) > statistics.AttackSeekRange * 0.7f)
 					{
-						if (state.IsActive && state.Combo.IsFever)
+						if ((state.Phase & EAbilityPhase.Active) != 0 && engineSet.Combo.IsFever)
 						{
 							playState.MovementReturnSpeed *= 1.8f;
-							if (state.Combo.IsPerfect)
+							if (engineSet.Combo.IsPerfect)
 								playState.MovementReturnSpeed *= 1.2f;
 
 							controller.ControlOverVelocity.x = true;
@@ -149,22 +118,11 @@ namespace Systems.GamePlay.CYari
 
 						return;
 					}
-
-					if (state.Combo.IsFever)
-					{
-						playState.MovementAttackSpeed *= 1.8f;
-						if (state.Combo.IsPerfect)
-							playState.MovementAttackSpeed *= 1.2f;
-					}
-
+					
 					var distanceMercy = 1.8f;
 					if (math.abs(targetPosition.x - unitPosition.x) < distanceMercy && ability.NextAttackDelay <= 0 && ability.AttackStartTick <= 0)
 					{
-						var atkSpeed = playState.AttackSpeed;
-						if (state.Combo.IsFever && state.Combo.IsPerfect)
-							atkSpeed *= 0.75f;
-
-						ability.NextAttackDelay = atkSpeed;
+						ability.NextAttackDelay = playState.AttackSpeed;
 						ability.AttackStartTick = tick.AsUInt;
 						ability.HasThrown       = false;
 
@@ -195,7 +153,7 @@ namespace Systems.GamePlay.CYari
 					controllerUpdater.CompareAndUpdate(controller);
 				})
 				.WithReadOnly(seekingStateFromEntity)
-				.WithReadOnly(relativeTeamFromEntity)
+				.WithReadOnly(chargeCommandFromEntity)
 				.Run();
 
 			return default;

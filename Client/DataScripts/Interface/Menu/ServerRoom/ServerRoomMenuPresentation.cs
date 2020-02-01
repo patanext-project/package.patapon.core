@@ -50,9 +50,8 @@ namespace DataScripts.Interface.Menu.ServerRoom
 			entityMgr.SetComponentData(buttonPrefab, new UIButtonText {Value = "not init"});
 
 			var backButton      = entityMgr.Instantiate(buttonPrefab);
-			var team0Button     = entityMgr.Instantiate(buttonPrefab);
-			var team1Button     = entityMgr.Instantiate(buttonPrefab);
 			var changeKitButton = entityMgr.Instantiate(buttonPrefab);
+			var mapVoteButton = entityMgr.Instantiate(buttonPrefab);
 			var readyButton     = entityMgr.Instantiate(buttonPrefab);
 
 			Entity button;
@@ -62,16 +61,11 @@ namespace DataScripts.Interface.Menu.ServerRoom
 			entityMgr.SetComponentData(button, new UIGridPosition {Value = new int2(0, 0)});
 			entityMgr.AddComponentData(button, new ButtonGoBackToPreviousMenu {PreviousMenu = Backend.DstEntityManager.World.GetExistingSystem<ServerRoomMenu>().PreviousMenu});
 
-			button = team0Button;
-			entityMgr.SetComponentData(button, new UIButtonText {Value          = "Join Team 0"});
-			entityMgr.SetComponentData(button, new UIGridPosition {Value        = new int2(0, 1)});
-			entityMgr.AddComponentData(button, new ButtonChangeTeam {TeamTarget = 0});
-
-			button = team1Button;
-			entityMgr.SetComponentData(button, new UIButtonText {Value          = "Join Team 1"});
-			entityMgr.SetComponentData(button, new UIGridPosition {Value        = new int2(0, 2)});
-			entityMgr.AddComponentData(button, new ButtonChangeTeam {TeamTarget = 1});
-
+			button = changeKitButton;
+			entityMgr.SetComponentData(button, new UIButtonText {Value              = "Vote for map"});
+			entityMgr.SetComponentData(button, new UIGridPosition {Value            = new int2(0, 2)});
+			//entityMgr.AddComponentData(button, new SetEnableStatePopupAction {Popup = changeKitPopup, Value = true});
+			
 			button = changeKitButton;
 			entityMgr.SetComponentData(button, new UIButtonText {Value              = "Change class"});
 			entityMgr.SetComponentData(button, new UIGridPosition {Value            = new int2(0, 3)});
@@ -112,8 +106,7 @@ namespace DataScripts.Interface.Menu.ServerRoom
 			m_LinkedEntities.Add(changeKitPopup);
 			m_LinkedEntities.Add(buttonPrefab);
 			m_LinkedEntities.Add(backButton);
-			m_LinkedEntities.Add(team0Button);
-			m_LinkedEntities.Add(team1Button);
+			m_LinkedEntities.Add(mapVoteButton);
 			m_LinkedEntities.Add(changeKitButton);
 			m_LinkedEntities.Add(readyButton);
 			m_LinkedEntities.Add(taterazayChoice);

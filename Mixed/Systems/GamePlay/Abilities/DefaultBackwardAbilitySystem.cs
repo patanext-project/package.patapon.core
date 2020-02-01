@@ -1,4 +1,5 @@
 using System;
+using Systems.GamePlay.CYari;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay;
 using Patapon.Mixed.GamePlay.Abilities;
@@ -12,9 +13,7 @@ using Unity.Transforms;
 
 namespace Systems.GamePlay
 {
-	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
-	public class DefaultBackwardAbilitySystem : JobGameBaseSystem
+	public class DefaultBackwardAbilitySystem : BaseAbilitySystem
 	{
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
@@ -41,21 +40,20 @@ namespace Systems.GamePlay
 				.WithNativeDisableParallelForRestriction(translationFromEntity)
 				.WithNativeDisableParallelForRestriction(unitControllerStateFromEntity)
 				.WithNativeDisableParallelForRestriction(velocityFromEntity)
-				.ForEach((Entity entity, ref RhythmAbilityState state, ref DefaultBackwardAbility backwardAbility, in Owner owner) =>
+				.ForEach((Entity entity, ref DefaultBackwardAbility backwardAbility, in AbilityState controller, in Owner owner) =>
 				{
 					if (!impl.CanExecuteAbility(owner.Target))
 						return;
 
-					if (!state.IsActive)
+					if ((controller.Phase & EAbilityPhase.Active) == 0)
 					{
 						backwardAbility.Delta = 0.0f;
 						return;
 					}
 
-					var targetOffset                                                                = targetOffsetFromEntity[owner.Target];
-					var groundState                                                                 = groundStateFromEntity[owner.Target];
-					var unitPlayState                                                               = unitPlayStateFromEntity[owner.Target];
-					if (state.Combo.IsFever && state.Combo.Score >= 50) unitPlayState.MovementSpeed *= 1.2f;
+					var targetOffset  = targetOffsetFromEntity[owner.Target];
+					var groundState   = groundStateFromEntity[owner.Target];
+					var unitPlayState = unitPlayStateFromEntity[owner.Target];
 
 					if (!groundState.Value)
 						return;
@@ -81,7 +79,7 @@ namespace Systems.GamePlay
 
 						backwardAbility.Delta += dt;
 
-						walkSpeed            =  unitPlayState.MovementSpeed * -0.5f;
+						walkSpeed            =  -unitPlayState.MovementSpeed;
 						targetPosition.Value += walkSpeed * direction * (backwardAbility.Delta > 0.5f ? 1 : math.lerp(4, 1, backwardAbility.Delta + 0.5f)) * acceleration;
 						targetTranslationUpdater.Update(targetPosition);
 					}
@@ -93,7 +91,7 @@ namespace Systems.GamePlay
 					acceleration = math.clamp(math.rcp(unitPlayState.Weight), 0, 1) * backwardAbility.AccelerationFactor * 50;
 					acceleration = math.min(acceleration * dt, 1);
 
-					walkSpeed = unitPlayState.MovementSpeed * 0.5f;
+					walkSpeed = unitPlayState.MovementSpeed;
 					// if we're near, let's slow down
 					var dist                   = math.distance(targetPosition.Value.x, translationFromEntity[owner.Target].Value.x);
 					if (dist < 0.5f) walkSpeed *= math.clamp(dist * 0.5f, 0.5f, 1.0f);

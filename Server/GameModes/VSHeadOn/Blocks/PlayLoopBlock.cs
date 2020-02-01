@@ -100,17 +100,14 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				{
 					if (ev.EntityTeam == m_HeadOnModeContext.Teams[t].Target)
 						structureTeam = t;
-					if (ev.Instigator == m_HeadOnModeContext.Teams[t].Target)
+					if (ev.InstigatorTeam == m_HeadOnModeContext.Teams[t].Target)
 						instigatorTeam = t;
 				}
-
+				
 				if (instigatorTeam >= 0 && instigatorTeam <= 1)
 				{
 					ref var points = ref gameModeData.GetPoints(instigatorTeam);
-					points += 25;
-
-					ref var eliminations = ref gameModeData.GetEliminations(instigatorTeam);
-					eliminations++;
+					points += ev.Score;
 				}
 			}
 

@@ -1,6 +1,7 @@
 using DefaultNamespace;
 using Patapon.Client.Graphics.Animation.Units;
 using Patapon.Mixed.GamePlay;
+using Patapon.Mixed.GamePlay.Abilities;
 using Patapon.Mixed.GamePlay.Abilities.CTate;
 using StormiumTeam.GameBase;
 using Unity.Entities;
@@ -67,7 +68,7 @@ namespace package.patapon.core.Animation.Units.CTate
 				return;
 
 			var gameTick      = ServerTick;
-			var attackAbility = EntityManager.GetComponentData<BasicTaterazayAttackAbility>(abilityEntity);
+			var attackAbility = EntityManager.GetComponentData<TaterazayBasicAttackAbility>(abilityEntity);
 			if (attackAbility.AttackStartTick <= 0)
 				return;
 
@@ -89,7 +90,7 @@ namespace package.patapon.core.Animation.Units.CTate
 
 		protected override EntityQuery GetAbilityQuery()
 		{
-			return GetEntityQuery(typeof(BasicTaterazayAttackAbility), typeof(RhythmAbilityState), typeof(Owner));
+			return GetEntityQuery(typeof(TaterazayBasicAttackAbility), typeof(AbilityState), typeof(Owner));
 		}
 
 		public struct OperationHandleData

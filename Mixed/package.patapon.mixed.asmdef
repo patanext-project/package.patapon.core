@@ -22,7 +22,8 @@
         "Unity.Mathematics",
         "Unity.Collections",
         "Unity.Jobs",
-        "Unity.Burst"
+        "Unity.Burst",
+        "Unity.Serialization"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

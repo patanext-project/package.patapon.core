@@ -68,12 +68,12 @@ namespace Patapon.Mixed.GamePlay
 				if (!LocalToWorldFromEntity.Exists(entity))
 					continue;
 
-				var transform = LocalToWorldFromEntity[entity];
-				var distance = math.distance(from.x, transform.Position.x);
+				var parentTransform = LocalToWorldFromEntity[entity];
+				var distance = math.distance(from.x, parentTransform.Position.x);
 				var hitShapes = HitShapeContainerFromEntity[entity];
-				if (hitShapes.Length > 0 && false)
+				if (hitShapes.Length > 0)
 				{
-					var direction = (int) math.sign(transform.Position.x - from.x);
+					var direction = (int) math.sign(parentTransform.Position.x - from.x);
 					var hsArray   = hitShapes.AsNativeArray();
 					for (var hs = 0; hs != hsArray.Length; hs++)
 					{
@@ -96,17 +96,7 @@ namespace Patapon.Mixed.GamePlay
 
 						if (hitShape.AttachedToParent)
 						{
-							var hasTranslation = TranslationFromEntity.TryGet(entity, out var ownerTranslation);
-							if (!LocalToWorldFromEntity.TryGet(entity, out ltw))
-							{
-								ltw = new LocalToWorld {Value = new float4x4(quaternion.identity, ownerTranslation.Value)};
-							}
-							else if (hasTranslation)
-							{
-								ltw.Value = new float4x4(ltw.Rotation, ownerTranslation.Value);
-							}
-
-							rigidBody.WorldFromBody.pos += ltw.Position;
+							rigidBody.WorldFromBody.pos += parentTransform.Position;
 						}
 
 						var aabb = rigidBody.CalculateAabb();
@@ -120,7 +110,7 @@ namespace Patapon.Mixed.GamePlay
 						if (distance > shortestDistance)
 							continue;
 
-						target           = transform.Position;
+						target           = parentTransform.Position;
 						targetDistance   = distance;
 						shortestDistance = distance;
 						nearestEnemy     = entity;
@@ -135,7 +125,7 @@ namespace Patapon.Mixed.GamePlay
 				if (distance > shortestDistance)
 					continue;
 				
-				target           = transform.Position;
+				target           = parentTransform.Position;
 				targetDistance   = distance;
 				shortestDistance = distance;
 				nearestEnemy     = entity;

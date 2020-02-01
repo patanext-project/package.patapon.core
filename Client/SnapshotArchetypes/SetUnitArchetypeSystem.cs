@@ -89,7 +89,7 @@ namespace SnapshotArchetypes
 				            positionResult.x += userCommand.Panning * (cameraModifier.FieldOfView + 4f * direction.Value);
 				            positionResult.x += cameraModifier.FieldOfView * targetOffset * direction.Value;
 
-				            cameraModifier.Position.x = Mathf.SmoothDamp(cameraModifier.Position.x, positionResult.x, ref cameraData.PositionVelocity, 0.4f, 100, dt);
+				            cameraModifier.Position.x = Mathf.SmoothDamp(cameraModifier.Position.x, positionResult.x, ref cameraData.PositionVelocity, 0.525f, 100, dt);
 				            if (math.isnan(cameraModifier.Position.x) || math.abs(cameraModifier.Position.x) > 4000.0f) cameraModifier.Position.x = 0;
 
 				            Debug.DrawRay(cameraModifier.Position, Vector3.up * 4, Color.blue);

@@ -49,7 +49,7 @@ namespace package.patapon.core.Animation.Units.CYari
 
 			m_AnimationClip = handle.Result;
 			m_LoadSuccess++;
-		}
+		} 
 
 		protected override bool OnBeforeForEach()
 		{
@@ -72,7 +72,7 @@ namespace package.patapon.core.Animation.Units.CYari
 			if (abilityEntity == default)
 				return;
 
-			var gameTick      = ServerTick;
+			var gameTick      = GetTick(true);
 			var attackAbility = EntityManager.GetComponentData<BasicYaridaAttackAbility>(abilityEntity);
 			if (attackAbility.AttackStartTick <= 0)
 				return;
@@ -85,6 +85,7 @@ namespace package.patapon.core.Animation.Units.CYari
 				return;
 
 			var aheadStartDifference = UTick.CopyDelta(gameTick, math.max(gameTick.Value - attackAbility.AttackStartTick, 0));
+
 			systemData.PreviousAttackStartTick = attackAbility.AttackStartTick;
 			systemData.Behaviour.StartTime     = animation.RootTime - math.clamp(aheadStartDifference.Seconds, -0.2, 0.2);
 

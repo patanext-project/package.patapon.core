@@ -27,7 +27,7 @@ namespace Systems.GamePlay
 			                      .GetEntityDelayedStream();
 
 			Entities
-				.ForEach((ref DefaultRebornAbility ability, ref RhythmAbilityState state, ref Owner owner) =>
+				.ForEach((ref DefaultRebornAbility ability, ref AbilityRhythmState state, ref Owner owner) =>
 				{
 					if (!ability.WasFever && !state.PreviousActiveCombo.CanSummon
 					    || state.Engine == default

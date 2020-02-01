@@ -1,4 +1,8 @@
+using System;
+using P4TLB.MasterServer;
+using Patapon.Mixed.RhythmEngine;
 using Revolution;
+using Scripts.Utilities;
 using StormiumTeam.GameBase;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
@@ -44,10 +48,8 @@ namespace Patapon.Mixed.GamePlay.Abilities
 
 			public unsafe bool DidChange(Snapshot baseline)
 			{
-				fixed (void* addr = &this)
-				{
-					return UnsafeUtility.MemCmp(addr, &baseline, sizeof(Snapshot)) != 0;
-				}
+				baseline.Tick = Tick;
+				return UnsafeUtilityOp.AreNotEquals(ref this, ref baseline);
 			}
 
 			public void SynchronizeFrom(in DefaultPartyAbility component, in DefaultSetup setup, in SerializeClientData serializeData)
@@ -77,5 +79,20 @@ namespace Patapon.Mixed.GamePlay.Abilities
 
 	public class DefaultPartyAbilityProvider : BaseRhythmAbilityProvider<DefaultPartyAbility>
 	{
+		public const string MapPath = "party_data";
+
+		public override string MasterServerId  => nameof(P4OfficialAbilities.BasicParty);
+		public override Type   ChainingCommand => typeof(PartyCommand);
+
+		public override void SetEntityData(Entity entity, CreateAbility data)
+		{
+			base.SetEntityData(entity, data);
+			EntityManager.SetComponentData(entity, GetValue(MapPath, new DefaultPartyAbility
+			{
+				TickPerSecond      = 100,
+				EnergyPerTick      = 1,
+				EnergyOnActivation = 30
+			}));
+		}
 	}
 }

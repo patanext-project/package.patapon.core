@@ -1,6 +1,7 @@
 using System;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay;
+using Patapon.Mixed.GamePlay.Abilities;
 using Patapon.Mixed.GamePlay.Abilities.CYari;
 using Patapon.Mixed.GamePlay.Physics;
 using Patapon.Mixed.Units;
@@ -28,27 +29,20 @@ namespace Systems.GamePlay.CYari
 		{
 			var tick                   = ServerTick;
 			var impl                   = new BasicUnitAbilityImplementation(this);
-			var seekEnemies            = new SeekEnemies(this);
 			var seekingStateFromEntity = GetComponentDataFromEntity<UnitEnemySeekingState>(true);
 
-			var relativeTeamFromEntity = GetComponentDataFromEntity<Relative<TeamDescription>>(true);
 
 			var queueWriter = m_ProjectileProvider.GetEntityDelayedStream()
 			                                      .AsParallelWriter();
 
 			var rand = new Random((uint) Environment.TickCount);
 			Entities
-				.ForEach((Entity entity, int nativeThreadIndex, ref RhythmAbilityState state, ref BasicYaridaAttackAbility ability, in Owner owner) =>
+				.ForEach((Entity entity, int nativeThreadIndex, ref BasicYaridaAttackAbility ability, in AbilityState state, in AbilityEngineSet engineSet, in Owner owner) =>
 				{
 					if (!impl.CanExecuteAbility(owner.Target))
 						return;
 
-					var tryGetChain = stackalloc[] {entity, owner.Target};
-					if (!relativeTeamFromEntity.TryGetChain(tryGetChain, 2, out var relativeTeam))
-						return;
-
 					var seekingState = seekingStateFromEntity[owner.Target];
-					var statistics   = impl.UnitSettingsFromEntity[owner.Target];
 					var playState    = impl.UnitPlayStateFromEntity[owner.Target];
 					var unitPosition = impl.TranslationFromEntity[owner.Target].Value;
 					var direction    = impl.UnitDirectionFromEntity[owner.Target].Value;
@@ -58,7 +52,7 @@ namespace Systems.GamePlay.CYari
 
 					var attackStartTick = UTick.CopyDelta(tick, ability.AttackStartTick);
 
-					if (state.IsStillChaining && !state.IsActive)
+					if ((state.Phase & EAbilityPhase.Chaining) != 0)
 					{
 						controller.ControlOverVelocity.x = true;
 						velocity.Value.x                 = math.lerp(velocity.Value.x, 0, playState.GetAcceleration() * 50 * tick.Delta);
@@ -72,30 +66,13 @@ namespace Systems.GamePlay.CYari
 					{
 						if (tick >= UTick.AddMs(attackStartTick, BasicYaridaAttackAbility.DelayThrowMs) && !ability.HasThrown)
 						{
-							var   damage      = playState.Attack;
-							float damageFever = damage;
-
-							var accuracy = 0.2f;
-							if (state.Combo.IsFever)
-							{
-								accuracy += 0.3f;
-
-								damageFever *= 1.2f;
-								if (state.Combo.IsPerfect)
-								{
-									damageFever *= 1.2f;
-									accuracy    += 0.3f;
-								}
-
-								damage += (int) damageFever - damage;
-							}
-
+							var accuracy = AbilityUtility.CompileStat(engineSet.Combo, 0.2f, 1, 2.5, 1.5);
 							queueWriter.Enqueue(new SpearProjectile.Create
 							{
 								Owner       = owner.Target,
 								Position    = unitPosition + throwOffset,
 								Velocity    = {x = ability.ThrowSpeed * direction, y = ability.ThrowHeight + accuracy * rand.NextFloat()},
-								StartDamage = damage,
+								StartDamage = playState.Attack,
 								Gravity     = gravity
 							});
 
@@ -118,26 +95,8 @@ namespace Systems.GamePlay.CYari
 					velocityUpdater.CompareAndUpdate(velocity);
 					controllerUpdater.CompareAndUpdate(controller);
 
-					if (!state.IsActive || seekingState.Enemy == default)
-					{
-						if (state.IsActive && state.Combo.IsFever)
-						{
-							playState.MovementReturnSpeed *= 1.2f;
-							if (state.Combo.IsPerfect)
-								playState.MovementReturnSpeed *= 1.4f;
-
-							controller.ControlOverVelocity.x = true;
-						}
-
+					if ((state.Phase & EAbilityPhase.Active) == 0 || seekingState.Enemy == default)
 						return;
-					}
-
-					if (state.Combo.IsFever)
-					{
-						playState.MovementAttackSpeed *= 1.2f;
-						if (state.Combo.IsPerfect)
-							playState.MovementAttackSpeed *= 1.4f;
-					}
 
 					var targetPosition     = impl.LocalToWorldFromEntity[seekingState.Enemy].Position;
 					var throwDeltaPosition = PredictTrajectory.Simple(throwOffset, new float3 {x = ability.ThrowSpeed * direction, y = ability.ThrowHeight}, gravity);
@@ -146,11 +105,7 @@ namespace Systems.GamePlay.CYari
 					var distanceMercy = 4f;
 					if (math.abs(targetPosition.x - unitPosition.x) < distanceMercy && ability.NextAttackDelay <= 0 && ability.AttackStartTick <= 0)
 					{
-						var atkSpeed = playState.AttackSpeed;
-						if (state.Combo.IsFever && state.Combo.IsPerfect)
-							atkSpeed *= 0.75f;
-
-						ability.NextAttackDelay = atkSpeed;
+						ability.NextAttackDelay = playState.AttackSpeed;
 						ability.AttackStartTick = tick.AsUInt;
 						ability.HasThrown       = false;
 
@@ -175,7 +130,6 @@ namespace Systems.GamePlay.CYari
 					controllerUpdater.CompareAndUpdate(controller);
 				})
 				.WithReadOnly(seekingStateFromEntity)
-				.WithReadOnly(relativeTeamFromEntity)
 				.Run();
 
 			return default;

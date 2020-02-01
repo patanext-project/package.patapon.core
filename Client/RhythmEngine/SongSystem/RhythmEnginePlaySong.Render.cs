@@ -176,7 +176,7 @@ namespace Patapon.Client.RhythmEngine
 			if (m_LastClip != targetAudio // switch audio if we are requested to
 			    || forceSongChange)       // play an audio if we got forced
 			{
-				Debug.Log($"Switch from {m_LastClip?.name} to {targetAudio?.name}, delay: {nextBeatDelay} (b: {activationBeat}, f: {flowBeat}, s: {cmdStartActivationBeat})");
+				//Debug.Log($"Switch from {m_LastClip?.name} to {targetAudio?.name}, delay: {nextBeatDelay} (b: {activationBeat}, f: {flowBeat}, s: {cmdStartActivationBeat})");
 				hasSwitched = Switch(targetAudio, nextBeatDelay);
 			}
 

@@ -104,10 +104,10 @@ namespace package.patapon.core.Animation.Units
 
 			if (!animation.ContainsSystem(SystemType)) animation.InsertSystem<SystemData>(SystemType, AddAnimation, RemoveAnimation);
 
-			var abilityState   = EntityManager.GetComponentData<RhythmAbilityState>(abilityEntity);
+			var abilityState   = EntityManager.GetComponentData<AbilityState>(abilityEntity);
 			var retreatAbility = EntityManager.GetComponentData<DefaultRetreatAbility>(abilityEntity);
 
-			if (!abilityState.IsStillChaining && !abilityState.IsActive && !abilityState.WillBeActive)
+			if (abilityState.Phase == EAbilityPhase.None)
 			{
 				if (currAnim.Type == SystemType)
 					animation.SetTargetAnimation(TargetAnimation.Null);
@@ -116,14 +116,14 @@ namespace package.patapon.core.Animation.Units
 			}
 
 			ref var data = ref animation.GetSystemData<SystemData>(SystemType);
-
+			
 			// Start animation if Behavior.ActiveId and Retreat.ActiveId is different
-			if (abilityState.IsActive && abilityState.ActiveId != data.ActiveId)
+			if ((abilityState.Phase & EAbilityPhase.ActiveOrChaining) != 0 && abilityState.ActivationVersion != data.ActiveId)
 			{
 				var stopAt = animation.RootTime + 3.25f;
 				animation.SetTargetAnimation(new TargetAnimation(SystemType, false, false, stopAt: stopAt));
 
-				data.ActiveId            = abilityState.ActiveId;
+				data.ActiveId            = abilityState.ActivationVersion;
 				data.Behaviour.StartTime = animation.RootTime;
 				data.Behaviour.Mixer.SetTime(0);
 				data.Behaviour.Weight = 1;

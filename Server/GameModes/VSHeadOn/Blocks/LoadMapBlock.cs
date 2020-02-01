@@ -24,7 +24,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 			m_RequestEntity = m_WorldCtx.EntityMgr.CreateEntity(typeof(RequestMapLoad));
 			{
-				m_WorldCtx.EntityMgr.SetComponentData(m_RequestEntity, new RequestMapLoad {Key = new NativeString512("testvs")});
+				m_WorldCtx.EntityMgr.SetComponentData(m_RequestEntity, new RequestMapLoad {Key = new NativeString512("arena_of_tolerance")});
 			}
 
 			return false;
