@@ -102,13 +102,15 @@ namespace package.patapon.core.Animation.Units
 			var behavior = playable.GetBehaviour();
 
 			var clips = new Dictionary<TargetType, Dictionary<Sub, AnimationClip>>(m_Clips);
+			var objOverride = CurrentPresentation.GetComponent<OverrideObjectComponent>();
 			foreach (var kvp in m_Clips)
 			{
 				clips[kvp.Key] = new Dictionary<Sub, AnimationClip>(m_Clips[kvp.Key]);
 				foreach (var clip in kvp.Value)
 				{
 					var replaced = clip.Value;
-					CurrentPresentation.TryGetPresentationObject(clip.Key.key, out replaced, clip.Value);
+					if (objOverride != null)
+						objOverride.TryGetPresentationObject(clip.Key.key, out replaced, clip.Value);
 					clips[kvp.Key][clip.Key] = replaced;
 				}
 			}

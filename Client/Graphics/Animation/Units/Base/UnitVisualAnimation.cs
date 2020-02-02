@@ -13,50 +13,7 @@ namespace Patapon.Client.Graphics.Animation.Units
 {
 	public abstract class UnitVisualPresentation : RuntimeAssetPresentation<UnitVisualPresentation>
 	{
-		[Serializable]
-		public struct Obj
-		{
-			public string             Key;
-			public UnityEngine.Object Object;
-		}
-
 		public Animator Animator;
-		
-		[SerializeField]
-		private List<Obj> presentationObjects;
-
-		private Dictionary<string, object> m_EntityObjects; 
-		public Dictionary<string, object> EntityObjects
-		{
-			get
-			{
-				if (m_EntityObjects == null || m_EntityObjects.Count != presentationObjects.Count)
-				{
-					m_EntityObjects = new Dictionary<string, object>();
-					foreach (var obj in presentationObjects)
-					{
-						m_EntityObjects[obj.Key] = obj.Object;
-					}
-				}
-
-				return m_EntityObjects;
-			}
-		}
-
-		public bool TryGetPresentationObject<T>(string toSearch, out T obj, T defValue = default)
-		{
-			obj = defValue;
-			foreach (var kvp in EntityObjects)
-			{
-				Debug.Log($"{kvp.Key} against {toSearch}");
-			}
-			
-			if (!EntityObjects.TryGetValue(toSearch, out var baseObj))
-				return false;
-
-			obj = (T) baseObj;
-			return true;
-		}
 
 		public abstract void UpdateData();
 	}

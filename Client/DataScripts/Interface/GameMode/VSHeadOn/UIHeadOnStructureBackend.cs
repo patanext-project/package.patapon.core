@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using DefaultNamespace;
 using package.stormiumteam.shared.ecs;
@@ -13,6 +14,7 @@ using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 using Color = UnityEngine.Color;
 
@@ -39,6 +41,7 @@ namespace DataScripts.Interface.GameMode.VSHeadOn
 		}
 
 		private AsyncAssetPool<GameObject> m_WallPool;
+		private AsyncAssetPool<GameObject> m_TowerPool;
 		private AsyncAssetPool<GameObject> m_TowerControlPool;
 
 		protected override void OnCreate()
@@ -51,6 +54,7 @@ namespace DataScripts.Interface.GameMode.VSHeadOn
 			                            .Folder("VSHeadOn")
 			                            .Folder("Structures");
 			m_WallPool = new AsyncAssetPool<GameObject>(builder.Folder("Wall").GetFile("WallIcon.prefab"));
+			m_TowerPool = new AsyncAssetPool<GameObject>(builder.Folder("Tower").GetFile("TowerIcon.prefab"));
 			m_TowerControlPool = new AsyncAssetPool<GameObject>(builder.Folder("TowerControl").GetFile("TowerControlIcon.prefab"));
 		}
 
@@ -60,6 +64,8 @@ namespace DataScripts.Interface.GameMode.VSHeadOn
 
 			if (EntityManager.GetComponentData<HeadOnStructure>(target).ScoreType == HeadOnStructure.EScoreType.Wall)
 				LastBackend.SetPresentationFromPool(m_WallPool);
+			if (EntityManager.GetComponentData<HeadOnStructure>(target).ScoreType == HeadOnStructure.EScoreType.Tower)
+				LastBackend.SetPresentationFromPool(m_TowerPool);
 			if (EntityManager.GetComponentData<HeadOnStructure>(target).ScoreType == HeadOnStructure.EScoreType.TowerControl)
 				LastBackend.SetPresentationFromPool(m_TowerControlPool);
 		}

@@ -1,5 +1,20 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &8437522332083803202
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3710476653407977875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d576e3b30764d5984e0c700508a5b8f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  presentationObjects:
+  - Key: marchAbility/idle.clip
+    Object: {fileID: 7400000, guid: cefad67fa417a8c4a9dbbb6b56302e35, type: 2}
 --- !u!1001 &1478734694391933259
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -700,7 +715,7 @@ PrefabInstance:
     - target: {fileID: 3600692998443977674, guid: fa2f42e82e5b14245b5281fd7bfad24d,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -0.000000059902675
       objectReference: {fileID: 0}
     - target: {fileID: 3600692998443977674, guid: fa2f42e82e5b14245b5281fd7bfad24d,
         type: 3}
@@ -1555,3 +1570,9 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fa2f42e82e5b14245b5281fd7bfad24d, type: 3}
+--- !u!1 &3710476653407977875 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2881115764059121880, guid: fa2f42e82e5b14245b5281fd7bfad24d,
+    type: 3}
+  m_PrefabInstance: {fileID: 1478734694391933259}
+  m_PrefabAsset: {fileID: 0}

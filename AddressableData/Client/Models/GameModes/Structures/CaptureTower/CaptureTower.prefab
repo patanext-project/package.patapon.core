@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5020114696208675481}
   - component: {fileID: 8082499866207785697}
   m_Layer: 0
-  m_Name: CaptureArea
+  m_Name: CaptureTower
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -63,3 +63,4 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  animators: []

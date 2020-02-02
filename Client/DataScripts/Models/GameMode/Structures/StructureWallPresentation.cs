@@ -204,7 +204,7 @@ namespace DataScripts.Models.GameMode.Structures
 
 		protected override void SpawnBackend(Entity target)
 		{
-			//if (EntityManager.GetComponentData<HeadOnStructure>(target).ScoreType == HeadOnStructure.EScoreType.Wall)
+			if (EntityManager.GetComponentData<HeadOnStructure>(target).ScoreType == HeadOnStructure.EScoreType.Wall)
 				base.SpawnBackend(target);
 		}
 	}

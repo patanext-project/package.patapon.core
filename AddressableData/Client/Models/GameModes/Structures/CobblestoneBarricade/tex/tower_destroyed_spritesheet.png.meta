@@ -1,0 +1,456 @@
+fileFormatVersion: 2
+guid: 617537e72f20ce448877f2fb38277e33
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 4743720595656529412
+    second: tower_destroyed_spritesheet_0
+  - first:
+      213: -4348828813492927560
+    second: tower_destroyed_spritesheet_1
+  - first:
+      213: 948081217376721398
+    second: tower_destroyed_spritesheet_2
+  - first:
+      213: -5952563799930398342
+    second: tower_destroyed_spritesheet_3
+  - first:
+      213: -7596323761469648960
+    second: tower_destroyed_spritesheet_4
+  - first:
+      213: -745571881856884230
+    second: tower_destroyed_spritesheet_5
+  - first:
+      213: -144870990313792973
+    second: tower_destroyed_spritesheet_6
+  - first:
+      213: -8528459407750878169
+    second: tower_destroyed_spritesheet_7
+  - first:
+      213: 6123922914199486963
+    second: tower_destroyed_spritesheet_8
+  - first:
+      213: 1663877649419927140
+    second: tower_destroyed_spritesheet_9
+  - first:
+      213: -7739593230377382648
+    second: tower_destroyed_spritesheet_10
+  - first:
+      213: -6023350425883954836
+    second: tower_destroyed_spritesheet_11
+  - first:
+      213: 5150499557481245301
+    second: tower_destroyed_spritesheet_12
+  - first:
+      213: -8355324579335106382
+    second: tower_destroyed_spritesheet_0
+  - first:
+      213: -274721001783535523
+    second: tower_destroyed_spritesheet_1
+  - first:
+      213: 6761387621516630939
+    second: tower_destroyed_spritesheet_2
+  - first:
+      213: -4593500099373129214
+    second: tower_destroyed_spritesheet_3
+  - first:
+      213: 5316327502692712766
+    second: tower_destroyed_spritesheet_4
+  - first:
+      213: 8579476259261323098
+    second: tower_destroyed_spritesheet_5
+  - first:
+      213: -8835462550862464447
+    second: tower_destroyed_spritesheet_6
+  - first:
+      213: 7878847874019899668
+    second: tower_destroyed_spritesheet_7
+  - first:
+      213: -3199535769505208724
+    second: tower_destroyed_spritesheet_8
+  - first:
+      213: -7285057271540595649
+    second: tower_destroyed_spritesheet_9
+  - first:
+      213: 5305102875449078562
+    second: tower_destroyed_spritesheet_10
+  - first:
+      213: 2494271475471629592
+    second: tower_destroyed_spritesheet_11
+  - first:
+      213: 6717783332149123441
+    second: tower_destroyed_spritesheet_12
+  externalObjects: {}
+  serializedVersion: 10
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: -1
+    mipBias: -100
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 365
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 1
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 1
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: tower_destroyed_spritesheet_0
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 748
+        width: 207
+        height: 268
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2b014a1409ceb0c80800000000000000
+      internalID: -8355324579335106382
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tower_destroyed_spritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 869
+        width: 434
+        height: 141
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d585a5454beff2cf0800000000000000
+      internalID: -274721001783535523
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tower_destroyed_spritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 800
+        y: 927
+        width: 224
+        height: 94
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b9bd839e73645dd50800000000000000
+      internalID: 6761387621516630939
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tower_destroyed_spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 687
+        y: 848
+        width: 124
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 202a42d3ffb9040c0800000000000000
+      internalID: -4593500099373129214
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tower_destroyed_spritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 816
+        y: 743
+        width: 157
+        height: 164
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e3183a352b367c940800000000000000
+      internalID: 5316327502692712766
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tower_destroyed_spritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 408
+        y: 726
+        width: 253
+        height: 102
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a571b28a33c601770800000000000000
+      internalID: 8579476259261323098
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tower_destroyed_spritesheet_6
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 504
+        width: 316
+        height: 210
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 14a739d4f91226580800000000000000
+      internalID: -8835462550862464447
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tower_destroyed_spritesheet_7
+      rect:
+        serializedVersion: 2
+        x: 362
+        y: 424
+        width: 393
+        height: 257
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4193c42c56a475d60800000000000000
+      internalID: 7878847874019899668
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tower_destroyed_spritesheet_8
+      rect:
+        serializedVersion: 2
+        x: 783
+        y: 557
+        width: 177
+        height: 117
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c666c746b27f893d0800000000000000
+      internalID: -3199535769505208724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tower_destroyed_spritesheet_9
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 216
+        width: 483
+        height: 269
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f344279620746ea90800000000000000
+      internalID: -7285057271540595649
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tower_destroyed_spritesheet_10
+      rect:
+        serializedVersion: 2
+        x: 696
+        y: 13
+        width: 323
+        height: 403
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 223bb0425f28f9940800000000000000
+      internalID: 5305102875449078562
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tower_destroyed_spritesheet_11
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 47
+        width: 138
+        height: 136
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 81d30e411be6d9220800000000000000
+      internalID: 2494271475471629592
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tower_destroyed_spritesheet_12
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 14
+        width: 285
+        height: 191
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 179d9c6295c5a3d50800000000000000
+      internalID: 6717783332149123441
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

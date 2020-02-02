@@ -61,8 +61,7 @@ namespace Patapon.Mixed.GamePlay
 					speed =  math.max(speed, tick.Delta);
 				}
 			}
-			
-			Debug.Log(speed);
+
 			var newPosX = Mathf.MoveTowards(previousPosition.x, targetPosition.x, speed * tick.Delta);
 
 			return (newPosX - previousPosition.x) / tick.Delta;

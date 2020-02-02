@@ -32,12 +32,14 @@ namespace Components.Archetypes
 		{
 			Mask,
 			LeftEquipment,
-			RightEquipment
+			RightEquipment,
+			Hair
 		}
 		
 		public Root maskRoot;
 		public Root leftWeaponRoot;
 		public Root rightWeaponRoot;
+		public Root hairRoot;
 
 		[NonSerialized]
 		public Dictionary<RootType, Root> RootHashMap;
@@ -52,6 +54,8 @@ namespace Components.Archetypes
 					return leftWeaponRoot;
 				case RootType.RightEquipment:
 					return rightWeaponRoot;
+				case RootType.Hair:
+					return hairRoot;
 			}
 
 			throw new NullReferenceException("No transform found with rootType: " + rootType);
