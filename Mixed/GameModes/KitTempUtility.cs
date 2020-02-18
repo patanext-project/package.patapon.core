@@ -38,23 +38,10 @@ namespace Patapon.Mixed.GameModes
 				case NativeString64 _ when kit.Equals(UnitKnownTypes.Yarida):
 					SetAsYarida(ref statistics, definedAbilities, ref display);
 					break;
+				case NativeString64 _ when kit.Equals(UnitKnownTypes.Yumiyacha):
+					SetAsYumiyacha(ref statistics, definedAbilities, ref display);
+					break;
 			}
-		}
-
-		private static void SetAsYarida(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities, ref UnitDisplayedEquipment display)
-		{
-			statistics.Health           = 190;
-			statistics.Attack           = 28;
-			statistics.Defense          = 0;
-			statistics.Weight           = 6;
-			statistics.AttackMeleeRange = 2.6f;
-
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.YariBasicAttack), 0));
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.YariLeapSpear), 0, AbilitySelection.Top));
-			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.YariBasicDefend), 0));
-
-			display.Mask           = new NativeString64("Masks/n_yarida");
-			display.RightEquipment = new NativeString64("Spears/default_spear");
 		}
 
 		private static void SetAsTaterazay(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities, ref UnitDisplayedEquipment display)
@@ -69,10 +56,42 @@ namespace Patapon.Mixed.GameModes
 			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.TateBasicDefend), 0));
 			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.TateBasicDefendFrontal), 0, AbilitySelection.Top));
 			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.TateRushAttack), 0));
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.TateEnergyField), 0));
 
 			display.Mask           = new NativeString64("Masks/n_taterazay");
 			display.LeftEquipment  = new NativeString64("Shields/default_shield");
 			display.RightEquipment = new NativeString64("Swords/default_sword");
+		}
+		
+		private static void SetAsYarida(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities, ref UnitDisplayedEquipment display)
+		{
+			statistics.Health           = 190;
+			statistics.Attack           = 28;
+			statistics.Defense          = 0;
+			statistics.Weight           = 6;
+			statistics.AttackMeleeRange = 2.6f;
+
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.YariBasicAttack), 0));
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.YariLeapSpear), 0, AbilitySelection.Top));
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.YariBasicDefend), 0));
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.YariFearSpear), 0));
+
+			display.Mask           = new NativeString64("Masks/n_yarida");
+			display.RightEquipment = new NativeString64("Spears/default_spear");
+		}
+		
+		private static void SetAsYumiyacha(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities, ref UnitDisplayedEquipment display)
+		{
+			statistics.Health           = 175;
+			statistics.Attack           = 12;
+			statistics.Defense          = 0;
+			statistics.Weight           = 6;
+			statistics.AttackMeleeRange = 1f;
+
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.YumiBasicAttack), 0));
+			
+			display.Mask           = new NativeString64("Masks/n_yarida");
+			display.RightEquipment = new NativeString64("Spears/default_spear");
 		}
 	}
 }

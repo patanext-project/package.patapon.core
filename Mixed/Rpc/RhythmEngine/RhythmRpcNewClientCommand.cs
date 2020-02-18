@@ -125,7 +125,7 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 		{
 			m_EngineQuery.AddDependency(inputDeps);
 
-			var engineChunks           = m_EngineQuery.CreateArchetypeChunkArray(Allocator.TempJob, out var queryHandle);
+			var engineChunks           = m_EngineQuery.CreateArchetypeChunkArrayAsync(Allocator.TempJob, out var queryHandle);
 			var playerRelativeType     = GetArchetypeChunkComponentType<Relative<PlayerDescription>>(true);
 			var networkOwnerFromEntity = GetComponentDataFromEntity<NetworkOwner>(true);
 			var processType            = GetArchetypeChunkComponentType<FlowEngineProcess>();

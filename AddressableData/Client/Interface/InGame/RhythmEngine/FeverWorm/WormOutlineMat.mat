@@ -62,6 +62,7 @@ Material:
     - Vector2_2C320A2B: {r: -5.93, g: 1.07, b: 0, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  m_BuildTextureStacks: []
 --- !u!114 &2088612226448586456
 MonoBehaviour:
   m_ObjectHideFlags: 11

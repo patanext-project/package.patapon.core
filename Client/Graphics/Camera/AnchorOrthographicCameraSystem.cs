@@ -15,21 +15,21 @@ namespace package.patapon.core
 	{
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-			Entities.ForEach((Camera camera, ref Translation tr, ref AnchorOrthographicCameraData data, in SynchronizeCameraStateSystem.SystemData systemData) =>
+			Entities.ForEach((Camera camera, ref Translation tr, ref AnchorOrthographicCameraData data, in ComputedCameraState computed) =>
 			{
-				camera.orthographicSize = systemData.Focus;
+				camera.orthographicSize = computed.Focus;
 
 				data.Height = camera.orthographicSize;
 				data.Width  = camera.aspect * data.Height;
 			}).WithoutBurst().Run();
 
 			var targetAnchorFromEntity = GetComponentDataFromEntity<CameraTargetAnchor>(true);
-			inputDeps = Entities.ForEach((ref Translation translation, in AnchorOrthographicCameraData cameraData, in SynchronizeCameraStateSystem.SystemData systemData) =>
+			inputDeps = Entities.ForEach((ref Translation translation, in AnchorOrthographicCameraData cameraData, in ComputedCameraState computed) =>
 			{
-				if (!targetAnchorFromEntity.Exists(systemData.StateData.Target))
+				if (!targetAnchorFromEntity.Exists(computed.StateData.Target))
 					return;
 
-				var anchor    = targetAnchorFromEntity[systemData.StateData.Target];
+				var anchor    = targetAnchorFromEntity[computed.StateData.Target];
 				var camSize   = new float2(cameraData.Width, cameraData.Height);
 				var anchorPos = new float2(anchor.Value.x, anchor.Value.y);
 				if (anchor.Type == AnchorType.World)

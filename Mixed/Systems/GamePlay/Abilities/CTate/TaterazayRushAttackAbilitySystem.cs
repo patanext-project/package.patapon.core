@@ -14,6 +14,7 @@ using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Transforms;
 using UnityEngine;
+using CapsuleCollider = Unity.Physics.CapsuleCollider;
 using SphereCollider = Unity.Physics.SphereCollider;
 
 namespace Systems.GamePlay.CTate
@@ -27,10 +28,11 @@ namespace Systems.GamePlay.CTate
 		{
 			base.OnCreate();
 
-			m_HitQuery = new JobPhysicsQuery(() => SphereCollider.Create(new SphereGeometry
+			m_HitQuery = new JobPhysicsQuery(() => CapsuleCollider.Create(new CapsuleGeometry
 			{
-				Center = float3.zero,
-				Radius = 2f
+				Vertex0 = new float3(0, 0, 0),
+				Vertex1 = new float3(0, 4, 0),
+				Radius  = 2f
 			}));
 			m_DamageEventProvider = World.GetOrCreateSystem<TargetDamageEvent.Provider>();
 		}
@@ -50,7 +52,7 @@ namespace Systems.GamePlay.CTate
 			var impl                      = new BasicUnitAbilityImplementation(this);
 			var seekEnemies               = new SeekEnemies(this);
 			var seekingStateFromEntity    = GetComponentDataFromEntity<UnitEnemySeekingState>(true);
-			
+
 			var relativeTargetFromEntity = GetComponentDataFromEntity<Relative<UnitTargetDescription>>(true);
 
 			var colliderQuery          = m_HitQuery;
@@ -65,10 +67,10 @@ namespace Systems.GamePlay.CTate
 					if (!impl.CanExecuteAbility(owner.Target))
 						return;
 
-					var seekingState = seekingStateFromEntity[owner.Target];
-					var playState    = impl.UnitPlayStateFromEntity[owner.Target];
-					var unitPosition = impl.TranslationFromEntity[owner.Target].Value;
-					var unitDirection = impl.UnitDirectionFromEntity[owner.Target].Value;
+					var seekingState   = seekingStateFromEntity[owner.Target];
+					var playState      = impl.UnitPlayStateFromEntity[owner.Target];
+					var unitPosition   = impl.TranslationFromEntity[owner.Target].Value;
+					var unitDirection  = impl.UnitDirectionFromEntity[owner.Target].Value;
 					var relativeTarget = relativeTargetFromEntity[owner.Target].Target;
 
 					var velocityUpdater   = impl.VelocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
@@ -93,14 +95,14 @@ namespace Systems.GamePlay.CTate
 						if (UTick.AddMsNextFrame(attackStartTick, TaterazayRushAttackAbility.AttackDelayMs) > tick)
 						{
 							ability.Phase = TaterazayRushAttackAbility.EPhase.Attacking;
-							
+
 							// todo: test to see if it work...
 							controller.ControlOverVelocity.x = true;
 							velocity.Value.y                 = 12.5f; // small jump xd
 							velocity.Value.x                 = (-unitDirection) * 1;
 						}
 					}
-					
+
 					if (ability.Phase == TaterazayRushAttackAbility.EPhase.Attacking)
 					{
 						var distanceInput = CreateDistanceFlatInput.ColliderWithOffset(colliderQuery.Ptr, unitPosition.xy, new float2(unitDirection, 1));
@@ -142,7 +144,7 @@ namespace Systems.GamePlay.CTate
 						}
 
 						// ofc, we shouldn't directly go waiting...
-						ability.Phase = TaterazayRushAttackAbility.EPhase.Wait;
+						ability.Phase           = TaterazayRushAttackAbility.EPhase.Wait;
 						ability.NextAttackDelay = playState.AttackSpeed;
 					}
 
@@ -169,10 +171,17 @@ namespace Systems.GamePlay.CTate
 					else if (tick >= UTick.AddMs(attackStartTick, TaterazayBasicAttackAbility.DelaySlashMs) && ability.NextAttackDelay <= 0)
 					{
 						var targetPosition = impl.TranslationFromEntity[relativeTarget].Value.x + 12.5f * unitDirection;
-						Debug.Log(playState.MovementAttackSpeed);
-						velocity.Value.x = AbilityUtility.GetTargetVelocityX(targetPosition, unitPosition, velocity.Value, playState, 50f, tick,
+						velocity.Value.x = AbilityUtility.GetTargetVelocityX(new AbilityUtility.GetTargetVelocityParameters
+							{
+								TargetPosition   = targetPosition,
+								PreviousPosition = unitPosition,
+								PreviousVelocity = velocity.Value,
+								PlayState        = playState,
+								Acceleration     = 25,
+								Tick             = tick
+							},
 							deaccel_distance: 0.0f, deaccel_distance_max: 0.5f);
-						
+
 						if (ability.Phase != TaterazayRushAttackAbility.EPhase.Run)
 						{
 							ability.ForceAttackTick = UTick.AddMsNextFrame(tick, 1000).AsUInt;

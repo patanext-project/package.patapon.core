@@ -214,6 +214,8 @@ namespace DataScripts.Interface.Menu.ServerRoom
 					definition.kitQuad.color = Color.yellow;
 				if (kit.Equals(UnitKnownTypes.Yarida))
 					definition.kitQuad.color = Color.blue;
+				if (kit.Equals(UnitKnownTypes.Yumiyacha))
+					definition.kitQuad.color = Color.Lerp(Color.green, Color.black, 0.15f);
 			}
 		}
 

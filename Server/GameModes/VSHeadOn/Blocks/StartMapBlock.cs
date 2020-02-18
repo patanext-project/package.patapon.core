@@ -1,3 +1,4 @@
+using GameModes.VSHeadOn;
 using GmMachine;
 using GmMachine.Blocks;
 using Misc.GmMachine.Blocks;
@@ -111,8 +112,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 						entMgr.RemoveComponent<HeadOnSpectating>(player);
 					entMgr.AddComponent<HeadOnPlaying>(player);
 
-					var unitTarget = entMgr.CreateEntity(typeof(UnitTargetDescription), typeof(Translation), typeof(LocalToWorld), typeof(Relative<PlayerDescription>) /*,
-						typeof(TranslationSnapshot.Exclude), typeof(InterpolatedTranslationSnapshot.Use)*/);
+					var unitTarget = entMgr.CreateEntity(typeof(UnitTargetDescription), typeof(Translation), typeof(LocalToWorld), typeof(Relative<PlayerDescription>),
+						typeof(TranslationDirectSnapshot.Exclude), typeof(TranslationInterpolatedSnapshot.Use));
 					entMgr.AddComponent(unitTarget, typeof(GhostEntity));
 					entMgr.AddComponentData(unitTarget, EntityDescription.New<UnitTargetDescription>());
 					entMgr.ReplaceOwnerData(unitTarget, player);
@@ -133,7 +134,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					worldCtx.EntityMgr.AddComponent(healthEntity, typeof(GhostEntity));
 					worldCtx.EntityMgr.SetOrAddComponentData(entity, new LivableHealth
 					{
-						IsDead = false
+						IsDead = true
 					});
 				});
 

@@ -41,7 +41,10 @@ namespace Patapon.Mixed.Systems
 			var isServer = IsServer;
 
 			if (!isServer && !GetSingleton<P4NetworkRules.Data>().RhythmEngineUsePredicted)
-				tick.Value += (GetTick(true).Value - GetTick(false).Value) / 4;
+			{
+				//tick.Value += (GetTick(true).Value - GetTick(false).Value) / 4;
+				tick = UTick.AddMsNextFrame(tick, 50);
+			}
 
 			destroyEcb.DestroyEntity(m_DestroyEventQuery);
 

@@ -1,8 +1,13 @@
 using System.Collections.Generic;
+using P4TLB.MasterServer;
+using Patapon.Client.Systems;
+using Patapon.Mixed.GamePlay.Abilities.CTate;
+using Patapon.Mixed.GamePlay.Abilities.CYari;
 using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Definitions;
 using Patapon.Mixed.RhythmEngine.Flow;
+using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -25,6 +30,10 @@ namespace Patapon.Client.RhythmEngine
 
 		public bool IsNewBeat;
 		public bool IsNewCommand;
+
+		public int HeroModeSequence;
+		public Entity HeroModeSourceUnit;
+		public Entity HeroModeSourceAbility;
 
 		// used to not throw the same audio for the command.
 		private readonly Dictionary<int, int> m_CommandChain = new Dictionary<int, int>();
@@ -229,34 +238,59 @@ namespace Patapon.Client.RhythmEngine
 				return;
 			}
 
-			var commandTarget = default(AudioClip);
+			var clipTarget = default(AudioClip);
 
-			var id   = TargetCommandDefinition.Identifier.ToString();
-			var hash = TargetCommandDefinition.Identifier.GetHashCode();
-
-			if (!m_CommandChain.ContainsKey(hash)) m_CommandChain[hash] = 0;
-
-			if (CurrentSong.CommandsAudio.ContainsKey(id) && !(ComboState.IsFever && !m_WasFever))
+			if (HeroModeSequence < 0)
 			{
-				var key = SongDescription.CmdKeyNormal;
-				if (ComboState.IsFever)
-					key                                                             = SongDescription.CmdKeyFever;
-				else if (ComboState.ChainToFever > 1 && ComboState.Score >= 33) key = SongDescription.CmdKeyPreFever;
+				var id   = TargetCommandDefinition.Identifier.ToString();
+				var hash = TargetCommandDefinition.Identifier.GetHashCode();
 
-				if (!ComboState.IsFever) m_WasFever = false;
+				if (!m_CommandChain.ContainsKey(hash)) m_CommandChain[hash] = 0;
 
-				var clips = CurrentSong.CommandsAudio[id][key];
-				commandTarget = clips[m_CommandChain[TargetCommandDefinition.Identifier.GetHashCode()] % clips.Count];
+				if (CurrentSong.CommandsAudio.ContainsKey(id) && !(ComboState.IsFever && !m_WasFever))
+				{
+					var key = SongDescription.CmdKeyNormal;
+					if (ComboState.IsFever)
+						key                                                             = SongDescription.CmdKeyFever;
+					else if (ComboState.ChainToFever > 1 && ComboState.Score >= 33) key = SongDescription.CmdKeyPreFever;
+
+					if (!ComboState.IsFever) m_WasFever = false;
+
+					var clips = CurrentSong.CommandsAudio[id][key];
+					clipTarget = clips[m_CommandChain[TargetCommandDefinition.Identifier.GetHashCode()] % clips.Count];
+				}
+
+				m_CommandChain[hash] = m_CommandChain[hash] + 1;
 			}
-			else if (ComboState.IsFever && !m_WasFever)
+			else
 			{
-				m_WasFever    = true;
-				commandTarget = m_FeverClip;
+				// first one...
+				if (HeroModeSequence <= 1 && HeroModeSourceUnit != Entity.Null)
+				{
+					// todo: how to get correct activation voice?
+					var abilityTarget = string.Empty;
+					if (EntityManager.HasComponent<TaterazayEnergyFieldAbility>(HeroModeSourceAbility))
+						abilityTarget = nameof(P4OfficialAbilities.TateEnergyField);
+					else if (EntityManager.HasComponent<YaridaFearSpearAbility>(HeroModeSourceAbility))
+						abilityTarget = nameof(P4OfficialAbilities.YariFearSpear);
+
+					clipTarget = World.GetExistingSystem<UnitHeroVoiceManager>().Get(abilityTarget);
+				}
+				else
+				{
+					clipTarget = m_HeroModeChainClips[(HeroModeSequence - 1) % m_HeroModeChainClips.Length];
+				}
 			}
 
-			m_CommandChain[hash] = m_CommandChain[hash] + 1;
+			var nextBeatDelay = (CommandStartTime - EngineProcess.Milliseconds) * 0.001f;
+			if (ComboState.IsFever && !m_WasFever)
+			{
+				m_WasFever = true;
+				m_FeverSource.clip = m_FeverClip;
+				m_FeverSource.PlayScheduled(AudioSettings.dspTime + nextBeatDelay);
+			}
 
-			if (commandTarget == null)
+			if (clipTarget == null)
 				return;
 
 			/*var cmdStartActivationBeat = FlowEngineProcess.CalculateActivationBeat(CommandStartTime, EngineSettings.BeatInterval);
@@ -266,9 +300,7 @@ namespace Patapon.Client.RhythmEngine
 			if (nextBeatDelayMs >= 500)
 				nextBeatDelayMs = 0;*/
 
-			var nextBeatDelay = (CommandStartTime - EngineProcess.Milliseconds) * 0.001f;
-
-			m_CommandSource.clip  = commandTarget;
+			m_CommandSource.clip  = clipTarget;
 			m_CommandSource.pitch = TargetCommandDefinition.BeatLength == 3 ? 1.25f : 1f;
 			m_CommandSource.PlayScheduled(AudioSettings.dspTime + nextBeatDelay);
 		}

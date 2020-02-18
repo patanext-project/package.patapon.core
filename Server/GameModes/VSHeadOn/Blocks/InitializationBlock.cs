@@ -1,9 +1,12 @@
 using GmMachine;
 using Misc.GmMachine.Contexts;
+using package.stormiumteam.shared.ecs;
+using Patapon.Mixed.Units;
 using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Collections;
+using Unity.Entities;
 using UnityEngine;
 
 namespace Patapon.Server.GameModes.VSHeadOn
@@ -41,6 +44,8 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				});
 				WorldCtx.EntityMgr.AddComponentData(team.Target, new Relative<ClubDescription> {Target = club});
 				WorldCtx.EntityMgr.AddComponent(club, typeof(GhostEntity));
+
+				WorldCtx.EntityMgr.SetOrAddComponentData(team.Target, new UnitDirection {Value = (sbyte) (t == 0 ? 1 : -1)});
 			}
 
 			// -- Set enemies of each team

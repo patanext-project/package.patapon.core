@@ -99,8 +99,10 @@ namespace RhythmEngine
 				return;
 
 			Entity engine;
-			if (this.TryGetCurrentCameraState(player, out var camState))
-				engine = PlayerComponentFinder.GetComponentFromPlayer<RhythmEngineDescription>(EntityManager, m_EngineQuery, camState.Target, player);
+			
+			var cameraState = this.GetComputedCameraState().StateData;
+			if (cameraState.Target != default)
+				engine = PlayerComponentFinder.GetComponentFromPlayer<RhythmEngineDescription>(EntityManager, m_EngineQuery, cameraState.Target, player);
 			else
 				engine = PlayerComponentFinder.FindPlayerComponent(m_EngineQuery, player);
 

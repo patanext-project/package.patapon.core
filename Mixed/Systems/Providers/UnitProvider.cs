@@ -50,8 +50,8 @@ namespace Patapon.Mixed.Units
 
 				typeof(PlayEntityTag),
 
-				typeof(TranslationSnapshot.Exclude),
-				typeof(InterpolatedTranslationSnapshot.Use)
+				typeof(TranslationDirectSnapshot.Exclude),
+				typeof(UnitTranslationSnapshot.Use)
 			};
 		}
 

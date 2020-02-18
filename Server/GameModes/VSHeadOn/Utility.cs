@@ -128,19 +128,28 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			}
 		}
 
-		public static void RespawnUnit(EntityManager entityMgr, Entity unit, float3 spawnPointPos)
+		public static void RespawnUnit(EntityManager entityMgr, Entity unit, float3 spawnPointPos, bool firstSpawn = false)
 		{
+			var direction = entityMgr.GetComponentData<UnitDirection>(unit);
+			var offset = 0f;
+			if (firstSpawn)
+			{
+				offset += direction.Value * 10;
+				if (entityMgr.GetComponentData<UnitCurrentKit>(unit).Value.Equals(UnitKnownTypes.Yarida))
+					offset -= direction.Value * 1.5f;
+				if (entityMgr.GetComponentData<UnitCurrentKit>(unit).Value.Equals(UnitKnownTypes.Yumiyacha))
+					offset -= direction.Value * 3f;
+			}
+			
 			entityMgr.SetComponentData(unit, new Translation
 			{
-				Value = new float3(spawnPointPos.x, 0, 0)
+				Value = new float3(spawnPointPos.x + offset, 0, 0)
 			});
 
 			var unitTargetRelative = entityMgr.GetComponentData<Relative<UnitTargetDescription>>(unit).Target;
-			entityMgr.SetComponentData(unitTargetRelative, new Translation {Value = spawnPointPos.x});
-			entityMgr.SetOrAddComponentData(unitTargetRelative, entityMgr.GetComponentData<UnitDirection>(unit));
+			entityMgr.SetComponentData(unitTargetRelative, new Translation {Value = spawnPointPos.x + offset});
+			entityMgr.SetOrAddComponentData(unitTargetRelative, direction);
 			entityMgr.SetOrAddComponentData(unitTargetRelative, entityMgr.GetComponentData<Relative<TeamDescription>>(unit));
-
-			Debug.Log("Spawning at " + spawnPointPos.x);
 		}
 	}
 }

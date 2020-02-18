@@ -92,8 +92,12 @@ namespace package.patapon.core.Models.InGame.Multiplayer
 			}
 			
 			if (EntityManager.TryGetComponent(relativePlayer.Target, out PlayerName pn))
-				definition.SetName(m_Index, pn.Value);
+				definition.SetName(m_Index++, pn.Value);
+			else
+				definition.SetName(m_Index++, m_NoName);
 		}
+		
+		private NativeString512 m_NoName = new NativeString512("NoName");
 
 		protected override void ClearValues()
 		{

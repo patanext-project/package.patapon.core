@@ -43,6 +43,8 @@ namespace Patapon.Mixed.GamePlay.Units
 		/// </remarks>
 		public int Power;
 
+		public bool IsPerfect => Power >= 100;
+
 		public bool HasPredictedCommands;
 
 		public struct Exclude : IComponentData
@@ -69,9 +71,9 @@ namespace Patapon.Mixed.GamePlay.Units
 				var jobData = m_ReceiveSystem.JobData;
 				return Entities.WithNone<FlowSimulateProcess>().ForEach((DynamicBuffer<Snapshot> snapshots, ref RhythmCurrentCommand component) =>
 				{
-					var snapshot = snapshots.GetLastBaseline();
+					var snapshot = snapshots.GetLastBaselineReadOnly();
 					snapshot.SynchronizeTo(ref component, in jobData);
-				}).WithReadOnly(jobData).Schedule(inputDeps);
+				}).Schedule(inputDeps);
 			}
 		}
 

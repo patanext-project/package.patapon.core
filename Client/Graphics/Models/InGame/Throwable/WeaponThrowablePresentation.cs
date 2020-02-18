@@ -1,3 +1,4 @@
+using System;
 using DefaultNamespace;
 using Patapon.Mixed.GamePlay;
 using StormiumTeam.GameBase;
@@ -6,6 +7,7 @@ using Unity.Entities;
 using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace package.patapon.core.Models.InGame.Throwable
 {
@@ -28,9 +30,21 @@ namespace package.patapon.core.Models.InGame.Throwable
 			              .Folder("Equipments")
 			              .Folder("Spears")
 			              .GetFile("default_spear_throwable.prefab");
+
 		protected override EntityQuery GetQuery()
 		{
 			return GetEntityQuery(typeof(Translation), typeof(UnitWeaponProjectile));
+		}
+
+		protected override Type[] AdditionalBackendComponents => new[] {typeof(SortingGroup)};
+
+		protected override void SpawnBackend(Entity target)
+		{
+			base.SpawnBackend(target);
+
+			var sortingGroup = LastBackend.GetComponent<SortingGroup>();
+			sortingGroup.sortingLayerName = "Entities";
+			sortingGroup.sortingOrder     = 0;
 		}
 	}
 
@@ -49,7 +63,7 @@ namespace package.patapon.core.Models.InGame.Throwable
 			var target  = backend.DstEntity;
 
 			backend.transform.position = EntityManager.GetComponentData<Translation>(target).Value;
-			var dir   = EntityManager.GetComponentData<Velocity>(target).Value;
+			var dir   = EntityManager.GetComponentData<Velocity>(target).normalized;
 			var angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 			backend.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
 		}

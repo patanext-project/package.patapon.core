@@ -12,7 +12,7 @@ using Unity.Networking.Transport;
 
 namespace Patapon.Mixed.GamePlay.Abilities
 {
-	public struct OwnerActiveAbility : IComponentData
+	public struct OwnerActiveAbility : IComponentData, IReadWriteComponentSnapshot<OwnerActiveAbility, GhostSetup>
 	{
 		public int LastCommandActiveTime;
 		public int LastActivationTime;
@@ -40,15 +40,35 @@ namespace Patapon.Mixed.GamePlay.Abilities
 			CurrentCombo.RemoveAt(index);
 			return true;
 		}
+		
+		public struct Exclude : IComponentData {}
 
-		public class NetEmptySynchronize : ComponentSnapshotSystemTag<OwnerActiveAbility>
+		/*public class NetEmptySynchronize : MixedComponentSnapshotSystem<OwnerActiveAbility, GhostSetup>
 		{
+			public override ComponentType ExcludeComponent => typeof(Exclude);
+		}*/
+
+		public class NetEmptySynchronizer : ComponentSnapshotSystemTag<OwnerActiveAbility>
+		{
+		}
+
+		public void WriteTo(DataStreamWriter writer, ref OwnerActiveAbility baseline, GhostSetup setup, SerializeClientData jobData)
+		{
+			
+		}
+
+		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref OwnerActiveAbility baseline, DeserializeClientData jobData)
+		{
+			
 		}
 	}
 
 	public struct AbilityState : IComponentData
 	{
 		public EAbilityPhase Phase;
+
+		public int Combo;
+		public int ImperfectCountWhileActive;
 
 		public int UpdateVersion;
 		public int ActivationVersion;
@@ -66,10 +86,24 @@ namespace Patapon.Mixed.GamePlay.Abilities
 		Active           = 1 << 1,
 		Chaining         = 1 << 2,
 		ActiveOrChaining = Active | Chaining,
+		/// <summary>
+		/// This state is used when the Hero mode is getting activated since they do possess a delay of a beat...
+		/// </summary>
+		HeroActivation = 1 << 3,
+	}
+
+	public enum EActivationType
+	{
+		Normal,
+		HeroMode
 	}
 
 	public struct AbilityActivation : IComponentData, IReadWriteComponentSnapshot<AbilityActivation, GhostSetup>, ISnapshotDelta<AbilityActivation>
 	{
+		public EActivationType Type;
+		public int             HeroModeMaxCombo;
+		public int             HeroModeImperfectLimitBeforeDeactivation;
+
 		public AbilitySelection Selection;
 
 		/// <summary>
@@ -82,20 +116,41 @@ namespace Patapon.Mixed.GamePlay.Abilities
 		/// </summary>
 		public FixedList32<Entity> Combos; //< 32 bytes should suffice, it would be 4 combo commands...
 
+		/// <summary>
+		/// Allowed commands for chaining in hero mode.
+		/// </summary>
+		public FixedList64<Entity> HeroModeAllowedCommands; //< 64 bytes should suffice, it would be up to 8 commands...
+
 		public void WriteTo(DataStreamWriter writer, ref AbilityActivation baseline, GhostSetup setup, SerializeClientData jobData)
 		{
+			writer.WritePackedUInt((uint) Type, jobData.NetworkCompressionModel);
+			writer.WritePackedInt(HeroModeMaxCombo, jobData.NetworkCompressionModel);
+			writer.WritePackedInt(HeroModeImperfectLimitBeforeDeactivation, jobData.NetworkCompressionModel);
+
 			writer.WritePackedUInt(setup[Chaining], jobData.NetworkCompressionModel);
 			writer.WritePackedUInt((uint) Combos.Length, jobData.NetworkCompressionModel);
+			writer.WritePackedUInt((uint) HeroModeAllowedCommands.Length, jobData.NetworkCompressionModel);
+
 			for (var i = 0; i != Combos.Length; i++)
 				writer.WritePackedUInt(setup[Combos[i]], jobData.NetworkCompressionModel);
+			for (var i = 0; i != HeroModeAllowedCommands.Length; i++)
+				writer.WritePackedUInt(setup[HeroModeAllowedCommands[i]], jobData.NetworkCompressionModel);
 		}
 
 		public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref AbilityActivation baseline, DeserializeClientData jobData)
 		{
+			Type                                     = (EActivationType) reader.ReadPackedUInt(ref ctx, jobData.NetworkCompressionModel);
+			HeroModeMaxCombo                         = (int) reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
+			HeroModeImperfectLimitBeforeDeactivation = (int) reader.ReadPackedInt(ref ctx, jobData.NetworkCompressionModel);
+
 			jobData.GhostToEntityMap.TryGetValue(reader.ReadPackedUInt(ref ctx, jobData.NetworkCompressionModel), out Chaining);
-			Combos.Length = (int) reader.ReadPackedUInt(ref ctx, jobData.NetworkCompressionModel);
+			Combos.Length                  = (int) reader.ReadPackedUInt(ref ctx, jobData.NetworkCompressionModel);
+			HeroModeAllowedCommands.Length = (int) reader.ReadPackedUInt(ref ctx, jobData.NetworkCompressionModel);
+
 			for (var i = 0; i != Combos.Length; i++)
 				jobData.GhostToEntityMap.TryGetValue(reader.ReadPackedUInt(ref ctx, jobData.NetworkCompressionModel), out Combos[i]);
+			for (var i = 0; i != HeroModeAllowedCommands.Length; i++)
+				jobData.GhostToEntityMap.TryGetValue(reader.ReadPackedUInt(ref ctx, jobData.NetworkCompressionModel), out HeroModeAllowedCommands[i]);
 		}
 
 		public bool DidChange(AbilityActivation baseline)

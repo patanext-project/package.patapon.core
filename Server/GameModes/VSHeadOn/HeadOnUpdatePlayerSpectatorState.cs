@@ -7,6 +7,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
+using UnityEngine;
 
 namespace Patapon.Server.GameModes.VSHeadOn
 {
@@ -28,6 +29,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
+			
 			Entities.WithAll<HeadOnPlaying>().ForEach((Entity e, DynamicBuffer<OwnerChild> children, ref ServerCameraState cameraState, ref GamePlayer gmPlayer) =>
 			{
 				Entity targetChild = default;
@@ -45,7 +47,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				cameraState.Data.Mode   = CameraMode.Forced;
 			}).WithoutBurst().Run();
 
-			using (var unitEntities = m_Query.ToEntityArray(Allocator.TempJob))
+			/*using (var unitEntities = m_Query.ToEntityArray(Allocator.TempJob))
 			{
 				var time = Time.ElapsedTime;
 				Entities.ForEach((Entity e, ref ServerCameraState cameraState, ref GamePlayerCommand command, ref HeadOnSpectating spectating) =>
@@ -59,21 +61,27 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					if (!EntityManager.Exists(cameraState.Target))
 						cameraState.Data.Target = default;
 
-					spectating.UnitIndex += (int) math.sign(command.Base.Panning);
-					spectating.UnitIndex %= unitEntities.Length - 1;
+					if (spectating.SwitchDelay < time)
+					{
+						spectating.UnitIndex += (int) math.sign(command.Base.Panning);
+						spectating.SwitchDelay = time + 0.25;
+					}
 
+					if (spectating.UnitIndex < 0)
+						spectating.UnitIndex = unitEntities.Length - 1;
+					if (spectating.UnitIndex >= unitEntities.Length)
+						spectating.UnitIndex = 0;
+					
 					for (var ent = 0; ent < unitEntities.Length; ent++)
 					{
 						var unitEntity = unitEntities[ent];
 						if (cameraState.Target == default)
 						{
 							cameraState.Data.Target = unitEntity;
-							break;
 						}
 
-						if (spectating.SwitchDelay < time && spectating.UnitIndex == ent)
+						if (spectating.UnitIndex == ent)
 						{
-							spectating.SwitchDelay  = time + 0.25;
 							cameraState.Data.Target = unitEntity;
 							break;
 						}
@@ -82,7 +90,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					cameraState.Data.Mode = CameraMode.Forced;
 				}).WithoutBurst().Run();
 			}
-
+*/
 			return default;
 		}
 	}

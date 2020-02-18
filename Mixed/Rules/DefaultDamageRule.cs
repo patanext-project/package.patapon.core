@@ -40,6 +40,7 @@ namespace StormiumTeam.GameBase
 			DisableEventForNoDamageProperty = CustomProperties.Add("Disable event if no damage were dealt", ref data, ref data.DisableEventForNoDamage);
 
 			SelfDamageFactorProperty.Value = 0.25f;
+			TeamDamageFactorProperty.Value = 0;
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -87,15 +88,22 @@ namespace StormiumTeam.GameBase
 
 				if (damageEvent.Origin == damageEvent.Destination && math.abs(Data.SelfDamageFactor) > math.FLT_MIN_NORMAL && damageEvent.Damage < 0)
 					damageEvent.Damage = (int) math.round(damageEvent.Damage * Data.SelfDamageFactor);
-				else if (shooterTeam != default && victimTeam != default && shooterTeam == victimTeam && math.abs(Data.SameTeamDamageFactor) > math.FLT_MIN_NORMAL && damageEvent.Damage < 0)
+				else if (shooterTeam != default && victimTeam != default && shooterTeam == victimTeam && damageEvent.Damage < 0)
+				{
 					damageEvent.Damage = (int) math.round(damageEvent.Damage * Data.SameTeamDamageFactor);
-				
+					if (damageEvent.Damage == 0)
+					{
+						Ecb.DestroyEntity(index, entity);
+						return;
+					}
+				}
+
 				if (damageEvent.Damage == 0 && Data.DisableEventForNoDamage)
 				{
 					Ecb.DestroyEntity(index, entity);
 					return;
 				}
-
+				
 				if (HealthHistoryFromEntity.Exists(damageEvent.Destination))
 					HealthHistoryFromEntity[damageEvent.Destination].Add(new HealthModifyingHistory
 					{

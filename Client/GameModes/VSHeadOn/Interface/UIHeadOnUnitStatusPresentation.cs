@@ -130,8 +130,8 @@ namespace Patapon4TLB.GameModes.Interface
 			LocalPlayer = this.GetFirstSelfGamePlayer();
 			Hud         = EntityManager.GetComponentObject<UIHeadOnPresentation>(m_HudQuery.GetSingletonEntity());
 
-			if (this.TryGetCurrentCameraState(LocalPlayer, out var cameraState)
-			    && EntityManager.TryGetComponentData(cameraState.Target, out Relative<TeamDescription> relativeTeam))
+			var cameraState = this.GetComputedCameraState().StateData;
+			if (EntityManager.TryGetComponentData(cameraState.Target, out Relative<TeamDescription> relativeTeam))
 			{
 				LocalTeam = relativeTeam.Target;
 			}

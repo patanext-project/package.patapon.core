@@ -49,22 +49,35 @@ namespace Patapon.Mixed.GamePlay
 			return playState;
 		}
 
-		public static float GetTargetVelocityX(float3 targetPosition, float3 previousPosition, float3 previousVelocity, UnitPlayState playState, float acceleration, UTick tick, float deaccel_distance = -1, float deaccel_distance_max = -1)
+		public struct GetTargetVelocityParameters
 		{
-			var speed   = math.lerp(math.abs(previousVelocity.x), playState.MovementAttackSpeed, playState.GetAcceleration() * acceleration * tick.Delta);
+			public float3        TargetPosition;
+			public float3        PreviousPosition;
+			public float3        PreviousVelocity;
+			public UnitPlayState PlayState;
+			public float         Acceleration;
+			public UTick         Tick;
+		}
+
+		public static float GetTargetVelocityX(GetTargetVelocityParameters param, float deaccel_distance = -1, float deaccel_distance_max = -1)
+		{
+			var speed = math.lerp(math.abs(param.PreviousVelocity.x),
+				param.PlayState.MovementAttackSpeed,
+				param.PlayState.GetAcceleration() * param.Acceleration * param.Tick.Delta);
+
 			if (deaccel_distance >= 0)
 			{
-				var dist = math.distance(targetPosition.x, previousPosition.x);
+				var dist = math.distance(param.TargetPosition.x, param.PreviousPosition.x);
 				if (dist > deaccel_distance && dist < deaccel_distance_max)
 				{
 					speed *= math.unlerp(deaccel_distance, deaccel_distance_max, dist);
-					speed =  math.max(speed, tick.Delta);
+					speed =  math.max(speed, param.Tick.Delta);
 				}
 			}
 
-			var newPosX = Mathf.MoveTowards(previousPosition.x, targetPosition.x, speed * tick.Delta);
+			var newPosX = Mathf.MoveTowards(param.PreviousPosition.x, param.TargetPosition.x, speed * param.Tick.Delta);
 
-			return (newPosX - previousPosition.x) / tick.Delta;
+			return (newPosX - param.PreviousPosition.x) / param.Tick.Delta;
 		}
 	}
 }

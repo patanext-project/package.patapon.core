@@ -3,6 +3,7 @@ using Patapon.Mixed.GameModes;
 using StormiumTeam.GameBase;
 using StormiumTeam.Shared;
 using Unity.Entities;
+using Unity.NetCode;
 using UnityEngine;
 
 namespace DataScripts.Interface.GameMode.Global
@@ -18,6 +19,7 @@ namespace DataScripts.Interface.GameMode.Global
 	}
 
 	[UpdateInGroup(typeof(OrderGroup.Simulation.UpdateEntities))]
+	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class GameModeStatusOnUpdate : GameBaseSystem
 	{
 		public event GameModeStatusFindTranslation OnFindTranslation;
@@ -49,8 +51,8 @@ namespace DataScripts.Interface.GameMode.Global
 			if (settings.StatusTick == m_LastStatusTick)
 				return;
 
-			var player = this.GetFirstSelfGamePlayer();
-			if (this.TryGetCurrentCameraState(player, out var cameraState))
+			var cameraState = this.GetComputedCameraState().StateData;
+			if (cameraState.Target != default)
 			{
 				var str = settings.StatusMessage.ToString();
 				if (TL.IsFormatted(str) && (OnFindTranslation == null || !OnFindTranslation.Invoke(ref str)))

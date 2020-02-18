@@ -51,6 +51,8 @@ namespace package.patapon.core
 	{
 		internal int  CameraRenderCount;
 		public   bool IsLooping;
+		public float CurveMultiplier = 1;
+		public bool KeepCurveScaling = true;
 
 		internal int LastLineRendererPositionCount;
 
@@ -111,6 +113,8 @@ namespace package.patapon.core
 
 		private void OnValidate()
 		{
+			IsLooping = false;
+			
 			var goEntity = GetComponent<GameObjectEntity>();
 			if (!Application.isPlaying || goEntity?.EntityManager == null)
 				return;
@@ -142,6 +146,8 @@ namespace package.patapon.core
 #if UNITY_EDITOR
 		private void OnDrawGizmos()
 		{
+			IsLooping = false;
+			
 			if (lineRendererArray == null || lineRendererArray.Length == 0) lineRendererArray = new[] {lineRenderer};
 
 			var currCam = Camera.current;
@@ -177,6 +183,9 @@ namespace package.patapon.core
 				{
 					lr.positionCount = m_EditorResultArray.Length;
 					lr.SetPositions(m_EditorResultArray);
+
+					if (!KeepCurveScaling)
+						lr.widthMultiplier = math.abs(transform.lossyScale.x * CurveMultiplier);
 				}
 			}
 

@@ -34,6 +34,8 @@ namespace RhythmEngine
 
 		private AudioClip                                   m_AudioOnNewBeat;
 		private AudioClip                                   m_AudioOnPerfect;
+		private AudioClip m_AudioOnHeroMode;
+		
 		private Dictionary<int, Dictionary<int, AudioClip>> m_AudioOnPressureDrum;
 		private Dictionary<int, Dictionary<int, AudioClip>> m_AudioOnPressureVoice;
 
@@ -80,6 +82,7 @@ namespace RhythmEngine
 
 			AddAsset("Effects/on_new_beat.ogg", new Data {Type = DataType.Beat});
 			AddAsset("Effects/perfect_1.wav", new Data {Type   = DataType.Perfect});
+			AddAsset("Drums/voice_on_hero_mode.wav", new Data {Type = DataType.OnHeroMode});
 			for (var i = 0; i != 4; i++)
 			{
 				var key = i + 1;
@@ -135,6 +138,9 @@ namespace RhythmEngine
 						case DataType.Perfect:
 							m_AudioOnPerfect = handle.Result;
 							break;
+						case DataType.OnHeroMode:
+							m_AudioOnHeroMode = handle.Result;
+							break;
 					}
 
 				m_AsyncOpModule.Handles.RemoveAtSwapBack(i);
@@ -161,8 +167,10 @@ namespace RhythmEngine
 				return;
 
 			Entity engine;
-			if (this.TryGetCurrentCameraState(player, out var camState))
-				engine = PlayerComponentFinder.GetComponentFromPlayer<RhythmEngineDescription>(EntityManager, m_EngineQuery, camState.Target, player);
+			
+			var cameraState = this.GetComputedCameraState().StateData;
+			if (cameraState.Target != default)
+				engine = PlayerComponentFinder.GetComponentFromPlayer<RhythmEngineDescription>(EntityManager, m_EngineQuery, cameraState.Target, player);
 			else
 				engine = PlayerComponentFinder.FindPlayerComponent(m_EngineQuery, player);
 
@@ -189,10 +197,6 @@ namespace RhythmEngine
 			var playerOfEngine = EntityManager.GetComponentData<Relative<PlayerDescription>>(engine).Target;
 			if (EntityManager.TryGetComponentData(playerOfEngine, out GamePlayerCommand playerCommand))
 			{
-				var localTick = World.GetExistingSystem<ClientSimulationSystemGroup>().ServerTick;
-
-				//process.Milliseconds -= (int) (localTick - playerCommand.Base.Tick);
-
 				var pressureKey   = -1;
 				var rhythmActions = playerCommand.Base.GetRhythmActions();
 				for (var i = 0; pressureKey < 0 && i != rhythmActions.Length; i++)
@@ -210,15 +214,14 @@ namespace RhythmEngine
 				if (pressureKey > 0)
 				{
 					IsNewPressure = true;
-
-
+					
 					var absRealScore = math.abs(FlowEngineProcess.GetScore(process.Milliseconds, settings.BeatInterval));
 					var score        = 0;
 					if (absRealScore <= FlowPressure.Perfect)
 						score = 0;
 					else
 						score = 1;
-
+					
 					var gameCommandState = EntityManager.GetComponentData<GameCommandState>(engine);
 					var currentCommand   = EntityManager.GetComponentData<RhythmCurrentCommand>(engine);
 					var predictedCommand = EntityManager.GetComponentData<GamePredictedCommandState>(engine);
@@ -237,18 +240,26 @@ namespace RhythmEngine
 					}
 
 					// do the perfect sound
-					var isPerfect = !shouldFail && currentCommand.ActiveAtTime >= process.Milliseconds && currentCommand.Power >= 100;
-					if (isPerfect) m_AudioSourceOnPerfect.PlayOneShot(m_AudioOnPerfect, 1.25f);
-
-					m_AudioSourceOnNewPressureDrum.clip = m_AudioOnPressureDrum[pressureKey][score];
-					m_AudioSourceOnNewPressureDrum.PlayScheduled(AudioSettings.dspTime + Time.DeltaTime);
-
-					if (GetSingleton<P4SoundRules.Data>().EnableDrumVoices) // voiceoverlay
+					if (!EntityManager.TryGetComponentData(engine, out RhythmHeroState heroState) || heroState.ActivationTick == 0)
 					{
-						var id         = score;
-						if (id > 0) id = Mathf.Clamp(new Random((uint) Environment.TickCount).NextInt(-1, 3), 1, 2); // more chance to have a 1
+						var isPerfect = !shouldFail && currentCommand.ActiveAtTime >= process.Milliseconds && currentCommand.Power >= 100;
+						if (isPerfect) m_AudioSourceOnPerfect.PlayOneShot(m_AudioOnPerfect, 1.25f);
 
-						m_AudioSourceOnNewPressureVoice.clip = m_AudioOnPressureVoice[pressureKey][id];
+						m_AudioSourceOnNewPressureDrum.clip = m_AudioOnPressureDrum[pressureKey][score];
+						m_AudioSourceOnNewPressureDrum.PlayScheduled(AudioSettings.dspTime + Time.DeltaTime);
+
+						if (GetSingleton<P4SoundRules.Data>().EnableDrumVoices) // voiceoverlay
+						{
+							var id         = score;
+							if (id > 0) id = Mathf.Clamp(new Random((uint) Environment.TickCount).NextInt(-1, 3), 1, 2); // more chance to have a 1
+
+							m_AudioSourceOnNewPressureVoice.clip = m_AudioOnPressureVoice[pressureKey][id];
+							m_AudioSourceOnNewPressureVoice.PlayScheduled(AudioSettings.dspTime + Time.DeltaTime);
+						}
+					}
+					else
+					{
+						m_AudioSourceOnNewPressureVoice.clip = m_AudioOnHeroMode;
 						m_AudioSourceOnNewPressureVoice.PlayScheduled(AudioSettings.dspTime + Time.DeltaTime);
 					}
 				}
@@ -265,7 +276,8 @@ namespace RhythmEngine
 		{
 			Beat,
 			Pressure,
-			Perfect
+			Perfect,
+			OnHeroMode
 		}
 
 		private enum PressureType

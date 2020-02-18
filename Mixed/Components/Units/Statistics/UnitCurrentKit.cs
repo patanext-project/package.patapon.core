@@ -28,19 +28,22 @@ namespace Patapon.Mixed.Units.Statistics
 		{
 			return UnsafeUtilityOp.AreNotEquals(ref this, ref baseline);
 		}
-		
-		public struct Exclude : IComponentData {}
-		
+
+		public struct Exclude : IComponentData
+		{
+		}
+
 		public class NetSynchronize : MixedComponentSnapshotSystemDelta<UnitCurrentKit>
 		{
 			public override ComponentType ExcludeComponent => typeof(Exclude);
 		}
 	}
- 
+
 	public static class UnitKnownTypes
 	{
 		public static readonly NativeString64 Taterazay = new NativeString64("taterazay");
 		public static readonly NativeString64 Yarida    = new NativeString64("yarida");
+		public static readonly NativeString64 Yumiyacha = new NativeString64("yumiyacha");
 
 		public static NativeString64 FromEnum(P4OfficialKit kit)
 		{
@@ -50,6 +53,8 @@ namespace Patapon.Mixed.Units.Statistics
 					return Taterazay;
 				case P4OfficialKit.Yarida:
 					return Yarida;
+				case P4OfficialKit.Yumiyacha:
+					return Yumiyacha;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(kit), kit, null);
 			}

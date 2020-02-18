@@ -104,7 +104,7 @@ namespace Patapon4TLB.Default.Player
 				if (localFromEntity.Exists(entity))
 					return;
 
-				command.Base = snapshots.GetLastBaseline().Base;
+				command.Base = snapshots.GetLastBaselineReadOnly().Base;
 			}).WithReadOnly(localFromEntity).Schedule(inputDeps);
 
 			return inputDeps;

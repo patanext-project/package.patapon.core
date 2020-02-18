@@ -23,7 +23,6 @@ namespace Components.GamePlay.Projectiles
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	public class ProjectileDefaultExplosionSystem : JobGameBaseSystem
 	{
-		private BuildPhysicsWorld                                        m_BuildPhysicsWorld;
 		private EntityArchetype                                          m_DamageEventArchetype;
 		private OrderGroup.Simulation.DeleteEntities.CommandBufferSystem m_DeleteBarrier;
 		private EntityQuery                                              m_ExplodedQuery;
@@ -32,6 +31,8 @@ namespace Components.GamePlay.Projectiles
 
 		private EntityQuery                                             m_ProjectileQuery;
 		private OrderGroup.Simulation.SpawnEntities.CommandBufferSystem m_SpawnBarrier;
+
+		private EntityQuery m_HitShapeQuery;
 
 		protected override void OnCreate()
 		{
@@ -43,8 +44,11 @@ namespace Components.GamePlay.Projectiles
 				All = new ComponentType[] {typeof(ProjectileEndedTag), typeof(ProjectileExplodedEndReason), typeof(Translation)},
 				Any = new ComponentType[] {typeof(DistanceDamageFallOf), typeof(DistanceImpulseFallOf)}
 			});
+			m_HitShapeQuery = GetEntityQuery(new EntityQueryDesc
+			{
+				All = new ComponentType[] {typeof(HitShapeDescription)}
+			});
 
-			m_BuildPhysicsWorld = World.GetOrCreateSystem<BuildPhysicsWorld>();
 			m_DeleteBarrier     = World.GetOrCreateSystem<OrderGroup.Simulation.DeleteEntities.CommandBufferSystem>();
 			m_SpawnBarrier      = World.GetOrCreateSystem<OrderGroup.Simulation.SpawnEntities.CommandBufferSystem>();
 
@@ -54,10 +58,12 @@ namespace Components.GamePlay.Projectiles
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
+			var hitShapeEntities = m_HitShapeQuery.ToEntityArrayAsync(Allocator.TempJob, out var dep1);
+			
 			inputDeps = new ProcessProjectileExplosion
 			{
 				Tick         = GetTick(true),
-				PhysicsWorld = m_BuildPhysicsWorld.PhysicsWorld,
+				HitShapeEntities = hitShapeEntities,
 
 				EntityType        = GetArchetypeChunkEntityType(),
 				TranslationType   = GetArchetypeChunkComponentType<Translation>(true),
@@ -72,11 +78,18 @@ namespace Components.GamePlay.Projectiles
 
 				RelativeMovableFromEntity = GetComponentDataFromEntity<Relative<MovableDescription>>(true),
 				RelativeLivableFromEntity = GetComponentDataFromEntity<Relative<LivableDescription>>(true),
+				
+				OwnerFromEntity = GetComponentDataFromEntity<Owner>(true),
+				LivableFromEntity = GetComponentDataFromEntity<Relative<LivableDescription>>(true),
+				ColliderFromEntity = GetComponentDataFromEntity<PhysicsCollider>(true),
+				
+				LocalToWorldFromEntity = GetComponentDataFromEntity<LocalToWorld>(true),
+				FollowParentFromEntity = GetComponentDataFromEntity<HitShapeFollowParentTag>(true),
 
 				Ecb                   = m_SpawnBarrier.CreateCommandBuffer().ToConcurrent(),
 				ImpulseEventArchetype = m_ImpulseEventArchetype,
 				DamageEventArchetype  = m_DamageEventArchetype
-			}.Schedule(m_ExplodedQuery, JobHandle.CombineDependencies(inputDeps, m_BuildPhysicsWorld.FinalJobHandle));
+			}.Schedule(m_ExplodedQuery, JobHandle.CombineDependencies(inputDeps, dep1));
 			// We could have used EntityCommandBuffer.DestroyEntity(EntityQuery) but that mean we are destroying entities that we don't even know that exist.
 			inputDeps = new DestroyProjectileJob
 			{
@@ -94,7 +107,7 @@ namespace Components.GamePlay.Projectiles
 		{
 			public UTick Tick;
 
-			[ReadOnly] public PhysicsWorld PhysicsWorld;
+			[ReadOnly, DeallocateOnJobCompletion] public NativeArray<Entity> HitShapeEntities;
 
 			[ReadOnly] public ArchetypeChunkEntityType                                EntityType;
 			[ReadOnly] public ArchetypeChunkComponentType<Translation>                TranslationType;
@@ -105,10 +118,18 @@ namespace Components.GamePlay.Projectiles
 			[ReadOnly] public ComponentDataFromEntity<MovableDescription> MovableDescFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<LivableHealth>      LivableHealthFromEntity;
 
+			[ReadOnly] public ComponentDataFromEntity<PhysicsCollider> ColliderFromEntity;
+
 			[ReadOnly] public ComponentDataFromEntity<DamageFrame> DamageFrameFromEntity;
 
 			[ReadOnly] public ComponentDataFromEntity<Relative<MovableDescription>> RelativeMovableFromEntity;
 			[ReadOnly] public ComponentDataFromEntity<Relative<LivableDescription>> RelativeLivableFromEntity;
+
+			[ReadOnly] public ComponentDataFromEntity<Owner> OwnerFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<Relative<LivableDescription>> LivableFromEntity;
+			
+			[ReadOnly] public ComponentDataFromEntity<LocalToWorld> LocalToWorldFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<HitShapeFollowParentTag> FollowParentFromEntity;
 
 			public EntityCommandBuffer.Concurrent Ecb;
 			public EntityArchetype                ImpulseEventArchetype;
@@ -126,7 +147,7 @@ namespace Components.GamePlay.Projectiles
 
 			private void DoImpulse(ref PointDistanceInput input, Entity source, in ProjectileDefaultExplosion explosion, DynamicBuffer<DistanceImpulseFallOf> buffer)
 			{
-				input.MaxDistance = explosion.BumpRadius;
+				/*input.MaxDistance = explosion.BumpRadius;
 
 				var rigidBodies = PhysicsWorld.Bodies;
 				var rbCount     = rigidBodies.Length;
@@ -164,22 +185,34 @@ namespace Components.GamePlay.Projectiles
 						Momentum    = 1.0f,
 						Position    = input.Position
 					});
-				}
+				}*/
 			}
 
 			private bool DoDamage(ref PointDistanceInput input, Entity source, in ProjectileDefaultExplosion explosion, DynamicBuffer<DistanceDamageFallOf> buffer)
 			{
 				input.MaxDistance = explosion.DamageRadius;
-
-				var rigidBodies = PhysicsWorld.Bodies;
-				var rbCount     = rigidBodies.Length;
+				
+				var rbCount     = HitShapeEntities.Length;
 				for (var i = 0; i != rbCount; i++)
 				{
-					var rb = rigidBodies[i];
-					if (!rb.HasCollider || rb.Entity == default || (LivableHealthFromEntity.Exists(rb.Entity) && LivableHealthFromEntity[rb.Entity].IsDead))
+					var targetEntity = HitShapeEntities[i];
+					var victim = targetEntity;
+					// fast
+					if (LivableFromEntity.TryGet(targetEntity, out var relativeLivable))
+						victim = relativeLivable.Target;
+					// slow
+					else if (OwnerFromEntity.TryGet(targetEntity, out var owner)
+					         && LivableHealthFromEntity.Exists(owner.Target))
+						victim = owner.Target;
+					
+					if (LivableHealthFromEntity.Exists(victim) && LivableHealthFromEntity[victim].IsDead)
 						continue;
 
-					var cc         = new CustomCollide(rb);
+					var ltw = LocalToWorldFromEntity[targetEntity];
+					if (FollowParentFromEntity.Exists(targetEntity))
+						ltw.Value = LocalToWorldFromEntity[victim].Value;
+
+					var cc         = new CustomCollide(ColliderFromEntity[targetEntity], ltw);
 					var collection = new CustomCollideCollection(ref cc);
 					if (!collection.CalculateDistance(input, out var closestHit))
 						continue;
@@ -202,12 +235,11 @@ namespace Components.GamePlay.Projectiles
 					Ecb.SetComponent(m_ThreadIndex, ev, new TargetDamageEvent
 					{
 						Origin      = RelativeLivableFromEntity.Exists(source) ? RelativeLivableFromEntity[source].Target : source,
-						Destination = rb.Entity,
+						Destination = victim,
 						Damage      = Mathf.FloorToInt(-damage)
 					});
 					Ecb.AddComponent(m_ThreadIndex, ev, new Translation {Value = closestHit.Position});
-
-					Debug.Log($"Damage to {rb.Entity} -> {damage:F2} to {(int) damage}");
+					Ecb.AddComponent(m_ThreadIndex, ev, new Relative<ProjectileDescription>(source));
 				}
 
 				return false;
@@ -231,8 +263,9 @@ namespace Components.GamePlay.Projectiles
 					var translation = translationArray[ent];
 					input.Position = translation.Value;
 
-					if (chunk.Has(ImpulseFallOfType))
-						DoImpulse(ref input, entityArray[ent], explosionArray[ent], impulseFallOfArray[ent]);
+					// not yet...
+					/*if (chunk.Has(ImpulseFallOfType))
+						DoImpulse(ref input, entityArray[ent], explosionArray[ent], impulseFallOfArray[ent]);*/
 
 					if (chunk.Has(DamageFallOfType))
 						DoDamage(ref input, entityArray[ent], explosionArray[ent], damageFallOfArray[ent]);

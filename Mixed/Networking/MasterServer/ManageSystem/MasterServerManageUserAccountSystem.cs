@@ -1,3 +1,4 @@
+using System;
 using EcsComponents.MasterServer;
 using P4TLB.MasterServer;
 using package.stormiumteam.shared.ecs;
@@ -89,7 +90,17 @@ namespace Patapon4TLB.Core.MasterServer
 					RouteData = request.RoutedData.ToString()
 				};
 
-				var result = await client.UserLoginAsync(rpc);
+				UserLoginResponse result = null;
+				try
+				{
+					result = await client.UserLoginAsync(rpc);
+				}
+				catch (Exception ex)
+				{
+					result = new UserLoginResponse {Error = UserLoginResponse.Types.ErrorCode.NotConnected};
+					Debug.LogError(ex);
+				}
+
 				// if the user deleted the entity, throw an error as it's not accepted when log in...
 				if (!EntityManager.Exists(item.Entity))
 				{
@@ -99,10 +110,8 @@ namespace Patapon4TLB.Core.MasterServer
 
 				request.ErrorCode = result.Error;
 				Debug.Log("error? " + request.ErrorCode);
-				if (!request.error)
+				if (m_RequestUserLoginModule.InvokeDefaultOnResult(item.Entity, new RequestUserLogin.CompletionStatus {ErrorCode = request.ErrorCode}, out var response))
 				{
-					EntityManager.RemoveComponent<RequestUserLogin>(item.Entity);
-
 					var isType = request.Type == UserLoginRequest.Types.RequestType.Player ? typeof(MasterServerIsPlayer) : typeof(MasterServerIsServer);
 					var ent    = EntityManager.CreateEntity(typeof(ConnectedMasterServerClient), isType);
 					EntityManager.SetComponentData(ent, new ConnectedMasterServerClient
@@ -113,16 +122,16 @@ namespace Patapon4TLB.Core.MasterServer
 
 						Token = new NativeString64(result.Token)
 					});
-
-					Debug.Log("Creating: " + ent + ", " + World);
+					
+					EntityManager.SetOrAddComponentData(response, new ResultUserLogin
+					{
+						Token    = new NativeString64(result.Token),
+						ClientId = result.ClientId,
+						UserId   = result.UserId
+					});
 				}
-
-				EntityManager.AddComponentData(item.Entity, new ResultUserLogin
-				{
-					Token    = new NativeString64(result.Token),
-					ClientId = result.ClientId,
-					UserId   = result.UserId
-				});
+				
+				EntityManager.RemoveComponent<RequestUserLogin>(item.Entity);
 			}
 
 			m_GetUserDataModule.Update();

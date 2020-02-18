@@ -99,7 +99,7 @@ namespace Patapon.Mixed.RhythmEngine
 				{
 					if (snapshots.Length == 0)
 						return;
-					var last = snapshots.GetLastBaseline();
+					var last = snapshots.GetLastBaselineReadOnly();
 					component.IsPaused = last.IsPaused;
 					if (component.RecoveryTick < last.RecoveryTick || component.NextBeatRecovery < last.NextBeatRecovery)
 					{

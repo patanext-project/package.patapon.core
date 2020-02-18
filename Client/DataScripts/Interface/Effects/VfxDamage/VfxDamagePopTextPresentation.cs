@@ -141,7 +141,7 @@ namespace package.patapon.core.Models.InGame.VFXDamage
 			{
 				var color = backend.eventData.Damage > 0 ? definition.healColor : definition.damageColor;
 				if (!selfRelated)
-					color = Color.Lerp(color, Color.black, 0.175f);
+					color = Color.Lerp(color, Color.black, 0.225f);
 
 				label.color = Color.white;
 				label.faceColor = color;

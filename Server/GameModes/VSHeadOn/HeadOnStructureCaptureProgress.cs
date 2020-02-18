@@ -2,6 +2,7 @@ using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GameModes.VSHeadOn;
 using Patapon.Mixed.GamePlay;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Components;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -51,6 +52,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			var tick                      = GetTick(true);
 			var teamArray                 = m_TempTeamArray;
 			var entitiesFromTeam          = GetBufferFromEntity<TeamEntityContainer>(true);
+			var healthFromEntity = GetComponentDataFromEntity<LivableHealth>(true);
 			var ltwFromEntity             = GetComponentDataFromEntity<LocalToWorld>(true);
 			var movableDescFromEntity     = GetComponentDataFromEntity<MovableDescription>(true);
 			var physicsColliderFromEntity = GetComponentDataFromEntity<PhysicsCollider>(true);
@@ -60,6 +62,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			Entities
 				.WithReadOnly(entitiesFromTeam)
 				.WithReadOnly(ltwFromEntity)
+				.WithReadOnly(healthFromEntity)
 				.WithReadOnly(movableDescFromEntity)
 				.WithReadOnly(physicsColliderFromEntity)
 				.ForEach((Entity entity, ref HeadOnStructure structure, ref CaptureAreaComponent captureArea, in LocalToWorld ltw, in PhysicsCollider collider) =>
@@ -80,7 +83,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 						structure.CaptureProgress[0] = 0;
 						structure.CaptureProgress[1] = 0;
 						
-						structure.CaptureProgress[1] = 1;
+						//structure.CaptureProgress[1] = 1;
 
 						for (var t = 0; t != teamArray.Length; t++)
 						{
@@ -88,22 +91,10 @@ namespace Patapon.Server.GameModes.VSHeadOn
 							for (int ent = 0, entCount = entities.Length; ent < entCount; ent++)
 							{
 								if (!movableDescFromEntity.Exists(entities[ent].Value)
-								    || !physicsColliderFromEntity.Exists(entities[ent].Value))
+								    || !physicsColliderFromEntity.Exists(entities[ent].Value)
+								    || healthFromEntity.TryGet(entities[ent].Value, out var health) && health.IsDead)
 									continue;
-								/*var otherTransform = ltwFromEntity[entities[ent].Value];
-								var otherCollider  = physicsColliderFromEntity[entities[ent].Value];
 
-								var input = new ColliderDistanceInput
-								{
-									Collider    = otherCollider.ColliderPtr,
-									MaxDistance = 0f,
-									Transform   = new RigidTransform(otherTransform.Value)
-								};
-
-								var collector = new ClosestHitCollector<DistanceHit>(0);
-								if (!collection.CalculateDistance(input, ref collector))
-									continue;
-*/
 								if (!aabb.Contains(ltwFromEntity[entities[ent].Value].Position))
 									continue;
 								
@@ -135,28 +126,18 @@ namespace Patapon.Server.GameModes.VSHeadOn
 							for (int ent = 0, entCount = entities.Length; ent < entCount; ent++)
 							{
 								if (!movableDescFromEntity.Exists(entities[ent].Value)
-								    || !physicsColliderFromEntity.Exists(entities[ent].Value))
+								    || !physicsColliderFromEntity.Exists(entities[ent].Value)
+								    || healthFromEntity.TryGet(entities[ent].Value, out var health) && health.IsDead)
 									continue;
-								/*var otherTransform = ltwFromEntity[entities[ent].Value];
-								var otherCollider  = physicsColliderFromEntity[entities[ent].Value];
 
-								var input = new ColliderDistanceInput
-								{
-									Collider    = otherCollider.ColliderPtr,
-									MaxDistance = 0f,
-									Transform   = new RigidTransform(otherTransform.Value)
-								};
-
-								var collector = new ClosestHitCollector<DistanceHit>(0);
-								if (!collection.CalculateDistance(input, ref collector))
-									continue;*/
-								
 								if (!aabb.Contains(ltwFromEntity[entities[ent].Value].Position))
 									continue;
 
 								playerOnPointCount[t]++;
 							}
 						}
+
+						//playerOnPointCount[1] = 8;
 
 						var initialProgress = stackalloc[] {structure.CaptureProgress[0], structure.CaptureProgress[1]};
 

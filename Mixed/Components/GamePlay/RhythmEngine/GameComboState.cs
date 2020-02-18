@@ -1,5 +1,6 @@
 using Patapon.Mixed.GamePlay.Units;
 using Revolution;
+using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Networking.Transport;
@@ -101,6 +102,16 @@ namespace Patapon.Mixed.GamePlay.RhythmEngine
 		public class Synchronize : MixedComponentSnapshotSystem<GameComboState, DefaultSetup>
 		{
 			public override ComponentType ExcludeComponent => typeof(Exclude);
+		}
+	}
+
+	public struct RhythmHeroState : IComponentData
+	{
+		public UTick LastActiveTick;
+		public UTick ActivationTick;
+
+		public class EmptySynchronize : ComponentSnapshotSystemTag<RhythmHeroState>
+		{
 		}
 	}
 }

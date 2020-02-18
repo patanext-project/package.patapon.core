@@ -28,7 +28,8 @@ namespace Rules
 						if (!playstateFromEntity.TryGet(damageEvent.Destination, out var playState))
 							return;
 						damageEvent.Damage = math.min(damageEvent.Damage + playState.Defense, 0);
-						damageEvent.Damage = (int) (damageEvent.Damage * playState.ReceiveDamagePercentage);
+						if (damageEvent.Damage != 0)
+							damageEvent.Damage = (int) (damageEvent.Damage * playState.ReceiveDamagePercentage);
 					})
 					.WithReadOnly(playstateFromEntity)
 					.Schedule(inputDeps);

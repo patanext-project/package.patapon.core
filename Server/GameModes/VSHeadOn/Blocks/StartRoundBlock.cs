@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using GmMachine;
 using GmMachine.Blocks;
 using Misc.GmMachine.Blocks;
@@ -8,9 +9,11 @@ using Patapon.Mixed.GameModes.VSHeadOn;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
 using Patapon.Mixed.Units;
+using Patapon.Mixed.Units.Statistics;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
@@ -68,7 +71,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			if (RunNext(SpawnUnitBlock))
 			{
 				SpawnUnits();
-				CounterBlock.SetTicksFromMs(500);
+				CounterBlock.SetTicksFromMs(5000);
 
 				m_QueriesContext.GetEntityQueryBuilder().ForEach((ref FlowEngineProcess process, ref RhythmEngineState state) =>
 				{
@@ -106,6 +109,10 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 		private void CreateUnits()
 		{
+			m_TeamSpawnIndex.Clear();
+			foreach (var dict in m_TeamSpawnIndex.Values)
+				dict.Clear();
+			
 			bool IsFormationValid(Entity formation, World world)
 			{
 				return world.EntityManager.GetComponentData<FormationTeam>(formation).TeamIndex != 0;
@@ -159,9 +166,11 @@ namespace Patapon.Server.GameModes.VSHeadOn
 		private void SpawnUnits()
 		{
 			var queries = Context.GetExternal<MpVersusHeadOnGameMode.QueriesContext>();
+
 			queries.GetEntityQueryBuilder().With(queries.Unit).ForEach(SpawnUnit);
 		}
 
+		private Dictionary<int, Dictionary<NativeString64, int>> m_TeamSpawnIndex = new Dictionary<int, Dictionary<NativeString64, int>>();
 		private void SpawnUnit(Entity unit)
 		{
 			var entityMgr = Context.GetExternal<WorldContext>().EntityMgr;
@@ -170,10 +179,29 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			var gmData = entityMgr.GetComponentData<VersusHeadOnUnit>(unit);
 
 			var team = gmCtx.Teams[gmData.Team];
-			Debug.Log("SPAWNPOINT ====== " + team.SpawnPoint);
+			if (!m_TeamSpawnIndex.TryGetValue(gmData.Team, out var indexMap))
+				m_TeamSpawnIndex[gmData.Team] = indexMap = new Dictionary<NativeString64, int>();
+
+			var currKit = entityMgr.GetComponentData<UnitCurrentKit>(unit).Value;
+			if (!indexMap.ContainsKey(currKit))
+				indexMap[currKit] = 0;
+			
 			if (team.SpawnPoint != default)
 			{
-				Utility.RespawnUnit(entityMgr, unit, entityMgr.GetComponentData<LocalToWorld>(team.SpawnPoint).Position);
+				Utility.RespawnUnit(entityMgr, unit, entityMgr.GetComponentData<LocalToWorld>(team.SpawnPoint).Position, true);
+
+				var offset = indexMap[currKit];
+				var tr = entityMgr.GetComponentData<Translation>(unit);
+				tr.Value.x -= (offset++) * entityMgr.GetComponentData<UnitDirection>(unit).Value * 0.5f;
+
+				indexMap[currKit] = offset;
+				
+				entityMgr.SetComponentData(unit, tr);
+				entityMgr.AddComponentData(unit, new HeadOnBlockUnitTarget
+				{
+					Enabled = true,
+					ForceStopAt = m_ModeContext.GetTick().AddMs(10_000)
+				});
 			}
 		}
 	}

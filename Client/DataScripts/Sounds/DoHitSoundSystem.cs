@@ -13,6 +13,8 @@ using UnityEngine.AddressableAssets;
 
 namespace DataScripts.Sounds
 {
+	public struct HitSoundAttachedTag : IComponentData {}
+	
 	[AlwaysSynchronizeSystem]
 	[UpdateInGroup(typeof(OrderGroup.Simulation.UpdateEntities))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
@@ -55,10 +57,8 @@ namespace DataScripts.Sounds
 			if (!m_HitSound.IsValid)
 				return default;
 
-			Entities.ForEach((Entity ent, in TargetDamageEvent damageEvent, in GameEvent gameEvent) =>
+			Entities.WithNone<HitSoundAttachedTag>().ForEach((Entity ent, in TargetDamageEvent damageEvent, in GameEvent gameEvent) =>
 			{
-				if (gameEvent.Tick != ServerTick)
-					return;
 				if (damageEvent.Damage >= 0)
 					return;
 				
@@ -78,6 +78,8 @@ namespace DataScripts.Sounds
 
 				EntityManager.SetComponentData(soundEntity, emitter);
 				EntityManager.SetComponentData(soundEntity, m_HitSound);
+
+				EntityManager.AddComponent(ent, typeof(HitSoundAttachedTag));
 			}).WithStructuralChanges().Run();
 
 			return default;

@@ -1,4 +1,9 @@
+using DataScripts.Interface.Menu.ServerList;
+using DataScripts.Interface.Menu.ServerRoom;
+using DataScripts.Interface.Menu.UIECS;
+using DataScripts.Interface.Popup;
 using Discord;
+using GameModes.VSHeadOn;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GameModes;
 using Patapon.Mixed.GameModes.VSHeadOn;
@@ -12,6 +17,8 @@ using StormiumTeam.GameBase.External.Discord;
 using StormiumTeam.GameBase.Systems;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
+using UnityEngine;
 
 namespace Patapon4TLB.GameModes
 {
@@ -29,6 +36,8 @@ namespace Patapon4TLB.GameModes
 
 		private float m_ActivityDelay;
 		
+		private Entity m_PopupEntity;
+		
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -39,6 +48,47 @@ namespace Patapon4TLB.GameModes
 			m_PlayerQuery       = GetEntityQuery(typeof(GamePlayer));
 
 			m_MapManager = World.GetOrCreateSystem<MapManager>();
+			
+			m_PopupEntity = EntityManager.CreateEntity(typeof(UIPopup), typeof(PopupDescription));
+			EntityManager.SetComponentData(m_PopupEntity, new UIPopup
+			{
+				Title   = "Menu",
+				Content = "do something instead of looking at this plain boring text..."
+			});
+
+			Entity button;
+			
+						var popupButtonPrefab = EntityManager.CreateEntity(typeof(UIButton), typeof(UIButtonText), typeof(UIGridPosition), typeof(Prefab));
+			var continueChoice = EntityManager.Instantiate(popupButtonPrefab);
+			var spectatorChoice = EntityManager.Instantiate(popupButtonPrefab);
+			var exitChoice      = EntityManager.Instantiate(popupButtonPrefab);
+
+			var i = 0;
+			
+			button = continueChoice;
+			EntityManager.SetComponentData(button, new UIButtonText {Value              = "Continue"});
+			EntityManager.AddComponentData(button, new SetEnableStatePopupAction {Value = false});
+			EntityManager.SetComponentData(button, new UIGridPosition {Value            = new int2(0, i++)});
+			EntityManager.AddComponentData(button, new UIFirstSelected());
+			EntityManager.ReplaceOwnerData(button, m_PopupEntity);
+			
+			button = spectatorChoice;
+			EntityManager.SetComponentData(button, new UIButtonText {Value              = "Spectate"});
+			EntityManager.AddComponentData(button, new SetEnableStatePopupAction {Value = false});
+			EntityManager.AddComponentData(button, new ButtonSpectate());
+			EntityManager.SetComponentData(button, new UIGridPosition {Value            = new int2(0, i++)});
+			EntityManager.AddComponentData(button, new UIFirstSelected());
+			EntityManager.ReplaceOwnerData(button, m_PopupEntity);
+
+			button = exitChoice;
+			EntityManager.SetComponentData(button, new UIButtonText {Value = "Exit"});
+			EntityManager.AddComponentData(button, new SetEnableStatePopupAction {Value = false});
+			EntityManager.AddComponentData(button, new ButtonGoBackToPreviousMenu {PreviousMenu = typeof(ServerListMenu)});
+			EntityManager.SetComponentData(button, new UIGridPosition {Value = new int2(0, i++)});
+			EntityManager.AddComponentData(button, new UIFirstSelected());
+			EntityManager.ReplaceOwnerData(button, m_PopupEntity);
+			
+			EntityManager.SetEnabled(m_PopupEntity, false);
 		}
 
 		protected override void OnUpdate()
@@ -67,6 +117,11 @@ namespace Patapon4TLB.GameModes
 			var gameMode = EntityManager.GetComponentData<MpVersusHeadOn>(m_GameModeQuery.GetSingletonEntity());
 			if (gameMode.Team0 == default || gameMode.Team1 == default)
 				return;
+			
+			if (Input.GetKeyDown(KeyCode.Escape))
+			{
+				EntityManager.SetEnabled(m_PopupEntity, !EntityManager.GetEnabled(m_PopupEntity));
+			}
 
 			for (var i = 0; i != 2; i++)
 			{

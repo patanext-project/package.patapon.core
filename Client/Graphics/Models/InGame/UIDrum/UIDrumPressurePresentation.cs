@@ -7,6 +7,7 @@ using package.stormiumteam.shared.ecs;
 using Patapon.Client.OrderSystems;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
+using Patapon.Mixed.Units;
 using Patapon4TLB.Default.Player;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
@@ -119,13 +120,16 @@ namespace package.patapon.core.Models.InGame.UIDrum
 			if (!EntityManager.TryGetComponentData(player, out GamePlayerCommand playerCommand))
 				return default;
 
-			this.TryGetCurrentCameraState(player, out var currentCameraState);
+			var cameraState = this.GetComputedCameraState();
 
-			var isWorldSpace = currentCameraState.Target != default;
+			var isWorldSpace = cameraState.StateData.Target != default;
+			if (!EntityManager.HasComponent<UnitDescription>(cameraState.StateData.Target))
+				isWorldSpace = false;
+			
 			var canvasRect   = m_Canvas.pixelRect;
 			if (isWorldSpace && cameraEntity != default)
 			{
-				var translation = EntityManager.GetComponentData<Translation>(currentCameraState.Target);
+				var translation = EntityManager.GetComponentData<Translation>(cameraState.StateData.Target);
 				m_Canvas.renderMode           = RenderMode.WorldSpace;
 				m_Canvas.transform.position   = new Vector3(translation.Value.x, translation.Value.y + 25 * 0.05f, cameraPosition.z + 10);
 				m_Canvas.transform.localScale = Vector3.one * 0.05f;
@@ -146,8 +150,8 @@ namespace package.patapon.core.Models.InGame.UIDrum
 			var pixelRange     = new float2(canvasRect.width, canvasRect.height);
 
 			Entity engine = default;
-			if (this.TryGetCurrentCameraState(player, out var camState))
-				engine = PlayerComponentFinder.GetComponentFromPlayer<RhythmEngineDescription>(EntityManager, m_EngineQuery, camState.Target, player);
+			if (cameraState.StateData.Target != default)
+				engine = PlayerComponentFinder.GetComponentFromPlayer<RhythmEngineDescription>(EntityManager, m_EngineQuery, cameraState.StateData.Target, player);
 			else
 				engine = PlayerComponentFinder.FindPlayerComponent(m_EngineQuery, player);
 
@@ -159,8 +163,15 @@ namespace package.patapon.core.Models.InGame.UIDrum
 			var state = EntityManager.GetComponentData<RhythmEngineState>(engine);
 
 			if (state.IsPaused || process.GetFlowBeat(settings.BeatInterval) < 0)
+			{
+				// destroy everything!
+				Entities.ForEach((UIDrumPressureBackend backend) =>
+				{
+					backend.Return(true, true);
+				}).WithStructuralChanges().Run();
 				return default;
-				
+			}
+
 			var key = 1;
 			foreach (var ac in playerCommand.Base.GetRhythmActions())
 			{

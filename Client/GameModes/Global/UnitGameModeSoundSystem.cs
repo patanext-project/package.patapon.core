@@ -63,8 +63,8 @@ namespace GameModes.Global
 			                            .Folder("Sounds")
 			                            .Folder("InGame")
 			                            .Folder("hero");
-			m_AsyncOp.Add(Addressables.LoadAssetAsync<AudioClip>(address.GetFile("uh_def_death.wav")), new OperationHandleData {type  = TargetAudio.Death});
-			m_AsyncOp.Add(Addressables.LoadAssetAsync<AudioClip>(address.GetFile("uh_def_reborn.wav")), new OperationHandleData {type = TargetAudio.Reborn});
+			m_AsyncOp.Add(Addressables.LoadAssetAsync<AudioClip>(address.GetFile("uh_def_death.ogg")), new OperationHandleData {type  = TargetAudio.Death});
+			m_AsyncOp.Add(Addressables.LoadAssetAsync<AudioClip>(address.GetFile("uh_def_reborn.ogg")), new OperationHandleData {type = TargetAudio.Reborn});
 		}
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)

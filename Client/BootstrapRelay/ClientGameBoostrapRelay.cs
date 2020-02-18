@@ -1,5 +1,6 @@
 using Bootstraps.Full;
 using DataScripts.Interface.Menu;
+using DataScripts.Interface.Menu.TemporaryMenu;
 using StormiumTeam.GameBase;
 using Unity.NetCode;
 
@@ -17,8 +18,10 @@ namespace BootstrapRelay
 
 		protected override void OnStartRunning()
 		{
+			/*World.GetOrCreateSystem<ClientMenuSystem>()
+			     .SetMenu<ConnectionMenu>();*/
 			World.GetOrCreateSystem<ClientMenuSystem>()
-			     .SetMenu<ConnectionMenu>();
+			     .SetMenu<TempMenu>();
 		}
 
 		protected override void OnUpdate()

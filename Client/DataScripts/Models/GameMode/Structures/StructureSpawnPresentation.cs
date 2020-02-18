@@ -81,8 +81,8 @@ namespace DataScripts.Models.GameMode.Structures
 
 		protected override void PrepareValues()
 		{
-			var self = this.GetFirstSelfGamePlayer();
-			if (self != default && this.TryGetCurrentCameraState(self, out var cameraState))
+			var cameraState = this.GetComputedCameraState().StateData;
+			if (cameraState.Target != default)
 			{
 				m_SpectatedEntity = cameraState.Target;
 			}

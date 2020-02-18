@@ -173,6 +173,9 @@ namespace Patapon.Mixed.Systems
 									: rhythm.CustomEndTime;
 
 								var predictedCombo = predictedComboFromEntity[entity];
+
+								// copy state from server...
+								//predictedCombo.State = comboState;
 								predictedCombo.State.Update(rhythm, true);
 
 								predictedComboFromEntity[entity] = predictedCombo;

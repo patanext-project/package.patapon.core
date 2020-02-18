@@ -42,7 +42,7 @@ namespace Systems.GamePlay
 			Entities
 				.ForEach((Entity entity, int nativeThreadIndex, ref DefaultPartyAbility partyAbility, in AbilityState controller, in AbilityEngineSet engineSet, in Owner owner) =>
 				{
-					if (controller.Phase == EAbilityPhase.None)
+					if (controller.Phase != EAbilityPhase.Active)
 					{
 						partyAbility.WasActive = false;
 						partyAbility.Progression.Reset();
@@ -58,7 +58,7 @@ namespace Systems.GamePlay
 					{
 						var gainHealth = 4;
 						if (seekingStateFromEntity.TryGet(owner.Target, out var seeking) && seeking.Enemy == default)
-							gainHealth += 4;
+							gainHealth += 6;
 
 						var position = impl.LocalToWorldFromEntity[owner.Target].Position;
 						var evEnt    = ecb.CreateEntity(evArchetype);

@@ -1,66 +1,81 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &4545673641209777730
-GameObject:
+--- !u!1001 &698664544919037929
+PrefabInstance:
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3026738796608951646}
-  - component: {fileID: 5020114696208675481}
-  - component: {fileID: 8082499866207785697}
-  m_Layer: 0
-  m_Name: CaptureTower
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &3026738796608951646
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4545673641209777730}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5020114696208675481
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4545673641209777730}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bf10cdea1344482e91a4f2b58506b77, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &8082499866207785697
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4545673641209777730}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d6b81464aa5043cdaccd5babf0f2baf3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  poleRootLeft: {fileID: 0}
-  poleRootRight: {fileID: 0}
-  renderersForTeamColor:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  animators: []
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2346196190673091649, guid: f5cd79708693fec4ba7b56632047d6a9,
+        type: 3}
+      propertyPath: onCaptureSound
+      value: 
+      objectReference: {fileID: 8300000, guid: b914a83cfb5e8f24a983064f6f253698, type: 3}
+    - target: {fileID: 2346196190673091649, guid: f5cd79708693fec4ba7b56632047d6a9,
+        type: 3}
+      propertyPath: onCaptureSoundEmitter.spatialBlend
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3026738796608951646, guid: f5cd79708693fec4ba7b56632047d6a9,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3026738796608951646, guid: f5cd79708693fec4ba7b56632047d6a9,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3026738796608951646, guid: f5cd79708693fec4ba7b56632047d6a9,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3026738796608951646, guid: f5cd79708693fec4ba7b56632047d6a9,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3026738796608951646, guid: f5cd79708693fec4ba7b56632047d6a9,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3026738796608951646, guid: f5cd79708693fec4ba7b56632047d6a9,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3026738796608951646, guid: f5cd79708693fec4ba7b56632047d6a9,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3026738796608951646, guid: f5cd79708693fec4ba7b56632047d6a9,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3026738796608951646, guid: f5cd79708693fec4ba7b56632047d6a9,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3026738796608951646, guid: f5cd79708693fec4ba7b56632047d6a9,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3026738796608951646, guid: f5cd79708693fec4ba7b56632047d6a9,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4545673641209777730, guid: f5cd79708693fec4ba7b56632047d6a9,
+        type: 3}
+      propertyPath: m_Name
+      value: CaptureTower
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f5cd79708693fec4ba7b56632047d6a9, type: 3}

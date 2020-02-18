@@ -1,4 +1,5 @@
 using System;
+using DataScripts.Interface.Menu.TemporaryMenu;
 using DataScripts.Interface.Menu.UIECS;
 using DataScripts.Interface.Popup;
 using DefaultNamespace;
@@ -16,6 +17,7 @@ namespace DataScripts.Interface.Menu.ServerList
 	public class ServerListMenuPresentation : RuntimeAssetPresentation<ServerListMenuPresentation>
 	{
 		public RectTransform selectionRoot;
+		public ServerListGoBackButtonPresentation goBackButton;
 	}
 
 	public class ServerListMenuBackend : RuntimeAssetBackend<ServerListMenuPresentation>
@@ -37,20 +39,6 @@ namespace DataScripts.Interface.Menu.ServerList
 		public void OnMenuSet(TargetAnimation current)
 		{
 			EntityManager.CreateEntity(typeof(IsActive));
-
-			/*var popup = EntityManager.CreateEntity(typeof(PopupDescription), typeof(UIPopup));
-			EntityManager.SetComponentData(popup, new UIPopup
-			{
-				Content = "Test lololol",
-				Title   = "Yes yes yes!"
-			});
-			var button = EntityManager.CreateEntity(typeof(UIButton), typeof(UIButtonText), typeof(SetEnableStatePopupAction), typeof(UIFirstSelected));
-			EntityManager.SetComponentData(button, new UIButtonText {Value = "Test Button xd"});
-			EntityManager.ReplaceOwnerData(button, popup);
-			
-			button = EntityManager.CreateEntity(typeof(UIButton), typeof(UIButtonText), typeof(SetEnableStatePopupAction));
-			EntityManager.SetComponentData(button, new UIButtonText {Value = "Test second button xd"});
-			EntityManager.ReplaceOwnerData(button, popup);*/
 		}
 
 		public void OnMenuUnset(TargetAnimation current)
@@ -104,7 +92,13 @@ namespace DataScripts.Interface.Menu.ServerList
 
 		protected override void Render(ServerListMenuPresentation definition)
 		{
-			
+			if (definition.goBackButton.HasPendingClickEvent)
+			{
+				definition.goBackButton.HasPendingClickEvent = false;
+
+				World.GetExistingSystem<ClientMenuSystem>()
+				     .SetMenu<TempMenu>();
+			}
 		}
 
 		protected override void ClearValues()

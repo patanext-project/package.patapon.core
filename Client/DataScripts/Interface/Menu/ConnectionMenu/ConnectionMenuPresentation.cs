@@ -2,7 +2,9 @@ using System;
 using DataScripts.Interface.Menu.ServerList;
 using DefaultNamespace;
 using EcsComponents.MasterServer;
+using P4TLB.MasterServer;
 using package.patapon.core.Animation;
+using package.stormiumteam.shared.ecs;
 using Patapon.Client.PoolingSystems;
 using Patapon4TLB.Core;
 using Patapon4TLB.Core.MasterServer;
@@ -18,7 +20,8 @@ namespace DataScripts.Interface.Menu
 {
 	public class ConnectionMenuPresentation : RuntimeAssetPresentation<ConnectionMenuPresentation>
 	{
-		public TextMeshProUGUI connectionLabel;
+		public TextMeshProUGUI discordConnection;
+		public TextMeshProUGUI masterServerConnection;
 	}
 
 	public class ConnectionMenuBackend : RuntimeAssetBackend<ConnectionMenuPresentation>
@@ -94,6 +97,7 @@ namespace DataScripts.Interface.Menu
 		private EntityQuery                        m_ConnectionOrPendingQuery;
 		private EntityQuery                        m_CompletionQuery;
 
+		public bool HasDiscordUser;
 		public double NextMenuAt;
 
 		protected override void OnCreate()
@@ -112,12 +116,16 @@ namespace DataScripts.Interface.Menu
 
 		protected override void PrepareValues()
 		{
+			HasDiscordUser = false;
+			
 			if (!HasAnyDefinition)
 				return;
 			if (!(BaseDiscordSystem.Instance is P4DiscordSystem discordSystem))
 				return;
 			if (!discordSystem.HasSingleton<DiscordLocalUser>())
 				return;
+			
+			HasDiscordUser = true;
 
 			if (!m_ConnectSystem.IsCurrentlyRequesting && m_ConnectionOrPendingQuery.CalculateEntityCount() == 0)
 			{
@@ -128,21 +136,62 @@ namespace DataScripts.Interface.Menu
 			IsMasterServerConnecting = !m_ConnectionOrPendingQuery.IsEmptyIgnoreFilter;
 			IsConnected              = HasSingleton<ConnectedMasterServerClient>();
 			if (IsConnected && NextMenuAt <= 0)
-				NextMenuAt = Time.ElapsedTime + 0.5;
+				NextMenuAt = Time.ElapsedTime + 0.1;
 		}
 
 		protected override void Render(ConnectionMenuPresentation definition)
 		{
 			if (IsConnected)
-				definition.connectionLabel.text = "Connected";
+			{
+				definition.discordConnection.text = "Discord OK";
+				definition.masterServerConnection.text = "MasterServer OK";
+			}
 			else
 			{
+				definition.discordConnection.text = "Discord SDK found no Discord Client running...";
+				definition.masterServerConnection.text = "MasterServer error...";
+
 				if (IsDiscordConnecting)
-					definition.connectionLabel.text = "Connecting 1/2 ...";
+				{
+					definition.discordConnection.text = "Discord CONNECTING";
+					definition.masterServerConnection.text = "MasterServer ---";
+				}
 				else if (IsMasterServerConnecting)
-					definition.connectionLabel.text = "Connecting 2/2 ...";
+				{
+					definition.discordConnection.text = "Discord OK";
+					definition.masterServerConnection.text = "MasterServer CONNECTING";
+
+					if (m_ConnectionOrPendingQuery.CalculateEntityCount() == 1)
+					{
+						var entity = m_ConnectionOrPendingQuery.GetSingletonEntity();
+						if (EntityManager.TryGetComponentData(entity, out RequestUserLogin.CompletionStatus cs) && cs.error)
+						{
+							switch (cs.ErrorCode)
+							{
+								case UserLoginResponse.Types.ErrorCode.Success:
+									break;
+								case UserLoginResponse.Types.ErrorCode.Invalid:
+									definition.masterServerConnection.text = "MasterServer INVALID USER";
+									break;
+								case UserLoginResponse.Types.ErrorCode.AlreadyConnected:
+									definition.masterServerConnection.text = "MasterServer ALREADY CONNECTED";
+									break;
+								case UserLoginResponse.Types.ErrorCode.ConnectionAlreadyPending:
+									definition.masterServerConnection.text = "MasterServer CONNECTION ALREADY PENDING";
+									break;
+								case UserLoginResponse.Types.ErrorCode.NotConnected:
+									definition.masterServerConnection.text = "Couldn't connect to MasterServer";
+									break;
+								default:
+									throw new ArgumentOutOfRangeException();
+							}
+						}
+					}
+				}
 				else
-					definition.connectionLabel.text = string.Empty;
+				{
+					definition.masterServerConnection.text = "MasterServer Problem while connecting.";
+				}
 			}
 		}
 

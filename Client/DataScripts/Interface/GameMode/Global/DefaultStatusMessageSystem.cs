@@ -58,6 +58,7 @@ namespace DataScripts.Interface.GameMode.Global
 			m_AsyncOp.Add(Addressables.LoadAssetAsync<AudioClip>(builder.GetFile("upset.wav")), new Handle("upset"));
 			m_AsyncOp.Add(Addressables.LoadAssetAsync<AudioClip>(builder.GetFile("win.wav")), new Handle("win"));
 			m_AsyncOp.Add(Addressables.LoadAssetAsync<AudioClip>(builder.GetFile("loose.wav")), new Handle("loose"));
+			m_AsyncOp.Add(Addressables.LoadAssetAsync<AudioClip>(builder.GetFile("capturetower_captured.wav")), new Handle("tower_captured"));
 
 			World.GetOrCreateSystem<GameModeStatusOnUpdate>().OnModifyStatus += (ref GameModeHudSettings hud, Entity spectated) =>
 			{

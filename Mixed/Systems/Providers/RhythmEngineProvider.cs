@@ -25,6 +25,7 @@ namespace Patapon.Mixed.RhythmEngine
 				ComponentType.ReadWrite<GameCommandState>(),
 				ComponentType.ReadWrite<GameComboState>(),
 				ComponentType.ReadWrite<RhythmCurrentCommand>(),
+				ComponentType.ReadWrite<RhythmHeroState>(), 
 				typeof(PlayEntityTag)
 			};
 		}

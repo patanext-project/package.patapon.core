@@ -4,30 +4,20 @@ using DataScripts.Models.Equipments;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Graphics.Animation.Units;
 using Patapon.Client.Systems;
+using Patapon.Mixed.GamePlay.Abilities;
 using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace Components.Archetypes
 {
-	public class ArchetypeUberHeroVisualPresentation : UnitVisualPresentation
+	public class ArchetypeUberHeroVisualPresentation : UnitVisualPresentation, IEquipmentRoot
 	{
-		[Serializable]
-		public class Root
-		{
-			public Transform transform;
-
-			[NonSerialized]
-			public UnitEquipmentBackend UnitEquipmentBackend;
-
-			[NonSerialized]
-			public NativeString64 EquipmentId;
-		}
-
 		public enum RootType
 		{
 			Mask,
@@ -36,15 +26,18 @@ namespace Components.Archetypes
 			Hair
 		}
 		
-		public Root maskRoot;
-		public Root leftWeaponRoot;
-		public Root rightWeaponRoot;
-		public Root hairRoot;
+		public EquipmentRootData maskRoot;
+		public EquipmentRootData leftWeaponRoot;
+		public EquipmentRootData rightWeaponRoot;
+		public EquipmentRootData hairRoot;
 
 		[NonSerialized]
-		public Dictionary<RootType, Root> RootHashMap;
+		public Dictionary<RootType, EquipmentRootData> RootHashMap;
 
-		public Root GetRoot(RootType rootType)
+		[NonSerialized]
+		public Dictionary<Transform, EquipmentRootData> TransformToRootMap;
+
+		public EquipmentRootData GetRoot(RootType rootType)
 		{
 			switch (rootType)
 			{
@@ -59,6 +52,11 @@ namespace Components.Archetypes
 			}
 
 			throw new NullReferenceException("No transform found with rootType: " + rootType);
+		}
+
+		public EquipmentRootData GetRoot(Transform fromTransform)
+		{
+			return TransformToRootMap[fromTransform];
 		}
 
 		private void CreateEquipmentBackend()
@@ -80,13 +78,18 @@ namespace Components.Archetypes
 		
 		private void OnEnable()
 		{
-			RootHashMap = new Dictionary<RootType, Root>(3)
+			RootHashMap = new Dictionary<RootType, EquipmentRootData>(3)
 			{
 				[RootType.Mask]        = maskRoot,
 				[RootType.LeftEquipment]  = leftWeaponRoot,
 				[RootType.RightEquipment] = rightWeaponRoot
 			};
-			
+			TransformToRootMap = new Dictionary<Transform, EquipmentRootData>(RootHashMap.Count);
+			foreach (var kvp in RootHashMap)
+			{
+				TransformToRootMap[kvp.Value.transform] = kvp.Value;
+			}
+
 			// create backend
 			CreateEquipmentBackend();
 		}
@@ -101,11 +104,15 @@ namespace Components.Archetypes
 				var root = kvp.Value;
 				root.UnitEquipmentBackend.SetTarget(Backend.DstEntityManager, Backend.DstEntity);
 			}
+			
+			base.OnBackendSet();
 		}
 
 		public override void UpdateData()
 		{
 		}
+
+		private float m_HeroModeScaling;
 		
 		[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation))]
 		public class LocalSystem : GameBaseSystem
@@ -153,19 +160,38 @@ namespace Components.Archetypes
 						if (!root.EquipmentId.Equals(equipmentTarget) || !root.UnitEquipmentBackend.HasIncomingPresentation)
 						{
 							root.EquipmentId = equipmentTarget;
+							
+							root.UnitEquipmentBackend.ReturnPresentation();
 							if (m_EquipmentManager.TryGetPool(equipmentTarget.ToString(), out var pool))
+							{
 								root.UnitEquipmentBackend.SetPresentationFromPool(pool);
+							}
 						}
 					}
 
-					if (EntityManager.TryGetComponentData(backend.DstEntity, out LivableHealth health))
+					var scale = 1f;
+					if (EntityManager.TryGetComponentData(backend.DstEntity, out LivableHealth health) && health.IsDead)
 					{
-						var scale = 1;
-						if (health.IsDead)
-							scale = 0;
-
-						presentation.transform.localScale = Vector3.one * scale;
+						scale = 0;
 					}
+
+					ref var heroModeScaling = ref presentation.m_HeroModeScaling;
+					if (EntityManager.TryGetComponentData(backend.DstEntity, out OwnerActiveAbility ownerAbility)
+					    && EntityManager.TryGetComponentData(ownerAbility.Active, out AbilityActivation activation)
+					    && activation.Type == EActivationType.HeroMode)
+					{
+						heroModeScaling = 1.325f;
+					}
+					else
+					{
+						heroModeScaling = math.lerp(heroModeScaling, 1, Time.DeltaTime * 1.75f);
+						heroModeScaling = math.lerp(heroModeScaling, 1, Time.DeltaTime * 1.25f);
+						heroModeScaling = math.clamp(heroModeScaling, 1, 1.325f);
+					}
+
+					presentation.transform.localScale = Vector3.one * (scale * presentation.m_HeroModeScaling);
+					
+					presentation.OnSystemUpdate();
 				});
 			}
 		}

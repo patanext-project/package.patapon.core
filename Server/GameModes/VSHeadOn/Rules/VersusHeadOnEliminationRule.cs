@@ -1,4 +1,6 @@
 using Patapon.Mixed.GameModes.VSHeadOn;
+using Patapon.Mixed.GamePlay.RhythmEngine;
+using Patapon.Mixed.RhythmEngine;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Components;
@@ -27,6 +29,10 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			var rule              = GetSingleton<VersusHeadOnEliminationRule>();
 			var tick              = ServerTick;
 			var eliminationEvents = World.GetExistingSystem<MpVersusHeadOnGameMode>().UnitEliminationEvents;
+
+			var rhythmRelativeFromEntity = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>();
+			var comboStateFromEntity     = GetComponentDataFromEntity<GameComboState>();
+
 			Entities.ForEach((Entity entity, ref LivableHealth health, ref VersusHeadOnUnit gmUnit, in DynamicBuffer<HealthModifyingHistory> healthHistory) =>
 			{
 				if (!health.ShouldBeDead() || health.IsDead)
@@ -51,6 +57,16 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					Instigator = lastInstigator,
 					Entity     = entity
 				});
+
+				if (rhythmRelativeFromEntity.Exists(entity))
+				{
+					var rhythmRelative = rhythmRelativeFromEntity[entity];
+					var comboState     = comboStateFromEntity[rhythmRelative.Target];
+					comboState.IsFever = false;
+					comboState.Chain   = 0;
+
+					comboStateFromEntity[rhythmRelative.Target] = comboState;
+				}
 			}).Run();
 
 			return default;

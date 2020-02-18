@@ -11,7 +11,7 @@ namespace Modules
 		private NativeHashMap<Entity, ValueAbility> m_OwnerToAbilityMap;
 
 		public          EntityQuery      Query;
-		public override ModuleUpdateType UpdateType => ModuleUpdateType.Job;
+		public override ModuleUpdateType UpdateType => ModuleUpdateType.All;
 
 		protected override void OnEnable()
 		{
@@ -23,15 +23,30 @@ namespace Modules
 			if (Query == null)
 				return;
 
-			jobHandle = new ClearJob
+			if (CurrentUpdateType == ModuleUpdateType.Job)
 			{
-				HashMap        = m_OwnerToAbilityMap,
-				TargetCapacity = Query.CalculateEntityCount() + 32
-			}.Schedule(jobHandle);
-			jobHandle = new SearchJob
+				jobHandle = new ClearJob
+				{
+					HashMap        = m_OwnerToAbilityMap,
+					TargetCapacity = Query.CalculateEntityCount() + 32
+				}.Schedule(jobHandle);
+				jobHandle = new SearchJob
+				{
+					OwnerToAbilityMap = m_OwnerToAbilityMap.AsParallelWriter()
+				}.Schedule(Query, jobHandle);
+			}
+			else
 			{
-				OwnerToAbilityMap = m_OwnerToAbilityMap.AsParallelWriter()
-			}.Schedule(Query, jobHandle);
+				new ClearJob
+				{
+					HashMap        = m_OwnerToAbilityMap,
+					TargetCapacity = Query.CalculateEntityCount() + 32
+				}.Run();
+				new SearchJob
+				{
+					OwnerToAbilityMap = m_OwnerToAbilityMap.AsParallelWriter()
+				}.Run(Query);
+			}
 		}
 
 		protected override void OnDisable()

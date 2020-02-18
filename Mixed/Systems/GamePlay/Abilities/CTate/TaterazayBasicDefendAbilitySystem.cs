@@ -54,7 +54,15 @@ namespace Systems.GamePlay.CTate
 
 					if (isPredicted)
 					{
-						velocity.Value.x                 = AbilityUtility.GetTargetVelocityX(targetPosition, unitPosition, velocity.Value, playState, 5, tick);
+						velocity.Value.x = AbilityUtility.GetTargetVelocityX(new AbilityUtility.GetTargetVelocityParameters
+						{
+							TargetPosition   = targetPosition,
+							PreviousPosition = unitPosition,
+							PreviousVelocity = velocity.Value,
+							PlayState        = playState,
+							Acceleration     = 5,
+							Tick             = tick
+						});
 						controller.ControlOverVelocity.x = true;
 					}
 

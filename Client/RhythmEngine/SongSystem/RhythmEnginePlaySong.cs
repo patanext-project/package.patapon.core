@@ -1,11 +1,16 @@
 using Misc;
 using Misc.Extensions;
+using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
+using Patapon.Mixed.GamePlay.Abilities;
 using Patapon.Mixed.GamePlay.RhythmEngine;
 using Patapon.Mixed.GamePlay.Units;
 using Patapon.Mixed.RhythmEngine;
 using Patapon.Mixed.RhythmEngine.Flow;
+using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
+using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
@@ -22,8 +27,11 @@ namespace Patapon.Client.RhythmEngine
 
 		private AudioSource[] m_BgmSources;
 		private AudioSource   m_CommandSource;
+		private AudioSource   m_FeverSource;
 		private AudioSource   m_CommandVfxSource;
 		private EntityQuery   m_EngineQuery;
+
+		private AudioClip[] m_HeroModeChainClips;
 
 		private AudioClip m_FeverClip;
 		private AudioClip m_FeverLostClip;
@@ -55,15 +63,18 @@ namespace Patapon.Client.RhythmEngine
 			m_CommandSource      = CreateAudioSource("Command", 1);
 			m_CommandSource.loop = false;
 
+			m_FeverSource      = CreateAudioSource("Fever", 1);
+			m_FeverSource.loop = false;
+
 			m_CommandVfxSource      = CreateAudioSource("Vfx Command", 1);
 			m_CommandVfxSource.loop = false;
 
-			m_SongSystem                 = World.GetOrCreateSystem<SongSystem>();
+			m_SongSystem = World.GetOrCreateSystem<SongSystem>();
 
 			RegisterAsyncOperations();
 		}
 
-		protected override void OnUpdate() 
+		protected override void OnUpdate()
 		{
 			UpdateAsyncOperations();
 
@@ -90,13 +101,20 @@ namespace Patapon.Client.RhythmEngine
 				return;
 
 			Entity engine;
-			if (this.TryGetCurrentCameraState(player, out var camState))
-				engine = PlayerComponentFinder.GetComponentFromPlayer<RhythmEngineDescription>(EntityManager, m_EngineQuery, camState.Target, player);
+			
+			var cameraState = this.GetComputedCameraState().StateData;
+			if (cameraState.Target != default)
+				engine = PlayerComponentFinder.GetComponentFromPlayer<RhythmEngineDescription>(EntityManager, m_EngineQuery, cameraState.Target, player);
 			else
 				engine = PlayerComponentFinder.FindPlayerComponent(m_EngineQuery, player);
 
 			if (engine == default)
+			{
+				BgmFeverChain = 0;
+				HeroModeSequence = 0;
+				IsCommand = false;
 				return;
+			}
 
 			var currentCommand     = EntityManager.GetComponentData<RhythmCurrentCommand>(engine);
 			var serverCommandState = EntityManager.GetComponentData<GameCommandState>(engine);
@@ -133,23 +151,87 @@ namespace Patapon.Client.RhythmEngine
 
 			if (IsNewCommand)
 			{
-				Debug.Log("New command!");
-				
 				if (ComboState.IsFever)
 					BgmFeverChain++;
 				else
 					BgmFeverChain = 0;
+
+				// if it's not in hero mode it will be unvalidated later...
+				HeroModeSequence++;
 			}
 
 			IsCommand = tmp;
 			EntityManager.TryGetComponentData(currentCommand.CommandTarget, out TargetCommandDefinition);
+
+			if (EntityManager.HasComponent<RhythmHeroState>(engine))
+			{
+				var heroModeActive = false;
+				var allocResponse  = UnsafeAllocation.From(ref heroModeActive);
+				var allocSource    = UnsafeAllocation.From(ref HeroModeSourceUnit);
+
+				new FindActiveHeroMode
+				{
+					TargetEngine       = engine,
+					ReturnAlloc        = allocResponse,
+					SourceUnitAlloc    = allocSource,
+					SourceAbilityAlloc = UnsafeAllocation.From<Entity>(ref HeroModeSourceAbility),
+
+					ActivationFromEntity = GetComponentDataFromEntity<AbilityActivation>(true),
+					StateFromEntity      = GetComponentDataFromEntity<AbilityState>(true)
+				}.Run(this);
+
+				if (heroModeActive)
+				{
+					HeroModeSequence = math.max(0, HeroModeSequence);
+				}
+				else
+					HeroModeSequence = -1;
+			}
+			else
+				HeroModeSequence = -1;
 		}
 
 		private void ClearValues()
 		{
-			HasEngineTarget = false;
-			IsNewBeat       = false;
-			IsNewCommand    = false;
+			HasEngineTarget  = false;
+			IsNewBeat        = false;
+			IsNewCommand     = false;
+		}
+
+		[RequireComponentTag(typeof(UnitDescription))]
+		[BurstCompile]
+		private struct FindActiveHeroMode : IJobForEachWithEntity_EBC<ActionContainer, Relative<RhythmEngineDescription>>
+		{
+			public Entity                 TargetEngine;
+			public UnsafeAllocation<bool> ReturnAlloc;
+			public UnsafeAllocation<Entity> SourceUnitAlloc;
+			public UnsafeAllocation<Entity> SourceAbilityAlloc;
+
+			[ReadOnly] public ComponentDataFromEntity<AbilityActivation> ActivationFromEntity;
+			[ReadOnly] public ComponentDataFromEntity<AbilityState> StateFromEntity;
+
+			public void Execute(Entity ent, int entIndex, DynamicBuffer<ActionContainer> actionContainer, ref Relative<RhythmEngineDescription> rhythmRelative)
+			{
+				// this is pretty fast...
+				if (rhythmRelative.Target != TargetEngine)
+					return;
+
+				var length = actionContainer.Length;
+				for (var i = 0; i != length; i++)
+				{
+					if (!ActivationFromEntity.TryGet(actionContainer[i].Target, out var activation) || activation.Type != EActivationType.HeroMode)
+						continue;
+
+					var state = StateFromEntity[actionContainer[i].Target];
+					if ((state.Phase & (EAbilityPhase.WillBeActive | EAbilityPhase.HeroActivation | EAbilityPhase.ActiveOrChaining)) != 0)
+					{
+						ReturnAlloc.Value = true;
+						SourceUnitAlloc.Value = ent;
+						SourceAbilityAlloc.Value = actionContainer[i].Target;
+						return;
+					}
+				}
+			}
 		}
 	}
 }

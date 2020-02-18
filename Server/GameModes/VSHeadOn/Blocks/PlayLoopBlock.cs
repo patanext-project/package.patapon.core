@@ -1,9 +1,13 @@
+using GameModes.VSHeadOn;
 using GmMachine;
 using GmMachine.Blocks;
 using Misc.GmMachine.Contexts;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GameModes;
 using Patapon.Mixed.GameModes.VSHeadOn;
+using Patapon.Mixed.RhythmEngine;
+using Patapon.Mixed.Units;
+using Revolution;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Components;
@@ -11,6 +15,7 @@ using StormiumTeam.Shared;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
 
@@ -37,10 +42,24 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 		protected override bool OnRun()
 		{
+			var entityMgr = m_WorldContext.EntityMgr;
+			
+			if (Input.GetKeyDown(KeyCode.H))
+			{
+				m_Queries.GetEntityQueryBuilder().With(m_Queries.Unit).ForEach(e =>
+				{
+					var ev = entityMgr.CreateEntity(typeof(GameEvent), typeof(TargetDamageEvent), typeof(Translation), typeof(GhostEntity));
+					entityMgr.SetComponentData(ev, new TargetDamageEvent
+					{
+						Destination = e,
+						Damage      = -25
+					});
+					entityMgr.SetComponentData(ev, new Translation {Value = entityMgr.GetComponentData<Translation>(e).Value + new float3(0, 1, 0)});
+				});
+			}
+			
 			m_GameEventRuleSystemGroup.Process();
 			m_VersusHeadOnRuleGroup.Process();
-
-			var entityMgr = m_WorldContext.EntityMgr;
 
 			ref var gameModeData = ref m_HeadOnModeContext.Data;
 			ref var hud = ref m_HeadOnModeContext.HudSettings;
@@ -103,11 +122,30 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					if (ev.InstigatorTeam == m_HeadOnModeContext.Teams[t].Target)
 						instigatorTeam = t;
 				}
-				
+
 				if (instigatorTeam >= 0 && instigatorTeam <= 1)
 				{
 					ref var points = ref gameModeData.GetPoints(instigatorTeam);
 					points += ev.Score;
+				}
+
+				// Destroy cannons
+				var children = entityMgr.GetBuffer<OwnerChild>(ev.Entity).ToNativeArray(Allocator.Temp);
+				foreach (var oc in children)
+				{
+					if (!entityMgr.TryGetComponentData(oc.Child, out HeadOnCannon cannon))
+						continue;
+
+					cannon.Active        = false;
+
+					var healthEvent = entityMgr.CreateEntity(typeof(ModifyHealthEvent));
+					entityMgr.SetComponentData(healthEvent, new ModifyHealthEvent(ModifyHealthType.SetNone, 0, oc.Child));
+					entityMgr.SetOrAddComponentData(oc.Child, new LivableHealth
+					{
+						IsDead = true
+					});
+
+					entityMgr.SetComponentData(oc.Child, cannon);
 				}
 			}
 
@@ -145,6 +183,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					                                                                       10;
 
 				// Get structure and set health...
+				var value = m_HeadOnModeContext.Teams[team].AveragePower;
 				var healthContainer = entityMgr.GetBuffer<HealthContainer>(captureEvents[i].Source);
 				for (var h = 0; h != healthContainer.Length; h++)
 				{
@@ -152,7 +191,6 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					if (!entityMgr.HasComponent<DefaultHealthData>(target))
 						continue;
 
-					var value = m_HeadOnModeContext.Teams[team].AveragePower;
 					entityMgr.SetComponentData(target, new DefaultHealthData
 					{
 						Value = (int) (math.max(value, 1) * structure.HealthModifier),
@@ -166,6 +204,41 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				{
 					IsDead = false
 				});
+
+				var children = entityMgr.GetBuffer<OwnerChild>(captureEvents[i].Source).ToNativeArray(Allocator.Temp);
+				foreach (var oc in children)
+				{
+					if (!entityMgr.TryGetComponentData(oc.Child, out HeadOnCannon cannon))
+						continue;
+
+					cannon.Active        = true;
+					cannon.NextShootTick = UTick.AddMs(m_HeadOnModeContext.GetTick(), 3000);
+
+					healthEvent = entityMgr.CreateEntity(typeof(ModifyHealthEvent));
+					entityMgr.SetComponentData(healthEvent, new ModifyHealthEvent(ModifyHealthType.SetMax, 0, oc.Child));
+					
+					healthContainer = entityMgr.GetBuffer<HealthContainer>(oc.Child);
+					for (var h = 0; h != healthContainer.Length; h++)
+					{
+						var target = healthContainer[h].Target;
+						if (!entityMgr.HasComponent<DefaultHealthData>(target))
+							continue;
+
+						entityMgr.SetComponentData(target, new DefaultHealthData
+						{
+							Value = (int) (math.max(value, 1) * cannon.HealthModifier),
+							Max   = (int) (math.max(value, 1) * cannon.HealthModifier)
+						});
+					}
+
+					entityMgr.SetComponentData(oc.Child, new LivableHealth
+					{
+						IsDead = false,
+						Value = 1,
+						Max = 1
+					});
+					entityMgr.SetComponentData(oc.Child, cannon);
+				}
 
 				if (structure.ScoreType == HeadOnStructure.EScoreType.TowerControl)
 					hud.PushStatus(m_HeadOnModeContext.GetTick(), "Control Tower Captured!", EGameModeStatusSound.TowerControlCaptured);
@@ -246,7 +319,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				//winningTeam                        = 0;
 			}
 
-			if (Input.GetKeyDown(KeyCode.E))
+			if (Input.GetKeyDown(KeyCode.R))
 			{
 				m_HeadOnModeContext.Data.WinReason = MpVersusHeadOn.WinStatus.Forced;
 				winningTeam = 0;
@@ -265,9 +338,42 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				});
 			}
 
+			m_Queries.GetEntityQueryBuilder().ForEach((Entity reqEnt, ref HeadOnSpectateRpc spectateCmd, ref ReceiveRpcCommandRequestComponent receive) =>
+			{
+				if (entityMgr.Exists(receive.SourceConnection))
+				{
+					var commandTarget = entityMgr.GetComponentData<CommandTargetComponent>(receive.SourceConnection);
+					if (commandTarget.targetEntity == default || !entityMgr.HasComponent<OwnerChild>(commandTarget.targetEntity))
+						return;
+
+					var children = entityMgr.GetBuffer<OwnerChild>(commandTarget.targetEntity).ToNativeArray(Allocator.Temp);
+					foreach (var oc in children)
+					{
+						if (entityMgr.HasComponent<RhythmEngineDescription>(oc.Child)
+						    || entityMgr.HasComponent<UnitDescription>(oc.Child)
+						    || entityMgr.HasComponent<UnitTargetDescription>(oc.Child))
+							entityMgr.DestroyEntity(oc.Child);
+					}
+
+					if (entityMgr.HasComponent<HeadOnPlaying>(commandTarget.targetEntity))
+						entityMgr.RemoveComponent<HeadOnPlaying>(commandTarget.targetEntity);
+
+				}
+
+				entityMgr.DestroyEntity(reqEnt);
+			});
+			
 			m_Queries.GetEntityQueryBuilder().WithNone<HeadOnPlaying, HeadOnSpectating>().ForEach((Entity e, ref GamePlayer gp) =>
 			{
 				entityMgr.AddComponent(e, typeof(HeadOnSpectating));
+				entityMgr.SetComponentData(e, new ServerCameraState
+				{
+					Data =
+					{
+						Target = e,
+						Mode   = CameraMode.Forced
+					}
+				});
 			});
 			
 			// -- End this.

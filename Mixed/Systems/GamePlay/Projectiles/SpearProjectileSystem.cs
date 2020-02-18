@@ -70,6 +70,7 @@ namespace Patapon.Mixed.GamePlay.Projectiles
 						var enemyBuffer = enemiesFromTeam[teamRelative.Target];
 						var enemies     = new NativeList<Entity>(Allocator.Temp);
 						seekEnemies.GetAllEnemies(ref enemies, enemyBuffer);
+						
 						if (Cast(seekEnemies, impl, enemies, teamRelativeFromEntity, input, out var hit)
 						    /*|| EnvironmentalCast(seekEnemies, entity, teamRelative.Target, teamRelativeFromEntity, physicsWorld, input, out hit) != -1*/)
 						{
@@ -77,6 +78,13 @@ namespace Patapon.Mixed.GamePlay.Projectiles
 							ecb.AddComponent(nativeThreadIndex, entity, new ProjectileExplodedEndReason {normal = hit.SurfaceNormal});
 
 							end = hit.Position;
+						}
+						else if (end.y < 0)
+						{
+							ecb.AddComponent<ProjectileEndedTag>(nativeThreadIndex, entity);
+							ecb.AddComponent(nativeThreadIndex, entity, new ProjectileExplodedEndReason {normal = new float3(0, 1, 0)});
+							
+							end.y = 0;
 						}
 
 						translation.Value = end;

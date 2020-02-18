@@ -134,12 +134,13 @@ namespace Patapon.Mixed.Systems
 				targetConnection       = GetSingletonEntity<NetworkIdComponent>();
 			
 			var outgoingDataFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>();
+			var tick = ServerTick;
 
 			//var commandDefinition = GetComponentDataFromEntity<RhythmCommandDefinition>(true); // debug only
 
 			var rpcQueue            = m_RpcQueue;
 			var isServer            = IsServer;
-			var availableCommands   = m_AvailableCommandQuery.CreateArchetypeChunkArray(Allocator.TempJob, out var queryHandle);
+			var availableCommands   = m_AvailableCommandQuery.CreateArchetypeChunkArrayAsync(Allocator.TempJob, out var queryHandle);
 			var entityType          = GetArchetypeChunkEntityType();
 			var commandSequenceType = GetArchetypeChunkBufferType<RhythmCommandDefinitionSequence>(true);
 			var ecb                 = m_SpawnBarrier.CreateCommandBuffer().ToConcurrent();
@@ -210,7 +211,7 @@ namespace Patapon.Mixed.Systems
 
 						state.VerifyCommand        = false;
 						state.ApplyCommandNextBeat = true;
-
+						
 						if (!isServer && settings.UseClientSimulation)
 						{
 							var clientRequest                                                        = new UnsafeAllocationLength<RhythmEngineClientRequestedCommandProgression>(Allocator.Temp, commandProgression.Length);

@@ -25,11 +25,6 @@ namespace DataScripts.Interface.GameMode.Global
 		
 		public Color countdownColor;
 		public Color goColor;
-
-		private void OnEnable()
-		{
-			countdownAnimator.enabled = false;
-		}
 	}
 
 	public class UIGameModeIntroBackend : RuntimeAssetBackend<UIGameModeIntroPresentation>
@@ -67,8 +62,10 @@ namespace DataScripts.Interface.GameMode.Global
 				return;
 
 			Entity engine;
-			if (this.TryGetCurrentCameraState(player, out var camState))
-				engine = PlayerComponentFinder.GetComponentFromPlayer<RhythmEngineDescription>(EntityManager, m_EngineQuery, camState.Target, player);
+			
+			var cameraState = this.GetComputedCameraState().StateData;
+			if (cameraState.Target != default)
+				engine = PlayerComponentFinder.GetComponentFromPlayer<RhythmEngineDescription>(EntityManager, m_EngineQuery, cameraState.Target, player);
 			else
 				engine = PlayerComponentFinder.FindPlayerComponent(m_EngineQuery, player);
 
@@ -111,7 +108,6 @@ namespace DataScripts.Interface.GameMode.Global
 				definition.countdownAnimator.SetTrigger("Trigger");
 				definition.countdownLabel.color = CounterTarget == 0 ? definition.goColor : definition.countdownColor;
 			}
-			definition.countdownAnimator.Update(Time.DeltaTime);
 		}
 
 		protected override void ClearValues()

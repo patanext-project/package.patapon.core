@@ -53,13 +53,15 @@ namespace Patapon.Mixed.GamePlay.Authoring
 				var parentWithoutCollider = authoring.transform.parent;
 				while (parentWithoutCollider != null)
 				{
-					if (parentWithoutCollider.GetComponent<PhysicsShapeAuthoring>() == null)
+					if (parentWithoutCollider.GetComponent<ConvertToEntity>() != null)
 						break;
 					parentWithoutCollider = parentWithoutCollider.parent;
 				}
 
 				authoring.transform.SetParent(parentWithoutCollider, false);
 				authoring.transform.SetAsLastSibling();
+				
+				Debug.LogError("from " + authoring.transform.name + " Set to " + parentWithoutCollider.name);
 			});
 		}
 	}

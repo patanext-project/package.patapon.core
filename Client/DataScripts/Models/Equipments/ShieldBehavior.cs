@@ -17,6 +17,11 @@ namespace DataScripts.Models.Equipments
 			{
 				Entities.ForEach((UnitEquipmentPresentation presentation, ShieldBehavior behavior) =>
 				{
+					if (presentation == null || presentation.Backend == null)
+					{
+						
+					}
+				
 					var backend = presentation.Backend;
 					if (!EntityManager.Exists(backend.DstEntity))
 						return;

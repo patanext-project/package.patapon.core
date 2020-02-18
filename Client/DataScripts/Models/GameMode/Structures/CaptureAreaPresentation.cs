@@ -12,6 +12,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace DataScripts.Models.GameMode.Structures
 {
@@ -41,8 +42,13 @@ namespace DataScripts.Models.GameMode.Structures
 			mpb = new MaterialPropertyBlock();
 		}
 
+		private Color m_LastTeamColor;
 		public void SetTeamColor(Color color)
 		{
+			if (m_LastTeamColor == color)
+				return;
+			m_LastTeamColor = color;
+			
 			foreach (var r in renderersForTeamColor)
 			{
 				r.GetPropertyBlock(mpb);
@@ -58,11 +64,34 @@ namespace DataScripts.Models.GameMode.Structures
 			poleRootRight.transform.localPosition = new Vector3 {x = size * 0.5f};
 		}
 
+		private EPhase m_PreviousPhase;
+
 		public void SetPhase(EPhase phase, bool trigger)
 		{
+			var targetTrigger = string.Empty;
+			if (m_PreviousPhase != phase)
+			{
+				switch (phase)
+				{
+					case EPhase.Normal:
+						break;
+					case EPhase.Captured:
+						targetTrigger = "OnCapture";
+						break;
+					case EPhase.Destroyed:
+						break;
+					default:
+						throw new ArgumentOutOfRangeException(nameof(phase), phase, null);
+				}
+
+				m_PreviousPhase = phase;
+			}
+
 			foreach (var animator in animators)
 			{
-				animator.SetInteger(PhaseStrHash, (int)phase);
+				animator.SetInteger(PhaseStrHash, (int) phase);
+				if (targetTrigger != string.Empty)
+					animator.SetTrigger(targetTrigger);
 			}
 		}
 
@@ -85,6 +114,8 @@ namespace DataScripts.Models.GameMode.Structures
 	[UpdateInGroup(typeof(OrderGroup.Simulation.SpawnEntities))]
 	public class SpawnSystem : PoolingSystem<CaptureAreaBackend, CaptureAreaPresentation, SpawnSystem.CheckValid>
 	{
+		protected override Type[] AdditionalBackendComponents => new Type[] {typeof(SortingGroup)};
+		
 		public struct CheckValid : ICheckValidity
 		{
 			[ReadOnly] public ComponentDataFromEntity<CaptureAreaComponent> AreaComponentFromEntity;
@@ -111,6 +142,15 @@ namespace DataScripts.Models.GameMode.Structures
 		protected override EntityQuery GetQuery()
 		{
 			return GetEntityQuery(typeof(HeadOnStructure), typeof(CaptureAreaComponent));
+		}
+		
+		protected override void SpawnBackend(Entity target)
+		{
+			base.SpawnBackend(target);
+
+			var sortingGroup = LastBackend.GetComponent<SortingGroup>();
+			sortingGroup.sortingLayerName = "MovableStructures";
+			sortingGroup.sortingOrder     = 0;
 		}
 	}
 
@@ -163,7 +203,7 @@ namespace DataScripts.Models.GameMode.Structures
 			}
 
 			var targetPhase = CaptureAreaPresentation.EPhase.Normal;
-			
+
 			if (EntityManager.TryGetComponentData(dstEntity, out Relative<TeamDescription> teamRelative)
 			    && teamRelative.Target != default
 			    && EntityManager.TryGetComponentData(teamRelative.Target, out Relative<ClubDescription> clubRelative)
@@ -186,16 +226,18 @@ namespace DataScripts.Models.GameMode.Structures
 						backend.LastCapturingTime = Time.ElapsedTime;
 					}
 				}
-				
+
 				progress.CopyTo(backend.LastProgression);
 			}
 
-			if (EntityManager.TryGetComponentData(dstEntity, out LivableHealth health) && health.IsDead)
+			if (EntityManager.TryGetComponentData(dstEntity, out LivableHealth health)
+			    && health.IsDead
+			    && targetPhase == CaptureAreaPresentation.EPhase.Captured)
 				targetPhase = CaptureAreaPresentation.EPhase.Destroyed;
-			
+
 			if (targetPhase == CaptureAreaPresentation.EPhase.Destroyed)
 				definition.SetTeamColor(Color.black);
-			definition.SetPhase(targetPhase, false);
+			definition.SetPhase(targetPhase, true);
 		}
 
 		protected override void ClearValues()

@@ -23,7 +23,8 @@ namespace DataScripts.Interface.Menu.ServerRoom
 	{
 		public Type PreviousMenu;
 		
-		[UpdateInGroup(typeof(PresentationSystemGroup))]
+		[UpdateInGroup(typeof(InteractionButtonSystemGroup))]
+		[UpdateBefore(typeof(DisablePopupActionSystem))]
 		[AlwaysSynchronizeSystem]
 		public class Process : JobComponentSystem
 		{
@@ -36,7 +37,8 @@ namespace DataScripts.Interface.Menu.ServerRoom
 					var clientMenuSystem = World.GetExistingSystem<ClientMenuSystem>();
 					clientMenuSystem.SetMenu(goBack.PreviousMenu ?? clientMenuSystem.PreviousMenu);
 
-					EntityManager.RemoveComponent(entity, typeof(UIButton.ClickedEvent));
+					if (!EntityManager.HasComponent<SetEnableStatePopupAction>(entity))
+						EntityManager.RemoveComponent(entity, typeof(UIButton.ClickedEvent));
 				}).WithStructuralChanges().Run();
 
 				return default;

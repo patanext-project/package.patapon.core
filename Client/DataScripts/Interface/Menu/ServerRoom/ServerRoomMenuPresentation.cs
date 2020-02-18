@@ -9,6 +9,7 @@ using package.patapon.core.Animation;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.PoolingSystems;
 using Patapon.Mixed.GameModes;
+using Patapon.Mixed.GameModes.VSHeadOn;
 using Patapon4TLB.Core.MasterServer.Data;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Systems;
@@ -29,6 +30,7 @@ namespace DataScripts.Interface.Menu.ServerRoom
 		public RectTransform buttonBoard;
 
 		public ServerRoomTeamColumn[] teamColumns;
+		public ButtonPendingEventBehaviour[] teamButtons;
 		
 		private List<Entity> m_LinkedEntities;
 
@@ -42,7 +44,7 @@ namespace DataScripts.Interface.Menu.ServerRoom
 			base.OnBackendSet();
 			var entityMgr = Backend.DstEntityManager;
 
-			var changeKitPopup = entityMgr.CreateEntity(typeof(Disabled), typeof(UIPopup), typeof(PopupDescription));
+			var changeKitPopup = entityMgr.CreateEntity(typeof(UIPopup), typeof(PopupDescription));
 			entityMgr.SetComponentData(changeKitPopup, new UIPopup {Title = "Kit Selection", Content = "Change your UberHero class.\nThe choice is currently limited!"});
 
 			var popupButtonPrefab = entityMgr.CreateEntity(typeof(UIButton), typeof(UIButtonText), typeof(UIGridPosition), typeof(Prefab));
@@ -61,7 +63,7 @@ namespace DataScripts.Interface.Menu.ServerRoom
 			entityMgr.SetComponentData(button, new UIGridPosition {Value = new int2(0, 0)});
 			entityMgr.AddComponentData(button, new ButtonGoBackToPreviousMenu {PreviousMenu = Backend.DstEntityManager.World.GetExistingSystem<ServerRoomMenu>().PreviousMenu});
 
-			button = changeKitButton;
+			button = mapVoteButton;
 			entityMgr.SetComponentData(button, new UIButtonText {Value              = "Vote for map"});
 			entityMgr.SetComponentData(button, new UIGridPosition {Value            = new int2(0, 2)});
 			//entityMgr.AddComponentData(button, new SetEnableStatePopupAction {Popup = changeKitPopup, Value = true});
@@ -80,6 +82,7 @@ namespace DataScripts.Interface.Menu.ServerRoom
 			// add popup buttons...
 			var taterazayChoice = entityMgr.Instantiate(popupButtonPrefab);
 			var yaridaChoice = entityMgr.Instantiate(popupButtonPrefab);
+			var yumiyachaChoice = entityMgr.Instantiate(popupButtonPrefab);
 			var exitChoice = entityMgr.Instantiate(popupButtonPrefab);
 
 			button = taterazayChoice;
@@ -94,6 +97,13 @@ namespace DataScripts.Interface.Menu.ServerRoom
 			entityMgr.AddComponentData(button, new SetEnableStatePopupAction());
 			entityMgr.AddComponentData(button, new ButtonChangeKit { Target = P4OfficialKit.Yarida });
 			entityMgr.SetComponentData(button, new UIGridPosition {Value = new int2(0, 1)});
+			entityMgr.ReplaceOwnerData(button, changeKitPopup);
+
+			button = yumiyachaChoice;
+			entityMgr.SetComponentData(button, new UIButtonText {Value = "Yumiyacha"});
+			entityMgr.AddComponentData(button, new SetEnableStatePopupAction());
+			entityMgr.AddComponentData(button, new ButtonChangeKit { Target = P4OfficialKit.Yumiyacha });
+			entityMgr.SetComponentData(button, new UIGridPosition {Value    = new int2(0, 1)});
 			entityMgr.ReplaceOwnerData(button, changeKitPopup);
 
 			button = exitChoice;
@@ -112,6 +122,8 @@ namespace DataScripts.Interface.Menu.ServerRoom
 			m_LinkedEntities.Add(taterazayChoice);
 			m_LinkedEntities.Add(yaridaChoice);
 			m_LinkedEntities.Add(exitChoice);
+			
+			entityMgr.SetEnabled(changeKitPopup, false);
 		}
 
 		private void OnDisable()
@@ -223,6 +235,18 @@ namespace DataScripts.Interface.Menu.ServerRoom
 			{
 				definition.waitingFrame.SetActive(true);
 				definition.waitingLabel.SetText("Waiting MasterServer response...");
+			}
+
+			for (var i = 0; i != definition.teamButtons.Length; i++)
+			{
+				var button = definition.teamButtons[i];
+				if (button.HasPendingClickEvent)
+				{
+					button.HasPendingClickEvent = false;
+					
+					var request = EntityManager.CreateEntity(typeof(HeadOnChangeTeamRpc), typeof(SendRpcCommandRequestComponent));
+					EntityManager.SetComponentData(request, new HeadOnChangeTeamRpc {Team = i});
+				}
 			}
 		}
 

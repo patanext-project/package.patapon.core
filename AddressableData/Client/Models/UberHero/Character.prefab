@@ -148,7 +148,7 @@ LineRenderer:
   - {x: 0.4, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.06
+    widthMultiplier: 0.065
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -479,7 +479,7 @@ LineRenderer:
   - {x: 0, y: -0.4, z: 0}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.06
+    widthMultiplier: 0.065
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -982,13 +982,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Animator: {fileID: 2758844109317685535}
-  presentationObjects: []
   maskRoot:
     transform: {fileID: 2758844108682441533}
   leftWeaponRoot:
     transform: {fileID: 7499443885287112317}
   rightWeaponRoot:
     transform: {fileID: 461195947244719100}
+  hairRoot:
+    transform: {fileID: 0}
 --- !u!1 &2896608108767377027
 GameObject:
   m_ObjectHideFlags: 0
@@ -1192,6 +1193,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IsLooping: 0
+  CurveMultiplier: 0.065
+  KeepCurveScaling: 0
   lineRenderer: {fileID: 1285779702877577313}
   lineRendererArray:
   - {fileID: 1285779702877577313}
@@ -1371,7 +1374,7 @@ LineRenderer:
   - {x: 0, y: -0.4, z: 0}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.06
+    widthMultiplier: 0.065
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -1662,7 +1665,7 @@ LineRenderer:
   - {x: -1.439, y: 0.015, z: 0.843}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.2
+    widthMultiplier: 0.3
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -1935,6 +1938,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IsLooping: 0
+  CurveMultiplier: 0.3
+  KeepCurveScaling: 0
   lineRenderer: {fileID: 6696838818849339155}
   lineRendererArray:
   - {fileID: 6696838818849339155}
@@ -2027,6 +2032,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IsLooping: 0
+  CurveMultiplier: 0.065
+  KeepCurveScaling: 0
   lineRenderer: {fileID: 4253202527797189770}
   lineRendererArray:
   - {fileID: 4253202527797189770}
@@ -2099,6 +2106,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IsLooping: 0
+  CurveMultiplier: 0.065
+  KeepCurveScaling: 0
   lineRenderer: {fileID: 206234230575453835}
   lineRendererArray:
   - {fileID: 206234230575453835}
@@ -2344,6 +2353,7 @@ GameObject:
   - component: {fileID: 7148293252531082103}
   - component: {fileID: 2758844109317685535}
   - component: {fileID: 2758844109317685533}
+  - component: {fileID: 344595477898452050}
   m_Layer: 0
   m_Name: Model
   m_TagString: Untagged
@@ -2391,7 +2401,7 @@ Animator:
   m_GameObject: {fileID: 6154326189364814180}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 112a826da7af33c40a00f37c29c8bf65, type: 2}
+  m_Controller: {fileID: 9100000, guid: da3d719e1ce757947bb161eb9d19715e, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -2411,6 +2421,23 @@ SortingGroup:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &344595477898452050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6154326189364814180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab317644f5404cf081066de92b288687, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canPredict: 0
+  targetRoot: -1
+  availableRoots:
+  - {fileID: 461195947244719100}
+  - {fileID: 7499443885287112317}
 --- !u!1 &6358330532828283233
 GameObject:
   m_ObjectHideFlags: 0
@@ -3169,6 +3196,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IsLooping: 0
+  CurveMultiplier: 0.065
+  KeepCurveScaling: 0
   lineRenderer: {fileID: 8084925445577585160}
   lineRendererArray:
   - {fileID: 8084925445577585160}
@@ -3328,7 +3357,7 @@ LineRenderer:
   - {x: 0.4, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.06
+    widthMultiplier: 0.065
     widthCurve:
       serializedVersion: 2
       m_Curve:

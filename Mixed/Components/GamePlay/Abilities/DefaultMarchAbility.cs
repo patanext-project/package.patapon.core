@@ -9,10 +9,27 @@ using Unity.Networking.Transport;
 
 namespace Patapon.Mixed.GamePlay.Abilities
 {
+	public struct DefaultSubsetMarch : IComponentData
+	{
+		[Flags]
+		public enum ESubSet
+		{
+			None     = 0,
+			Cursor   = 1 << 1,
+			Movement = 1 << 2,
+			All      = Cursor | Movement
+		}
+
+		public bool    IsActive;
+		public ESubSet SubSet;
+
+		public float AccelerationFactor;
+		public float Delta;
+	}
+
 	public struct DefaultMarchAbility : IComponentData
 	{
 		public float AccelerationFactor;
-		public float Delta;
 
 		public struct Exclude : IComponentData
 		{
@@ -21,18 +38,15 @@ namespace Patapon.Mixed.GamePlay.Abilities
 		public unsafe struct Snapshot : IReadWriteSnapshot<Snapshot>, ISnapshotDelta<Snapshot>, ISynchronizeImpl<DefaultMarchAbility>
 		{
 			public float AccelerationFactor;
-			public float Delta;
 
 			public void WriteTo(DataStreamWriter writer, ref Snapshot baseline, NetworkCompressionModel compressionModel)
 			{
 				writer.WritePackedFloatDelta(AccelerationFactor, baseline.AccelerationFactor, compressionModel);
-				writer.WritePackedFloatDelta(Delta, baseline.Delta, compressionModel);
 			}
 
 			public void ReadFrom(ref DataStreamReader.Context ctx, DataStreamReader reader, ref Snapshot baseline, NetworkCompressionModel compressionModel)
 			{
 				AccelerationFactor = reader.ReadPackedFloatDelta(ref ctx, baseline.AccelerationFactor, compressionModel);
-				Delta              = reader.ReadPackedFloatDelta(ref ctx, baseline.Delta, compressionModel);
 			}
 
 			public uint Tick { get; set; }
@@ -48,13 +62,11 @@ namespace Patapon.Mixed.GamePlay.Abilities
 			public void SynchronizeFrom(in DefaultMarchAbility component, in DefaultSetup setup, in SerializeClientData serializeData)
 			{
 				AccelerationFactor = component.AccelerationFactor;
-				Delta              = component.Delta;
 			}
 
 			public void SynchronizeTo(ref DefaultMarchAbility component, in DeserializeClientData deserializeData)
 			{
 				component.AccelerationFactor = AccelerationFactor;
-				component.Delta              = Delta;
 			}
 		}
 
@@ -82,6 +94,11 @@ namespace Patapon.Mixed.GamePlay.Abilities
 			{
 				AccelerationFactor = 1
 			}));
+			EntityManager.AddComponentData(entity, new DefaultSubsetMarch
+			{
+				SubSet             = DefaultSubsetMarch.ESubSet.All,
+				AccelerationFactor = 1
+			});
 		}
 	}
 }

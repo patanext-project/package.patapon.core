@@ -59,13 +59,15 @@ namespace DataScripts.Models.GameMode.Structures
 
 		public void OnPresentationSystemUpdate()
 		{
-			if (!Backend.DstEntityManager.TryGetComponentData(Backend.DstEntity, out LivableHealth health))
+			if (!Backend.DstEntityManager.TryGetComponentData(Backend.DstEntity, out LivableHealth health) 
+			    // kinda ugly for now but it's needed to show the sprite when there is no team set...
+			|| Backend.DstEntityManager.TryGetComponentData(Backend.DstEntity, out Relative<TeamDescription> relativeTeam) && relativeTeam.Target == default)
 				spriteRenderer.sprite = objs.LastOrDefault().Value;
 			else
 			{
 				var sprite = objs.LastOrDefault().Value;
 				var fraction = 0f;
-				if (!health.IsDead && health.Value > 0 && health.Max > 0)
+				if (health.Value > 0 && health.Max > 0)
 					fraction = (float) health.Value / health.Max;
 				for (var i = 0; i != objs.Length; i++)
 				{

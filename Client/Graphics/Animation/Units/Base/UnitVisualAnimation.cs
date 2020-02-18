@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using package.patapon.core.Animation;
+using package.stormiumteam.shared.ecs;
+using Patapon.Client.OrderSystems;
 using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Systems;
@@ -8,6 +10,7 @@ using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.Playables;
+using UnityEngine.Rendering;
 
 namespace Patapon.Client.Graphics.Animation.Units
 {
@@ -106,6 +109,10 @@ namespace Patapon.Client.Graphics.Animation.Units
 
 		public override void OnPresentationSet()
 		{
+			// set layer recursive...
+			foreach (var tr in gameObject.GetComponentsInChildren<Transform>())
+				tr.gameObject.layer = gameObject.layer;
+			
 			Presentation.Animator.WriteDefaultValues();
 			Presentation.Animator.Rebind();
 			Animation.OnPresentationSet(Presentation);
@@ -134,14 +141,33 @@ namespace Patapon.Client.Graphics.Animation.Units
 		}
 	}
 
+	public struct UnitVisualSourceBackend : IComponentData
+	{
+		public Entity Backend;
+	}
+
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class UnitVisualBackendSpawnSystem : PoolingSystem<UnitVisualBackend, UnitVisualPresentation>
 	{
 		protected override string AddressableAsset => "core://Client/Models/UberHero/EmptyPresentation.prefab";
 
+		protected override Type[] AdditionalBackendComponents => new Type[] {typeof(SortingGroup)};
+
 		protected override EntityQuery GetQuery()
 		{
 			return GetEntityQuery(typeof(UnitDescription));
+		}
+
+		protected override void SpawnBackend(Entity target)
+		{
+			base.SpawnBackend(target);
+			EntityManager.SetOrAddComponentData(target, new UnitVisualSourceBackend {Backend = LastBackend.BackendEntity});
+
+			var sortingGroup = LastBackend.GetComponent<SortingGroup>();
+			sortingGroup.sortingLayerName = "Entities";
+			sortingGroup.sortingOrder     = 0;
+
+			LastBackend.gameObject.layer = LayerMask.NameToLayer("Entities");
 		}
 	}
 }

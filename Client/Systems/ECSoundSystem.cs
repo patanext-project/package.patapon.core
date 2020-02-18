@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using StormiumTeam.GameBase;
 using Unity.Entities;
@@ -13,7 +14,8 @@ namespace Patapon.Client.Systems
 	{
 		private const int SourceCount = 48;
 
-		private List<AudioClip> m_AudioClips;
+		private List<AudioClip>            m_AudioClips;
+		private Dictionary<AudioClip, int> m_ClipToDefinition;
 
 		private int           m_SourceRoulette;
 		private AudioSource[] m_AudioSources;
@@ -29,7 +31,8 @@ namespace Patapon.Client.Systems
 				m_AudioSources[i] = go.GetComponent<AudioSource>();
 			}
 
-			m_AudioClips = new List<AudioClip> {null};
+			m_AudioClips       = new List<AudioClip> {null};
+			m_ClipToDefinition = new Dictionary<AudioClip, int>();
 		}
 
 		private AudioSource FindSource()
@@ -53,16 +56,25 @@ namespace Patapon.Client.Systems
 			{
 				var source = FindSource();
 				source.volume      = emitter.volume;
-				source.rolloffMode = emitter.rollOf;
+				source.rolloffMode = AudioRolloffMode.Linear;
 				source.minDistance = emitter.minDistance;
 				source.maxDistance = emitter.maxDistance;
 				source.clip        = m_AudioClips[definition.Index];
 
-				if (emitter.spatialBlend >= 1 && emitter.spatialBlend <= 2)
+				if (emitter.spatialBlend >= 0 && emitter.spatialBlend <= 2)
 				{
+					source.spread = 180;
+					
+					var pos = emitter.position;
+					if (emitter.spatialBlend < 1)
+					{
+						pos.y = 0;
+						pos.z = 0;
+					}
+					
 					source.spatialize         = true;
-					source.spatialBlend       = emitter.spatialBlend - 2;
-					source.transform.position = emitter.position;
+					source.transform.position = pos;
+					source.spatialBlend = 1;
 				}
 				else
 				{
@@ -70,8 +82,6 @@ namespace Patapon.Client.Systems
 				}
 
 				source.Play();
-				
-				Debug.LogError("Play sound");
 
 				EntityManager.DestroyEntity(ent);
 			}).WithStructuralChanges().Run();
@@ -81,11 +91,16 @@ namespace Patapon.Client.Systems
 
 		public ECSoundDefinition ConvertClip(AudioClip clip)
 		{
+			if (m_ClipToDefinition.TryGetValue(clip, out var definitionId))
+				return new ECSoundDefinition {Index = definitionId};
+			
 			m_AudioClips.Add(clip);
+			m_ClipToDefinition[clip] = m_AudioClips.Count - 1;
 			return new ECSoundDefinition
 			{
 				Index = m_AudioClips.Count - 1
 			};
+
 		}
 	}
 
@@ -96,8 +111,11 @@ namespace Patapon.Client.Systems
 		public int Index;
 	}
 
+	[Serializable]
 	public struct ECSoundEmitterComponent : IComponentData
 	{
+		public AudioSpeakerMode speakerMode;
+		
 		public float  volume;
 		public float  spatialBlend;
 		public float3 position;

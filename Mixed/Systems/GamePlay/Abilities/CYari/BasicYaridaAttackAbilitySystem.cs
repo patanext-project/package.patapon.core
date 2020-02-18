@@ -9,12 +9,11 @@ using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
-using UnityEngine;
 using Random = Unity.Mathematics.Random;
 
 namespace Systems.GamePlay.CYari
 {
-	public unsafe class BasicYaridaAttackAbilitySystem : BaseAbilitySystem
+	public class BasicYaridaAttackAbilitySystem : BaseAbilitySystem
 	{
 		private SpearProjectile.Provider m_ProjectileProvider;
 
@@ -37,7 +36,8 @@ namespace Systems.GamePlay.CYari
 
 			var rand = new Random((uint) Environment.TickCount);
 			Entities
-				.ForEach((Entity entity, int nativeThreadIndex, ref BasicYaridaAttackAbility ability, in AbilityState state, in AbilityEngineSet engineSet, in Owner owner) =>
+				.ForEach((Entity          entity, int                 nativeThreadIndex, ref BasicYaridaAttackAbility ability, ref AbilityControlVelocity controlTarget,
+				          in AbilityState state,  in AbilityEngineSet engineSet,         in  Owner                    owner) =>
 				{
 					if (!impl.CanExecuteAbility(owner.Target))
 						return;
@@ -52,18 +52,14 @@ namespace Systems.GamePlay.CYari
 
 					var attackStartTick = UTick.CopyDelta(tick, ability.AttackStartTick);
 
-					if ((state.Phase & EAbilityPhase.Chaining) != 0)
-					{
-						controller.ControlOverVelocity.x = true;
-						velocity.Value.x                 = math.lerp(velocity.Value.x, 0, playState.GetAcceleration() * 50 * tick.Delta);
-					}
-
 					ability.NextAttackDelay -= tick.Delta;
 
 					var throwOffset = new float3 {x = direction, y = 1.75f};
 					var gravity     = new float3 {y = -22};
 					if (ability.AttackStartTick > 0)
 					{
+						controller.ControlOverVelocity.x = true;
+
 						if (tick >= UTick.AddMs(attackStartTick, BasicYaridaAttackAbility.DelayThrowMs) && !ability.HasThrown)
 						{
 							var accuracy = AbilityUtility.CompileStat(engineSet.Combo, 0.2f, 1, 2.5, 1.5);
@@ -78,10 +74,6 @@ namespace Systems.GamePlay.CYari
 
 							ability.HasThrown = true;
 						}
-						else if (!ability.HasThrown)
-						{
-							controller.ControlOverVelocity.x = true;
-						}
 
 						// stop moving
 						if (ability.HasThrown)
@@ -91,40 +83,33 @@ namespace Systems.GamePlay.CYari
 						if (tick >= UTick.AddMs(attackStartTick, 500))
 							ability.AttackStartTick = 0;
 					}
-
-					velocityUpdater.CompareAndUpdate(velocity);
-					controllerUpdater.CompareAndUpdate(controller);
-
-					if ((state.Phase & EAbilityPhase.Active) == 0 || seekingState.Enemy == default)
-						return;
-
-					var targetPosition     = impl.LocalToWorldFromEntity[seekingState.Enemy].Position;
-					var throwDeltaPosition = PredictTrajectory.Simple(throwOffset, new float3 {x = ability.ThrowSpeed * direction, y = ability.ThrowHeight}, gravity);
-					targetPosition.x -= throwDeltaPosition.x;
-
-					var distanceMercy = 4f;
-					if (math.abs(targetPosition.x - unitPosition.x) < distanceMercy && ability.NextAttackDelay <= 0 && ability.AttackStartTick <= 0)
+					else if ((state.Phase & EAbilityPhase.Chaining) != 0)
 					{
-						ability.NextAttackDelay = playState.AttackSpeed;
-						ability.AttackStartTick = tick.AsUInt;
-						ability.HasThrown       = false;
-
-						var speed   = math.lerp(math.abs(velocity.Value.x), playState.MovementAttackSpeed, playState.GetAcceleration() * 5 * tick.Delta);
-						var newPosX = Mathf.MoveTowards(unitPosition.x, targetPosition.x, speed * tick.Delta);
-
-						var targetVelocityX = (newPosX - unitPosition.x) / tick.Delta;
-						velocity.Value.x = targetVelocityX;
-					}
-					else if (tick >= UTick.AddMs(attackStartTick, BasicYaridaAttackAbility.DelayThrowMs))
-					{
-						var speed   = math.lerp(math.abs(velocity.Value.x), playState.MovementAttackSpeed, playState.GetAcceleration() * 20 * tick.Delta);
-						var newPosX = Mathf.MoveTowards(unitPosition.x, targetPosition.x, speed * tick.Delta);
-
-						var targetVelocityX = (newPosX - unitPosition.x) / tick.Delta;
-						velocity.Value.x = targetVelocityX;
+						controller.ControlOverVelocity.x = true;
+						velocity.Value.x                 = math.lerp(velocity.Value.x, 0, playState.GetAcceleration() * 50 * tick.Delta);
 					}
 
-					controller.ControlOverVelocity.x = true;
+					if ((state.Phase & EAbilityPhase.Active) != 0 && seekingState.Enemy != default)
+					{
+						var targetPosition     = impl.LocalToWorldFromEntity[seekingState.Enemy].Position;
+						var throwDeltaPosition = PredictTrajectory.Simple(throwOffset, new float3 {x = ability.ThrowSpeed * direction, y = ability.ThrowHeight}, gravity);
+						targetPosition.x -= throwDeltaPosition.x;
+
+						controlTarget.IsActive       = true;
+						controlTarget.TargetPosition = targetPosition;
+
+						var distanceMercy = 4f;
+						if (math.abs(targetPosition.x - unitPosition.x) < distanceMercy && ability.NextAttackDelay <= 0 && ability.AttackStartTick <= 0)
+						{
+							ability.NextAttackDelay = playState.AttackSpeed;
+							ability.AttackStartTick = tick.AsUInt;
+							ability.HasThrown       = false;
+
+							controlTarget.Acceleration = 5;
+						}
+						else if (tick >= UTick.AddMs(attackStartTick, BasicYaridaAttackAbility.DelayThrowMs))
+							controlTarget.Acceleration = 50;
+					}
 
 					velocityUpdater.CompareAndUpdate(velocity);
 					controllerUpdater.CompareAndUpdate(controller);

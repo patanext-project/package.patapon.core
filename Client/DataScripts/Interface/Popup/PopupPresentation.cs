@@ -11,6 +11,7 @@ using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 [assembly: RegisterGenericComponentType(typeof(Relative<PopupDescription>))]
 
@@ -45,6 +46,7 @@ namespace DataScripts.Interface.Popup
 	}
 
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
+	[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation))]
 	public class PopupPoolingSystem : PoolingSystem<PopupBackend, PopupPresentation>
 	{
 		protected override string AddressableAsset =>
@@ -61,6 +63,11 @@ namespace DataScripts.Interface.Popup
 		}
 
 		private Canvas m_Canvas;
+
+		protected override void ReturnBackend(PopupBackend backend)
+		{
+			base.ReturnBackend(backend);
+		}
 
 		protected override void SpawnBackend(Entity target)
 		{
@@ -80,6 +87,7 @@ namespace DataScripts.Interface.Popup
 		}
 	}
 
+	[UpdateInGroup(typeof(OrderGroup.Presentation.InterfaceRendering))]
 	public class PopupRenderSystem : BaseRenderSystem<PopupPresentation>
 	{
 		protected override void PrepareValues()

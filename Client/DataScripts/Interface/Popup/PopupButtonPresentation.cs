@@ -4,8 +4,10 @@ using DefaultNamespace;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.PoolingSystems;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Modules;
 using StormiumTeam.GameBase.Systems;
 using TMPro;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
@@ -39,6 +41,12 @@ namespace DataScripts.Interface.Popup
 
 		public Transform LastParent { get; set; }
 
+		public override void OnReset()
+		{
+			base.OnReset();
+			LastParent = null;
+		}
+
 		public override void OnPresentationSet()
 		{
 			base.OnPresentationSet();
@@ -67,8 +75,28 @@ namespace DataScripts.Interface.Popup
 	}
 
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
-	public class PopupButtonPoolingSystem : PoolingSystem<PopupButtonBackend, PopupButtonPresentation>
+	public class PopupButtonPoolingSystem : PoolingSystem<PopupButtonBackend, PopupButtonPresentation, PopupButtonPoolingSystem.CheckValidity>
 	{
+		public struct CheckValidity : ICheckValidity
+		{
+			[ReadOnly]
+			public ComponentDataFromEntity<Disabled> DisabledFromEntity;
+
+			[ReadOnly]
+			public ComponentDataFromEntity<Relative<PopupDescription>> PopupFromEntity;
+			
+			public void OnSetup(ComponentSystemBase system)
+			{
+				DisabledFromEntity = system.GetComponentDataFromEntity<Disabled>(true);
+				PopupFromEntity = system.GetComponentDataFromEntity<Relative<PopupDescription>>(true);
+			}
+
+			public bool IsValid(Entity target)
+			{
+				return !DisabledFromEntity.Exists(target) && !DisabledFromEntity.Exists(PopupFromEntity[target].Target);
+			}
+		}
+		
 		protected override string AddressableAsset =>
 			AddressBuilder.Client()
 			              .Interface()
@@ -79,7 +107,7 @@ namespace DataScripts.Interface.Popup
 
 		protected override EntityQuery GetQuery()
 		{
-			return GetEntityQuery(typeof(UIButton), typeof(UIButtonText), typeof(Relative<PopupDescription>));
+			return GetEntityQuery(typeof(UIButton), typeof(UIButtonText), typeof(Relative<PopupDescription>), ComponentType.Exclude<Disabled>());
 		}
 
 		protected override void SpawnBackend(Entity target)
@@ -112,10 +140,16 @@ namespace DataScripts.Interface.Popup
 
 			if (!EntityManager.TryGetComponentData(entity, out Relative<PopupDescription> relativePopup)
 			    || !EntityManager.Exists(relativePopup.Target))
+			{
+				Debug.Log("no popup relative or does not exist: " + relativePopup.Target + ", from: " + entity);
 				return;
+			}
 
 			if (!EntityManager.TryGetComponent(relativePopup.Target, out UIPopup popupData) && popupData.Board == null)
+			{
+				Debug.Log("no popup board");
 				return;
+			}
 
 			if (backend.LastParent != popupData.Board)
 			{

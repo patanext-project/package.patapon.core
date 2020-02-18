@@ -75,21 +75,21 @@ namespace Systems.GamePlay.CYari
 								queueWriter.Enqueue(new SpearProjectile.Create
 								{
 									Owner       = owner.Target,
-									Position    = unitPosition + new float3(throwOffset.x, 1.5f, 0),
+									Position    = unitPosition + new float3(throwOffset.x, throwOffset.y, 0),
 									Velocity    = {x = ability.ThrowVec.x * direction + accuracy * rand.NextFloat(), y = ability.ThrowVec.y},
 									StartDamage = playState.Attack,
-									Gravity     = gravity
+									Gravity     = gravity * 0.9f
 								});
 
 								ability.HasThrown = true;
-								velocity.Value.y = math.lerp(velocity.Value.y, 0, 0.5f);
+								velocity.Value.y  = math.lerp(velocity.Value.y, 0, 0.5f);
 							}
 							else if (!ability.HasThrown)
 								controller.ControlOverVelocity.x = true;
 
 							// stop moving
 							if (ability.HasThrown)
-								velocity.Value.x = math.lerp(velocity.Value.x, 0, playState.GetAcceleration() * 0.5f * tick.Delta);
+								velocity.Value.x = math.lerp(velocity.Value.x, 0, playState.GetAcceleration() * 10f * tick.Delta);
 
 							// stop attacking once the animation is done
 							if (tick >= UTick.AddMs(attackStartTick, 500))
@@ -102,13 +102,13 @@ namespace Systems.GamePlay.CYari
 						if ((state.Phase & EAbilityPhase.Active) == 0 || seekingState.Enemy == default)
 							return;
 
-						var targetPosition     = impl.LocalToWorldFromEntity[seekingState.Enemy].Position;
-						var displacement = PredictTrajectory.GetDisplacement(new float3(0, 16, 0), gravity, YaridaLeapSpearAbility.DelayThrowMs * 0.001f);
+						var targetPosition = impl.LocalToWorldFromEntity[seekingState.Enemy].Position;
+						var displacement   = PredictTrajectory.GetDisplacement(new float3(0, 16, 0), gravity, YaridaLeapSpearAbility.DelayThrowMs * 0.001f);
 						var throwDeltaPosition = PredictTrajectory.Simple(throwOffset + displacement, new float3
 						{
-							x = ability.ThrowVec.x * direction, 
+							x = ability.ThrowVec.x * direction,
 							y = ability.ThrowVec.y
-						}, gravity);
+						}, gravity, yLimit: 0.25f);
 						targetPosition.x -= throwDeltaPosition.x;
 
 						var distanceMercy = 2.25f;
@@ -119,13 +119,31 @@ namespace Systems.GamePlay.CYari
 							ability.AttackStartTick = tick.AsUInt;
 							ability.HasThrown       = false;
 
-							velocity.Value.x = AbilityUtility.GetTargetVelocityX(targetPosition, unitPosition, velocity.Value, playState, 25, tick);
+							velocity.Value.x = AbilityUtility.GetTargetVelocityX(new AbilityUtility.GetTargetVelocityParameters
+							{
+								TargetPosition   = targetPosition,
+								PreviousPosition = unitPosition,
+								PreviousVelocity = velocity.Value,
+								PlayState        = playState,
+								Acceleration     = 25,
+								Tick             = tick
+							});
 							velocity.Value.y = math.max(velocity.Value.y + 18, 18);
 						}
 						else if (tick >= UTick.AddMs(attackStartTick, YaridaLeapSpearAbility.DelayThrowMs))
 						{
-							var acceleration = impl.IsGrounded(owner.Target) ? 20 : 0.025f;
-							velocity.Value.x = AbilityUtility.GetTargetVelocityX(targetPosition, unitPosition, velocity.Value, playState, acceleration, tick);
+							if (impl.IsGrounded(owner.Target))
+								velocity.Value.x = AbilityUtility.GetTargetVelocityX(new AbilityUtility.GetTargetVelocityParameters
+								{
+									TargetPosition   = targetPosition,
+									PreviousPosition = unitPosition,
+									PreviousVelocity = velocity.Value,
+									PlayState        = playState,
+									Acceleration     = 10,
+									Tick             = tick
+								});
+							else
+								velocity.Value.x = math.lerp(velocity.Value.x, 0, playState.Weight * 10f * tick.Delta);
 						}
 
 						controller.ControlOverVelocity.x = true;

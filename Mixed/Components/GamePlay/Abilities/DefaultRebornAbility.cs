@@ -16,7 +16,7 @@ namespace Patapon.Mixed.GamePlay.Abilities
 			public override bool UseOldRhythmAbilityState => true;
 
 			public override string MasterServerId  => nameof(P4OfficialAbilities.NoneOrCustom);
-			public override Type   ChainingCommand => typeof(PartyCommand);
+			public override Type   ChainingCommand => typeof(SummonCommand);
 		}
 	}
 }

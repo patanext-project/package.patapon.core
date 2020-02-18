@@ -191,7 +191,8 @@ namespace package.patapon.core.Animation.Units
 
 				for (var i = 0; i != inputCount; i++) Mixer.SetInputWeight(i, i == CurrentKey - 1 ? 1 : 0);
 
-				if (!VisualData.CurrAnimation.AllowTransition && VisualData.CurrAnimation.Type != SystemType) e = 0;
+				if ((!VisualData.CurrAnimation.AllowTransition || VisualData.CurrAnimation.PreviousType != SystemType) 
+				    && VisualData.CurrAnimation.Type != SystemType) e = 0;
 
 				Root.SetInputWeight(VisualAnimation.GetIndexFrom(Root, Self), e);
 			}

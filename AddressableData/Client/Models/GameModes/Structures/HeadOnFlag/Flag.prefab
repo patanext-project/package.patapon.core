@@ -92,6 +92,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IsLooping: 0
+  CurveMultiplier: 3
+  KeepCurveScaling: 1
   lineRenderer: {fileID: 1439504404287180717}
   lineRendererArray:
   - {fileID: 1439504404287180717}
@@ -180,6 +182,7 @@ SpriteRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -262,6 +265,7 @@ SpriteRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -404,6 +408,7 @@ LineRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -602,6 +607,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9167c2e87a584447a3c16b87e0c9f0d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  renderersForTeamColor:
+  - {fileID: 1439504404287180717}
 --- !u!210 &736392441187934837
 SortingGroup:
   m_ObjectHideFlags: 0

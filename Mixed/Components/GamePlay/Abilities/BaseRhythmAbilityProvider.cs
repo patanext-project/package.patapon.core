@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Systems.GamePlay;
 using DefaultNamespace;
 using Patapon4TLB.Default.Player;
 using Revolution;
@@ -65,6 +66,7 @@ namespace Patapon.Mixed.GamePlay.Abilities
 		public abstract string MasterServerId  { get; }
 		public abstract Type   ChainingCommand { get; }
 		public virtual  Type[] ComboCommands   => null;
+		public virtual  Type[] HeroModeAllowedCommands   => null;
 
 		public Dictionary<string, object> DataMap;
 
@@ -164,7 +166,8 @@ namespace Patapon.Mixed.GamePlay.Abilities
 			if (UseStatsModification)
 				entityComponents = entityComponents.Concat(new ComponentType[]
 				{
-					typeof(AbilityModifyStatsOnChaining)
+					typeof(AbilityModifyStatsOnChaining),
+					typeof(AbilityControlVelocity),
 				}).ToArray();
 		}
 
@@ -195,6 +198,15 @@ namespace Patapon.Mixed.GamePlay.Abilities
 					combos.Add(FindCommand(type));
 				}
 			}
+			
+			var allowedCommands = new FixedList64<Entity>();
+			if (HeroModeAllowedCommands != null)
+			{
+				foreach (var type in HeroModeAllowedCommands)
+				{
+					allowedCommands.Add(FindCommand(type));
+				}
+			}
 
 			if (data.OverrideCommand == Entity.Null)
 			{
@@ -211,9 +223,14 @@ namespace Patapon.Mixed.GamePlay.Abilities
 			{
 				EntityManager.SetComponentData(entity, new AbilityActivation
 				{
-					Selection = data.Selection,
-					Chaining  = data.OverrideCommand,
-					Combos    = combos
+					Type                                     = EActivationType.Normal,
+					HeroModeMaxCombo                         = -1,
+					HeroModeImperfectLimitBeforeDeactivation = 2,
+
+					Selection               = data.Selection,
+					Chaining                = data.OverrideCommand,
+					Combos                  = combos,
+					HeroModeAllowedCommands = allowedCommands
 				});
 			}
 

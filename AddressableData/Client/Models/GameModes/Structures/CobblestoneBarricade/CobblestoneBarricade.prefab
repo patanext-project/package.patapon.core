@@ -190,6 +190,36 @@ SortingGroup:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 5
+--- !u!1 &1305922449067908450
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7075363714364605543}
+  m_Layer: 0
+  m_Name: CannonSpawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7075363714364605543
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1305922449067908450}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 2.46, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 3026738796608951646}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1316894577043934512
 GameObject:
   m_ObjectHideFlags: 0
@@ -394,6 +424,7 @@ GameObject:
   - component: {fileID: 3038290479760929974}
   - component: {fileID: 553865051994201584}
   - component: {fileID: 2539254640600915603}
+  - component: {fileID: 8143442739917902493}
   m_Layer: 0
   m_Name: CobblestoneBarricade
   m_TagString: Untagged
@@ -414,6 +445,7 @@ Transform:
   m_Children:
   - {fileID: 1582687208824963373}
   - {fileID: 4358162007819657937}
+  - {fileID: 7075363714364605543}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -478,6 +510,29 @@ MonoBehaviour:
   onCapturedAnimTrigger: 
   onDestroyedAnimTrigger: OnDestroyed
   phaseAnimInt: Phase
+  onCaptureSound: {fileID: 0}
+  onCaptureSoundEmitter:
+    volume: 1
+    spatialBlend: 0
+    position:
+      x: 0
+      y: 0
+      z: 0
+    minDistance: 20
+    maxDistance: 40
+    rollOf: 0
+  onDestroySound: {fileID: 8300000, guid: d0c9b4acf7148c141958b2d983add0b2, type: 3}
+  onDestroySoundEmitter:
+    volume: 1
+    spatialBlend: 0
+    position:
+      x: 0
+      y: 0
+      z: 0
+    minDistance: 15
+    maxDistance: 30
+    rollOf: 0
+  GetPropertiesFromChildren: 0
 --- !u!95 &3038290479760929974
 Animator:
   serializedVersion: 3
@@ -510,8 +565,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   presentationObjects:
-  - Key: hello world
-    Object: {fileID: 0}
+  - Key: cannon_spawn
+    Object: {fileID: 1305922449067908450}
     String: 
     Int: 0
     Float: 0
@@ -530,6 +585,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   overridePropertyId: _Dissolve
   <Value>k__BackingField: 0
+--- !u!114 &8143442739917902493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4545673641209777730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 145a3f1a3bf14876b1c1f68f9a207a5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &4742174962347744127
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1052,7 +1119,7 @@ Transform:
   m_GameObject: {fileID: 6798472551827463326}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.05, y: 1.05, z: 1}
   m_Children:
   - {fileID: 6732909730600554479}
   - {fileID: 6959476729190986749}
@@ -1511,6 +1578,16 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -8079104204799405503, guid: 38c4864a9a1e00e43af067e19a1c6cc4,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.05
+      objectReference: {fileID: 0}
+    - target: {fileID: -8079104204799405503, guid: 38c4864a9a1e00e43af067e19a1c6cc4,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.05
+      objectReference: {fileID: 0}
     - target: {fileID: -2353049707645544785, guid: 38c4864a9a1e00e43af067e19a1c6cc4,
         type: 3}
       propertyPath: m_Name
@@ -1557,12 +1634,17 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: e226f81bf316f0a42aaab0263b41ceb7, type: 2}
+    - target: {fileID: 1030499381628445781, guid: 38c4864a9a1e00e43af067e19a1c6cc4,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 7243324766535440047, guid: 38c4864a9a1e00e43af067e19a1c6cc4,
     type: 3}
---- !u!1 &4994454484541457859 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: -2353049707645544785, guid: 38c4864a9a1e00e43af067e19a1c6cc4,
+--- !u!212 &1466631534230976313 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 1030499381628445781, guid: 38c4864a9a1e00e43af067e19a1c6cc4,
     type: 3}
   m_PrefabInstance: {fileID: 1880134261739098988}
   m_PrefabAsset: {fileID: 0}
@@ -1572,9 +1654,9 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1880134261739098988}
   m_PrefabAsset: {fileID: 0}
---- !u!212 &1466631534230976313 stripped
-SpriteRenderer:
-  m_CorrespondingSourceObject: {fileID: 1030499381628445781, guid: 38c4864a9a1e00e43af067e19a1c6cc4,
+--- !u!1 &4994454484541457859 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -2353049707645544785, guid: 38c4864a9a1e00e43af067e19a1c6cc4,
     type: 3}
   m_PrefabInstance: {fileID: 1880134261739098988}
   m_PrefabAsset: {fileID: 0}

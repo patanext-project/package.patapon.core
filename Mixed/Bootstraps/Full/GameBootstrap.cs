@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using EcsComponents.MasterServer;
@@ -49,6 +50,8 @@ namespace Bootstraps.Full
 		public struct IsActive : IComponentData
 		{
 		}
+		
+		public struct LaunchVsServer : IComponentData {}
 
 		private Task m_ConnectTask;
 
@@ -61,6 +64,8 @@ namespace Bootstraps.Full
 			// Set the target of our MasterServer here
 			var msRule = World.GetOrCreateSystem<P4MasterServerRule>();
 			m_ConnectTask = masterServer.SetMasterServer(new IPEndPoint(IPAddress.Parse(msRule.Address.Value.ToString()), msRule.Port.Value));
+
+			Application.targetFrameRate = 150;
 		}
 
 		protected override void Match(Entity bootstrapSingleton)
@@ -69,6 +74,11 @@ namespace Bootstraps.Full
 			{
 				world.EntityManager.SetComponentData(world.EntityManager.CreateEntity(typeof(GameProtocolVersion)), new GameProtocolVersion {Version = GameStatic.Version});
 				world.EntityManager.CreateEntity(typeof(IsActive));
+
+				if (EntityManager.GetComponentData<BootstrapParameters>(bootstrapSingleton)
+				                 .Values
+				                 .Contains("vs"))
+					world.EntityManager.CreateEntity(typeof(LaunchVsServer));
 			}
 
 			EntityManager.DestroyEntity(bootstrapSingleton);
@@ -89,6 +99,7 @@ namespace Bootstraps.Full
 			{
 				base.OnCreate();
 				RequireSingletonForUpdate<IsActive>();
+				RequireSingletonForUpdate<LaunchVsServer>();
 
 				Name = "P<color=#ED1C24>4</color> Test Server, yes yes yes";
 				//Name = "New Version in WIP, don't join yet!";

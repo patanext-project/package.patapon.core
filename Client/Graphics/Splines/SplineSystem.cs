@@ -145,7 +145,15 @@ namespace package.patapon.core
 					UnsafeUtility.MemCpy(buffer, result.GetUnsafePtr(), resultCount * sizeof(float3));
 				}
 
-				foreach (var lr in renderer.lineRendererArray) lr.SetPositions(array);
+				var scaling = math.abs(renderer.transform.lossyScale.x);
+				scaling *= renderer.CurveMultiplier;
+
+				foreach (var lr in renderer.lineRendererArray)
+				{
+					if (!renderer.KeepCurveScaling)
+						lr.widthMultiplier = scaling;
+					lr.SetPositions(array);
+				}
 			}
 
 			Profiler.EndSample();

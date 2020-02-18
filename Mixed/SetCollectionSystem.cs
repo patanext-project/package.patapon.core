@@ -153,7 +153,7 @@ namespace DefaultNamespace
 		protected override void OnCreate()
 		{
 			// Year_Month_Day_SubVersion
-			GameStatic.Version = 2020_01_20_01;
+			GameStatic.Version = 2020_02_09_01;
 		}
 
 		protected override void OnUpdate()

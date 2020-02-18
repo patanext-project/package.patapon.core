@@ -9,6 +9,7 @@ using StormiumTeam.GameBase.Components;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.NetCode;
+using UnityEngine;
 
 namespace Systems.GamePlay
 {
@@ -30,15 +31,13 @@ namespace Systems.GamePlay
 				.ForEach((ref DefaultRebornAbility ability, ref AbilityRhythmState state, ref Owner owner) =>
 				{
 					if (!ability.WasFever && !state.PreviousActiveCombo.CanSummon
-					    || state.Engine == default
-					    || !healthFromEntity[owner.Target].IsDead)
+					    || state.Engine == default)
 					{
 						ability.WasFever = false;
 						return;
 					}
 
 					var engineState = engineStateFromEntity[state.Engine];
-					//Debug.Log($"{ability.LastPressureBeat} {engineState.LastPressureBeat + 1}");
 					if (ability.LastPressureBeat + 1 < engineState.LastPressureBeat)
 					{
 						state.PreviousActiveCombo = default;
@@ -53,18 +52,21 @@ namespace Systems.GamePlay
 
 					if (ability.WasFever && state.IsActive)
 					{
-						var comboUpdater = comboStateFromEntity.GetUpdater(state.Engine)
-						                                       .Out(out var comboState);
-
-						var max = comboState.JinnEnergyMax;
-						comboState               = default;
-						comboState.JinnEnergyMax = max;
-						comboUpdater.Update(comboState);
-
-						eventQueue.Enqueue(new TargetRebornEvent
+						if (healthFromEntity[owner.Target].IsDead)
 						{
-							Target = owner.Target
-						});
+							var comboUpdater = comboStateFromEntity.GetUpdater(state.Engine)
+							                                       .Out(out var comboState);
+
+							var max = comboState.JinnEnergyMax;
+							comboState               = default;
+							comboState.JinnEnergyMax = max;
+							comboUpdater.Update(comboState);
+
+							eventQueue.Enqueue(new TargetRebornEvent
+							{
+								Target = owner.Target
+							});
+						}
 
 						ability.WasFever = false;
 					}

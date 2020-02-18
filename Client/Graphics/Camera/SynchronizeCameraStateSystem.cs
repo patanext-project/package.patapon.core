@@ -15,6 +15,11 @@ namespace package.patapon.core
 		public Entity Value;
 	}
 
+	public class CameraModifyTargetSystemGroup : ComponentSystemGroup
+	{
+		
+	}
+
 	[UpdateInGroup(typeof(OrderGroup.Presentation.UpdateCamera))]
 	[AlwaysSynchronizeSystem]
 	[AlwaysUpdateSystem]
@@ -38,7 +43,12 @@ namespace package.patapon.core
 			if (!m_CameraWithoutUpdateComp.IsEmptyIgnoreFilter) EntityManager.AddComponent(m_CameraWithoutUpdateComp, typeof(SystemData));
 
 			Entity defaultCamera                             = default;
-			if (HasSingleton<DefaultCamera>()) defaultCamera = GetSingletonEntity<DefaultCamera>();
+			if (HasSingleton<DefaultCamera>())
+			{
+				defaultCamera = GetSingletonEntity<DefaultCamera>();
+				if (!EntityManager.HasComponent<ComputedCameraState>(defaultCamera))
+					EntityManager.AddComponentData(defaultCamera, new ComputedCameraState());
+			}
 
 			Entities
 				.WithAll<GameCamera>()
@@ -101,18 +111,39 @@ namespace package.patapon.core
 				.WithName("Check_ServerCameraState_AndReplaceSystemData")
 				.WithReadOnly(cameraTargetFromEntity)
 				.Run(); // use ScheduleSingle() when it will be out.
+			
+			Entities.ForEach((ref ComputedCameraState computed, in SystemData systemData) =>
+			{
+				computed.UseModifier = true;
+				
+				computed.Focus       = systemData.Focus;
+				computed.StateData   = systemData.StateData;
+				computed.StateEntity = systemData.StateEntity;
+				
+				if (!math.all(computed.StateData.Offset.rot.value))
+					computed.StateData.Offset.rot = quaternion.identity;
+			}).Run();
+
+			World.GetExistingSystem<CameraModifyTargetSystemGroup>().Update();
 
 			var modifierFromEntity = GetComponentDataFromEntity<CameraModifierData>(true);
 			Entities
-				.ForEach((ref Translation translation, ref Rotation rotation, ref LocalToWorld ltw, ref SystemData systemData) =>
+				.ForEach((ref Translation translation, ref Rotation rotation, ref LocalToWorld ltw, ref ComputedCameraState computed) =>
 				{
-					var offset = systemData.StateData.Offset;
+					var offset = computed.StateData.Offset;
 					if (!math.all(offset.rot.value))
 						offset.rot = quaternion.identity;
 
-					var modifier = modifierFromEntity.TryGet(systemData.StateData.Target, out var hasModifier, default);
-					if (!hasModifier)
-						modifier.Rotation = quaternion.identity;
+					CameraModifierData modifier = default;
+					if (computed.UseModifier && modifierFromEntity.TryGet(computed.StateData.Target, out modifier))
+					{
+						computed.Focus = modifier.FieldOfView;
+					}
+					else
+					{
+						modifier.Rotation    = quaternion.identity;
+						modifier.FieldOfView = 0;
+					}
 
 					translation.Value = modifier.Position + offset.pos;
 					rotation.Value    = math.mul(modifier.Rotation, offset.rot);
@@ -120,14 +151,12 @@ namespace package.patapon.core
 					translation.Value.z = -100; // temporary for now
 
 					ltw.Value = new float4x4(rotation.Value, translation.Value);
-
-					systemData.Focus = hasModifier ? modifier.FieldOfView : 8;
 				}).WithReadOnly(modifierFromEntity).Run();
 
 			return default;
 		}
 
-		public struct SystemData : IComponentData
+		private struct SystemData : IComponentData
 		{
 			public CameraMode Mode;
 			public int        Priority;

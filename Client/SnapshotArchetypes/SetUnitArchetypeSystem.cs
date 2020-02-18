@@ -1,6 +1,8 @@
+using System;
 using DefaultNamespace;
 using package.patapon.core;
 using package.stormiumteam.shared.ecs;
+using Patapon.Mixed.GamePlay.Abilities;
 using Patapon.Mixed.Units;
 using Revolution;
 using StormiumTeam.GameBase;
@@ -11,6 +13,7 @@ using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
+using EActivationType = Patapon.Mixed.GamePlay.Abilities.EActivationType;
 
 namespace SnapshotArchetypes
 {
@@ -57,6 +60,10 @@ namespace SnapshotArchetypes
 			var relativeTargetFromEntity = GetComponentDataFromEntity<Relative<UnitTargetDescription>>(true);
 			var ownerFromEntity          = GetComponentDataFromEntity<Owner>(true);
 
+			var abilityControllerFromEntity = GetComponentDataFromEntity<OwnerActiveAbility>(true);
+			var abilityActivationFromEntity = GetComponentDataFromEntity<AbilityActivation>(true);
+			var abilityStateFromEntity = GetComponentDataFromEntity<AbilityState>(true);
+
 			inputDeps = Entities
 			            .WithAll<SetUnitArchetypeSystem.IsSet>()
 			            .ForEach((Entity entity, ref CameraModifierData cameraModifier, ref CameraTargetAnchor anchor, ref CameraData cameraData, in Translation translation, in UnitEnemySeekingState seekingState) =>
@@ -65,9 +72,55 @@ namespace SnapshotArchetypes
 
 				            var targetFocal = seekingState.Enemy != default ? 7.8f : 5.7f;
 				            var targetOffset = seekingState.Enemy != default ? 0.66f : 0.33f;
+
+				            var isImmediate = false;
+				            var isSpecial = false;
+
+				            if (abilityControllerFromEntity.TryGet(entity, out var controller)
+				                && abilityActivationFromEntity.TryGet(controller.Incoming, out var activation) && activation.Type == EActivationType.HeroMode
+				                && abilityStateFromEntity.TryGet(controller.Incoming, out var state) && (state.Phase & EAbilityPhase.ActiveOrChaining) == 0)
+				            {
+					            if (math.abs(userCommand.Panning) < 0.1f)
+					            {
+						            cameraData.HeroModeZoom            =  true;
+						            cameraData.HeroModeZoomProgression += dt;
+					            }
+				            }
+				            else
+				            {
+					            if (cameraData.HeroModeZoom)
+						            isImmediate = true;
+
+					            cameraData.HeroModeZoom = false;
+					            cameraData.HeroModeZoomProgression = 0;
+				            }
 				            
-				            cameraModifier.FieldOfView = Mathf.SmoothDamp(cameraModifier.FieldOfView, targetFocal, ref cameraData.FocalVelocity, 0.35f, 100, dt); // add enemies seeking...
-				            cameraModifier.FieldOfView = math.max(cameraModifier.FieldOfView, 4);
+				            isSpecial |= cameraData.HeroModeZoom;
+
+				            if (!isSpecial)
+				            {
+					            if (isImmediate)
+					            {
+						            cameraModifier.FieldOfView = targetFocal;
+					            }
+					            else
+					            {
+						            cameraModifier.FieldOfView = Mathf.SmoothDamp(cameraModifier.FieldOfView, targetFocal, ref cameraData.FocalVelocity, 0.35f, 100, dt);
+						            cameraModifier.FieldOfView = math.max(cameraModifier.FieldOfView, 4);   
+					            }
+				            }
+				            else
+				            {
+					            if (cameraData.HeroModeZoom)
+					            {
+						            cameraModifier.FieldOfView = math.lerp(7, 6f, math.min(cameraData.HeroModeZoomProgression * 2.5f, 1));
+						            if (cameraData.HeroModeZoomProgression >= 0.4f)
+							            cameraModifier.FieldOfView -= (cameraData.HeroModeZoomProgression - 0.4f) * 0.2f;
+						            
+						            cameraModifier.FieldOfView = math.max(cameraModifier.FieldOfView, 5.75f);
+						            cameraModifier.Position.x = translation.Value.x;
+					            }
+				            }
 
 				            ownerFromEntity.TryGet(entity, out var owner);
 
@@ -75,21 +128,32 @@ namespace SnapshotArchetypes
 				            if (!relativeTargetFromEntity.TryGet(entity, out relativeTarget))
 					            relativeTargetFromEntity.TryGet(owner.Target, out relativeTarget);
 
-				            var useTargetPosition = false;
-				            var targetPosition    = new float();
-				            if (relativeTarget.Target != default && seekingState.Enemy != default)
+				            if (!isSpecial)
 				            {
-					            targetPosition    = translationFromEntity[relativeTarget.Target].Value.x;
-					            useTargetPosition = (targetPosition - translation.Value.x) * direction.Value > 0;
+					            var useTargetPosition = false;
+					            var targetPosition    = new float();
+					            if (relativeTarget.Target != default && seekingState.Enemy != default)
+					            {
+						            targetPosition    = translationFromEntity[relativeTarget.Target].Value.x;
+						            useTargetPosition = (targetPosition - translation.Value.x) * direction.Value > 0;
+					            }
+
+					            // in future, set y and z
+					            float3 positionResult = default;
+					            positionResult.x =  useTargetPosition ? targetPosition : translation.Value.x;
+					            positionResult.x += userCommand.Panning * (cameraModifier.FieldOfView + 4f * direction.Value);
+					            positionResult.x += cameraModifier.FieldOfView * targetOffset * direction.Value;
+
+					            if (!isImmediate)
+					            {
+						            cameraModifier.Position.x = Mathf.SmoothDamp(cameraModifier.Position.x, positionResult.x, ref cameraData.PositionVelocity, 0.525f, 100, dt);
+					            }
+					            else
+					            {
+						            cameraModifier.Position.x = positionResult.x;
+					            }
 				            }
 
-				            // in future, set y and z
-				            float3 positionResult = default;
-				            positionResult.x =  useTargetPosition ? targetPosition : translation.Value.x;
-				            positionResult.x += userCommand.Panning * (cameraModifier.FieldOfView + 4f * direction.Value);
-				            positionResult.x += cameraModifier.FieldOfView * targetOffset * direction.Value;
-
-				            cameraModifier.Position.x = Mathf.SmoothDamp(cameraModifier.Position.x, positionResult.x, ref cameraData.PositionVelocity, 0.525f, 100, dt);
 				            if (math.isnan(cameraModifier.Position.x) || math.abs(cameraModifier.Position.x) > 4000.0f) cameraModifier.Position.x = 0;
 
 				            Debug.DrawRay(cameraModifier.Position, Vector3.up * 4, Color.blue);
@@ -101,6 +165,9 @@ namespace SnapshotArchetypes
 			            .WithReadOnly(relativeTargetFromEntity)
 			            .WithReadOnly(translationFromEntity)
 			            .WithReadOnly(ownerFromEntity)
+			            .WithReadOnly(abilityControllerFromEntity)
+			            .WithReadOnly(abilityStateFromEntity)
+			            .WithReadOnly(abilityActivationFromEntity)
 			            .Schedule(inputDeps);
 
 			return inputDeps;
@@ -108,6 +175,9 @@ namespace SnapshotArchetypes
 
 		public struct CameraData : IComponentData
 		{
+			public bool HeroModeZoom;
+			public float HeroModeZoomProgression;
+			
 			public float PositionVelocity;
 			public float FocalVelocity;
 		}

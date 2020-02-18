@@ -89,7 +89,7 @@ namespace package.patapon.core.Animation.Units
 
 		protected override bool OnBeforeForEach()
 		{
-			AbilityFinder.Update(default).Complete();
+			AbilityFinder.Update();
 			return true;
 		}
 	}

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="512"
+   height="512"
+   viewBox="0 0 135.46666 135.46667"
+   version="1.1"
+   id="svg8"
+   sodipodi:docname="OnHalved_HaloShining.svg"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)">
+  <defs
+     id="defs2">
+    <radialGradient
+       inkscape:collect="always"
+       id="testgrad">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1"
+         offset="0"
+         id="stop1030" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0"
+         offset="1"
+         id="stop1032" />
+    </radialGradient>
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient937">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0.58823532"
+         offset="0"
+         id="stop933" />
+      <stop
+         id="stop949"
+         offset="0.25"
+         style="stop-color:#ffffff;stop-opacity:0.68627453" />
+      <stop
+         id="stop945"
+         offset="0.5"
+         style="stop-color:#ffffff;stop-opacity:0.9848485" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0.68627453"
+         offset="0.75"
+         id="stop947" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0.58823532"
+         offset="1"
+         id="stop935" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient937"
+       id="linearGradient943"
+       x1="256.82355"
+       y1="91.815384"
+       x2="198.67931"
+       y2="210.55841"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(7.6561157,83.248484)" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#testgrad"
+       id="radialGradient1036"
+       cx="352.3208"
+       cy="150.17191"
+       fx="352.3208"
+       fy="150.17191"
+       r="28.575415"
+       gradientTransform="matrix(1,0,0,1.9992315,6.355996,23.5594)"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#testgrad"
+       id="radialGradient1036-6"
+       cx="352.3208"
+       cy="150.17191"
+       fx="352.3208"
+       fy="150.17191"
+       r="28.575415"
+       gradientTransform="matrix(1,0,0,1.9992315,-271.0794,-65.589471)"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="78.116371"
+     inkscape:cy="209.73309"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:pagecheckerboard="true"
+     units="px"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-161.53332)">
+    <path
+       style="fill:url(#radialGradient1036-6);fill-opacity:1.0;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 109.81685,177.51003 -57.150831,15.31352 v 50.79886 c 0,37.75342 28.15209,48.14535 28.15209,48.14535 0,0 28.998741,-22.08978 28.998741,-51.53343 z"
+       id="path826-4-5-6-1-6"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccsccc" />
+  </g>
+</svg>

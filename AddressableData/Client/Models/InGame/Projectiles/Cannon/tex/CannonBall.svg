@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="4.5cm"
+   height="4.5cm"
+   viewBox="0 0 44.999998 45"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   sodipodi:docname="CannonBall.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="-377.17461"
+     inkscape:cy="-0.25460912"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="cm"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-251.99999)">
+    <g
+       id="g885"
+       transform="matrix(0.8434008,0,0,0.8434008,0.79071078,45.719235)">
+      <circle
+         r="25.343357"
+         cy="271.25983"
+         cx="25.740177"
+         id="path815"
+         style="opacity:1;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:7.84212208;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0;paint-order:stroke fill markers" />
+      <circle
+         r="25.343361"
+         cy="271.25983"
+         cx="25.740181"
+         id="path815-5"
+         style="opacity:1;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:7.84212208;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0;paint-order:stroke fill markers" />
+      <ellipse
+         transform="rotate(-54.085388)"
+         ry="8.2425537"
+         rx="10.873446"
+         cy="165.34999"
+         cx="-203.22786"
+         id="path815-5-7"
+         style="opacity:1;fill:#ffffff;fill-opacity:0.07843138;fill-rule:evenodd;stroke:none;stroke-width:2.92943525;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0;paint-order:stroke fill markers" />
+      <ellipse
+         transform="rotate(-54.085388)"
+         ry="5.2403316"
+         rx="6.9129629"
+         cy="163.79326"
+         cx="-203.03015"
+         id="path815-5-7-7"
+         style="opacity:1;fill:#ffffff;fill-opacity:0.19607843;fill-rule:evenodd;stroke:none;stroke-width:1.86243403;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0;paint-order:stroke fill markers" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path815-5-7-7-3"
+         d="m 23.67219,248.14178 c -4.789633,1.92299 -9.494049,3.9461 -12.090586,8.44921 a 2.7491262,3.6266036 35.914612 0 0 -1.7490836,1.44817 2.7491262,3.6266036 35.914612 0 0 -0.8373686,2.77858 c -2.7142431,4.69046 -1.5846467,9.68341 -2.5308885,14.19144 1.3680764,-4.00209 1.9090518,-8.5409 3.6120327,-12.32575 a 2.7491262,3.6266036 35.914612 0 0 4.209148,-1.41922 2.7491262,3.6266036 35.914612 0 0 -0.099,-4.54997 2.7491262,3.6266036 35.914612 0 0 -0.192126,-0.1213 c 2.665923,-3.1638 6.212208,-5.78244 9.677869,-8.45116 z"
+         style="opacity:1;fill:#ffffff;fill-opacity:0.39215687;fill-rule:evenodd;stroke:none;stroke-width:0.97705013;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0;paint-order:stroke fill markers" />
+    </g>
+  </g>
+</svg>

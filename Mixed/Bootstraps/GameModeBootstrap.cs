@@ -92,13 +92,17 @@ namespace Bootstraps
 
 		private void SingleTeam()
 		{
-						var playerEntities = m_PlayerQuery.ToEntityArray(Allocator.TempJob);
+			var playerEntities = m_PlayerQuery.ToEntityArray(Allocator.TempJob);
 			var count = playerEntities.Length;
+			count += 3;
 
 			// Create formation
 			const int formationCount = 2;
 			for (var _ = 0; _ != formationCount; _++)
 			{
+				/*if (_ == 1)
+					break;*/
+				
 				var formationRoot = EntityManager.CreateEntity(typeof(GameFormationTag), typeof(FormationTeam), typeof(FormationRoot));
 				{
 					for (var i = 0; i != count; i++)
@@ -127,10 +131,10 @@ namespace Bootstraps
 						};
 						
 						var displayEquipment = new UnitDisplayedEquipment();
-						var targetKit        = UnitKnownTypes.Taterazay;
+						var targetKit        = UnitKnownTypes.Yarida;
 						if (playerEntities.Length > i && playerEntities[i] != Entity.Null)
 						{
-							targetKit = UnitKnownTypes.Taterazay;
+							targetKit = UnitKnownTypes.Yarida;
 							EntityManager.ReplaceOwnerData(unitEntity, playerEntities[i]);
 						}
 						else

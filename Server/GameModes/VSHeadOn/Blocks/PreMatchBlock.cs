@@ -79,14 +79,21 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				                                          || !WorldCtx.EntityMgr.HasComponent<OwnerChild>(commandTarget.targetEntity))
 					return;
 
-				WorldCtx.EntityMgr.SetOrAddComponentData(commandTarget.targetEntity, new Relative<TeamDescription>(GameModeCtx.Teams[rpc.Team].Target));
-
-				var children = WorldCtx.EntityMgr.GetBuffer<OwnerChild>(commandTarget.targetEntity);
-				for (var i = 0; i != children.Length; i++)
+				if (rpc.Team >= 0 && rpc.Team <= 1)
 				{
-					if (!WorldCtx.EntityMgr.HasComponent<ArmyFormation>(children[i].Child))
-						continue;
-					WorldCtx.EntityMgr.SetComponentData(children[i].Child, new FormationParent {Value = FormationEntity[rpc.Team]});
+					WorldCtx.EntityMgr.SetOrAddComponentData(commandTarget.targetEntity, new Relative<TeamDescription>(GameModeCtx.Teams[rpc.Team].Target));
+					
+					var children = WorldCtx.EntityMgr.GetBuffer<OwnerChild>(commandTarget.targetEntity);
+					for (var i = 0; i != children.Length; i++)
+					{
+						if (!WorldCtx.EntityMgr.HasComponent<ArmyFormation>(children[i].Child))
+							continue;
+						WorldCtx.EntityMgr.SetComponentData(children[i].Child, new FormationParent {Value = FormationEntity[rpc.Team]});
+					}
+				}
+				else
+				{
+					
 				}
 			});
 
