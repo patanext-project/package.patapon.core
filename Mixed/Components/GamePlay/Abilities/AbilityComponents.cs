@@ -73,6 +73,10 @@ namespace Patapon.Mixed.GamePlay.Abilities
 		public int UpdateVersion;
 		public int ActivationVersion;
 
+		public bool IsActive           => (Phase & EAbilityPhase.Active) != 0;
+		public bool IsActiveOrChaining => (Phase & EAbilityPhase.ActiveOrChaining) != 0;
+		public bool IsChaining         => (Phase & EAbilityPhase.Chaining) != 0;
+
 		public class NetEmptySynchronize : ComponentSnapshotSystemTag<AbilityState>
 		{
 		}

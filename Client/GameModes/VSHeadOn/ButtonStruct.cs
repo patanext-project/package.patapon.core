@@ -16,19 +16,17 @@ namespace GameModes.VSHeadOn
 		[UpdateInGroup(typeof(InteractionButtonSystemGroup))]
 		[UpdateBefore(typeof(DisablePopupActionSystem))]
 		[AlwaysSynchronizeSystem]
-		public class Process : JobComponentSystem
+		public class Process : SystemBase
 		{
 			private LazySystem<EndInteractionButtonCommandBufferSystem> m_EndBuffer;
 
-			protected override JobHandle OnUpdate(JobHandle inputDeps)
+			protected override void OnUpdate()
 			{
 				Entities.WithAll<UIButton.ClickedEvent>().ForEach((Entity entity, in ButtonSpectate button) =>
 				{
 					var reqEnt = EntityManager.CreateEntity(typeof(HeadOnSpectateRpc), typeof(SendRpcCommandRequestComponent));
 					EntityManager.SetOrAddComponentData(reqEnt, new HeadOnSpectateRpc {GhostId = 0});
 				}).WithStructuralChanges().Run();
-
-				return default;
 			}
 		}
 	}

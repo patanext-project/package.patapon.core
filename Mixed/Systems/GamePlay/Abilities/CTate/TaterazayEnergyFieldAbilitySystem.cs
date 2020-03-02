@@ -18,7 +18,7 @@ namespace Systems.GamePlay.CTate
 	[UpdateInWorld(UpdateInWorld.TargetWorld.ClientAndServer)]
 	public unsafe class TaterazayEnergyFieldAbilitySystem : BaseAbilitySystem
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var tick                     = ServerTick;
 			var impl                     = new BasicUnitAbilityImplementation(this);
@@ -49,7 +49,7 @@ namespace Systems.GamePlay.CTate
 					var tryGetChain = stackalloc[] {entity, owner.Target};
 					if (relativeTargetFromEntity.TryGetChain(tryGetChain, 2, out var relativeTarget))
 					{
-						var targetPosition = impl.TranslationFromEntity[relativeTarget.Target].Value;
+						var targetPosition = impl.Translation[relativeTarget.Target].Value;
 						if ((state.Phase & EAbilityPhase.ActiveOrChaining) != 0 && isPredicted)
 						{
 							control.IsActive       = true;
@@ -63,14 +63,14 @@ namespace Systems.GamePlay.CTate
 
 					buffFromEntity[ability.BuffEntity] = new EnergyFieldBuff
 					{
-						Direction = impl.UnitDirectionFromEntity[owner.Target].Value,
-						Position  = impl.TranslationFromEntity[owner.Target].Value,
+						Direction = impl.UnitDirection[owner.Target].Value,
+						Position  = impl.Translation[owner.Target].Value,
 
 						MinDistance = ability.MinDistance,
 						MaxDistance = ability.MaxDistance,
 
 						DamageReduction = ability.GivenDamageReduction,
-						Defense         = impl.UnitSettingsFromEntity[owner.Target].Defense,
+						Defense         = impl.UnitSettings[owner.Target].Defense,
 					};
 					buffSourceFromEntity[ability.BuffEntity] = new BuffSource {Source = owner.Target};
 					if (relativeTeamFromEntity.TryGet(owner.Target, out var relativeTeam))
@@ -83,8 +83,6 @@ namespace Systems.GamePlay.CTate
 
 			ecb.Playback(EntityManager);
 			ecb.Dispose();
-
-			return default;
 		}
 	}
 }

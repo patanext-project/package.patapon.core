@@ -36,7 +36,7 @@ namespace SnapshotArchetypes
 	}
 
 	[UpdateInGroup(typeof(AfterSnapshotIsAppliedSystemGroup))]
-	public class UpdateLocalRhythmEngineSystem : JobGameBaseSystem
+	public class UpdateLocalRhythmEngineSystem : AbsGameBaseSystem
 	{
 		private EndSimulationEntityCommandBufferSystem m_EndBarrier;
 		private EntityQuery                            m_Query;
@@ -54,12 +54,10 @@ namespace SnapshotArchetypes
 			});
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			m_EndBarrier.CreateCommandBuffer().AddComponent(m_Query, typeof(FlowSimulateProcess));
-			m_EndBarrier.AddJobHandleForProducer(inputDeps);
-
-			return inputDeps;
+			m_EndBarrier.AddJobHandleForProducer(Dependency);
 		}
 	}
 }

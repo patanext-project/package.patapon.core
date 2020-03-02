@@ -10,7 +10,7 @@ using UnityEngine.AddressableAssets;
 namespace DataScripts.Interface.GameMode.VSHeadOn
 {
 	[UpdateInGroup(typeof(OrderGroup.Presentation.InterfaceRendering))]
-	public class HeadOnPlaySoundSystem : GameBaseSystem
+	public class HeadOnPlaySoundSystem : AbsGameBaseSystem
 	{
 		public struct Data
 		{

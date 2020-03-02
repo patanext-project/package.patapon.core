@@ -10,7 +10,7 @@ namespace Patapon.Client.Systems
 {
 	[AlwaysSynchronizeSystem]
 	[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation))]
-	public class ECSoundSystem : JobComponentSystem
+	public class ECSoundSystem : SystemBase
 	{
 		private const int SourceCount = 48;
 
@@ -50,7 +50,7 @@ namespace Patapon.Client.Systems
 			return source;
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			Entities.WithAll<ECSoundOneShotTag>().ForEach((Entity ent, in ECSoundEmitterComponent emitter, in ECSoundDefinition definition) =>
 			{
@@ -85,8 +85,6 @@ namespace Patapon.Client.Systems
 
 				EntityManager.DestroyEntity(ent);
 			}).WithStructuralChanges().Run();
-
-			return inputDeps;
 		}
 
 		public ECSoundDefinition ConvertClip(AudioClip clip)

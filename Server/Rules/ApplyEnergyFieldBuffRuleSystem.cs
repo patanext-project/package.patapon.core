@@ -19,7 +19,7 @@ namespace Patapon.Mixed.GameModes.Rules
 	[UpdateBefore(typeof(ApplyDefensiveBonusToDamageRuleSystem))]
 	public class ApplyEnergyFieldBuffRuleSystem : RuleBaseSystem
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var relativeTeamFromEntity  = GetComponentDataFromEntity<Relative<TeamDescription>>(true);
 			var buffContainerFromEntity = GetBufferFromEntity<BuffContainer>(true);
@@ -81,8 +81,6 @@ namespace Patapon.Mixed.GameModes.Rules
 
 			ecb.Playback(EntityManager);
 			ecb.Dispose();
-
-			return default;
 		}
 	}
 }

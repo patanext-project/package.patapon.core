@@ -10,7 +10,7 @@ using UnityEngine.AddressableAssets;
 namespace Patapon.Client.Systems
 {
 	// todo: this class should be removed once there will be a correct way to get voices...
-	public class UnitHeroVoiceManager : GameBaseSystem
+	public class UnitHeroVoiceManager : AbsGameBaseSystem
 	{
 		public struct DataOp
 		{

@@ -14,9 +14,9 @@ namespace Systems.GamePlay
 	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	[AlwaysSynchronizeSystem]
-	public class DefaultJumpAbilitySystem : JobGameBaseSystem
+	public class DefaultJumpAbilitySystem : AbsGameBaseSystem
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var tick                          = ServerTick;
 			var unitControllerStateFromEntity = GetComponentDataFromEntity<UnitControllerState>();
@@ -80,8 +80,6 @@ namespace Systems.GamePlay
 					velocityUpdater.CompareAndUpdate(velocity);
 				})
 				.Run();
-
-			return default;
 		}
 	}
 }

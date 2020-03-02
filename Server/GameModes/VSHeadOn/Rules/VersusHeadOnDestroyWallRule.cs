@@ -24,7 +24,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 	[AlwaysSynchronizeSystem]
 	public class VersusHeadOnDestroyAreaRuleSystem : RuleBaseSystem<VersusHeadOnDestroyAreaRule>
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var rule                   = GetSingleton<VersusHeadOnDestroyAreaRule>();
 			var tick                   = ServerTick;
@@ -74,8 +74,6 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					Score = score
 				});
 			}).Run();
-
-			return default;
 		}
 
 		public RuleProperties<VersusHeadOnDestroyAreaRule>.Property<int> TowerReward;

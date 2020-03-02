@@ -16,7 +16,7 @@ namespace DefaultNamespace
 	}
 
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
-	public class SystemInstance : GameBaseSystem
+	public class SystemInstance : AbsGameBaseSystem
 	{
 		public static SystemInstance _;
 

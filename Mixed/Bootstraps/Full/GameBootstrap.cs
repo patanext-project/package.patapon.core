@@ -86,7 +86,7 @@ namespace Bootstraps.Full
 
 #if UNITY_EDITOR
 		[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-		public class ServerSystem : GameBaseSystem
+		public class ServerSystem : AbsGameBaseSystem
 		{
 			private bool m_SetCustomServerName;
 

@@ -21,7 +21,7 @@ namespace Patapon.Client
 
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	[AlwaysUpdateSystem]
-	public class SongSystem : GameBaseSystem
+	public class SongSystem : AbsGameBaseSystem
 	{
 		public  Dictionary<string, DescriptionFileJsonData> Files;
 		private NativeString64                              m_PreviousTarget;
@@ -35,14 +35,20 @@ namespace Patapon.Client
 
 			Files = new Dictionary<string, DescriptionFileJsonData>();
 
-			var songFiles = Directory.GetFiles(Application.streamingAssetsPath + "/songs", "*.json", SearchOption.TopDirectoryOnly);
+			var songFiles = new List<string>();
+			songFiles.AddRange(Directory.GetFiles(Application.streamingAssetsPath + "/songs", "*.json", SearchOption.TopDirectoryOnly));
+			songFiles.AddRange(Directory.GetFiles(Application.persistentDataPath + "/songs", "*.json", SearchOption.TopDirectoryOnly));
 			foreach (var file in songFiles)
 				try
 				{
 					var obj = JsonConvert.DeserializeObject<DescriptionFileJsonData>(File.ReadAllText(file));
 					if (string.IsNullOrEmpty(obj.path)) // take addressable path
 						obj.path = "core://Client/Songs";
-					Debug.Log($"Found song: (id={obj.identifier}, name={obj.name})");
+
+					obj.path = obj.path.Replace("[StreamingAssetsPath]", Application.streamingAssetsPath);
+					obj.path = obj.path.Replace("[PersistentDataPath]", Application.persistentDataPath);
+					
+					Debug.Log($"Found song: (id={obj.identifier}, name={obj.name}, path={obj.path})");
 
 					Files[obj.identifier] = obj;
 				}
@@ -53,7 +59,7 @@ namespace Patapon.Client
 				}
 		}
 
-		protected override void OnUpdate()
+		protected override void OnUpdate()x
 		{
 			if (MapTargetSongId == null)
 				MapTargetSongId = GetSingleton<ForcedSongRule>().SongId.ToString();

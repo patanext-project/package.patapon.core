@@ -16,14 +16,19 @@ namespace Systems.GamePlay
 		public bool IsActive;
 
 		public bool3  Control;
+
+		public bool TargetFromCursor;
 		public float3 TargetPosition;
 		public float  Acceleration;
+
+		public bool HasCustomMovementSpeed;
+		public float CustomMovementSpeed;
 	}
 
 	[UpdateInGroup(typeof(UnitPhysicSystemGroup))]
 	[UpdateBefore(typeof(UnitInitStateSystemGroup))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
-	public class AbilityControlOwnerTargetSystem : JobGameBaseSystem
+	public class AbilityControlOwnerTargetSystem : AbsGameBaseSystem
 	{
 		struct Payload
 		{
@@ -38,21 +43,25 @@ namespace Systems.GamePlay
 
 			[ReadOnly]
 			public ComponentDataFromEntity<UnitPlayState> PlayState;
+
+			[ReadOnly]
+			public ComponentDataFromEntity<Relative<UnitTargetDescription>> CursorRelative;
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var payload = new Payload
 			{
 				Translation     = GetComponentDataFromEntity<Translation>(true),
 				PlayState       = GetComponentDataFromEntity<UnitPlayState>(true),
 				Velocity        = GetComponentDataFromEntity<Velocity>(),
-				ControllerState = GetComponentDataFromEntity<UnitControllerState>()
+				ControllerState = GetComponentDataFromEntity<UnitControllerState>(),
+				CursorRelative  = GetComponentDataFromEntity<Relative<UnitTargetDescription>>()
 			};
 			var tick = ServerTick;
 
 			// allow parallel operations since only one ability can be active on an owner...
-			return Entities.ForEach((ref AbilityControlVelocity target, in Owner owner) =>
+			Entities.ForEach((ref AbilityControlVelocity target, in Owner owner) =>
 			{
 				if (!target.IsActive)
 					return;
@@ -64,9 +73,19 @@ namespace Systems.GamePlay
 				var velocityUpdater   = payload.Velocity.GetUpdater(owner.Target).Out(out var velocity);
 				var controllerUpdater = payload.ControllerState.GetUpdater(owner.Target).Out(out var controller);
 
+				if (target.HasCustomMovementSpeed)
+					playState.MovementAttackSpeed = target.CustomMovementSpeed;
+
+				var targetPosition = target.TargetPosition;
+				if (target.TargetFromCursor && payload.CursorRelative.TryGet(owner.Target, out var cursorRelative)
+				                            && payload.Translation.TryGet(cursorRelative.Target, out var cursorTranslation))
+				{
+					targetPosition += cursorTranslation.Value.x;
+				}
+
 				velocity.Value.x = AbilityUtility.GetTargetVelocityX(new AbilityUtility.GetTargetVelocityParameters
 				{
-					TargetPosition   = target.TargetPosition,
+					TargetPosition   = targetPosition,
 					PreviousPosition = position,
 					PreviousVelocity = velocity.Value,
 					PlayState        = playState,
@@ -77,7 +96,7 @@ namespace Systems.GamePlay
 
 				velocityUpdater.Update(velocity);
 				controllerUpdater.CompareAndUpdate(controller);
-			}).Schedule(inputDeps);
+			}).ScheduleParallel();
 		}
 	}
 }

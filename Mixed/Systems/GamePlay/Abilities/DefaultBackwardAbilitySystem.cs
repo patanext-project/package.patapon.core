@@ -15,7 +15,7 @@ namespace Systems.GamePlay
 {
 	public class DefaultBackwardAbilitySystem : BaseAbilitySystem
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var dt                            = Time.DeltaTime;
 			var unitTargetControlFromEntity   = GetComponentDataFromEntity<UnitTargetControlTag>(true);
@@ -107,8 +107,6 @@ namespace Systems.GamePlay
 					controllerStateUpdater.CompareAndUpdate(controllerState);
 				})
 				.Run();
-
-			return default;
 		}
 	}
 }

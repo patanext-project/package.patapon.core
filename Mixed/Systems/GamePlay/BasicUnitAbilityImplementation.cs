@@ -11,45 +11,46 @@ namespace Patapon.Mixed.GamePlay
 {
 	public struct BasicUnitAbilityImplementation
 	{
-		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitStatistics> UnitSettingsFromEntity;
-		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitPlayState>  UnitPlayStateFromEntity;
+		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitStatistics> UnitSettings;
+		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitPlayState>  UnitPlayState;
 
-		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Translation>         TranslationFromEntity;
-		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<LocalToWorld>        LocalToWorldFromEntity;
-		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitControllerState> ControllerFromEntity;
-		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Velocity>            VelocityFromEntity;
-		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitDirection>       UnitDirectionFromEntity;
-		
-		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GroundState> GroundStateFromEntity;
-		
-		[NativeDisableContainerSafetyRestriction] public ComponentDataFromEntity<LivableHealth>       HealthFromEntity;
+		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Translation>         Translation;
+		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<LocalToWorld>        LocalToWorld;
+		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitControllerState> Controller;
+		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Velocity>            Velocity;
+		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitDirection>       UnitDirection;
+
+		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GroundState> GroundState;
+
+		[NativeDisableContainerSafetyRestriction]
+		public ComponentDataFromEntity<LivableHealth> Health;
 
 		public BasicUnitAbilityImplementation(ComponentSystemBase system)
 		{
-			UnitSettingsFromEntity  = system.GetComponentDataFromEntity<UnitStatistics>();
-			UnitPlayStateFromEntity = system.GetComponentDataFromEntity<UnitPlayState>();
+			UnitSettings  = system.GetComponentDataFromEntity<UnitStatistics>();
+			UnitPlayState = system.GetComponentDataFromEntity<UnitPlayState>();
 
-			TranslationFromEntity   = system.GetComponentDataFromEntity<Translation>();
-			LocalToWorldFromEntity  = system.GetComponentDataFromEntity<LocalToWorld>();
-			ControllerFromEntity    = system.GetComponentDataFromEntity<UnitControllerState>();
-			VelocityFromEntity      = system.GetComponentDataFromEntity<Velocity>();
-			UnitDirectionFromEntity = system.GetComponentDataFromEntity<UnitDirection>();
-			
-			GroundStateFromEntity = system.GetComponentDataFromEntity<GroundState>();
+			Translation   = system.GetComponentDataFromEntity<Translation>();
+			LocalToWorld  = system.GetComponentDataFromEntity<LocalToWorld>();
+			Controller    = system.GetComponentDataFromEntity<UnitControllerState>();
+			Velocity      = system.GetComponentDataFromEntity<Velocity>();
+			UnitDirection = system.GetComponentDataFromEntity<UnitDirection>();
 
-			HealthFromEntity = system.GetComponentDataFromEntity<LivableHealth>(true);
+			GroundState = system.GetComponentDataFromEntity<GroundState>();
+
+			Health = system.GetComponentDataFromEntity<LivableHealth>(true);
 		}
 
 		public bool IsGrounded(Entity entity)
 		{
-			if (!GroundStateFromEntity.TryGet(entity, out var state))
+			if (!GroundState.TryGet(entity, out var state))
 				return true;
 			return state.Value;
 		}
 
 		public bool CanExecuteAbility(Entity entity)
 		{
-			if (!HealthFromEntity.TryGet(entity, out var health))
+			if (!Health.TryGet(entity, out var health))
 				return true;
 			return !health.IsDead;
 		}

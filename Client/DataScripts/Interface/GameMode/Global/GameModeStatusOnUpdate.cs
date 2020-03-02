@@ -20,7 +20,7 @@ namespace DataScripts.Interface.GameMode.Global
 
 	[UpdateInGroup(typeof(OrderGroup.Simulation.UpdateEntities))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
-	public class GameModeStatusOnUpdate : GameBaseSystem
+	public class GameModeStatusOnUpdate : AbsGameBaseSystem
 	{
 		public event GameModeStatusFindTranslation OnFindTranslation;
 		public event GameModeModifyStatus          OnModifyStatus;

@@ -55,7 +55,7 @@ namespace package.patapon.core.Models.InGame.UIDrum
 	[AlwaysUpdateSystem]
 	[UpdateInGroup(typeof(OrderGroup.Presentation.InterfaceRendering))]
 	[AlwaysSynchronizeSystem]
-	public class UIDrumPressureSystem : JobGameBaseSystem
+	public class UIDrumPressureSystem : AbsGameBaseSystem
 	{
 		public Dictionary<int, AsyncAssetPool<GameObject>> DrumPresentationPools = new Dictionary<int, AsyncAssetPool<GameObject>>();
 		public Dictionary<int, AssetPool<GameObject>>      DrumBackendPools      = new Dictionary<int, AssetPool<GameObject>>();
@@ -105,7 +105,7 @@ namespace package.patapon.core.Models.InGame.UIDrum
 			m_Canvas.sortingOrder = (int) World.GetOrCreateSystem<UIDrumPressureOrderingSystem>().Order;
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			Entity cameraEntity   = default;
 			float3 cameraPosition = default;
@@ -118,7 +118,7 @@ namespace package.patapon.core.Models.InGame.UIDrum
 
 			var player  = this.GetFirstSelfGamePlayer();
 			if (!EntityManager.TryGetComponentData(player, out GamePlayerCommand playerCommand))
-				return default;
+				return;
 
 			var cameraState = this.GetComputedCameraState();
 
@@ -156,7 +156,7 @@ namespace package.patapon.core.Models.InGame.UIDrum
 				engine = PlayerComponentFinder.FindPlayerComponent(m_EngineQuery, player);
 
 			if (engine == default)
-				return default;
+				return;
 			
 			var process  = EntityManager.GetComponentData<FlowEngineProcess>(engine);
 			var settings = EntityManager.GetComponentData<RhythmEngineSettings>(engine);
@@ -169,7 +169,7 @@ namespace package.patapon.core.Models.InGame.UIDrum
 				{
 					backend.Return(true, true);
 				}).WithStructuralChanges().Run();
-				return default;
+				return;
 			}
 
 			var key = 1;
@@ -277,7 +277,7 @@ namespace package.patapon.core.Models.InGame.UIDrum
 				backend.Return(true, true);
 			}).WithStructuralChanges().Run();
 			
-			return default;
+			return;
 		}
 
 		private GameObject CreateBackendDrumGameObject(AssetPool<GameObject> poolCaller)

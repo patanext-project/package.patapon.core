@@ -15,9 +15,9 @@ namespace Systems.GamePlay
 	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	[AlwaysSynchronizeSystem]
-	public class DefaultRetreatAbilitySystem : JobGameBaseSystem
+	public class DefaultRetreatAbilitySystem : AbsGameBaseSystem
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var dt                            = Time.DeltaTime;
 			var unitDirectionFromEntity       = GetComponentDataFromEntity<UnitDirection>(true);
@@ -100,8 +100,6 @@ namespace Systems.GamePlay
 					velocityUpdater.CompareAndUpdate(velocity);
 				})
 				.Run();
-
-			return default;
 		}
 	}
 }

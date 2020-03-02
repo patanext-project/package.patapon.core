@@ -89,13 +89,13 @@ namespace Patapon.Mixed.RhythmEngine
 		}
 
 		[UpdateInGroup(typeof(GhostUpdateSystemGroup))]
-		public class UpdateSystem : JobComponentSystem
+		public class UpdateSystem : SystemBase
 		{
 			private LazySystem<ClientSimulationSystemGroup> m_ClientGroup;
 
-			protected override JobHandle OnUpdate(JobHandle inputDeps)
+			protected override void OnUpdate()
 			{
-				inputDeps = Entities.ForEach((ref RhythmEngineState component, in DynamicBuffer<Snapshot> snapshots) =>
+				Entities.ForEach((ref RhythmEngineState component, in DynamicBuffer<Snapshot> snapshots) =>
 				{
 					if (snapshots.Length == 0)
 						return;
@@ -106,9 +106,7 @@ namespace Patapon.Mixed.RhythmEngine
 						component.RecoveryTick     = last.RecoveryTick;
 						component.NextBeatRecovery = last.NextBeatRecovery;
 					}
-				}).Schedule(inputDeps);
-
-				return inputDeps;
+				}).Schedule();
 			}
 		}
 	}

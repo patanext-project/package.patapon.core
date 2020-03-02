@@ -20,6 +20,7 @@ using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Data;
 using StormiumTeam.GameBase.EcsComponents;
+using StormiumTeam.GameBase.External;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -122,6 +123,7 @@ namespace Patapon.Server.GameModes.Training
 
 		public class Init : Block
 		{
+			private QueryBuilderContext m_QueryBuilderCtx;
 			private QueryContext m_Queries;
 			private WorldContext m_WorldCtx;
 			private ModeContext  m_GmContext;
@@ -132,7 +134,7 @@ namespace Patapon.Server.GameModes.Training
 				var unitProvider = m_WorldCtx.GetExistingSystem<UnitProvider>();
 				var teamProvider = m_WorldCtx.GetExistingSystem<GameModeTeamProvider>();
 				var clubProvider = m_WorldCtx.GetExistingSystem<ClubProvider>();
-
+				
 				m_GmContext.Teams = new TeamData[2];
 				for (var t = 0; t != 2; t++)
 				{
@@ -164,7 +166,7 @@ namespace Patapon.Server.GameModes.Training
 				// Create player rhythm engines
 				// Create player unit targets
 				// Create player unit
-				m_Queries.GetBuilder().With(m_Queries.Player).ForEach(player =>
+				m_QueryBuilderCtx.From.With(m_Queries.Player).ForEach(player =>
 				{
 					// Player without NetworkOwner mean that it's a bot.
 					if (entityMgr.TryGetComponentData(player, out NetworkOwner networkOwner))
@@ -205,7 +207,7 @@ namespace Patapon.Server.GameModes.Training
 					});
 
 					var displayEquipment = new UnitDisplayedEquipment();
-					var targetKit        = UnitKnownTypes.Yarida;
+					var targetKit        = UnitKnownTypes.Kibadda;
 					var statistics       = default(UnitStatistics);
 					var definedAbilities = entityMgr.AddBuffer<UnitDefinedAbilities>(spawnedUnit);
 					KitTempUtility.Set(targetKit, ref statistics, definedAbilities, ref displayEquipment);
@@ -254,12 +256,13 @@ namespace Patapon.Server.GameModes.Training
 				});
 
 				// Spawn dummy
-				SpawnDummy();
+				SpawnDummy(10, 1);
+				SpawnDummy(-2, 0);
 
 				return true;
 			}
 
-			private void SpawnDummy()
+			private void SpawnDummy(float position, int team)
 			{
 				var entityMgr    = m_WorldCtx.EntityMgr;
 				var unitProvider = m_WorldCtx.GetExistingSystem<UnitProvider>();
@@ -274,13 +277,13 @@ namespace Patapon.Server.GameModes.Training
 
 				var spawnedUnit = unitProvider.SpawnLocalEntityWithArguments(new UnitProvider.Create
 				{
-					Direction       = UnitDirection.Left,
+					Direction       = team == 0 ? UnitDirection.Right : UnitDirection.Left,
 					MovableCollider = capsuleColl,
 					Mass            = PhysicsMass.CreateKinematic(capsuleColl.Value.MassProperties),
 					Settings        = new UnitStatistics()
 				});
 
-				entityMgr.SetComponentData(spawnedUnit, new Translation {Value = {x = 10}});
+				entityMgr.SetComponentData(spawnedUnit, new Translation {Value = {x = position}});
 
 				var displayEquipment = new UnitDisplayedEquipment();
 				var targetKit        = new NativeString64("training_room_dummy");
@@ -298,13 +301,14 @@ namespace Patapon.Server.GameModes.Training
 				entityMgr.AddComponent(spawnedUnit, typeof(UnitTargetControlTag));
 				MasterServerAbilities.Convert(m_GmContext.SimulationGroup, spawnedUnit, entityMgr.GetBuffer<UnitDefinedAbilities>(spawnedUnit));
 
-				entityMgr.SetOrAddComponentData(spawnedUnit, new Relative<TeamDescription>(m_GmContext.Teams[1].Target));
+				entityMgr.SetOrAddComponentData(spawnedUnit, new Relative<TeamDescription>(m_GmContext.Teams[team].Target));
 			}
 
 			protected override void OnReset()
 			{
 				base.OnReset();
 
+				m_QueryBuilderCtx = Context.GetExternal<QueryBuilderContext>();
 				m_Queries   = Context.GetExternal<QueryContext>();
 				m_WorldCtx  = Context.GetExternal<WorldContext>();
 				m_GmContext = Context.GetExternal<ModeContext>();
@@ -313,13 +317,13 @@ namespace Patapon.Server.GameModes.Training
 
 		public class PlayLoopBlock : Block
 		{
-			private QueryContext m_Queries;
+			private QueryBuilderContext m_QueryBuilderCtx;
 			private WorldContext m_WorldCtx;
 			private ModeContext  m_GmContext;
 
 			protected override bool OnRun()
 			{
-				m_Queries.GetBuilder().ForEach((Entity ent, ref TrainingRoomSetKit rpc) =>
+				m_QueryBuilderCtx.From.ForEach((Entity ent, ref TrainingRoomSetKit rpc) =>
 				{
 					var targetKit = default(NativeString64);
 					switch (rpc.KitId)
@@ -356,6 +360,7 @@ namespace Patapon.Server.GameModes.Training
 					KitTempUtility.Set(targetKit, ref statistics, definedAbilities, ref displayEquipment);
 
 					entityMgr.SetComponentData(m_GmContext.CurrentUnit, displayEquipment);
+					entityMgr.SetComponentData(m_GmContext.CurrentUnit, new UnitCurrentKit {Value = targetKit});
 
 					MasterServerAbilities.Convert(m_GmContext.SimulationGroup, m_GmContext.CurrentUnit, entityMgr.GetBuffer<UnitDefinedAbilities>(m_GmContext.CurrentUnit));
 
@@ -379,9 +384,9 @@ namespace Patapon.Server.GameModes.Training
 			{
 				base.OnReset();
 
-				m_Queries   = Context.GetExternal<QueryContext>();
-				m_WorldCtx  = Context.GetExternal<WorldContext>();
-				m_GmContext = Context.GetExternal<ModeContext>();
+				m_QueryBuilderCtx = Context.GetExternal<QueryBuilderContext>();
+				m_WorldCtx        = Context.GetExternal<WorldContext>();
+				m_GmContext       = Context.GetExternal<ModeContext>();
 			}
 		}
 
@@ -405,13 +410,7 @@ namespace Patapon.Server.GameModes.Training
 		public class QueryContext : ExternalContextBase
 		{
 			public EntityQuery Player;
-
 			public TrainingGameMode System;
-
-			public EntityQueryBuilder GetBuilder()
-			{
-				return System.Entities;
-			}
 		}
 	}
 }

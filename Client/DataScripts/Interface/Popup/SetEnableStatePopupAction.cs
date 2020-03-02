@@ -13,7 +13,7 @@ namespace DataScripts.Interface.Popup
 
 	[UpdateInGroup(typeof(InteractionButtonSystemGroup))]
 	[AlwaysSynchronizeSystem]
-	public class DisablePopupActionSystem : JobComponentSystem
+	public class DisablePopupActionSystem : SystemBase
 	{
 		private EndInteractionButtonCommandBufferSystem m_EndBuffer;
 
@@ -22,7 +22,7 @@ namespace DataScripts.Interface.Popup
 			m_EndBuffer = World.GetOrCreateSystem<EndInteractionButtonCommandBufferSystem>();
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var ecb = m_EndBuffer.CreateCommandBuffer();
 			var relativePopupFromEntity = GetComponentDataFromEntity<Relative<PopupDescription>>(true);
@@ -37,8 +37,6 @@ namespace DataScripts.Interface.Popup
 
 				ecb.RemoveComponent<UIButton.ClickedEvent>(entity);
 			}).WithStructuralChanges().Run();
-
-			return default;
 		}
 	}
 }

@@ -61,7 +61,7 @@ namespace Bootstraps
 		}
 
 		[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
-		public class ClientSystem : GameBaseSystem
+		public class ClientSystem : AbsGameBaseSystem
 		{
 			private EntityQuery m_AnyConnectionOrPendingQuery;
 			private Entity      m_ServerListRequest;
@@ -128,7 +128,7 @@ namespace Bootstraps
 		}
 
 		[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-		public class ServerSystem : GameBaseSystem
+		public class ServerSystem : AbsGameBaseSystem
 		{
 			protected override void OnCreate()
 			{

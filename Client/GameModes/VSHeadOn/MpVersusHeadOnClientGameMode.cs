@@ -24,7 +24,7 @@ namespace Patapon4TLB.GameModes
 {
 
 	[UpdateInGroup(typeof(ClientGameModeSystemGroup))]
-	public class MpVersusHeadOnClientGameMode : GameBaseSystem
+	public class MpVersusHeadOnClientGameMode : AbsGameBaseSystem
 	{
 		private EntityQuery m_ExecutingMapQuery;
 		private EntityQuery m_GameModeQuery;

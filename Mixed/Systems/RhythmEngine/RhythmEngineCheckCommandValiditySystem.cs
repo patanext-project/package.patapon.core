@@ -16,7 +16,7 @@ using UnityEngine;
 namespace Patapon.Mixed.Systems
 {
 	[UpdateInGroup(typeof(RhythmEngineGroup))]
-	public class RhythmEngineCheckCommandValidity : JobGameBaseSystem
+	public class RhythmEngineCheckCommandValidity : AbsGameBaseSystem
 	{
 		private EntityQuery m_AvailableCommandQuery;
 
@@ -122,12 +122,12 @@ namespace Patapon.Mixed.Systems
 			m_RpcQueue = World.GetOrCreateSystem<RpcSystem>().GetRpcQueue<RhythmRpcNewClientCommand>();
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			if (!IsServer && !HasSingleton<NetworkIdComponent>())
-				return inputDeps;
+				return;
 
-			m_AvailableCommandQuery.AddDependency(inputDeps);
+			m_AvailableCommandQuery.AddDependency(Dependency);
 
 			Entity targetConnection = default;
 			if (!IsServer)
@@ -144,107 +144,104 @@ namespace Patapon.Mixed.Systems
 			var entityType          = GetArchetypeChunkEntityType();
 			var commandSequenceType = GetArchetypeChunkBufferType<RhythmCommandDefinitionSequence>(true);
 			var ecb                 = m_SpawnBarrier.CreateCommandBuffer().ToConcurrent();
-			inputDeps =
-				Entities
-					.WithAll<FlowSimulateProcess>()
-					.ForEach((int                                               nativeThreadIndex, ref RhythmEngineSettings settings, ref RhythmEngineState state,
-					          ref FlowEngineProcess                             process,           ref RhythmCurrentCommand rhythmCurrentCommand,
-					          ref DynamicBuffer<RhythmEngineCommandProgression> commandProgression) =>
-					{
-						if (state.IsPaused || process.Milliseconds < 0 || (!isServer && !state.IsNewPressure))
-						{
-							if (state.IsPaused || process.Milliseconds < 0)
-							{
-								rhythmCurrentCommand = new RhythmCurrentCommand {CustomEndTime = -1, ActiveAtTime = -1};
-							}
-							return;
-						}
 
-						if (isServer && settings.UseClientSimulation && !state.VerifyCommand)
-						{
-							return;
-						}
+				Entities.WithAll<FlowSimulateProcess>()
+				        .ForEach((int                                               nativeThreadIndex, ref RhythmEngineSettings settings, ref RhythmEngineState state,
+				                  ref FlowEngineProcess                             process,           ref RhythmCurrentCommand rhythmCurrentCommand,
+				                  ref DynamicBuffer<RhythmEngineCommandProgression> commandProgression) =>
+				        {
+					        if (state.IsPaused || process.Milliseconds < 0 || (!isServer && !state.IsNewPressure))
+					        {
+						        if (state.IsPaused || process.Milliseconds < 0)
+						        {
+							        rhythmCurrentCommand = new RhythmCurrentCommand {CustomEndTime = -1, ActiveAtTime = -1};
+						        }
+						        return;
+					        }
 
-						var cmdOutput = new NativeList<Entity>(1, Allocator.Temp);
-						GetCommand(commandProgression.Reinterpret<FlowPressure>(), cmdOutput, false,
-							availableCommands, entityType, commandSequenceType);
+					        if (isServer && settings.UseClientSimulation && !state.VerifyCommand)
+					        {
+						        return;
+					        }
+
+					        var cmdOutput = new NativeList<Entity>(1, Allocator.Temp);
+					        GetCommand(commandProgression.Reinterpret<FlowPressure>(), cmdOutput, false,
+						        availableCommands, entityType, commandSequenceType);
 						
-						state.IsNewPressure = false;
+					        state.IsNewPressure = false;
 
-						rhythmCurrentCommand.HasPredictedCommands = cmdOutput.Length == 1;
-						if (cmdOutput.Length == 0)
-						{
-							GetCommand(commandProgression.Reinterpret<FlowPressure>(), cmdOutput, true,
-								availableCommands, entityType, commandSequenceType);
-							if (cmdOutput.Length > 0)
-								rhythmCurrentCommand.HasPredictedCommands = true;
+					        rhythmCurrentCommand.HasPredictedCommands = cmdOutput.Length == 1;
+					        if (cmdOutput.Length == 0)
+					        {
+						        GetCommand(commandProgression.Reinterpret<FlowPressure>(), cmdOutput, true,
+							        availableCommands, entityType, commandSequenceType);
+						        if (cmdOutput.Length > 0)
+							        rhythmCurrentCommand.HasPredictedCommands = true;
 
-							/*if (!isServer) // debug only
-							{
-								var str = "";
-								for (var index = 0; index < cmdOutput.Length; index++)
-								{
-									var cmd = cmdOutput[index];
-									str += commandDefinition[cmd].Identifier.ToString() + ", ";
-								}
+						        /*if (!isServer) // debug only
+						        {
+							        var str = "";
+							        for (var index = 0; index < cmdOutput.Length; index++)
+							        {
+								        var cmd = cmdOutput[index];
+								        str += commandDefinition[cmd].Identifier.ToString() + ", ";
+							        }
+    
+							        Debug.Log($"commands = {str}");
+						        }*/
 
-								Debug.Log($"commands = {str}");
-							}*/
+						        return;
+					        }
 
-							return;
-						}
+					        // this is so laggy clients don't have a weird things when their command has been on another beat on the server
+					        var targetBeat = commandProgression[commandProgression.Length - 1].Data.RenderBeat + 1;
 
-						// this is so laggy clients don't have a weird things when their command has been on another beat on the server
-						var targetBeat = commandProgression[commandProgression.Length - 1].Data.RenderBeat + 1;
+					        if (isServer)
+					        {
+						        var clientPressureBeat = FlowEngineProcess.CalculateFlowBeat(commandProgression[commandProgression.Length - 1].Data.Time, settings.BeatInterval) + 1;
+						        if (clientPressureBeat < targetBeat
+						            && clientPressureBeat <= process.GetActivationBeat(settings.BeatInterval) + 1)
+							        targetBeat = clientPressureBeat;
+					        }
 
-						if (isServer)
-						{
-							var clientPressureBeat = FlowEngineProcess.CalculateFlowBeat(commandProgression[commandProgression.Length - 1].Data.Time, settings.BeatInterval) + 1;
-							if (clientPressureBeat < targetBeat
-							    && clientPressureBeat <= process.GetActivationBeat(settings.BeatInterval) + 1)
-								targetBeat = clientPressureBeat;
-						}
+					        rhythmCurrentCommand.ActiveAtTime  = targetBeat * settings.BeatInterval;
+					        rhythmCurrentCommand.Previous      = rhythmCurrentCommand.CommandTarget;
+					        rhythmCurrentCommand.CommandTarget = cmdOutput[0];
 
-						rhythmCurrentCommand.ActiveAtTime  = targetBeat * settings.BeatInterval;
-						rhythmCurrentCommand.Previous      = rhythmCurrentCommand.CommandTarget;
-						rhythmCurrentCommand.CommandTarget = cmdOutput[0];
-
-						state.VerifyCommand        = false;
-						state.ApplyCommandNextBeat = true;
+					        state.VerifyCommand        = false;
+					        state.ApplyCommandNextBeat = true;
 						
-						if (!isServer && settings.UseClientSimulation)
-						{
-							var clientRequest                                                        = new UnsafeAllocationLength<RhythmEngineClientRequestedCommandProgression>(Allocator.Temp, commandProgression.Length);
-							for (var com = 0; com != clientRequest.Length; com++) clientRequest[com] = new RhythmEngineClientRequestedCommandProgression {Data = commandProgression[com].Data};
+					        if (!isServer && settings.UseClientSimulation)
+					        {
+						        var clientRequest                                                        = new UnsafeAllocationLength<RhythmEngineClientRequestedCommandProgression>(Allocator.Temp, commandProgression.Length);
+						        for (var com = 0; com != clientRequest.Length; com++) clientRequest[com] = new RhythmEngineClientRequestedCommandProgression {Data = commandProgression[com].Data};
 
-							rpcQueue.Schedule(outgoingDataFromEntity[targetConnection], new RhythmRpcNewClientCommand {IsValid = true, ResultBuffer = clientRequest});
+						        rpcQueue.Schedule(outgoingDataFromEntity[targetConnection], new RhythmRpcNewClientCommand {IsValid = true, ResultBuffer = clientRequest});
 
-							clientRequest.Dispose();
-						}
+						        clientRequest.Dispose();
+					        }
 
-						var power = 0.0f;
-						for (var i = 0; i != commandProgression.Length; i++)
-							// perfect
-							if (commandProgression[i].Data.GetAbsoluteScore() <= FlowPressure.Perfect)
-								power += 1.0f;
-							else
-								power += 0.33f;
+					        var power = 0.0f;
+					        for (var i = 0; i != commandProgression.Length; i++)
+						        // perfect
+						        if (commandProgression[i].Data.GetAbsoluteScore() <= FlowPressure.Perfect)
+							        power += 1.0f;
+						        else
+							        power += 0.33f;
 
-						rhythmCurrentCommand.Power = math.clamp((int) math.ceil(power * 100 / commandProgression.Length), 0, 100);
+					        rhythmCurrentCommand.Power = math.clamp((int) math.ceil(power * 100 / commandProgression.Length), 0, 100);
 
-						commandProgression.Clear();
-					})
-					.WithNativeDisableParallelForRestriction(outgoingDataFromEntity)
-					.WithDeallocateOnJobCompletion(availableCommands)
-					.WithNativeDisableParallelForRestriction(availableCommands)
-					.WithReadOnly(entityType)
-					.WithReadOnly(commandSequenceType)
-					//.WithReadOnly(commandDefinition) // debug only
-					.Schedule(JobHandle.CombineDependencies(inputDeps, queryHandle));
+					        commandProgression.Clear();
+				        })
+				        .WithNativeDisableParallelForRestriction(outgoingDataFromEntity)
+				        .WithDeallocateOnJobCompletion(availableCommands)
+				        .WithNativeDisableParallelForRestriction(availableCommands)
+				        .WithReadOnly(entityType)
+				        .WithReadOnly(commandSequenceType)
+				        //.WithReadOnly(commandDefinition) // debug only
+				        .Schedule(JobHandle.CombineDependencies(Dependency, queryHandle));
 
-			m_SpawnBarrier.AddJobHandleForProducer(inputDeps);
-
-			return inputDeps;
+			m_SpawnBarrier.AddJobHandleForProducer(Dependency);
 		}
 
 		[BurstCompile]

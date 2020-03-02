@@ -20,7 +20,7 @@ namespace Patapon.Client.RhythmEngine
 {
 	[AlwaysUpdateSystem]
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
-	public partial class RhythmEnginePlaySong : GameBaseSystem
+	public partial class RhythmEnginePlaySong : AbsGameBaseSystem
 	{
 		public SongDescription CurrentSong;
 		public bool            HasEngineTarget;

@@ -11,7 +11,7 @@ namespace DataScripts.Models.Equipments
 		private Vector3 m_Scale;
 
 		[UpdateInGroup(typeof(PresentationSystemGroup))]
-		public class UpdateSystem : GameBaseSystem
+		public class UpdateSystem : AbsGameBaseSystem
 		{
 			protected override void OnUpdate()
 			{
@@ -32,7 +32,7 @@ namespace DataScripts.Models.Equipments
 					behavior.m_Scale = Vector3.Lerp(behavior.m_Scale, targetScale, Time.DeltaTime);
 
 					presentation.transform.localScale = behavior.m_Scale;
-				});
+				}).WithoutBurst().Run();
 			}
 		}
 	}

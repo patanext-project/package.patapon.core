@@ -16,7 +16,7 @@ namespace Systems.GamePlay
 {
 	public class DefaultSubsetMarchAbilitySystem : BaseAbilitySystem
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var dt                            = Time.DeltaTime;
 			var unitTargetControlFromEntity   = GetComponentDataFromEntity<UnitTargetControlTag>(true);
@@ -45,8 +45,8 @@ namespace Systems.GamePlay
 					}
 
 					var targetOffset  = targetOffsetFromEntity[owner.Target];
-					var groundState   = impl.GroundStateFromEntity[owner.Target];
-					var unitPlayState = impl.UnitPlayStateFromEntity[owner.Target];
+					var groundState   = impl.GroundState[owner.Target];
+					var unitPlayState = impl.UnitPlayState[owner.Target];
 
 					Relative<UnitTargetDescription> relativeTarget;
 					if (!relativeTargetFromEntity.TryGet(entity, out relativeTarget))
@@ -55,7 +55,7 @@ namespace Systems.GamePlay
 
 					subSet.Delta += dt;
 
-					var   targetPosition = impl.TranslationFromEntity[relativeTarget.Target].Value;
+					var   targetPosition = impl.Translation[relativeTarget.Target].Value;
 					float acceleration, walkSpeed;
 					int   direction;
 
@@ -73,7 +73,7 @@ namespace Systems.GamePlay
 						walkSpeed      =  unitPlayState.MovementSpeed;
 						targetPosition += walkSpeed * direction * (subSet.Delta > 0.25f ? 1 : math.lerp(2, 1, subSet.Delta + 0.25f)) * acceleration;
 
-						impl.TranslationFromEntity[relativeTarget.Target] = new Translation {Value = targetPosition};
+						impl.Translation[relativeTarget.Target] = new Translation {Value = targetPosition};
 					}
 
 					// Character movement
@@ -82,17 +82,17 @@ namespace Systems.GamePlay
 						if (!groundState.Value)
 							return;
 						
-						var velocity = impl.VelocityFromEntity[owner.Target];
+						var velocity = impl.Velocity[owner.Target];
 
 						// to not make tanks op, we need to get the weight from entity and use it as an acceleration factor
 						acceleration = math.clamp(math.rcp(unitPlayState.Weight), 0, 1) * subSet.AccelerationFactor * 50;
 						acceleration = math.min(acceleration * dt, 1);
 
 						walkSpeed = unitPlayState.MovementSpeed;
-						direction = Math.Sign(targetPosition.x + targetOffset.Value - impl.TranslationFromEntity[owner.Target].Value.x);
+						direction = Math.Sign(targetPosition.x + targetOffset.Value - impl.Translation[owner.Target].Value.x);
 
 						velocity.Value.x                      = math.lerp(velocity.Value.x, walkSpeed * direction, acceleration);
-						impl.VelocityFromEntity[owner.Target] = velocity;
+						impl.Velocity[owner.Target] = velocity;
 
 						var controllerState = unitControllerStateFromEntity[owner.Target];
 						controllerState.ControlOverVelocity.x       = true;
@@ -100,8 +100,6 @@ namespace Systems.GamePlay
 					}
 				})
 				.Run();
-
-			return default;
 		}
 	}
 }

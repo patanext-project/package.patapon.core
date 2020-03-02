@@ -15,7 +15,7 @@ namespace Systems.GamePlay
 {
 	public class DefaultMarchAbilitySystem : BaseAbilitySystem
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			Entities.ForEach((Entity entity, ref DefaultMarchAbility marchAbility, ref DefaultSubsetMarch subSet, in AbilityState controller) =>
 			        {
@@ -28,8 +28,6 @@ namespace Systems.GamePlay
 				        subSet.IsActive = true;
 			        })
 			        .Run();
-
-			return default;
 		}
 	}
 }

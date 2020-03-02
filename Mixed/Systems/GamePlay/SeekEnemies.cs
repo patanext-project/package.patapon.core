@@ -1,4 +1,5 @@
 using package.stormiumteam.shared.ecs;
+using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Components;
 using Unity.Collections;
@@ -13,42 +14,47 @@ namespace Patapon.Mixed.GamePlay
 	public struct SeekEnemies
 	{
 		[NativeDisableContainerSafetyRestriction, ReadOnly]
-		public BufferFromEntity<TeamEntityContainer> EntitiesFromTeam;
+		public BufferFromEntity<TeamEntityContainer> Entities;
 
 		[NativeDisableContainerSafetyRestriction, ReadOnly]
-		public BufferFromEntity<HitShapeContainer> HitShapeContainerFromEntity;
+		public BufferFromEntity<HitShapeContainer> HitShapeContainer;
 
 		[NativeDisableContainerSafetyRestriction, ReadOnly]
-		public ComponentDataFromEntity<LivableHealth> LivableHealthFromEntity;
+		public ComponentDataFromEntity<LivableHealth> LivableHealth;
 
 		[NativeDisableContainerSafetyRestriction, ReadOnly]
-		public ComponentDataFromEntity<LocalToWorld> LocalToWorldFromEntity;
-		
-		[NativeDisableContainerSafetyRestriction, ReadOnly]
-		public ComponentDataFromEntity<Translation> TranslationFromEntity;
+		public ComponentDataFromEntity<LocalToWorld> LocalToWorld;
 
 		[NativeDisableContainerSafetyRestriction, ReadOnly]
-		public ComponentDataFromEntity<PhysicsCollider> ColliderFromEntity;
+		public ComponentDataFromEntity<Translation> Translation;
 
-		public SeekEnemies(JobComponentSystem systemBase)
+		[NativeDisableContainerSafetyRestriction, ReadOnly]
+		public ComponentDataFromEntity<PhysicsCollider> Collider;
+
+		[NativeDisableContainerSafetyRestriction, ReadOnly]
+		public ComponentDataFromEntity<UnitEnemySeekingState> SeekingState;
+
+
+		public SeekEnemies(ComponentSystemBase systemBase)
 		{
-			EntitiesFromTeam            = systemBase.GetBufferFromEntity<TeamEntityContainer>(true);
-			HitShapeContainerFromEntity = systemBase.GetBufferFromEntity<HitShapeContainer>(true);
-			LivableHealthFromEntity     = systemBase.GetComponentDataFromEntity<LivableHealth>(true);
-			LocalToWorldFromEntity      = systemBase.GetComponentDataFromEntity<LocalToWorld>(true);
-			TranslationFromEntity       = systemBase.GetComponentDataFromEntity<Translation>(true);
-			ColliderFromEntity          = systemBase.GetComponentDataFromEntity<PhysicsCollider>(true);
+			Entities          = systemBase.GetBufferFromEntity<TeamEntityContainer>(true);
+			HitShapeContainer = systemBase.GetBufferFromEntity<HitShapeContainer>(true);
+			LivableHealth     = systemBase.GetComponentDataFromEntity<LivableHealth>(true);
+			LocalToWorld      = systemBase.GetComponentDataFromEntity<LocalToWorld>(true);
+			Translation       = systemBase.GetComponentDataFromEntity<Translation>(true);
+			Collider          = systemBase.GetComponentDataFromEntity<PhysicsCollider>(true);
+			SeekingState      = systemBase.GetComponentDataFromEntity<UnitEnemySeekingState>(true);
 		}
 
 		public bool CanHitTarget(Entity target)
 		{
-			return (!LivableHealthFromEntity.TryGet(target, out var enemyHealth) || !enemyHealth.IsDead)
-			       && HitShapeContainerFromEntity.Exists(target);
+			return (!LivableHealth.TryGet(target, out var enemyHealth) || !enemyHealth.IsDead)
+			       && HitShapeContainer.Exists(target);
 		}
-		
+
 		public bool CanHitTargetIgnoreHitShape(Entity target)
 		{
-			return !LivableHealthFromEntity.TryGet(target, out var enemyHealth) || !enemyHealth.IsDead;
+			return !LivableHealth.TryGet(target, out var enemyHealth) || !enemyHealth.IsDead;
 		}
 
 		public unsafe void SeekNearest(float3 from, float seekRange, NativeList<Entity> enemies, out Entity nearestEnemy, out float3 target, out float targetDistance)
@@ -61,16 +67,16 @@ namespace Patapon.Mixed.GamePlay
 			for (var ent = 0; ent != enemies.Length; ent++)
 			{
 				var entity = enemies[ent];
-				if (LivableHealthFromEntity.Exists(entity) && LivableHealthFromEntity[entity].IsDead)
+				if (LivableHealth.Exists(entity) && LivableHealth[entity].IsDead)
 					continue;
-				if (!HitShapeContainerFromEntity.Exists(entity))
+				if (!HitShapeContainer.Exists(entity))
 					continue;
-				if (!LocalToWorldFromEntity.Exists(entity))
+				if (!LocalToWorld.Exists(entity))
 					continue;
 
-				var parentTransform = LocalToWorldFromEntity[entity];
-				var distance = math.distance(from.x, parentTransform.Position.x);
-				var hitShapes = HitShapeContainerFromEntity[entity];
+				var parentTransform = LocalToWorld[entity];
+				var distance        = math.distance(from.x, parentTransform.Position.x);
+				var hitShapes       = HitShapeContainer[entity];
 				if (hitShapes.Length > 0)
 				{
 					var direction = (int) math.sign(parentTransform.Position.x - from.x);
@@ -78,8 +84,8 @@ namespace Patapon.Mixed.GamePlay
 					for (var hs = 0; hs != hsArray.Length; hs++)
 					{
 						var hitShape    = hsArray[hs];
-						var translation = TranslationFromEntity[hitShape.Value].Value;
-						if (!LocalToWorldFromEntity.TryGet(hitShape.Value, out var ltw))
+						var translation = Translation[hitShape.Value].Value;
+						if (!LocalToWorld.TryGet(hitShape.Value, out var ltw))
 						{
 							ltw = new LocalToWorld {Value = new float4x4(quaternion.identity, translation)};
 						}
@@ -91,7 +97,7 @@ namespace Patapon.Mixed.GamePlay
 
 						RigidBody rigidBody = default;
 						rigidBody.Entity        = hitShape.Value;
-						rigidBody.Collider      = ColliderFromEntity[hitShape.Value].ColliderPtr;
+						rigidBody.Collider      = Collider[hitShape.Value].ColliderPtr;
 						rigidBody.WorldFromBody = new RigidTransform(ltw.Value);
 
 						if (hitShape.AttachedToParent)
@@ -124,7 +130,7 @@ namespace Patapon.Mixed.GamePlay
 
 				if (distance > shortestDistance)
 					continue;
-				
+
 				target           = parentTransform.Position;
 				targetDistance   = distance;
 				shortestDistance = distance;
@@ -136,7 +142,7 @@ namespace Patapon.Mixed.GamePlay
 		{
 			for (int team = 0, teamLength = enemies.Length; team != teamLength; team++)
 			{
-				var entities = EntitiesFromTeam[enemies[team].Target];
+				var entities = Entities[enemies[team].Target];
 				output.AddRange(entities.Reinterpret<Entity>().AsNativeArray());
 			}
 		}
@@ -145,7 +151,7 @@ namespace Patapon.Mixed.GamePlay
 		{
 			for (var team = 0; team != enemies.Length; team++)
 			{
-				var entities = EntitiesFromTeam[enemies[team].Target];
+				var entities = Entities[enemies[team].Target];
 				for (var ent = 0; ent != entities.Length; ent++)
 				{
 					var entity = entities[ent];

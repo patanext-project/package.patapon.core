@@ -24,7 +24,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 	[AlwaysSynchronizeSystem]
 	public class VersusHeadOnEliminationRuleSystem : RuleBaseSystem<VersusHeadOnEliminationRule>
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var rule              = GetSingleton<VersusHeadOnEliminationRule>();
 			var tick              = ServerTick;
@@ -68,8 +68,6 @@ namespace Patapon.Server.GameModes.VSHeadOn
 					comboStateFromEntity[rhythmRelative.Target] = comboState;
 				}
 			}).Run();
-
-			return default;
 		}
 
 		public RuleProperties<VersusHeadOnEliminationRule>.Property<int> InitialRespawnTime;

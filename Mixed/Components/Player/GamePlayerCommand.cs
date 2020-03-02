@@ -72,9 +72,9 @@ namespace Patapon4TLB.Default.Player
 	}
 
 	[UpdateInGroup(typeof(InitializationSystemGroup))]
-	public class ResetGamePlayerCommandInterFrameSystem : JobGameBaseSystem
+	public class ResetGamePlayerCommandInterFrameSystem : AbsGameBaseSystem
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			Entities.WithNone<CommandInterFrame>().WithAll<GamePlayerCommand.Snapshot>().ForEach((Entity ent) =>
 			{
@@ -82,44 +82,36 @@ namespace Patapon4TLB.Default.Player
 				// todo: say why it's useful
 				EntityManager.AddBuffer<CommandInterFrame>(ent);
 			}).WithStructuralChanges().Run();
-			
-			inputDeps = Entities.ForEach((ref DynamicBuffer<CommandInterFrame> cmds , in DynamicBuffer<GamePlayerCommand.Snapshot> snapshots) =>
-			{
-				cmds.Clear();
-			}).Schedule(inputDeps);
 
-			return inputDeps;
+			Entities.ForEach((ref DynamicBuffer<CommandInterFrame> cmds, in DynamicBuffer<GamePlayerCommand.Snapshot> snapshots) => { cmds.Clear(); }).Run();
 		}
 	}
 
 	[UpdateInGroup(typeof(AfterSnapshotIsAppliedSystemGroup))]
-	public class SynchronizeGamePlayerCommandSystem : JobGameBaseSystem
+	public class SynchronizeGamePlayerCommandSystem : AbsGameBaseSystem
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var localFromEntity = GetComponentDataFromEntity<GamePlayerLocalTag>(true);
-
-			inputDeps = Entities.ForEach((Entity entity, ref GamePlayerCommand command, in DynamicBuffer<GamePlayerCommand.Snapshot> snapshots) =>
+			Entities.ForEach((Entity entity, ref GamePlayerCommand command, in DynamicBuffer<GamePlayerCommand.Snapshot> snapshots) =>
 			{
 				if (localFromEntity.Exists(entity))
 					return;
 
 				command.Base = snapshots.GetLastBaselineReadOnly().Base;
-			}).WithReadOnly(localFromEntity).Schedule(inputDeps);
-
-			return inputDeps;
+			}).WithReadOnly(localFromEntity).ScheduleParallel();
 		}
 	}
 
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 	[UpdateAfter(typeof(CommandReceiveSystem))]
 	[UpdateBefore(typeof(SnapshotSendSystem))]
-	public class ServerCopyUserCommandToPlayer : JobComponentSystem
+	public class ServerCopyUserCommandToPlayer : SystemBase
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var targetTick = World.GetExistingSystem<ServerSimulationSystemGroup>().ServerTick;
-			return Entities.ForEach((DynamicBuffer<UserCommand> buffer, ref GamePlayerCommand command) => { buffer.GetDataAtTick(targetTick, out command.Base); }).Schedule(inputDeps);
+			Entities.ForEach((DynamicBuffer<UserCommand> buffer, ref GamePlayerCommand command) => { buffer.GetDataAtTick(targetTick, out command.Base); }).Schedule();
 		}
 	}
 }

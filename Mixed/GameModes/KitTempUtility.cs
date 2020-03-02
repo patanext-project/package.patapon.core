@@ -41,13 +41,19 @@ namespace Patapon.Mixed.GameModes
 				case NativeString64 _ when kit.Equals(UnitKnownTypes.Yumiyacha):
 					SetAsYumiyacha(ref statistics, definedAbilities, ref display);
 					break;
+				case NativeString64 _ when kit.Equals(UnitKnownTypes.Kibadda):
+					SetAsKibadda(ref statistics, definedAbilities, ref display);
+					break;
+				case NativeString64 _ when kit.Equals(UnitKnownTypes.Pingrek):
+					SetAsPingrek(ref statistics, definedAbilities, ref display);
+					break;
 			}
 		}
 
 		private static void SetAsTaterazay(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities, ref UnitDisplayedEquipment display)
 		{
 			statistics.Health           = 240;
-			statistics.Attack           = 24;
+			statistics.Attack           = 26;
 			statistics.Defense          = 7;
 			statistics.Weight           = 8.5f;
 			statistics.AttackMeleeRange = 2.3f;
@@ -89,6 +95,40 @@ namespace Patapon.Mixed.GameModes
 			statistics.AttackMeleeRange = 1f;
 
 			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.YumiBasicAttack), 0));
+			
+			display.Mask           = new NativeString64("Masks/n_yarida");
+			display.RightEquipment = new NativeString64("Spears/default_spear");
+		}
+
+		private static void SetAsKibadda(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities, ref UnitDisplayedEquipment display)
+		{
+			statistics.Health           = 220;
+			statistics.Attack           = 28;
+			statistics.Defense          = 2;
+			statistics.Weight           = 10;
+			statistics.AttackMeleeRange = 2f;
+			statistics.FeverWalkSpeed   = 2.3f;
+			statistics.MovementAttackSpeed = 3.6f;
+
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.KibaRushAttack), 0));
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.KibaRushDefend), 0));
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.KibaPierceAttack), 0, AbilitySelection.Top));
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.KibaPierceDefend), 0, AbilitySelection.Top));
+
+			display.Mask           = new NativeString64("Masks/n_yarida");
+			display.RightEquipment = new NativeString64("Spears/default_spear");
+		}
+
+		private static void SetAsPingrek(ref UnitStatistics statistics, DynamicBuffer<UnitDefinedAbilities> definedAbilities, ref UnitDisplayedEquipment display)
+		{
+			statistics.Health           = 150;
+			statistics.Attack           = 18;
+			statistics.Defense          = 1;
+			statistics.Weight           = 6;
+			statistics.AttackMeleeRange = 1f;
+
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.MahosuHealthField), 0));
+			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.MahosuIceAttack), 0));
 			
 			display.Mask           = new NativeString64("Masks/n_yarida");
 			display.RightEquipment = new NativeString64("Spears/default_spear");

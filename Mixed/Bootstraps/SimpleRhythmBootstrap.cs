@@ -49,7 +49,7 @@ namespace Bootstraps
 	}
 
 	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
-	public class SimpleRhythmTestSystem : GameBaseSystem
+	public class SimpleRhythmTestSystem : AbsGameBaseSystem
 	{
 		protected override void OnCreate()
 		{
@@ -78,7 +78,7 @@ namespace Bootstraps
 					var process = EntityManager.GetComponentData<FlowEngineProcess>(rhythmEnt);
 					process.StartTime = GetTick(true).Ms;
 					EntityManager.SetComponentData(rhythmEnt, process);
-				});
+				}).WithStructuralChanges().Run();
 			}
 		}
 	}

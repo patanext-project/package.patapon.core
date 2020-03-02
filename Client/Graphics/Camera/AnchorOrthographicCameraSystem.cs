@@ -11,9 +11,9 @@ namespace package.patapon.core
 	[UpdateInGroup(typeof(OrderGroup.Presentation.UpdateCamera))]
 	[UpdateAfter(typeof(SynchronizeCameraStateSystem))]
 	// Update after animators
-	public class AnchorOrthographicCameraSystem : JobComponentSystem
+	public class AnchorOrthographicCameraSystem : SystemBase
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			Entities.ForEach((Camera camera, ref Translation tr, ref AnchorOrthographicCameraData data, in ComputedCameraState computed) =>
 			{
@@ -24,7 +24,8 @@ namespace package.patapon.core
 			}).WithoutBurst().Run();
 
 			var targetAnchorFromEntity = GetComponentDataFromEntity<CameraTargetAnchor>(true);
-			inputDeps = Entities.ForEach((ref Translation translation, in AnchorOrthographicCameraData cameraData, in ComputedCameraState computed) =>
+			
+			Entities.ForEach((ref Translation translation, in AnchorOrthographicCameraData cameraData, in ComputedCameraState computed) =>
 			{
 				if (!targetAnchorFromEntity.Exists(computed.StateData.Target))
 					return;
@@ -40,9 +41,7 @@ namespace package.patapon.core
 				var up   = math.float2(0, 1) * (anchorPos.y * camSize.y);
 
 				translation.Value = math.float3(translation.Value.xy + left + up, -100);
-			}).WithReadOnly(targetAnchorFromEntity).Schedule(inputDeps);
-
-			return inputDeps;
+			}).WithReadOnly(targetAnchorFromEntity).Schedule();
 		}
 	}
 }

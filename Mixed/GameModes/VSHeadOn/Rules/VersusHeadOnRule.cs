@@ -31,17 +31,16 @@ namespace Patapon.Mixed.GameModes.VSHeadOn
 			MaxRespawnTime.Value       = 60000;
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
-		{
-			return inputDeps;
-		}
-
 		public struct Data : IComponentData
 		{
 			public int TimeLimit;
 			public int RespawnTime;
 			public int IncrementRespawnTime;
 			public int MaxRespawnTime;
+		}
+
+		protected override void OnUpdate()
+		{
 		}
 	}
 }

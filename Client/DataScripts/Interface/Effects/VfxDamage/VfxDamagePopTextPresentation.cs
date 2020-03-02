@@ -34,6 +34,12 @@ namespace package.patapon.core.Models.InGame.VFXDamage
 		public double startTime;
 		public double setToPoolAt;
 
+		public override void OnReset()
+		{
+			isPlayQueued = false;
+			lastDamage   = int.MaxValue;
+		}
+
 		public void Play(TargetDamageEvent damageEvent)
 		{
 			isPlayQueued = true;
@@ -109,12 +115,11 @@ namespace package.patapon.core.Models.InGame.VFXDamage
 			var dmg = backend.eventData.Damage;
 			foreach (var label in definition.damageLabels)
 			{
-				if (backend.lastDamage != dmg)
-				{
-					label.text = (dmg > 0 ? "+" : string.Empty) + math.abs(dmg);
-				}
+				label.text                 = (dmg > 0 ? "+" : string.Empty) + math.abs(dmg);
 				label.maxVisibleCharacters = 0;
 			}
+			
+			Debug.Log("dmg -> " + dmg);
 
 			backend.lastDamage = dmg;
 

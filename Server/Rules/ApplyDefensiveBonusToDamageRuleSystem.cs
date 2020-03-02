@@ -1,3 +1,4 @@
+using System;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.Units;
 using StormiumTeam.GameBase;
@@ -16,25 +17,25 @@ namespace Rules
 	{
 		public override string Description => "Reduce damage with unit defense...";
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var playstateFromEntity = GetComponentDataFromEntity<UnitPlayState>(true);
-			inputDeps =
-				Entities
-					.ForEach((ref TargetDamageEvent damageEvent) =>
-					{
-						if (damageEvent.Damage > 0 || damageEvent.Destination == default)
-							return;
-						if (!playstateFromEntity.TryGet(damageEvent.Destination, out var playState))
-							return;
-						damageEvent.Damage = math.min(damageEvent.Damage + playState.Defense, 0);
-						if (damageEvent.Damage != 0)
-							damageEvent.Damage = (int) (damageEvent.Damage * playState.ReceiveDamagePercentage);
-					})
-					.WithReadOnly(playstateFromEntity)
-					.Schedule(inputDeps);
+			Entities
+				.ForEach((ref TargetDamageEvent damageEvent) =>
+				{
+					if (damageEvent.Damage > 0 || damageEvent.Destination == default)
+						return;
+					if (!playstateFromEntity.TryGet(damageEvent.Destination, out var playState))
+						return;
 
-			return inputDeps;
+					var from = damageEvent.Damage;
+					damageEvent.Damage = math.min(damageEvent.Damage + playState.Defense, 0);
+					if (damageEvent.Damage != 0 && math.abs(playState.ReceiveDamagePercentage - 1) > 0.01f)
+						damageEvent.Damage = (int) (damageEvent.Damage * playState.ReceiveDamagePercentage);
+					Debug.Log($"from {from} to {damageEvent.Damage}");
+				})
+				.WithReadOnly(playstateFromEntity)
+				.Run();
 		}
 	}
 }

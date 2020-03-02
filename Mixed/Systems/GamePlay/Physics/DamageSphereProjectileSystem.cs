@@ -8,17 +8,17 @@ using UnityEngine;
 namespace Patapon.Mixed.GamePlay.Physics
 {
 	[UpdateInGroup(typeof(ProjectilePhysicIterationSystemGroup))]
-	public class DamageSphereProjectileSystem : JobGameBaseSystem
+	public class DamageSphereProjectileSystem : AbsGameBaseSystem
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var dt = Time.DeltaTime;
-			return Entities.ForEach((ref Translation translation, ref Velocity velocity, in DamageSphereProjectile projectile) =>
+			Entities.ForEach((ref Translation translation, ref Velocity velocity, in DamageSphereProjectile projectile) =>
 			{
 				Debug.DrawRay(translation.Value, velocity.Value * dt, Color.green, 0.25f);
 				velocity.Value    += projectile.Gravity * dt;
 				translation.Value += velocity.Value * dt;
-			}).Schedule(inputDeps);
+			}).Schedule();
 		}
 	}
 

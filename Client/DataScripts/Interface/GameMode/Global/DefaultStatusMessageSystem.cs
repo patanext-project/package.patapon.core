@@ -13,7 +13,7 @@ using UnityEngine.AddressableAssets;
 namespace DataScripts.Interface.GameMode.Global
 {
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
-	public class DefaultStatusMessageSystem : GameBaseSystem
+	public class DefaultStatusMessageSystem : AbsGameBaseSystem
 	{
 		private AudioSource          m_AudioSource;
 		private AsyncOperationModule m_AsyncOp;

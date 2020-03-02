@@ -14,20 +14,18 @@ namespace Patapon.Mixed.GamePlay
 {
 	[UpdateInGroup(typeof(UnitPhysicSystemGroup))]
 	[UpdateAfter(typeof(UnitPhysicsSystem))]
-	public class UnitPhysicsAfterBlockUpdateSystem : JobComponentSystem
+	public class UnitPhysicsAfterBlockUpdateSystem : SystemBase
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			for (var i = 0; i != 2; i++)
-				inputDeps = new Job
+				Dependency = new Job
 				{
 					RelativeTeamFromEntity     = GetComponentDataFromEntity<Relative<TeamDescription>>(true),
 					BlockMovableAreaFromEntity = GetComponentDataFromEntity<TeamBlockMovableArea>(),
 					TeamEnemiesFromEntity      = GetBufferFromEntity<TeamEnemies>(true),
 					UnitDirectionFromEntity    = GetComponentDataFromEntity<UnitDirection>(true)
-				}.ScheduleSingle(this, inputDeps);
-
-			return inputDeps;
+				}.ScheduleSingle(this, Dependency);
 		}
 
 		[BurstCompile]

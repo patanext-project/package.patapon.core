@@ -16,9 +16,9 @@ namespace Systems.GamePlay
 	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	[AlwaysSynchronizeSystem]
-	public class DefaultRebornAbilitySystem : JobComponentSystem
+	public class DefaultRebornAbilitySystem : SystemBase
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var engineStateFromEntity = GetComponentDataFromEntity<RhythmEngineState>(true);
 			var comboStateFromEntity  = GetComponentDataFromEntity<GameComboState>();
@@ -74,8 +74,6 @@ namespace Systems.GamePlay
 				.WithReadOnly(engineStateFromEntity)
 				.WithReadOnly(healthFromEntity)
 				.Run();
-
-			return inputDeps;
 		}
 	}
 

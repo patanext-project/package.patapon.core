@@ -61,13 +61,13 @@ namespace Patapon.Mixed.GamePlay.Abilities
 		[UpdateAfter(typeof(GhostSimulationSystemGroup))]
 		[UpdateAfter(typeof(UpdateAbilityRhythmStateSystem))]
 		[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
-		public class LocalUpdate : JobComponentSystem
+		public class LocalUpdate : SystemBase
 		{
-			protected override JobHandle OnUpdate(JobHandle inputDeps)
+			protected override void OnUpdate()
 			{
 				var engineProcessFromEntity = GetComponentDataFromEntity<FlowEngineProcess>(true);
 
-				return Entities.ForEach((ref DefaultJumpAbility ability, in AbilityState controller, in AbilityEngineSet engineSet) =>
+				Entities.ForEach((ref DefaultJumpAbility ability, in AbilityState controller, in AbilityEngineSet engineSet) =>
 				{
 					if ((controller.Phase & EAbilityPhase.ActiveOrChaining) != 0)
 					{
@@ -79,7 +79,7 @@ namespace Patapon.Mixed.GamePlay.Abilities
 						ability.ActiveTime = 0.0f;
 						ability.IsJumping  = false;
 					}
-				}).WithReadOnly(engineProcessFromEntity).Schedule(inputDeps);
+				}).WithReadOnly(engineProcessFromEntity).Schedule();
 			}
 		}
 	}

@@ -77,9 +77,9 @@ namespace DataScripts.Models.GameMode.Structures
 
 	[AlwaysSynchronizeSystem]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
-	public class GameModeFlagSetPresentation : JobGameBaseSystem
+	public class GameModeFlagSetPresentation : AbsGameBaseSystem
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			Entities.ForEach((GameModeFlagBackend backend) =>
 			{
@@ -92,8 +92,6 @@ namespace DataScripts.Models.GameMode.Structures
 				
 				backend.SetPresentationFromPool(pool);
 			}).WithStructuralChanges().Run();
-			
-			return default;
 		}
 	}
 

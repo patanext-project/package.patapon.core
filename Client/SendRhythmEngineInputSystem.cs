@@ -18,7 +18,7 @@ namespace Systems.RhythmEngine
 	[UpdateInGroup(typeof(RhythmEngineGroup))]
 	[UpdateAfter(typeof(ProcessRhythmEngineSystem))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
-	public class SendRhythmEngineInputSystem : JobGameBaseSystem
+	public class SendRhythmEngineInputSystem : AbsGameBaseSystem
 	{
 		private LazySystem<EndSimulationEntityCommandBufferSystem> m_EndBarrier;
 		private LazySystem<GrabInputSystem>                        m_GrabInputSystem;
@@ -29,9 +29,9 @@ namespace Systems.RhythmEngine
 			RequireSingletonForUpdate<IsClientWorldActive>();
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
-			inputDeps.Complete();
+			Dependency.Complete();
 			EntityManager.CompleteAllJobs();
 
 			var targetKey = -1;
@@ -47,14 +47,15 @@ namespace Systems.RhythmEngine
 				}
 
 			if (targetKey < 0)
-				return inputDeps;
+				return;
 
 			var ecb = m_EndBarrier.Get(World).CreateCommandBuffer().ToConcurrent();
-			inputDeps = Entities.WithAll<FlowSimulateProcess>().ForEach((Entity                                            entity, int                           nativeThreadIndex,
-			                                                             ref RhythmEngineState                             state,  ref GamePredictedCommandState predictedCommand,
-			                                                             ref DynamicBuffer<RhythmEngineCommandProgression> progression,
-			                                                             in  RhythmEngineSettings                          settings, in FlowEngineProcess process,
-			                                                             in  ReplicatedEntity                              replicatedEntity) =>
+
+			Entities.WithAll<FlowSimulateProcess>().ForEach((Entity                                            entity, int                           nativeThreadIndex,
+			                                                 ref RhythmEngineState                             state,  ref GamePredictedCommandState predictedCommand,
+			                                                 ref DynamicBuffer<RhythmEngineCommandProgression> progression,
+			                                                 in  RhythmEngineSettings                          settings, in FlowEngineProcess process,
+			                                                 in  ReplicatedEntity                              replicatedEntity) =>
 			{
 				Entity                     rpcEnt;
 				PressureEventFromClientRpc pressureEvent = default;
@@ -133,11 +134,9 @@ namespace Systems.RhythmEngine
 					RenderBeat = pressureData.RenderBeat,
 					Score      = pressureData.Score
 				});
-			}).Schedule(inputDeps);
+			}).Schedule();
 
-			m_EndBarrier.Value.AddJobHandleForProducer(inputDeps);
-
-			return inputDeps;
+			m_EndBarrier.Value.AddJobHandleForProducer(Dependency);
 		}
 	}
 }

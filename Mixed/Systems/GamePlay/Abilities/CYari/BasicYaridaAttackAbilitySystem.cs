@@ -24,7 +24,7 @@ namespace Systems.GamePlay.CYari
 			m_ProjectileProvider = World.GetOrCreateSystem<SpearProjectile.Provider>();
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var tick                   = ServerTick;
 			var impl                   = new BasicUnitAbilityImplementation(this);
@@ -43,12 +43,12 @@ namespace Systems.GamePlay.CYari
 						return;
 
 					var seekingState = seekingStateFromEntity[owner.Target];
-					var playState    = impl.UnitPlayStateFromEntity[owner.Target];
-					var unitPosition = impl.TranslationFromEntity[owner.Target].Value;
-					var direction    = impl.UnitDirectionFromEntity[owner.Target].Value;
+					var playState    = impl.UnitPlayState[owner.Target];
+					var unitPosition = impl.Translation[owner.Target].Value;
+					var direction    = impl.UnitDirection[owner.Target].Value;
 
-					var velocityUpdater   = impl.VelocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
-					var controllerUpdater = impl.ControllerFromEntity.GetUpdater(owner.Target).Out(out var controller);
+					var velocityUpdater   = impl.Velocity.GetUpdater(owner.Target).Out(out var velocity);
+					var controllerUpdater = impl.Controller.GetUpdater(owner.Target).Out(out var controller);
 
 					var attackStartTick = UTick.CopyDelta(tick, ability.AttackStartTick);
 
@@ -91,7 +91,7 @@ namespace Systems.GamePlay.CYari
 
 					if ((state.Phase & EAbilityPhase.Active) != 0 && seekingState.Enemy != default)
 					{
-						var targetPosition     = impl.LocalToWorldFromEntity[seekingState.Enemy].Position;
+						var targetPosition     = impl.LocalToWorld[seekingState.Enemy].Position;
 						var throwDeltaPosition = PredictTrajectory.Simple(throwOffset, new float3 {x = ability.ThrowSpeed * direction, y = ability.ThrowHeight}, gravity);
 						targetPosition.x -= throwDeltaPosition.x;
 
@@ -116,8 +116,6 @@ namespace Systems.GamePlay.CYari
 				})
 				.WithReadOnly(seekingStateFromEntity)
 				.Run();
-
-			return default;
 		}
 	}
 }

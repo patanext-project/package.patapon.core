@@ -7,6 +7,7 @@ using Patapon4TLB.Core.MasterServer.Data;
 using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.NetCode;
 using UnityEngine;
 
 namespace Patapon4TLB.Core.MasterServer
@@ -28,7 +29,7 @@ namespace Patapon4TLB.Core.MasterServer
 
 		protected override async void OnUpdate()
 		{
-			if (!IsServer)
+			if (World.GetExistingSystem<ServerSimulationSystemGroup>() == null)
 				return;
 			else if (!m_UserTokenMap.IsCreated)
 			{

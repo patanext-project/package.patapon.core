@@ -10,34 +10,34 @@ using UnityEngine;
 namespace Systems.GamePlay
 {
 	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
-	public class ApplyAbilityStatisticOnChainingSystem : JobComponentSystem
+	public class ApplyAbilityStatisticOnChainingSystem : SystemBase
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var playStateFromEntity     = GetComponentDataFromEntity<UnitPlayState>();
 			var chargeCommandFromEntity = GetComponentDataFromEntity<ChargeCommand>(true);
 
-			return Entities.ForEach((in AbilityState state, in AbilityModifyStatsOnChaining modify, in AbilityEngineSet engineSet, in Owner owner) =>
-			               {
-				               if ((state.Phase & EAbilityPhase.ActiveOrChaining) == 0)
-					               return;
+			Entities.ForEach((in AbilityState state, in AbilityModifyStatsOnChaining modify, in AbilityEngineSet engineSet, in Owner owner) =>
+			        {
+				        if ((state.Phase & EAbilityPhase.ActiveOrChaining) == 0)
+					        return;
 
-				               var playState  = playStateFromEntity[owner.Target];
-				               var hasCharged = chargeCommandFromEntity.Exists(engineSet.PreviousCommand);
+				        var playState  = playStateFromEntity[owner.Target];
+				        var hasCharged = chargeCommandFromEntity.Exists(engineSet.PreviousCommand);
 
-				               if (hasCharged && modify.SetChargeModifierAsFirst)
-					               modify.ChargeModifier.Multiply(ref playState);
+				        if (hasCharged && modify.SetChargeModifierAsFirst)
+					        modify.ChargeModifier.Multiply(ref playState);
 
-				               playState = AbilityUtility.CompileStat(engineSet.Combo, playState, modify.ActiveModifier, modify.FeverModifier, modify.PerfectModifier);
+				        playState = AbilityUtility.CompileStat(engineSet.Combo, playState, modify.ActiveModifier, modify.FeverModifier, modify.PerfectModifier);
 
-				               if (hasCharged && !modify.SetChargeModifierAsFirst)
-					               modify.ChargeModifier.Multiply(ref playState);
+				        if (hasCharged && !modify.SetChargeModifierAsFirst)
+					        modify.ChargeModifier.Multiply(ref playState);
 
-				               playStateFromEntity[owner.Target] = playState;
-			               })
-			               .WithNativeDisableParallelForRestriction(playStateFromEntity)
-			               .WithReadOnly(chargeCommandFromEntity)
-			               .Schedule(inputDeps);
+				        playStateFromEntity[owner.Target] = playState;
+			        })
+			        .WithNativeDisableParallelForRestriction(playStateFromEntity)
+			        .WithReadOnly(chargeCommandFromEntity)
+			        .Schedule();
 		}
 	}
 }

@@ -10,6 +10,7 @@ using Patapon.Mixed.Units;
 using Patapon4TLB.Default;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
+using StormiumTeam.GameBase.External;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
@@ -46,13 +47,14 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			{
 				RunPreMatch    = false,
 				GameModeSystem = this,
-
+				
 				ServerSimulationSystemGroup = World.GetOrCreateSystem<ServerSimulationSystemGroup>(),
 				Teams                       = new MpVersusHeadOnTeam[2]
 			});
 			machine.AddContext(new QueriesContext
 			{
 				GameModeSystem = this,
+				Builder = machine.GetContext<QueryBuilderContext>(),
 				UpdateTeam = GetEntityQuery(new EntityQueryDesc
 				{
 					All  = new ComponentType[] {typeof(HeadOnTeamTarget)},
@@ -179,6 +181,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 			public EntityQuery            Formation;
 			public MpVersusHeadOnGameMode GameModeSystem;
+			public QueryBuilderContext    Builder;
 			public EntityQuery            Player;
 			public EntityQuery            PlayerWithoutGameModeData;
 			public EntityQuery            SpawnPoint;
@@ -188,7 +191,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 			public EntityQueryBuilder GetEntityQueryBuilder()
 			{
-				return GameModeSystem.Entities;
+				return Builder.From;
 			}
 		}
 

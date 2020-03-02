@@ -108,7 +108,7 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 	}
 
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-	public class RhythmExecuteCommandSystem : JobComponentSystem
+	public class RhythmExecuteCommandSystem : SystemBase
 	{
 		private EndSimulationEntityCommandBufferSystem m_EndBarrier;
 		private EntityQuery                            m_EngineQuery;
@@ -121,9 +121,9 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 			m_EndBarrier  = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
 		}
 
-		protected override unsafe JobHandle OnUpdate(JobHandle inputDeps)
+		protected override unsafe void OnUpdate()
 		{
-			m_EngineQuery.AddDependency(inputDeps);
+			m_EngineQuery.AddDependency(Dependency);
 
 			var engineChunks           = m_EngineQuery.CreateArchetypeChunkArrayAsync(Allocator.TempJob, out var queryHandle);
 			var playerRelativeType     = GetArchetypeChunkComponentType<Relative<PlayerDescription>>(true);
@@ -141,64 +141,61 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 			// </summary>
 			var allowCommandChange = true; // default value: false
 
-			inputDeps =
-				Entities
-					.ForEach((Entity entity, int nativeThreadIndex, in RhythmExecuteCommand ev, in DynamicBuffer<RhythmEngineClientRequestedCommandProgression> requested) =>
+			Entities
+				.ForEach((Entity entity, int nativeThreadIndex, in RhythmExecuteCommand ev, in DynamicBuffer<RhythmEngineClientRequestedCommandProgression> requested) =>
+				{
+					for (var chunk = 0; chunk != engineChunks.Length; chunk++)
 					{
-						for (var chunk = 0; chunk != engineChunks.Length; chunk++)
+						var count                            = engineChunks[chunk].Count;
+						var playerRelativeArray              = engineChunks[chunk].GetNativeArray(playerRelativeType);
+						var processArray                     = engineChunks[chunk].GetNativeArray(processType);
+						var settingsArray                    = engineChunks[chunk].GetNativeArray(settingsType);
+						var stateArray                       = engineChunks[chunk].GetNativeArray(stateType);
+						var commandProgressionArray          = engineChunks[chunk].GetBufferAccessor(commandProgressionType);
+						var predictedCommandProgressionArray = engineChunks[chunk].GetBufferAccessor(predictedCommandProgressionType);
+						for (var ent = 0; ent != count; ent++)
 						{
-							var count                            = engineChunks[chunk].Count;
-							var playerRelativeArray              = engineChunks[chunk].GetNativeArray(playerRelativeType);
-							var processArray                     = engineChunks[chunk].GetNativeArray(processType);
-							var settingsArray                    = engineChunks[chunk].GetNativeArray(settingsType);
-							var stateArray                       = engineChunks[chunk].GetNativeArray(stateType);
-							var commandProgressionArray          = engineChunks[chunk].GetBufferAccessor(commandProgressionType);
-							var predictedCommandProgressionArray = engineChunks[chunk].GetBufferAccessor(predictedCommandProgressionType);
-							for (var ent = 0; ent != count; ent++)
+							if (!networkOwnerFromEntity.Exists(playerRelativeArray[ent].Target))
+								continue;
+							var targetConnectionEntity = networkOwnerFromEntity[playerRelativeArray[ent].Target].Value;
+							if (targetConnectionEntity != ev.Connection)
+								continue;
+
+							ref var process = ref UnsafeUtilityEx.ArrayElementAsRef<FlowEngineProcess>(processArray.GetUnsafePtr(), ent);
+							ref var state   = ref UnsafeUtilityEx.ArrayElementAsRef<RhythmEngineState>(stateArray.GetUnsafePtr(), ent);
+
+							var commandProgression          = commandProgressionArray[ent].Reinterpret<FlowPressure>();
+							var predictedCommandProgression = predictedCommandProgressionArray[ent].Reinterpret<FlowPressure>();
+
+							if (allowCommandChange)
 							{
-								if (!networkOwnerFromEntity.Exists(playerRelativeArray[ent].Target))
-									continue;
-								var targetConnectionEntity = networkOwnerFromEntity[playerRelativeArray[ent].Target].Value;
-								if (targetConnectionEntity != ev.Connection)
-									continue;
+								commandProgression.CopyFrom(requested.Reinterpret<FlowPressure>());
 
-								ref var process = ref UnsafeUtilityEx.ArrayElementAsRef<FlowEngineProcess>(processArray.GetUnsafePtr(), ent);
-								ref var state   = ref UnsafeUtilityEx.ArrayElementAsRef<RhythmEngineState>(stateArray.GetUnsafePtr(), ent);
-
-								var commandProgression          = commandProgressionArray[ent].Reinterpret<FlowPressure>();
-								var predictedCommandProgression = predictedCommandProgressionArray[ent].Reinterpret<FlowPressure>();
-								
-								if (allowCommandChange)
-								{
-									commandProgression.CopyFrom(requested.Reinterpret<FlowPressure>());
-
-									// it may be possible that client is delayed by one beat
-									var lastCmdTime  = commandProgression[commandProgression.Length - 1].Time;
-									var currFlowBeat = process.GetFlowBeat(settingsArray[ent].BeatInterval);
-									var offset       = currFlowBeat - (commandProgression[0].RenderBeat + (settingsArray[ent].MaxBeats - 1));
-								}
-								else
-								{
-									throw new NotImplementedException("Prediction for commands is not yet implemented");
-								}
-
-								predictedCommandProgression.Clear();
-								state.VerifyCommand = true;
-
-								break;
+								// it may be possible that client is delayed by one beat
+								var lastCmdTime  = commandProgression[commandProgression.Length - 1].Time;
+								var currFlowBeat = process.GetFlowBeat(settingsArray[ent].BeatInterval);
+								var offset       = currFlowBeat - (commandProgression[0].RenderBeat + (settingsArray[ent].MaxBeats - 1));
 							}
+							else
+							{
+								throw new NotImplementedException("Prediction for commands is not yet implemented");
+							}
+
+							predictedCommandProgression.Clear();
+							state.VerifyCommand = true;
+
+							break;
 						}
-					})
-					.WithReadOnly(engineChunks)
-					.WithReadOnly(playerRelativeType)
-					.WithReadOnly(networkOwnerFromEntity)
-					.WithReadOnly(settingsType)
-					.Schedule(JobHandle.CombineDependencies(inputDeps, queryHandle));
+					}
+				})
+				.WithReadOnly(engineChunks)
+				.WithReadOnly(playerRelativeType)
+				.WithReadOnly(networkOwnerFromEntity)
+				.WithReadOnly(settingsType)
+				.Schedule(JobHandle.CombineDependencies(Dependency, queryHandle));
 
 			m_EndBarrier.CreateCommandBuffer().DestroyEntity(m_EventQuery);
-			m_EndBarrier.AddJobHandleForProducer(inputDeps);
-
-			return inputDeps;
+			m_EndBarrier.AddJobHandleForProducer(Dependency);
 		}
 	}
 }

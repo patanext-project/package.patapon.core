@@ -34,7 +34,7 @@ namespace Patapon4TLB.Default
 	}
 
 	[UpdateInGroup(typeof(FormationSystemGroup))]
-	public class FormationSystem : JobComponentSystem
+	public class FormationSystem : SystemBase
 	{
 		private EntityQuery m_ChildBufferQuery;
 		private EntityQuery m_ChildWithParentQuery;
@@ -78,11 +78,11 @@ namespace Patapon4TLB.Default
 			});
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			if (m_FormationWithoutBufferQuery.CalculateEntityCount() > 0)
 			{
-				inputDeps.Complete();
+				Dependency.Complete();
 
 				using (var entities = m_FormationWithoutBufferQuery.ToEntityArray(Allocator.TempJob))
 				{
@@ -98,39 +98,37 @@ namespace Patapon4TLB.Default
 
 			if (m_FormationWithoutRootQuery.CalculateEntityCount() > 0)
 			{
-				inputDeps.Complete();
+				Dependency.Complete();
 
 				EntityManager.AddComponent(m_FormationWithoutRootQuery, typeof(InFormation));
 			}
 
-			if (m_ChildBufferQuery.CalculateEntityCount() > 0) inputDeps = Entities.ForEach((ref DynamicBuffer<FormationChild> buffer) => buffer.Clear()).Schedule(inputDeps);
+			if (m_ChildBufferQuery.CalculateEntityCount() > 0)
+				Entities.ForEach((ref DynamicBuffer<FormationChild> buffer) => buffer.Clear()).Schedule();
 
 			if (m_ChildWithParentQuery.CalculateEntityCount() > 0)
 			{
 				var childFromEntity = GetBufferFromEntity<FormationChild>();
-				inputDeps = new AddToParent
+				Dependency = new AddToParent
 				{
 					ChildFromEntity = childFromEntity
-				}.ScheduleSingle(m_ChildWithParentQuery, inputDeps);
+				}.ScheduleSingle(m_ChildWithParentQuery, Dependency);
 			}
 
 			if (m_RootWithChildQuery.CalculateEntityCount() > 0)
 			{
 				var formationFromEntity = GetComponentDataFromEntity<InFormation>();
 				var childFromEntity     = GetBufferFromEntity<FormationChild>(true);
-				inputDeps = Entities
-				            .WithAll<FormationRoot, FormationChild>()
-				            .ForEach((Entity root) => { Recursive(root, root, childFromEntity[root], formationFromEntity, childFromEntity); })
-				            // It should be safe to access to this array since all childs got the same parent
-				            .WithNativeDisableParallelForRestriction(formationFromEntity)
-				            // Read only because it's read only :shrug:
-				            .WithReadOnly(childFromEntity)
-				            .Schedule(inputDeps);
+				Entities.WithAll<FormationRoot, FormationChild>()
+				        .ForEach((Entity root) => { Recursive(root, root, childFromEntity[root], formationFromEntity, childFromEntity); })
+				        // It should be safe to access to this array since all childs got the same parent
+				        .WithNativeDisableParallelForRestriction(formationFromEntity)
+				        // Read only because it's read only :shrug:
+				        .WithReadOnly(childFromEntity)
+				        .ScheduleParallel();
 			}
 
-			m_FormationSystemGroup.AddDependency(inputDeps);
-
-			return inputDeps;
+			m_FormationSystemGroup.AddDependency(Dependency);
 		}
 
 		private static void Recursive(Entity                               root,                Entity                           parent, DynamicBuffer<FormationChild> children,

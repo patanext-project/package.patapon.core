@@ -18,7 +18,7 @@ namespace RhythmEngine
 {
 	[AlwaysUpdateSystem]
 	[UpdateInGroup(typeof(PresentationSystemGroup))]
-	public class RhythmEnginePlayIntroMetronome : GameBaseSystem
+	public class RhythmEnginePlayIntroMetronome : AbsGameBaseSystem
 	{
 		public bool IsNewBeat;
 		public int BeatTarget;

@@ -12,7 +12,7 @@ using UnityEngine;
 namespace Patapon.Mixed.Systems
 {
 	[UpdateInGroup(typeof(RhythmEngineGroup))]
-	public class ProcessRhythmEngineSystem : JobGameBaseSystem
+	public class ProcessRhythmEngineSystem : AbsGameBaseSystem
 	{
 		private LazySystem<OrderGroup.Simulation.DeleteEntities.CommandBufferSystem> m_DeleteBarrier;
 
@@ -33,12 +33,12 @@ namespace Patapon.Mixed.Systems
 			m_DestroyEventQuery = GetEntityQuery(typeof(EventCreated), typeof(FlowBeatEvent), typeof(Relative<RhythmEngineDescription>));
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var spawnEcb   = this.L(ref m_SpawnBarrier).CreateCommandBuffer().ToConcurrent();
 			var destroyEcb = this.L(ref m_DeleteBarrier).CreateCommandBuffer();
 			var tick       = GetTick(GetSingleton<P4NetworkRules.Data>().RhythmEngineUsePredicted);
-			var isServer = IsServer;
+			var isServer   = IsServer;
 
 			if (!isServer && !GetSingleton<P4NetworkRules.Data>().RhythmEngineUsePredicted)
 			{
@@ -50,59 +50,57 @@ namespace Patapon.Mixed.Systems
 
 			// Originally, it was only tasked for systems with 'FlowProcessTag'
 			// I don't remember why this tag was needed
-			inputDeps = Entities
-			            .ForEach((Entity entity, int nativeThreadIndex, ref FlowEngineProcess process, ref RhythmEngineState state, in RhythmEngineSettings settings) =>
-			            {
-				            if (state.IsPaused || process.Milliseconds < 0)
-				            {
-					            if (isServer)
-					            {
-						            state.RecoveryTick     = 0;
-						            state.NextBeatRecovery = -1;
-					            }
-					            else
-					            {
-						            state.NextBeatRecovery = -1;
-					            }
-				            }
+			Entities
+				.ForEach((Entity entity, int nativeThreadIndex, ref FlowEngineProcess process, ref RhythmEngineState state, in RhythmEngineSettings settings) =>
+				{
+					if (state.IsPaused || process.Milliseconds < 0)
+					{
+						if (isServer)
+						{
+							state.RecoveryTick     = 0;
+							state.NextBeatRecovery = -1;
+						}
+						else
+						{
+							state.NextBeatRecovery = -1;
+						}
+					}
 
-				            var previousBeat = process.GetActivationBeat(settings.BeatInterval);
+					var previousBeat = process.GetActivationBeat(settings.BeatInterval);
 
-				            process.Milliseconds = tick.Ms - process.StartTime;
-				            if (settings.BeatInterval <= 0.0001f)
-				            {
-					            NonBurst_ThrowWarning(entity);
-					            return;
-				            }
-				            
-				            if (state.IsPaused || process.Milliseconds < 0)
-				            {
-					            state.LastPressureBeat = 0;
-				            }
+					process.Milliseconds = tick.Ms - process.StartTime;
+					if (settings.BeatInterval <= 0.0001f)
+					{
+						NonBurst_ThrowWarning(entity);
+						return;
+					}
 
-				            state.IsNewBeat = false;
+					if (state.IsPaused || process.Milliseconds < 0)
+					{
+						state.LastPressureBeat = 0;
+					}
 
-				            var beatDiff = math.abs(previousBeat - process.GetActivationBeat(settings.BeatInterval));
-				            if (beatDiff > 0) // the original plan was to create multiple events if there were multiple beats in the same frame
-					            // but maybe it would be too much if we do change the StartTime.
-				            {
-					            state.IsNewBeat = true;
-					            var ent = spawnEcb.CreateEntity(nativeThreadIndex);
-					            spawnEcb.AddComponent(nativeThreadIndex, ent, new FlowBeatEvent(process.GetActivationBeat(settings.BeatInterval)));
-					            spawnEcb.AddComponent(nativeThreadIndex, ent, new Relative<RhythmEngineDescription>(entity));
-					            spawnEcb.AddComponent(nativeThreadIndex, ent, new EventCreated());
+					state.IsNewBeat = false;
 
-					            var mercy = isServer ? 2 : 0;
-					            if (state.LastPressureBeat > process.GetActivationBeat(settings.BeatInterval) + mercy)
-						            state.LastPressureBeat = 0;
-				            }
-			            })
-			            .Schedule(inputDeps);
+					var beatDiff = math.abs(previousBeat - process.GetActivationBeat(settings.BeatInterval));
+					if (beatDiff > 0) // the original plan was to create multiple events if there were multiple beats in the same frame
+						// but maybe it would be too much if we do change the StartTime.
+					{
+						state.IsNewBeat = true;
+						var ent = spawnEcb.CreateEntity(nativeThreadIndex);
+						spawnEcb.AddComponent(nativeThreadIndex, ent, new FlowBeatEvent(process.GetActivationBeat(settings.BeatInterval)));
+						spawnEcb.AddComponent(nativeThreadIndex, ent, new Relative<RhythmEngineDescription>(entity));
+						spawnEcb.AddComponent(nativeThreadIndex, ent, new EventCreated());
 
-			m_SpawnBarrier.Value.AddJobHandleForProducer(inputDeps);
-			m_DeleteBarrier.Value.AddJobHandleForProducer(inputDeps);
+						var mercy = isServer ? 2 : 0;
+						if (state.LastPressureBeat > process.GetActivationBeat(settings.BeatInterval) + mercy)
+							state.LastPressureBeat = 0;
+					}
+				})
+				.Schedule();
 
-			return inputDeps;
+			m_SpawnBarrier.Value.AddJobHandleForProducer(Dependency);
+			m_DeleteBarrier.Value.AddJobHandleForProducer(Dependency);
 		}
 
 		private struct EventCreated : IComponentData

@@ -9,7 +9,7 @@ using Unity.Entities;
 
 namespace Patapon.Mixed.Systems
 {
-	public class RegisterDefaultSequenceCommands : GameBaseSystem
+	public class RegisterDefaultSequenceCommands : AbsGameBaseSystem
 	{
 		protected override void OnCreate()
 		{

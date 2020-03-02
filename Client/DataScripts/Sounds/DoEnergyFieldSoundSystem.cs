@@ -20,7 +20,7 @@ namespace DataScripts.Sounds
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	// TEMPORARY SYSTEM! 
 	// todo: this system should be removed once hit sounds will be attributed to current ability and weapons...
-	public class DoEnergyFieldSoundSystem : JobGameBaseSystem
+	public class DoEnergyFieldSoundSystem : AbsGameBaseSystem
 	{
 		public struct DataOp
 		{
@@ -43,7 +43,7 @@ namespace DataScripts.Sounds
 			m_AsyncOp.Add(Addressables.LoadAssetAsync<AudioClip>(hitSoundFile), new DataOp { });
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			for (var i = 0; i != m_AsyncOp.Handles.Count; i++)
 			{
@@ -56,7 +56,7 @@ namespace DataScripts.Sounds
 			}
 
 			if (!m_HitSound.IsValid)
-				return default;
+				return;
 
 			Entities.WithNone<HitSoundAttachedTag>().WithAll<EnergyFieldBuff.DamageWasHalvedTag>().ForEach((Entity ent, in TargetDamageEvent damageEvent, in GameEvent gameEvent) =>
 			{
@@ -82,8 +82,6 @@ namespace DataScripts.Sounds
 
 				EntityManager.AddComponent(ent, typeof(HitSoundAttachedTag));
 			}).WithStructuralChanges().Run();
-
-			return default;
 		}
 	}
 }

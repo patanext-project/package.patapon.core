@@ -64,7 +64,7 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 	}
 
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
-	public class RhythmClientRecoverManageSystem : JobComponentSystem
+	public class RhythmClientRecoverManageSystem : SystemBase
 	{
 		private CreateSnapshotSystem                   m_CreateSnapshotSystem;
 		private EndSimulationEntityCommandBufferSystem m_EndBarrier;
@@ -77,7 +77,7 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 			m_CreateSnapshotSystem = World.GetOrCreateSystem<CreateSnapshotSystem>();
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var playerRelativeFromEntity = GetComponentDataFromEntity<Relative<PlayerDescription>>(true);
 			var networkOwnerFromEntity   = GetComponentDataFromEntity<NetworkOwner>(true);
@@ -90,55 +90,52 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 
 			var tick = World.GetExistingSystem<ServerSimulationSystemGroup>().ServerTick;
 
-			inputDeps =
-				Entities
-					.ForEach((in RhythmRpcClientRecover ev, in ReceiveRpcCommandRequestComponent receiveData) =>
+			Entities
+				.ForEach((in RhythmRpcClientRecover ev, in ReceiveRpcCommandRequestComponent receiveData) =>
+				{
+					if (!ghostMap.TryGetValue(ev.EngineGhostId, out var ghostEntity))
+						return;
+					if (!playerRelativeFromEntity.TryGet(ghostEntity, out var playerRelative)
+					    && !networkOwnerFromEntity.TryGet(playerRelative.Target, out var networkOwner)
+					    && networkOwner.Value != receiveData.SourceConnection)
+						return;
+
+					var process = processFromEntity[ghostEntity];
+					var combo   = comboFromEntity[ghostEntity];
+					var state   = stateFromEntity[ghostEntity];
+
+					var flowBeat = process.GetFlowBeat(settingsFromEntity[ghostEntity].BeatInterval);
+					if (ev.ForceRecover)
 					{
-						if (!ghostMap.TryGetValue(ev.EngineGhostId, out var ghostEntity))
-							return;
-						if (!playerRelativeFromEntity.TryGet(ghostEntity, out var playerRelative)
-						    && !networkOwnerFromEntity.TryGet(playerRelative.Target, out var networkOwner)
-						    && networkOwner.Value != receiveData.SourceConnection)
-							return;
+						state.RecoveryTick     = (int) tick;
+						state.NextBeatRecovery = flowBeat + 1;
+						if (ev.RecoverBeat > 0) // this condition should always be false if we don't enable 'UseClientSimulation' in settings
+							state.NextBeatRecovery = ev.RecoverBeat;
+					}
 
-						var process = processFromEntity[ghostEntity];
-						var combo   = comboFromEntity[ghostEntity];
-						var state   = stateFromEntity[ghostEntity];
+					if (ev.LooseChain)
+					{
+						combo.Chain        = 0;
+						combo.Score        = 0;
+						combo.IsFever      = false;
+						combo.JinnEnergy   = 0;
+						combo.ChainToFever = 0;
+					}
 
-						var flowBeat = process.GetFlowBeat(settingsFromEntity[ghostEntity].BeatInterval);
-						if (ev.ForceRecover)
-						{
-							state.RecoveryTick     = (int) tick;
-							state.NextBeatRecovery = flowBeat + 1;
-							if (ev.RecoverBeat > 0) // this condition should always be false if we don't enable 'UseClientSimulation' in settings
-								state.NextBeatRecovery = ev.RecoverBeat;
-						}
-
-						if (ev.LooseChain)
-						{
-							combo.Chain        = 0;
-							combo.Score        = 0;
-							combo.IsFever      = false;
-							combo.JinnEnergy   = 0;
-							combo.ChainToFever = 0;
-						}
-
-						comboFromEntity[ghostEntity] = combo;
-						stateFromEntity[ghostEntity] = state;
-					})
-					.WithReadOnly(ghostMap)
-					.WithReadOnly(processFromEntity)
-					.WithReadOnly(settingsFromEntity)
-					.WithReadOnly(playerRelativeFromEntity)
-					.WithReadOnly(networkOwnerFromEntity)
-					.WithNativeDisableParallelForRestriction(stateFromEntity)
-					.WithNativeDisableParallelForRestriction(comboFromEntity)
-					.Schedule(inputDeps);
+					comboFromEntity[ghostEntity] = combo;
+					stateFromEntity[ghostEntity] = state;
+				})
+				.WithReadOnly(ghostMap)
+				.WithReadOnly(processFromEntity)
+				.WithReadOnly(settingsFromEntity)
+				.WithReadOnly(playerRelativeFromEntity)
+				.WithReadOnly(networkOwnerFromEntity)
+				.WithNativeDisableParallelForRestriction(stateFromEntity)
+				.WithNativeDisableParallelForRestriction(comboFromEntity)
+				.Schedule();
 
 			m_EndBarrier.CreateCommandBuffer().DestroyEntity(m_EventQuery);
-			m_EndBarrier.AddJobHandleForProducer(inputDeps);
-
-			return inputDeps;
+			m_EndBarrier.AddJobHandleForProducer(Dependency);
 		}
 	}
 }

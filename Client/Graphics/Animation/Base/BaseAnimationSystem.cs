@@ -13,7 +13,7 @@ using UnityEngine.Playables;
 namespace package.patapon.core.Animation.Units
 {
 	[AlwaysSynchronizeSystem]
-	public abstract class BaseAnimationSystem : JobGameBaseSystem
+	public abstract class BaseAnimationSystem : AbsGameBaseSystem
 	{
 		protected AsyncOperationModule AsyncOp;
 		protected Type                 SystemType;
@@ -34,12 +34,12 @@ namespace package.patapon.core.Animation.Units
 			AsyncOp.Add(Addressables.LoadAssetAsync<TAsset>(address), data);
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			for (var i = 0; i != AsyncOp.Handles.Count; i++) OnAsyncOpUpdate(ref i);
 
 			if (!OnBeforeForEach())
-				return default;
+				return;
 
 			Entities.ForEach((UnitVisualBackend backend, UnitVisualAnimation animation) =>
 			{
@@ -50,7 +50,7 @@ namespace package.patapon.core.Animation.Units
 				CurrentPresentation = backend.Presentation;
 				OnUpdate(backend.DstEntity, backend, animation);
 			}).WithStructuralChanges().Run();
-			return default;
+			return;
 		}
 
 		protected abstract void OnUpdate(Entity targetEntity, UnitVisualBackend backend, UnitVisualAnimation animation);

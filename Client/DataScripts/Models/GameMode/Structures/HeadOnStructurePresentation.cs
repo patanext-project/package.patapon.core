@@ -305,7 +305,7 @@ namespace DataScripts.Models.GameMode.Structures
 
 	[AlwaysSynchronizeSystem]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
-	public class SetHeadOnStructurePresentation : JobGameBaseSystem
+	public class SetHeadOnStructurePresentation : AbsGameBaseSystem
 	{
 		private AsyncAssetPool<GameObject> defaultWallPool;
 		private AsyncAssetPool<GameObject> defaultTowerPool;
@@ -325,7 +325,7 @@ namespace DataScripts.Models.GameMode.Structures
 			defaultControlTowerPool = new AsyncAssetPool<GameObject>(builder.Folder("CaptureTower").GetFile("CaptureTower.prefab"));
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			Entities.ForEach((HeadOnStructureBackend backend) =>
 			{
@@ -367,8 +367,6 @@ namespace DataScripts.Models.GameMode.Structures
 
 				backend.SetPresentationFromPool(pool);
 			}).WithStructuralChanges().Run();
-
-			return default;
 		}
 	}
 

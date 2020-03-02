@@ -76,7 +76,7 @@ namespace Bootstraps
 	}
 
 	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
-	public class GameModeBootstrapTestSystem : GameBaseSystem
+	public class GameModeBootstrapTestSystem : AbsGameBaseSystem
 	{
 		private bool        m_Created;
 		private EntityQuery m_PlayerQuery;
@@ -134,7 +134,7 @@ namespace Bootstraps
 						var targetKit        = UnitKnownTypes.Yarida;
 						if (playerEntities.Length > i && playerEntities[i] != Entity.Null)
 						{
-							targetKit = UnitKnownTypes.Yarida;
+							targetKit = UnitKnownTypes.Kibadda;
 							EntityManager.ReplaceOwnerData(unitEntity, playerEntities[i]);
 						}
 						else

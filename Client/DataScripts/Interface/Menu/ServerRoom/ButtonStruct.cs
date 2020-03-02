@@ -26,9 +26,9 @@ namespace DataScripts.Interface.Menu.ServerRoom
 		[UpdateInGroup(typeof(InteractionButtonSystemGroup))]
 		[UpdateBefore(typeof(DisablePopupActionSystem))]
 		[AlwaysSynchronizeSystem]
-		public class Process : JobComponentSystem
+		public class Process : SystemBase
 		{
-			protected override JobHandle OnUpdate(JobHandle inputDeps)
+			protected override void OnUpdate()
 			{
 				Entities.WithAll<UIButton.ClickedEvent>().ForEach((Entity entity, in ButtonGoBackToPreviousMenu goBack) =>
 				{
@@ -40,8 +40,6 @@ namespace DataScripts.Interface.Menu.ServerRoom
 					if (!EntityManager.HasComponent<SetEnableStatePopupAction>(entity))
 						EntityManager.RemoveComponent(entity, typeof(UIButton.ClickedEvent));
 				}).WithStructuralChanges().Run();
-
-				return default;
 			}
 		}
 	}
@@ -52,9 +50,9 @@ namespace DataScripts.Interface.Menu.ServerRoom
 
 		[UpdateInGroup(typeof(PresentationSystemGroup))]
 		[AlwaysSynchronizeSystem]
-		public class Process : JobComponentSystem
+		public class Process : SystemBase
 		{
-			protected override JobHandle OnUpdate(JobHandle inputDeps)
+			protected override void OnUpdate()
 			{
 				Entities.WithAll<UIButton.ClickedEvent>().ForEach((Entity entity, in ButtonChangeTeam button) =>
 				{
@@ -63,8 +61,6 @@ namespace DataScripts.Interface.Menu.ServerRoom
 
 					EntityManager.RemoveComponent(entity, typeof(UIButton.ClickedEvent));
 				}).WithStructuralChanges().Run();
-
-				return default;
 			}
 		}
 	}
@@ -76,7 +72,7 @@ namespace DataScripts.Interface.Menu.ServerRoom
 		[UpdateInGroup(typeof(InteractionButtonSystemGroup))]
 		[UpdateBefore(typeof(DisablePopupActionSystem))]
 		[AlwaysSynchronizeSystem]
-		public class Process : JobComponentSystem
+		public class Process : SystemBase
 		{
 			private LazySystem<EndInteractionButtonCommandBufferSystem> m_EndBuffer;
 			private EntityQuery                                         m_UnitQuery;
@@ -88,7 +84,7 @@ namespace DataScripts.Interface.Menu.ServerRoom
 				m_UnitQuery = GetEntityQuery(typeof(UnitFormation), typeof(MasterServerP4UnitMasterServerEntity));
 			}
 
-			protected override JobHandle OnUpdate(JobHandle inputDeps)
+			protected override void OnUpdate()
 			{
 				Entity localUnit = default;
 
@@ -107,7 +103,7 @@ namespace DataScripts.Interface.Menu.ServerRoom
 				}
 
 				if (localUnit == default)
-					return default;
+					return;
 
 				var localUnitMsId = EntityManager.GetComponentData<MasterServerP4UnitMasterServerEntity>(localUnit).UnitId;
 				var ecb           = this.L(ref m_EndBuffer).CreateCommandBuffer();
@@ -121,8 +117,6 @@ namespace DataScripts.Interface.Menu.ServerRoom
 
 					ecb.RemoveComponent<UIButton.ClickedEvent>(entity);
 				}).WithStructuralChanges().Run();
-
-				return default;
 			}
 		}
 	}
@@ -133,12 +127,12 @@ namespace DataScripts.Interface.Menu.ServerRoom
 
 		[UpdateInGroup(typeof(PresentationSystemGroup))]
 		[AlwaysSynchronizeSystem]
-		public class Process : JobComponentSystem
+		public class Process : SystemBase
 		{
 			private readonly string ReadyText   = "Set Ready";
 			private readonly string UnreadyText = "Unset Ready";
 
-			protected override JobHandle OnUpdate(JobHandle inputDeps)
+			protected override void OnUpdate()
 			{
 				Entities.WithAll<UIButton.ClickedEvent>().ForEach((Entity entity, ref ButtonChangeReadyState button) =>
 				{
@@ -158,11 +152,7 @@ namespace DataScripts.Interface.Menu.ServerRoom
 				}).WithoutBurst().Run();
 
 				if (HasSingleton<GameModeHudSettings>() && !GetSingleton<GameModeHudSettings>().EnablePreMatchInterface)
-				{
 					Entities.ForEach((ref ButtonChangeReadyState button) => button.Value = false).Run();
-				}
-
-				return default;
 			}
 		}
 	}

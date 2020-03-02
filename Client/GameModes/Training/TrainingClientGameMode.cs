@@ -26,7 +26,7 @@ namespace Patapon4TLB.GameModes
 {
 
 	[UpdateInGroup(typeof(ClientGameModeSystemGroup))]
-	public class TrainingClientGameMode : GameBaseSystem
+	public class TrainingClientGameMode : AbsGameBaseSystem
 	{
 		private EntityQuery m_ExecutingMapQuery;
 		private EntityQuery m_GameModeQuery;

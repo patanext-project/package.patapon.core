@@ -7,7 +7,7 @@ using Unity.NetCode;
 namespace BootstrapRelay
 {
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
-	public class ClientGameBoostrapRelay : GameBaseSystem
+	public class ClientGameBoostrapRelay : AbsGameBaseSystem
 	{
 		protected override void OnCreate()
 		{

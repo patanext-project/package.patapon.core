@@ -15,7 +15,7 @@ namespace Patapon.Client.Graphics.Animation.Units
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	[UpdateAfter(typeof(RenderInterpolationSystem))]
 	[AlwaysSynchronizeSystem]
-	public class UpdateUnitVisualBackendSystem : JobComponentSystem
+	public class UpdateUnitVisualBackendSystem : SystemBase
 	{
 		private EntityQuery                                         m_BackendQuery;
 		private List<(UnitVisualBackend backend, string archetype)> m_UpdateArchetypeList;
@@ -28,7 +28,7 @@ namespace Patapon.Client.Graphics.Animation.Units
 			m_UpdateArchetypeList = new List<(UnitVisualBackend backend, string archetype)>();
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			m_UpdateArchetypeList.Clear();
 
@@ -62,6 +62,8 @@ namespace Patapon.Client.Graphics.Animation.Units
 				
 				if (backend.CurrentArchetype != unitArchetype)
 				{
+					Debug.Log($"{backend.CurrentArchetype} -> {unitArchetype}");
+					
 					backend.CurrentArchetype = unitArchetype;
 					m_UpdateArchetypeList.Add((backend, unitArchetype));
 				}
@@ -69,13 +71,12 @@ namespace Patapon.Client.Graphics.Animation.Units
 
 			foreach (var (be, archetype) in m_UpdateArchetypeList)
 			{
-				var pool = World.GetExistingSystem<UnitVisualArchetypeManager>().GetArchetypePool(archetype);
-
-				be.ReturnPresentation();
-				be.SetPresentationFromPool(pool);
+				if (World.GetExistingSystem<UnitVisualArchetypeManager>().TryGetArchetypePool(archetype, out var pool))
+				{
+					be.ReturnPresentation();
+					be.SetPresentationFromPool(pool);
+				}
 			}
-
-			return inputDeps;
 		}
 	}
 }

@@ -14,7 +14,7 @@ using UnityEngine.AddressableAssets;
 
 namespace DataScripts.Sounds
 {
-	public class HeroModeActivationSoundSystem : JobGameBaseSystem
+	public class HeroModeActivationSoundSystem : AbsGameBaseSystem
 	{
 		public struct DataOp
 		{
@@ -50,7 +50,7 @@ namespace DataScripts.Sounds
 			});
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			for (var i = 0; i != m_AsyncOp.Handles.Count; i++)
 			{
@@ -63,7 +63,7 @@ namespace DataScripts.Sounds
 			}
 
 			if (!m_ActivationSound.IsValid)
-				return default;
+				return;
 
 			if (!m_AbilityWithoutInternalQuery.IsEmptyIgnoreFilter)
 				EntityManager.AddComponent(m_AbilityWithoutInternalQuery, typeof(AbilityInternalData));
@@ -86,7 +86,7 @@ namespace DataScripts.Sounds
 			}).Run();
 
 			if (!playSound) 
-				return default;
+				return;
 			
 			var soundEntity = EntityManager.CreateEntity(typeof(ECSoundEmitterComponent), typeof(ECSoundDefinition), typeof(ECSoundOneShotTag));
 			var emitter     = new ECSoundEmitterComponent();
@@ -102,8 +102,6 @@ namespace DataScripts.Sounds
 
 			EntityManager.SetComponentData(soundEntity, emitter);
 			EntityManager.SetComponentData(soundEntity, m_ActivationSound);
-
-			return default;
 		}
 	}
 }

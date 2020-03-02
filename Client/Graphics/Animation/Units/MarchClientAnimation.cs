@@ -21,17 +21,17 @@ namespace package.patapon.core.Animation.Units
 	{
 		public float Value;
 
-		public class System : JobComponentSystem
+		public class System : SystemBase
 		{
-			protected override JobHandle OnUpdate(JobHandle inputDeps)
+			protected override void OnUpdate()
 			{
 				var dt = Time.DeltaTime;
-				return Entities.ForEach((ref AnimationIdleTime idleTime) =>
+				Entities.ForEach((ref AnimationIdleTime idleTime) =>
 				{
 					idleTime.Value += dt;
 					if (idleTime.Value < 0)
 						idleTime.Value = 0;
-				}).Schedule(inputDeps);
+				}).Schedule();
 			}
 		}
 	}

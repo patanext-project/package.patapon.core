@@ -16,7 +16,7 @@ namespace Patapon.Mixed.GamePlay
 	[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
 	[UpdateBefore(typeof(ActionSystemGroup))]
 	[UpdateBefore(typeof(UnitInitStateSystemGroup))]
-	public class UpdateAbilityRhythmStateSystem : JobComponentSystem
+	public class UpdateAbilityRhythmStateSystem : SystemBase
 	{
 		[BurstDiscard]
 		private static void NonBurst_ErrorNoOwnerOrNoRelative(Entity owner, Entity entity)
@@ -31,7 +31,7 @@ namespace Patapon.Mixed.GamePlay
 			Debug.LogError($"No RhythmEngine found on target({target}) of ability({entity})");
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var relativeRhythmEngineFromEntity    = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(true);
 			var rhythmEngineDescriptionFromEntity = GetComponentDataFromEntity<RhythmEngineDescription>(true);
@@ -45,77 +45,77 @@ namespace Patapon.Mixed.GamePlay
 
 			var abilityStateFromEntity = GetComponentDataFromEntity<AbilityRhythmState>(true);
 
-			return Entities
-			       .ForEach((Entity entity, ref AbilityRhythmState abilityState, in Owner owner) =>
-			       {
-				       if (owner.Target == default || !relativeRhythmEngineFromEntity.Exists(owner.Target))
-				       {
-					       NonBurst_ErrorNoOwnerOrNoRelative(owner.Target, entity);
-					       return;
-				       }
+			Entities
+				.ForEach((Entity entity, ref AbilityRhythmState abilityState, in Owner owner) =>
+				{
+					if (owner.Target == default || !relativeRhythmEngineFromEntity.Exists(owner.Target))
+					{
+						NonBurst_ErrorNoOwnerOrNoRelative(owner.Target, entity);
+						return;
+					}
 
-				       var engine = relativeRhythmEngineFromEntity[owner.Target].Target;
-				       if (!rhythmEngineDescriptionFromEntity.Exists(engine))
-				       {
-					       NonBurst_ErrorNoRhythmEngine(engine, entity);
-					       return;
-				       }
+					var engine = relativeRhythmEngineFromEntity[owner.Target].Target;
+					if (!rhythmEngineDescriptionFromEntity.Exists(engine))
+					{
+						NonBurst_ErrorNoRhythmEngine(engine, entity);
+						return;
+					}
 
-				       if (!actionContainer.Exists(owner.Target))
-					       return;
+					if (!actionContainer.Exists(owner.Target))
+						return;
 
-				       var forceSelectionActive = false;
-				       // try to check if the selection can still be used on us.
-				       // this will only work if there is an empty ability in the target selection
-				       // or if the targeted ability is currently in wait mode...
-				       if (rhythmCurrentCommandFromEntity[engine].CommandTarget == abilityState.Command
-				           && abilityState.TargetSelection != gameCommandStateFromEntity[engine].Selection)
-				       {
-					       var actionBuffer    = actionContainer[owner.Target];
-					       var foundTarget     = false;
-					       var engineSelection = gameCommandStateFromEntity[engine].Selection;
-					       for (var i = 0; i != actionBuffer.Length; i++)
-					       {
-						       var action      = actionBuffer[i].Target;
-						       if (!abilityStateFromEntity.Exists(action))
-							       continue;
-						       
-						       var actionState = abilityStateFromEntity[action];
-						       if (actionState.Command != abilityState.Command)
-							       continue;
+					var forceSelectionActive = false;
+					// try to check if the selection can still be used on us.
+					// this will only work if there is an empty ability in the target selection
+					// or if the targeted ability is currently in wait mode...
+					if (rhythmCurrentCommandFromEntity[engine].CommandTarget == abilityState.Command
+					    && abilityState.TargetSelection != gameCommandStateFromEntity[engine].Selection)
+					{
+						var actionBuffer    = actionContainer[owner.Target];
+						var foundTarget     = false;
+						var engineSelection = gameCommandStateFromEntity[engine].Selection;
+						for (var i = 0; i != actionBuffer.Length; i++)
+						{
+							var action = actionBuffer[i].Target;
+							if (!abilityStateFromEntity.Exists(action))
+								continue;
 
-						       if (abilityStateFromEntity[action].TargetSelection == engineSelection)
-						       {
-							       foundTarget = true;
-							       break;
-						       }
+							var actionState = abilityStateFromEntity[action];
+							if (actionState.Command != abilityState.Command)
+								continue;
 
-						       // todo: check if ability is in cooldown...
-					       }
+							if (abilityStateFromEntity[action].TargetSelection == engineSelection)
+							{
+								foundTarget = true;
+								break;
+							}
 
-					       if (!foundTarget)
-					       {
-						       forceSelectionActive = true;
-					       }
-				       }
+							// todo: check if ability is in cooldown...
+						}
 
-				       abilityState.Engine = engine;
-				       abilityState.Calculate(rhythmCurrentCommandFromEntity[engine],
-					       gameCommandStateFromEntity[engine],
-					       gameComboStateFromEntity[engine],
-					       rhythmEngineProcessFromEntity[engine],
-					       rhythmEngineStateFromEntity[engine], forceSelectionActive);
-			       })
-			       .WithReadOnly(actionContainer)
-			       .WithReadOnly(relativeRhythmEngineFromEntity)
-			       .WithReadOnly(rhythmEngineDescriptionFromEntity)
-			       .WithReadOnly(rhythmEngineProcessFromEntity)
-			       .WithReadOnly(rhythmEngineStateFromEntity)
-			       .WithReadOnly(rhythmCurrentCommandFromEntity)
-			       .WithReadOnly(gameCommandStateFromEntity)
-			       .WithReadOnly(gameComboStateFromEntity)
-			       .WithNativeDisableContainerSafetyRestriction(abilityStateFromEntity) // aliasing
-			       .Schedule(inputDeps);
+						if (!foundTarget)
+						{
+							forceSelectionActive = true;
+						}
+					}
+
+					abilityState.Engine = engine;
+					abilityState.Calculate(rhythmCurrentCommandFromEntity[engine],
+						gameCommandStateFromEntity[engine],
+						gameComboStateFromEntity[engine],
+						rhythmEngineProcessFromEntity[engine],
+						rhythmEngineStateFromEntity[engine], forceSelectionActive);
+				})
+				.WithReadOnly(actionContainer)
+				.WithReadOnly(relativeRhythmEngineFromEntity)
+				.WithReadOnly(rhythmEngineDescriptionFromEntity)
+				.WithReadOnly(rhythmEngineProcessFromEntity)
+				.WithReadOnly(rhythmEngineStateFromEntity)
+				.WithReadOnly(rhythmCurrentCommandFromEntity)
+				.WithReadOnly(gameCommandStateFromEntity)
+				.WithReadOnly(gameComboStateFromEntity)
+				.WithNativeDisableContainerSafetyRestriction(abilityStateFromEntity) // aliasing
+				.Schedule();
 		}
 	}
 }

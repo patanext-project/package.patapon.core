@@ -17,7 +17,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 	[AlwaysSynchronizeSystem]
 	public class VersusHeadOnRespawnUnits : RuleBaseSystem
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var tick          = ServerTick;
 			var respawnEvents = World.GetExistingSystem<MpVersusHeadOnGameMode>().RespawnEvents;
@@ -43,8 +43,6 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				gmUnitUpdater.CompareAndUpdate(gmUnit);
 				respawnEvents.Add(rebornEvent.Target);
 			}).Run();
-
-			return default;
 		}
 	}
 }

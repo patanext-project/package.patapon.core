@@ -24,9 +24,9 @@ namespace Patapon.Client.Systems
 		{
 		}
 
-		public AsyncAssetPool<GameObject> GetArchetypePool(string archetype)
+		public bool TryGetArchetypePool(string archetype, out AsyncAssetPool<GameObject> pool)
 		{
-			return m_PoolByArchetype[archetype];
+			return m_PoolByArchetype.TryGetValue(archetype, out pool);
 		}
 	}
 }

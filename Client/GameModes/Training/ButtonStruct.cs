@@ -21,19 +21,17 @@ namespace Patapon4TLB.GameModes.Training
 		[UpdateInGroup(typeof(InteractionButtonSystemGroup))]
 		[UpdateBefore(typeof(DisablePopupActionSystem))]
 		[AlwaysSynchronizeSystem]
-		public class Process : JobComponentSystem
+		public class Process : SystemBase
 		{
 			private LazySystem<EndInteractionButtonCommandBufferSystem> m_EndBuffer;
 
-			protected override JobHandle OnUpdate(JobHandle inputDeps)
+			protected override void OnUpdate()
 			{
 				Entities.WithAll<UIButton.ClickedEvent>().ForEach((Entity entity, in ButtonChangeKit button) =>
 				{
 					var reqEnt = EntityManager.CreateEntity(typeof(TrainingRoomSetKit), typeof(SendRpcCommandRequestComponent));
 					EntityManager.SetOrAddComponentData(reqEnt, new TrainingRoomSetKit {KitId = button.Id});
 				}).WithStructuralChanges().Run();
-
-				return default;
 			}
 		}
 	}

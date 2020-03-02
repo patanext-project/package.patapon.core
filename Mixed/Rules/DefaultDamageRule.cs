@@ -43,7 +43,7 @@ namespace StormiumTeam.GameBase
 			TeamDamageFactorProperty.Value = 0;
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			new JobCreateEvents
 			{
@@ -55,9 +55,7 @@ namespace StormiumTeam.GameBase
 				HealthHistoryFromEntity = GetBufferFromEntity<HealthModifyingHistory>()
 			}.Run(m_EntityQuery);
 
-			AddJobHandleForProducer(inputDeps);
-
-			return default;
+			AddJobHandleForProducer(Dependency);
 		}
 
 		public struct Data : IComponentData
@@ -83,6 +81,8 @@ namespace StormiumTeam.GameBase
 
 			public void Execute(Entity entity, int index, ref TargetDamageEvent damageEvent)
 			{
+				var original = damageEvent.Damage;
+				
 				var shooterTeam = TeamOwnerFromEntity.Exists(damageEvent.Origin) ? TeamOwnerFromEntity[damageEvent.Origin].Target : default;
 				var victimTeam  = TeamOwnerFromEntity.Exists(damageEvent.Destination) ? TeamOwnerFromEntity[damageEvent.Destination].Target : default;
 
@@ -103,6 +103,8 @@ namespace StormiumTeam.GameBase
 					Ecb.DestroyEntity(index, entity);
 					return;
 				}
+				
+				Debug.Log(original + ", " + damageEvent.Damage);
 				
 				if (HealthHistoryFromEntity.Exists(damageEvent.Destination))
 					HealthHistoryFromEntity[damageEvent.Destination].Add(new HealthModifyingHistory

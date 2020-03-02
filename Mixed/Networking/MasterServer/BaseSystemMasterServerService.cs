@@ -10,16 +10,17 @@ namespace Patapon4TLB.Core.MasterServer
 {
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
 	[AlwaysUpdateSystem]
-	public abstract class BaseSystemMasterServerService : GameBaseSystem
+	public abstract class BaseSystemMasterServerService : ComponentSystem
 	{
 		private static bool m_IgnoreAddSystem;
 
 		private bool m_IsShutdown;
+		private ModuleRegister m_ModuleRegister;
 		
 		protected override void OnStartRunning()
 		{
 			MasterServerSystem.Instance.BeforeShutdown += OnBeforeShutdown;
-			
+				
 			if (!m_IgnoreAddSystem)
 			{
 				m_IgnoreAddSystem = true;
@@ -67,6 +68,14 @@ namespace Patapon4TLB.Core.MasterServer
 				m_IsShutdown = true;
 				OnShutdown();
 			}
+		}
+		
+		protected void GetModule<TModule>(out TModule module)
+			where TModule : BaseSystemModule, new()
+		{
+			if (m_ModuleRegister == null)
+				m_ModuleRegister = new ModuleRegister(this);
+			m_ModuleRegister.GetModule(out module);
 		}
 	}
 

@@ -14,7 +14,8 @@ namespace Patapon.Mixed.GamePlay
 {
 	[UpdateInGroup(typeof(UnitPhysicSystemGroup))]
 	[UpdateAfter(typeof(TeamBlockMovableAreaSystem))]
-	public class UnitPhysicsSystem : JobGameBaseSystem
+	[UpdateAfter(typeof(ActionSystemGroup))]
+	public class UnitPhysicsSystem : AbsGameBaseSystem
 	{
 		private static float MoveTowards(float current, float target, float maxDelta)
 		{
@@ -23,94 +24,102 @@ namespace Patapon.Mixed.GamePlay
 			return current + Mathf.Sign(target - current) * maxDelta;
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var dt                       = Time.DeltaTime;
 			var gravity                  = new float3(0, -26f, 0);
 			var livableHealthFromEntity  = GetComponentDataFromEntity<LivableHealth>(true);
 			var relativeTargetFromEntity = GetComponentDataFromEntity<Relative<UnitTargetDescription>>(true);
 			var translationFromEntity    = GetComponentDataFromEntity<Translation>(true);
-			var isServer = IsServer;
+			var isServer                 = IsServer;
 
 			if (!isServer && GetSingleton<P4NetworkRules.Data>().AbilityUsePredicted == false)
-				return inputDeps;
+				return;
 
-			inputDeps =
-				Entities
-					.WithAll<UnitDescription>()
-					.ForEach((Entity                  entity,
-					          ref UnitControllerState controllerState, ref GroundState groundState, ref Translation translation, ref Velocity velocity,
-					          in  UnitPlayState       unitPlayState) =>
+			Entities
+				.WithAll<UnitDescription>()
+				.ForEach((Entity                  entity,
+				          ref UnitControllerState controllerState, ref GroundState groundState, ref Translation translation, ref Velocity velocity,
+				          in  UnitPlayState       unitPlayState) =>
+				{
+					if (velocity.Value.y > 0)
+						groundState.Value = false;
+
+					var previousPosition = translation.Value;
+					var target = controllerState.OverrideTargetPosition || !relativeTargetFromEntity.Exists(entity)
+						? controllerState.TargetPosition
+						: translationFromEntity[relativeTargetFromEntity[entity].Target].Value.x;
+
+					if (livableHealthFromEntity.Exists(entity) && livableHealthFromEntity[entity].IsDead)
 					{
-						if (velocity.Value.y > 0)
-							groundState.Value = false;
+						controllerState.ControlOverVelocity.x = true;
+						if (groundState.Value)
+							velocity.Value.x = math.lerp(velocity.Value.x, 0, 2.5f * dt);
+					}
 
-						var previousPosition = translation.Value;
-						var target = controllerState.OverrideTargetPosition || !relativeTargetFromEntity.Exists(entity)
-							? controllerState.TargetPosition
-							: translationFromEntity[relativeTargetFromEntity[entity].Target].Value.x;
-
-						if (livableHealthFromEntity.Exists(entity) && livableHealthFromEntity[entity].IsDead)
+					if (!controllerState.ControlOverVelocity.x)
+					{
+						// todo: find a good way for client to predict that nicely
+						if (groundState.Value)
 						{
-							controllerState.ControlOverVelocity.x = true;
-							if (groundState.Value)
-								velocity.Value.x = math.lerp(velocity.Value.x, 0, 2.5f * dt);
-						}
+							/*var speed = math.lerp(math.abs(velocity.Value.x), unitPlayState.MovementReturnSpeed, math.rcp(unitPlayState.Weight) * dt);
 
-						if (!controllerState.ControlOverVelocity.x)
+							// Instead of just assigning the translation value here, we calculate the velocity between the new position and the previous position.
+							var newPosX = MoveTowards(translation.Value.x, target, speed * dt);
+
+							velocity.Value.x = (newPosX - translation.Value.x) / dt;*/
+							var ps = unitPlayState;
+							ps.MovementAttackSpeed = ps.MovementReturnSpeed;
+							velocity.Value.x = AbilityUtility.GetTargetVelocityX(new AbilityUtility.GetTargetVelocityParameters
+							{
+								TargetPosition   = new float3(target, 0, 0),
+								PreviousPosition = translation.Value,
+								PreviousVelocity = velocity.Value,
+								PlayState        = ps,
+								Acceleration     = 10,
+								Tick             = new UTick {Delta = dt}
+							}, deaccel_distance: 0, deaccel_distance_max: 0.25f);
+						}
+						else
 						{
-							// todo: find a good way for client to predict that nicely
-							if (groundState.Value)
-							{
-								var speed = math.lerp(math.abs(velocity.Value.x), unitPlayState.MovementReturnSpeed, math.rcp(unitPlayState.Weight) * 30 * dt);
+							var acceleration = math.clamp(math.rcp(unitPlayState.Weight), 0, 1) * 10;
+							acceleration = math.min(acceleration * dt, 1) * 0.75f;
 
-								// Instead of just assigning the translation value here, we calculate the velocity between the new position and the previous position.
-								var newPosX = MoveTowards(translation.Value.x, target, speed * dt);
-
-								velocity.Value.x = (newPosX - translation.Value.x) / dt;
-							}
-							else
-							{
-								var acceleration = math.clamp(math.rcp(unitPlayState.Weight), 0, 1) * 10;
-								acceleration = math.min(acceleration * dt, 1) * 0.75f;
-
-								velocity.Value.x = math.lerp(velocity.Value.x, 0, acceleration);
-							}
+							velocity.Value.x = math.lerp(velocity.Value.x, 0, acceleration);
 						}
+					}
 
-						if (!controllerState.ControlOverVelocity.y)
-							if (!groundState.Value)
-								velocity.Value += gravity * dt;
+					if (!controllerState.ControlOverVelocity.y)
+						if (!groundState.Value)
+							velocity.Value += gravity * dt;
 
-						for (var v = 0; v != 3; v++)
-							velocity.Value[v] = math.isnan(velocity.Value[v]) ? 0.0f : velocity.Value[v];
+					for (var v = 0; v != 3; v++)
+						velocity.Value[v] = math.isnan(velocity.Value[v]) ? 0.0f : velocity.Value[v];
 
 
-						translation.Value += velocity.Value * dt;
-						if (translation.Value.y < 0) // meh
-							translation.Value.y = 0;
+					translation.Value += velocity.Value * dt;
+					if (translation.Value.y < 0) // meh
+						translation.Value.y = 0;
 
-						groundState.Value = translation.Value.y <= 0;
-						if (!controllerState.ControlOverVelocity.y && groundState.Value)
-							velocity.Value.y = math.max(velocity.Value.y, 0);
+					groundState.Value = translation.Value.y <= 0;
+					if (!controllerState.ControlOverVelocity.y && groundState.Value)
+						velocity.Value.y = math.max(velocity.Value.y, 0);
 
-						for (var v = 0; v != 3; v++)
-							translation.Value[v] = math.isnan(translation.Value[v]) ? 0.0f : translation.Value[v];
+					for (var v = 0; v != 3; v++)
+						translation.Value[v] = math.isnan(translation.Value[v]) ? 0.0f : translation.Value[v];
 
-						controllerState.ControlOverVelocity    = false;
-						controllerState.OverrideTargetPosition = false;
-						controllerState.PassThroughEnemies     = false;
-						controllerState.PreviousPosition       = previousPosition;
+					controllerState.ControlOverVelocity    = false;
+					controllerState.OverrideTargetPosition = false;
+					controllerState.PassThroughEnemies     = false;
+					controllerState.PreviousPosition       = previousPosition;
 
-						Debug.DrawRay(translation.Value, Vector3.up, Color.magenta);
-					})
-					.WithReadOnly(livableHealthFromEntity)
-					.WithReadOnly(relativeTargetFromEntity)
-					.WithReadOnly(translationFromEntity)
-					.WithNativeDisableContainerSafetyRestriction(translationFromEntity) // aliasing...
-					.Schedule(inputDeps);
-
-			return inputDeps;
+					Debug.DrawRay(translation.Value, Vector3.up, Color.magenta);
+				})
+				.WithReadOnly(livableHealthFromEntity)
+				.WithReadOnly(relativeTargetFromEntity)
+				.WithReadOnly(translationFromEntity)
+				.WithNativeDisableContainerSafetyRestriction(translationFromEntity) // aliasing...
+				.Schedule();
 		}
 	}
 }

@@ -101,16 +101,16 @@ namespace Patapon4TLB.Core.Snapshots
 
 		[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
 		[UpdateAfter(typeof(OrderGroup.Simulation))]
-		public class PredictedUpdate : JobComponentSystem
+		public class PredictedUpdate : SystemBase
 		{
-			protected override JobHandle OnUpdate(JobHandle inputDeps)
+			protected override void OnUpdate()
 			{
 				if (GetSingleton<P4NetworkRules.Data>().UnitPresentationInterpolation != P4NetworkRules.Interpolation.DoublePredicted)
-					return inputDeps;
+					return;
 
 				var dt = Time.DeltaTime;
 				var velocityFromEntity = GetComponentDataFromEntity<Velocity>();
-				inputDeps = Entities.ForEach((Entity entity, ref NetSynchronize.TargetPosition target, ref Translation translation) =>
+				Entities.ForEach((Entity entity, ref NetSynchronize.TargetPosition target, ref Translation translation) =>
 				{
 					if (!velocityFromEntity.TryGet(entity, out var velocity))
 					{
@@ -135,9 +135,7 @@ namespace Patapon4TLB.Core.Snapshots
 
 					translation.Value = math.lerp(translation.Value, target.Value, dt * (velocity.speed + distance + 1f));
 					translation.Value = Vector3.MoveTowards(translation.Value, target.Value, math.max(distance * dt, velocity.speed * dt) * 0.65f);
-				}).WithNativeDisableParallelForRestriction(velocityFromEntity).Schedule(inputDeps);
-
-				return inputDeps;
+				}).WithNativeDisableParallelForRestriction(velocityFromEntity).Schedule();
 			}
 		}
 

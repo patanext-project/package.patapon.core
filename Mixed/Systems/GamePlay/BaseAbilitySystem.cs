@@ -8,7 +8,7 @@ namespace Systems.GamePlay.CYari
 	[UpdateAfter(typeof(ApplyAbilityStatisticOnChainingSystem))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	[AlwaysSynchronizeSystem]
-	public abstract class BaseAbilitySystem : JobGameBaseSystem
+	public abstract class BaseAbilitySystem : AbsGameBaseSystem
 	{
 	}
 }

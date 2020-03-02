@@ -70,15 +70,15 @@ namespace Patapon4TLB.Core.Snapshots
 		}
 
 		[UpdateInGroup(typeof(GhostPredictionSystemGroup))]
-		public class Predict : JobComponentSystem
+		public class Predict : SystemBase
 		{
-			protected override JobHandle OnUpdate(JobHandle inputDeps)
+			protected override void OnUpdate()
 			{
 				var dt   = Time.DeltaTime;
 				var tick = World.GetExistingSystem<GhostPredictionSystemGroup>().PredictingTick;
 
-				var predictedFromEntity = GetComponentDataFromEntity<Predicted<VelocityPredictedTranslation>>(true);
-				inputDeps = Entities.ForEach((Entity entity, ref Translation translation, ref Velocity velocity) =>
+				var predictedFromEntity = GetComponentDataFromEntity<Predicted<VelocityPredictedTranslation>>(true); 
+				Entities.ForEach((Entity entity, ref Translation translation, ref Velocity velocity) =>
 				{
 					if (!predictedFromEntity.Exists(entity))
 						return;
@@ -86,9 +86,7 @@ namespace Patapon4TLB.Core.Snapshots
 						return;
 
 					translation.Value += velocity.Value * dt;
-				}).WithReadOnly(predictedFromEntity).Schedule(inputDeps);
-
-				return inputDeps;
+				}).WithReadOnly(predictedFromEntity).Schedule();
 			}
 		}
 

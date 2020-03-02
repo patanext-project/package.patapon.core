@@ -1,9 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using DefaultNamespace;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.Networking;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.ResourceManagement.ResourceLocations;
+using UnityEngine.ResourceManagement.ResourceProviders;
+using UnityEngine.ResourceManagement.Util;
 
 namespace Patapon.Client.RhythmEngine
 {
@@ -34,7 +41,7 @@ namespace Patapon.Client.RhythmEngine
 		public SongDescription(DescriptionFileJsonData file)
 		{
 			File = file;
-
+			
 			m_AddrOperations = new List<AsyncOperationHandle>();
 			m_OperationData  = new List<OperationData>();
 
@@ -49,9 +56,41 @@ namespace Patapon.Client.RhythmEngine
 					CommandsAudio[fileCmdAudio.Key][commands.Key] = new List<AudioClip>();
 					for (var i = 0; i != commands.Value.Length; i++)
 					{
-						var addrPath = commands.Value[i].Replace("{p}", $"{file.path}/{file.identifier}/commands/{fileCmdAudio.Key}/");
+						var isLocalAsset = file.path.StartsWith("file://");
+						if (isLocalAsset)
+						{
+							var addrPath = commands.Value[i].Replace("{p}", $"{file.path}/commands/{fileCmdAudio.Key}/");
 
-						m_AddrOperations.Add(Addressables.LoadAssetAsync<AudioClip>(addrPath));
+							try
+							{
+								var at = AudioType.WAV;
+								if (addrPath.EndsWith(".ogg"))
+									at = AudioType.OGGVORBIS;
+								if (addrPath.EndsWith(".mp3") || addrPath.EndsWith(".mp4"))
+									at = AudioType.MPEG;
+								
+								var req = UnityWebRequestMultimedia.GetAudioClip(addrPath, at);
+								{
+									var wr = req.SendWebRequest();
+									while (!wr.isDone)
+										Thread.Sleep(1);
+
+									m_AddrOperations.Add(Addressables.ResourceManager.CreateCompletedOperation(DownloadHandlerAudioClip.GetContent(req), null));
+								}
+								req.Dispose();
+							}
+							catch (Exception ex)
+							{
+								Debug.LogException(ex);
+							}
+						}
+						else
+						{
+							var addrPath = commands.Value[i].Replace("{p}", $"{file.path}/{file.identifier}/commands/{fileCmdAudio.Key}/");
+
+							m_AddrOperations.Add(Addressables.LoadAssetAsync<AudioClip>(addrPath));
+						}
+						
 						m_OperationData.Add(new OperationData
 						{
 							Type = OpType.Command,
@@ -119,10 +158,40 @@ namespace Patapon.Client.RhythmEngine
 					data.BgmSliceType = OpBgmSliceType.Fever;
 				}
 
-				var op = Addressables.LoadAssetAsync<AudioClip>(bgmAudioFile.Replace("{p}", $"{file.path}/{file.identifier}/bgm/"));
+				var isLocalAsset = file.path.StartsWith("file://");
+				if (isLocalAsset)
+				{
+					var addrPath = bgmAudioFile.Replace("{p}", $"{file.path}/bgm/");
+
+					try
+					{
+						var at = AudioType.WAV;
+						if (addrPath.EndsWith(".ogg"))
+							at = AudioType.OGGVORBIS;
+						if (addrPath.EndsWith(".mp3") || addrPath.EndsWith(".mp4"))
+							at = AudioType.MPEG;
+								
+						var req = UnityWebRequestMultimedia.GetAudioClip(addrPath, at);
+						{
+							var wr = req.SendWebRequest();
+							while (!wr.isDone)
+								Thread.Sleep(1);
+
+							m_AddrOperations.Add(Addressables.ResourceManager.CreateCompletedOperation(DownloadHandlerAudioClip.GetContent(req), null));
+						}
+						req.Dispose();
+					}
+					catch (Exception ex)
+					{
+						Debug.LogException(ex);
+					}
+				}
+				else
+				{
+					m_AddrOperations.Add(Addressables.LoadAssetAsync<AudioClip>(bgmAudioFile.Replace("{p}", $"{file.path}/{file.identifier}/bgm/")));
+				}
 
 				m_OperationData.Add(data);
-				m_AddrOperations.Add(op);
 
 				order++;
 			}

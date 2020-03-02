@@ -18,7 +18,7 @@ namespace GameModes.Global
 {
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	[AlwaysSynchronizeSystem]
-	public class UnitGameModeSoundSystem : JobGameBaseSystem
+	public class UnitGameModeSoundSystem : AbsGameBaseSystem
 	{
 		public enum TargetAudio
 		{
@@ -67,7 +67,7 @@ namespace GameModes.Global
 			m_AsyncOp.Add(Addressables.LoadAssetAsync<AudioClip>(address.GetFile("uh_def_reborn.ogg")), new OperationHandleData {type = TargetAudio.Reborn});
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			for (var i = 0; i != m_AsyncOp.Handles.Count; i++)
 			{
@@ -124,8 +124,6 @@ namespace GameModes.Global
 				m_AudioSource.panStereo = audioDirection * 0.5f;
 				m_AudioSource.Play();
 			}
-
-			return default;
 		}
 
 		public struct State : IComponentData

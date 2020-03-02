@@ -20,7 +20,7 @@ namespace Systems.GamePlay
 	[UpdateAfter(typeof(RhythmEngineGroup))]
 	[UpdateBefore(typeof(ActionSystemGroup))]
 	[UpdateBefore(typeof(UnitInitStateSystemGroup))]
-	public class UpdateActiveAbilitySystem : JobGameBaseSystem
+	public class UpdateActiveAbilitySystem : AbsGameBaseSystem
 	{
 		public static bool IsComboIdentical(FixedList32<Entity> abilityCombo, FixedList32<Entity> unitCombo)
 		{
@@ -39,7 +39,7 @@ namespace Systems.GamePlay
 			return true;
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var engineRelativeFromEntity       = GetComponentDataFromEntity<Relative<RhythmEngineDescription>>(true);
 			var rhythmEngineProcessFromEntity  = GetComponentDataFromEntity<FlowEngineProcess>(true);
@@ -139,53 +139,64 @@ namespace Systems.GamePlay
 				var length       = container.Length;
 				var priorityType = (int) (isHeroModeActive ? EActivationType.HeroMode : EActivationType.Normal);
 				var priority     = -1;
-				for (var i = 0; i != length; i++)
 				{
-					var actionEntity = container[i].Target;
-					if (!controllerFromEntity.Exists(actionEntity))
-						continue;
-					
-					var controller = controllerFromEntity[actionEntity];
-					controller.Phase = EAbilityPhase.None;
+					var previousCommand = Entity.Null;
+					var offset          = 1;
+					if (currentCommand.ActiveAtTime > engineProcess.Milliseconds)
+						offset++;
 
-					controllerFromEntity[actionEntity] = controller;
-					
-					abilityEngineFromEntity[actionEntity] = new AbilityEngineSet
+					var cmdIdx = activeSelf.CurrentCombo.Length - 1 - offset;
+					if (cmdIdx >= 0 && activeSelf.CurrentCombo.Length >= cmdIdx + 1)
+						previousCommand = activeSelf.CurrentCombo[cmdIdx];
+
+					for (var i = 0; i != length; i++)
 					{
-						Engine          = engineEntity,
-						Process         = engineProcess,
-						Settings        = engineSettings,
-						CurrentCommand  = currentCommand,
-						ComboState      = gameCombo,
-						CommandState    = gameCommand,
-						Command         = currentCommand.CommandTarget,
-						PreviousCommand = currentCommand.Previous,
-						Combo           = gameCombo,
-						PreviousCombo   = default
-					};
+						var actionEntity = container[i].Target;
+						if (!controllerFromEntity.Exists(actionEntity))
+							continue;
 
-					var activation = activationCommandFromEntity[actionEntity];
-					if (activation.Type == EActivationType.HeroMode && (!gameCombo.IsFever || !currentCommand.IsPerfect))
-					{
-						continue;
-					}
+						var controller = controllerFromEntity[actionEntity];
+						controller.Phase = EAbilityPhase.None;
 
-					var commandPriority     = activation.Combos.Length;
-					var commandPriorityType = (int) activation.Type;
+						controllerFromEntity[actionEntity] = controller;
 
-					if (activation.Chaining == currentCommand.CommandTarget
-					    && IsComboIdentical(activation.Combos, activeSelf.CurrentCombo)
-					    && (activeSelf.Incoming == default || activeSelf.Incoming != default && ((priority < commandPriority && priorityType == commandPriorityType) || priorityType < commandPriorityType))
-					    && (activation.Selection == gameCommand.Selection
-					        || activeSelf.Incoming == default && activation.Selection == AbilitySelection.Horizontal))
-					{
-						if (activation.Selection == gameCommand.Selection)
+						abilityEngineFromEntity[actionEntity] = new AbilityEngineSet
 						{
-							priority = commandPriority;
+							Engine          = engineEntity,
+							Process         = engineProcess,
+							Settings        = engineSettings,
+							CurrentCommand  = currentCommand,
+							ComboState      = gameCombo,
+							CommandState    = gameCommand,
+							Command         = currentCommand.CommandTarget,
+							PreviousCommand = previousCommand,
+							Combo           = gameCombo,
+							PreviousCombo   = default
+						};
+
+						var activation = activationCommandFromEntity[actionEntity];
+						if (activation.Type == EActivationType.HeroMode && (!gameCombo.IsFever || !currentCommand.IsPerfect))
+						{
+							continue;
 						}
 
-						priorityType        = (int) activation.Type;
-						activeSelf.Incoming = actionEntity;
+						var commandPriority     = activation.Combos.Length;
+						var commandPriorityType = (int) activation.Type;
+
+						if (activation.Chaining == currentCommand.CommandTarget
+						    && IsComboIdentical(activation.Combos, activeSelf.CurrentCombo)
+						    && (activeSelf.Incoming == default || activeSelf.Incoming != default && ((priority < commandPriority && priorityType == commandPriorityType) || priorityType < commandPriorityType))
+						    && (activation.Selection == gameCommand.Selection
+						        || activeSelf.Incoming == default && activation.Selection == AbilitySelection.Horizontal))
+						{
+							if (activation.Selection == gameCommand.Selection)
+							{
+								priority = commandPriority;
+							}
+
+							priorityType        = (int) activation.Type;
+							activeSelf.Incoming = actionEntity;
+						}
 					}
 				}
 
@@ -296,8 +307,6 @@ namespace Systems.GamePlay
 				}
 
 			}).Run();
-
-			return default;
 		}
 	}
 }

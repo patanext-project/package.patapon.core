@@ -21,12 +21,12 @@ namespace Patapon.Mixed.GamePlay.Projectiles
 {
 	[UpdateInGroup(typeof(OrderGroup.Simulation.UpdateEntities.Interaction))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
-	public unsafe class CannonProjectileSystem : JobGameBaseSystem
+	public unsafe class CannonProjectileSystem : AbsGameBaseSystem
 	{
 		private LazySystem<OrderGroup.Simulation.BeforeSpawnEntitiesCommandBuffer> m_Barrier;
 		private LazySystem<BuildPhysicsWorld>                                      m_BuildPhysicsWorld;
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var tick          = ServerTick;
 			var ageFromEntity = GetComponentDataFromEntity<ProjectileAgeTime>(true);
@@ -37,64 +37,61 @@ namespace Patapon.Mixed.GamePlay.Projectiles
 			var seekEnemies            = new SeekEnemies(this);
 			var impl                   = new BasicUnitAbilityImplementation(this);
 
-			inputDeps =
-				Entities
-					.WithNone<ProjectileEndedTag>()
-					.ForEach((Entity entity, int nativeThreadIndex, ref Translation translation, ref Velocity velocity, in Owner owner, in CannonProjectile projectile) =>
+			Entities
+				.WithNone<ProjectileEndedTag>()
+				.ForEach((Entity entity, int nativeThreadIndex, ref Translation translation, ref Velocity velocity, in Owner owner, in CannonProjectile projectile) =>
+				{
+					Entity* tryGetChain = stackalloc[] {entity, owner.Target};
+					if (!teamRelativeFromEntity.TryGetChain(tryGetChain, 2, out var teamRelative))
+						return;
+
+					if (ageFromEntity.Exists(entity) && ageFromEntity[entity].EndMs < tick.Ms)
 					{
-						Entity* tryGetChain = stackalloc[] {entity, owner.Target};
-						if (!teamRelativeFromEntity.TryGetChain(tryGetChain, 2, out var teamRelative))
-							return;
+						ecb.AddComponent<ProjectileEndedTag>(nativeThreadIndex, entity);
+						ecb.AddComponent<ProjectileOutOfTimeEndReason>(nativeThreadIndex, entity);
+						return;
+					}
 
-						if (ageFromEntity.Exists(entity) && ageFromEntity[entity].EndMs < tick.Ms)
-						{
-							ecb.AddComponent<ProjectileEndedTag>(nativeThreadIndex, entity);
-							ecb.AddComponent<ProjectileOutOfTimeEndReason>(nativeThreadIndex, entity);
-							return;
-						}
+					var     blobCollider = SphereCollider.Create(new SphereGeometry {Radius = projectile.DetectionRadius}, CollisionFilter.Default);
+					ref var collider     = ref blobCollider.Value;
 
-						var     blobCollider = SphereCollider.Create(new SphereGeometry {Radius = projectile.DetectionRadius}, CollisionFilter.Default);
-						ref var collider     = ref blobCollider.Value;
+					var input = new ColliderCastInput
+					{
+						Collider = (Collider*) UnsafeUtility.AddressOf(ref collider)
+					};
+					var end = ProjectileUtility.Project(translation.Value, ref velocity.Value, tick.Delta, projectile.Gravity);
 
-						var input = new ColliderCastInput
-						{
-							Collider = (Collider*) UnsafeUtility.AddressOf(ref collider)
-						};
-						var end = ProjectileUtility.Project(translation.Value, ref velocity.Value, tick.Delta, projectile.Gravity);
+					input.Start = translation.Value;
+					input.End   = end;
+					Debug.DrawLine(input.Start, input.End, Color.red, 0.1f);
 
-						input.Start = translation.Value;
-						input.End   = end; 
-						Debug.DrawLine(input.Start, input.End, Color.red, 0.1f);
+					var enemyBuffer = enemiesFromTeam[teamRelative.Target];
+					var enemies     = new NativeList<Entity>(Allocator.Temp);
+					seekEnemies.GetAllEnemies(ref enemies, enemyBuffer);
 
-						var enemyBuffer = enemiesFromTeam[teamRelative.Target];
-						var enemies     = new NativeList<Entity>(Allocator.Temp);
-						seekEnemies.GetAllEnemies(ref enemies, enemyBuffer);
-						
-						if (Cast(seekEnemies, impl, enemies, teamRelativeFromEntity, input, out var hit))
-						{
-							ecb.AddComponent<ProjectileEndedTag>(nativeThreadIndex, entity);
-							ecb.AddComponent(nativeThreadIndex, entity, new ProjectileExplodedEndReason {normal = hit.SurfaceNormal});
+					if (Cast(seekEnemies, impl, enemies, teamRelativeFromEntity, input, out var hit))
+					{
+						ecb.AddComponent<ProjectileEndedTag>(nativeThreadIndex, entity);
+						ecb.AddComponent(nativeThreadIndex, entity, new ProjectileExplodedEndReason {normal = hit.SurfaceNormal});
 
-							end = hit.Position;
-						}
-						else if (end.y < 0)
-						{
-							ecb.AddComponent<ProjectileEndedTag>(nativeThreadIndex, entity);
-							ecb.AddComponent(nativeThreadIndex, entity, new ProjectileExplodedEndReason {normal = new float3(0, 1, 0)});
-							
-							end.y = 0;
-						}
+						end = hit.Position;
+					}
+					else if (end.y < 0)
+					{
+						ecb.AddComponent<ProjectileEndedTag>(nativeThreadIndex, entity);
+						ecb.AddComponent(nativeThreadIndex, entity, new ProjectileExplodedEndReason {normal = new float3(0, 1, 0)});
 
-						translation.Value = end;
+						end.y = 0;
+					}
 
-						blobCollider.Dispose();
-					})
-					.WithReadOnly(teamRelativeFromEntity)
-					.WithReadOnly(enemiesFromTeam)
-					.WithReadOnly(ageFromEntity)
-					.Schedule(inputDeps);
+					translation.Value = end;
 
-			return inputDeps;
+					blobCollider.Dispose();
+				})
+				.WithReadOnly(teamRelativeFromEntity)
+				.WithReadOnly(enemiesFromTeam)
+				.WithReadOnly(ageFromEntity)
+				.Schedule();
 		}
 
 		private static bool Cast(SeekEnemies          seekEnemies, BasicUnitAbilityImplementation impl, NativeList<Entity> enemies, ComponentDataFromEntity<Relative<TeamDescription>> teamRelativeCdfe,
@@ -111,9 +108,9 @@ namespace Patapon.Mixed.GamePlay.Projectiles
 					continue;
 
 				rigidBodies.Clear();
-				CreateRigidBody.Execute(ref rigidBodies, seekEnemies.HitShapeContainerFromEntity[enemy].AsNativeArray(),
+				CreateRigidBody.Execute(ref rigidBodies, seekEnemies.HitShapeContainer[enemy].AsNativeArray(),
 					enemy,
-					impl.LocalToWorldFromEntity, impl.TranslationFromEntity, seekEnemies.ColliderFromEntity);
+					impl.LocalToWorld, impl.Translation, seekEnemies.Collider);
 				for (var i = 0; i != rigidBodies.Length; i++)
 				{
 					var cc = new CustomCollide(rigidBodies[i]) {WorldFromMotion = {pos = {z = 0}}};

@@ -23,7 +23,7 @@ namespace package.patapon.core
 	[UpdateInGroup(typeof(OrderGroup.Presentation.UpdateCamera))]
 	[AlwaysSynchronizeSystem]
 	[AlwaysUpdateSystem]
-	public class SynchronizeCameraStateSystem : JobComponentSystem
+	public class SynchronizeCameraStateSystem : SystemBase
 	{
 		private EntityQuery m_CameraWithoutUpdateComp;
 
@@ -38,7 +38,7 @@ namespace package.patapon.core
 			});
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			if (!m_CameraWithoutUpdateComp.IsEmptyIgnoreFilter) EntityManager.AddComponent(m_CameraWithoutUpdateComp, typeof(SystemData));
 
@@ -152,8 +152,6 @@ namespace package.patapon.core
 
 					ltw.Value = new float4x4(rotation.Value, translation.Value);
 				}).WithReadOnly(modifierFromEntity).Run();
-
-			return default;
 		}
 
 		private struct SystemData : IComponentData

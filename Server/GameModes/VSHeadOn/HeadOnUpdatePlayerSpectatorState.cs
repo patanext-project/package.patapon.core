@@ -14,7 +14,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 	[UpdateInGroup(typeof(GameModeSystemGroup))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	[AlwaysSynchronizeSystem]
-	public class HeadOnUpdatePlayerSpectatorState : JobGameBaseSystem
+	public class HeadOnUpdatePlayerSpectatorState : AbsGameBaseSystem
 	{
 		private EntityQuery m_Query;
 
@@ -27,7 +27,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			m_Query = GetEntityQuery(typeof(UnitDescription));
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			
 			Entities.WithAll<HeadOnPlaying>().ForEach((Entity e, DynamicBuffer<OwnerChild> children, ref ServerCameraState cameraState, ref GamePlayer gmPlayer) =>
@@ -91,7 +91,6 @@ namespace Patapon.Server.GameModes.VSHeadOn
 				}).WithoutBurst().Run();
 			}
 */
-			return default;
 		}
 	}
 }

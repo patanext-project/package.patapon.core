@@ -8,16 +8,16 @@ namespace Patapon.Server.GameModes.VSHeadOn
 {
 	public struct HeadOnBlockUnitTarget : IComponentData
 	{
-		public bool Enabled;
+		public bool  Enabled;
 		public UTick ForceStopAt;
 
 		[UpdateInGroup(typeof(OrderGroup.Simulation.UpdateEntities.Interaction))]
-		public class Process : JobGameBaseSystem
+		public class Process : AbsGameBaseSystem
 		{
-			protected override JobHandle OnUpdate(JobHandle inputDeps)
+			protected override void OnUpdate()
 			{
 				var tick = ServerTick;
-				inputDeps = Entities.ForEach((ref UnitControllerState controller, ref Velocity vel, ref HeadOnBlockUnitTarget block, in OwnerActiveAbility activeAbility) =>
+				Entities.ForEach((ref UnitControllerState controller, ref Velocity vel, ref HeadOnBlockUnitTarget block, in OwnerActiveAbility activeAbility) =>
 				{
 					if (block.Enabled)
 					{
@@ -27,12 +27,10 @@ namespace Patapon.Server.GameModes.VSHeadOn
 
 					if (block.Enabled)
 					{
-						vel.Value.x = 0;
+						vel.Value.x                      = 0;
 						controller.ControlOverVelocity.x = true;
 					}
-				}).Schedule(inputDeps);
-
-				return inputDeps;
+				}).Schedule();
 			}
 		}
 	}

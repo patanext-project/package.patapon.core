@@ -16,7 +16,7 @@ namespace Systems.GamePlay.CTate
 	[UpdateInWorld(UpdateInWorld.TargetWorld.ClientAndServer)]
 	public unsafe class BasicTaterazayDefendAbilitySystem : BaseAbilitySystem
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var tick                     = ServerTick;
 			var impl                     = new BasicUnitAbilityImplementation(this);
@@ -29,9 +29,9 @@ namespace Systems.GamePlay.CTate
 					if (!impl.CanExecuteAbility(owner.Target))
 						return;
 
-					var playStateUpdater  = impl.UnitPlayStateFromEntity.GetUpdater(owner.Target).Out(out var playState);
-					var velocityUpdater   = impl.VelocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
-					var controllerUpdater = impl.ControllerFromEntity.GetUpdater(owner.Target).Out(out var controller);
+					var playStateUpdater  = impl.UnitPlayState.GetUpdater(owner.Target).Out(out var playState);
+					var velocityUpdater   = impl.Velocity.GetUpdater(owner.Target).Out(out var velocity);
+					var controllerUpdater = impl.Controller.GetUpdater(owner.Target).Out(out var controller);
 
 					if ((state.Phase & EAbilityPhase.Chaining) != 0 && isPredicted)
 					{
@@ -49,8 +49,8 @@ namespace Systems.GamePlay.CTate
 					var tryGetChain = stackalloc[] {entity, owner.Target};
 					if (!relativeTargetFromEntity.TryGetChain(tryGetChain, 2, out var relativeTarget)) return;
 
-					var unitPosition   = impl.TranslationFromEntity[owner.Target].Value;
-					var targetPosition = impl.TranslationFromEntity[relativeTarget.Target].Value;
+					var unitPosition   = impl.Translation[owner.Target].Value;
+					var targetPosition = impl.Translation[relativeTarget.Target].Value;
 
 					if (isPredicted)
 					{
@@ -71,8 +71,6 @@ namespace Systems.GamePlay.CTate
 				})
 				.WithReadOnly(relativeTargetFromEntity)
 				.Run();
-
-			return default;
 		}
 	}
 }

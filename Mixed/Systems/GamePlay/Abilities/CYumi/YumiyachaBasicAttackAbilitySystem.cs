@@ -45,7 +45,7 @@ namespace Systems.GamePlay.CYumi
 
 	public class YumiyachaBasicAttackAbilitySystem : BaseAbilitySystem
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var impl = new BasicUnitAbilityImplementation(this);
 			var seek = new SeekEnemies(this);
@@ -60,12 +60,12 @@ namespace Systems.GamePlay.CYumi
 					return;
 
 				var seekingState = seekingStateFromEntity[owner.Target];
-				var position     = impl.TranslationFromEntity[owner.Target].Value;
-				var playState    = impl.UnitPlayStateFromEntity[owner.Target];
-				var direction    = impl.UnitDirectionFromEntity[owner.Target].Value;
+				var position     = impl.Translation[owner.Target].Value;
+				var playState    = impl.UnitPlayState[owner.Target];
+				var direction    = impl.UnitDirection[owner.Target].Value;
 
-				var velocityUpdater   = impl.VelocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
-				var controllerUpdater = impl.ControllerFromEntity.GetUpdater(owner.Target).Out(out var controller);
+				var velocityUpdater   = impl.Velocity.GetUpdater(owner.Target).Out(out var velocity);
+				var controllerUpdater = impl.Controller.GetUpdater(owner.Target).Out(out var controller);
 				controller.ControlOverVelocity.x = true;
 
 				var throwOffset = new float3 {x = direction, y = 1.75f};
@@ -87,7 +87,7 @@ namespace Systems.GamePlay.CYumi
 
 					if (tick < ability.NextAttack)
 					{
-						var targetPosition     = impl.LocalToWorldFromEntity[seekingState.Enemy].Position;
+						var targetPosition     = impl.LocalToWorld[seekingState.Enemy].Position;
 						var throwDeltaPosition = PredictTrajectory.Simple(throwOffset, new float3 {x = 15 * direction, y = 13}, gravity);
 						targetPosition.x -= throwDeltaPosition.x;
 
@@ -113,7 +113,7 @@ namespace Systems.GamePlay.CYumi
 				if ((state.Phase & EAbilityPhase.Active) != 0
 				    && seekingState.Enemy != default)
 				{
-					var targetPosition     = impl.LocalToWorldFromEntity[seekingState.Enemy].Position;
+					var targetPosition     = impl.LocalToWorld[seekingState.Enemy].Position;
 					var throwDeltaPosition = PredictTrajectory.Simple(throwOffset, new float3 {x = 15 * direction, y = 13}, gravity);
 					targetPosition.x -= throwDeltaPosition.x;
 
@@ -133,8 +133,6 @@ namespace Systems.GamePlay.CYumi
 				velocityUpdater.CompareAndUpdate(velocity);
 				controllerUpdater.CompareAndUpdate(controller);
 			}).Run();
-
-			return default;
 		}
 	}
 }

@@ -44,6 +44,8 @@ namespace Patapon.Mixed.Units.Statistics
 		public static readonly NativeString64 Taterazay = new NativeString64("taterazay");
 		public static readonly NativeString64 Yarida    = new NativeString64("yarida");
 		public static readonly NativeString64 Yumiyacha = new NativeString64("yumiyacha");
+		public static readonly NativeString64 Kibadda = new NativeString64("kibadda");
+		public static readonly NativeString64 Pingrek = new NativeString64("pingrek");
 
 		public static NativeString64 FromEnum(P4OfficialKit kit)
 		{
@@ -55,6 +57,10 @@ namespace Patapon.Mixed.Units.Statistics
 					return Yarida;
 				case P4OfficialKit.Yumiyacha:
 					return Yumiyacha;
+				case P4OfficialKit.Kibadda:
+					return Kibadda;
+				case P4OfficialKit.Pingrek:
+					return Pingrek;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(kit), kit, null);
 			}

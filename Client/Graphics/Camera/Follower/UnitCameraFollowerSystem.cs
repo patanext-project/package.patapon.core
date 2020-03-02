@@ -6,7 +6,7 @@ namespace Graphics.Camera.Follower
 {
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	[UpdateBefore(typeof(OrderGroup.Presentation.UpdateCamera))]
-	public class UnitCameraFollowerSystem : GameBaseSystem
+	public class UnitCameraFollowerSystem : AbsGameBaseSystem
 	{
 		protected override void OnUpdate()
 		{

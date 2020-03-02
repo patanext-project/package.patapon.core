@@ -12,7 +12,7 @@ namespace package.patapon.core
 		public int Value;
 	}
 
-	public unsafe class RhythmCommandBuilder : GameBaseSystem
+	public unsafe class RhythmCommandBuilder : AbsGameBaseSystem
 	{
 		protected override void OnCreate()
 		{
@@ -39,7 +39,7 @@ namespace package.patapon.core
 
 				if (UnsafeUtility.MemCmp(sequenceBuffer.GetUnsafePtr(), sequence.GetUnsafePtr(), sizeof(RhythmCommandDefinitionSequence) * sequenceBuffer.Length) == 0)
 					finalEntity = entity;
-			});
+			}).Run();
 
 			if (finalEntity != default)
 			{

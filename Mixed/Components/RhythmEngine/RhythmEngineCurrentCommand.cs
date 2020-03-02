@@ -57,7 +57,7 @@ namespace Patapon.Mixed.GamePlay.Units
 		}
 
 		[UpdateInGroup(typeof(GhostUpdateSystemGroup))]
-		public class UpdateSystem : JobComponentSystem
+		public class UpdateSystem : SystemBase
 		{
 			private SnapshotReceiveSystem m_ReceiveSystem;
 
@@ -66,14 +66,14 @@ namespace Patapon.Mixed.GamePlay.Units
 				m_ReceiveSystem = World.GetOrCreateSystem<SnapshotReceiveSystem>();
 			}
 
-			protected override JobHandle OnUpdate(JobHandle inputDeps)
+			protected override void OnUpdate()
 			{
 				var jobData = m_ReceiveSystem.JobData;
-				return Entities.WithNone<FlowSimulateProcess>().ForEach((DynamicBuffer<Snapshot> snapshots, ref RhythmCurrentCommand component) =>
+				Entities.WithNone<FlowSimulateProcess>().ForEach((DynamicBuffer<Snapshot> snapshots, ref RhythmCurrentCommand component) =>
 				{
 					var snapshot = snapshots.GetLastBaselineReadOnly();
 					snapshot.SynchronizeTo(ref component, in jobData);
-				}).Schedule(inputDeps);
+				}).Schedule();
 			}
 		}
 

@@ -115,7 +115,7 @@ namespace Components.Archetypes
 		private float m_HeroModeScaling;
 		
 		[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation))]
-		public class LocalSystem : GameBaseSystem
+		public class LocalSystem : AbsGameBaseSystem
 		{
 			private UnitVisualEquipmentManager m_EquipmentManager;
 
@@ -190,9 +190,8 @@ namespace Components.Archetypes
 					}
 
 					presentation.transform.localScale = Vector3.one * (scale * presentation.m_HeroModeScaling);
-					
 					presentation.OnSystemUpdate();
-				});
+				}).WithStructuralChanges().Run();
 			}
 		}
 	}

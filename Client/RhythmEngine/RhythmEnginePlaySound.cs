@@ -22,7 +22,7 @@ namespace RhythmEngine
 {
 	[AlwaysUpdateSystem]
 	[UpdateInGroup(typeof(PresentationSystemGroup))]
-	public class RhythmEnginePlaySound : GameBaseSystem
+	public class RhythmEnginePlaySound : AbsGameBaseSystem
 	{
 		public float DelayTillNextBeat;
 		public int PreviousBeat;

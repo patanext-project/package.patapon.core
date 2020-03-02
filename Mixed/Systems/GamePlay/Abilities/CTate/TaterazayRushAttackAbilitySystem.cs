@@ -44,7 +44,7 @@ namespace Systems.GamePlay.CTate
 			m_HitQuery.Dispose();
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var tick                      = ServerTick;
 			var enemiesFromTeam           = GetBufferFromEntity<TeamEnemies>(true);
@@ -68,13 +68,13 @@ namespace Systems.GamePlay.CTate
 						return;
 
 					var seekingState   = seekingStateFromEntity[owner.Target];
-					var playState      = impl.UnitPlayStateFromEntity[owner.Target];
-					var unitPosition   = impl.TranslationFromEntity[owner.Target].Value;
-					var unitDirection  = impl.UnitDirectionFromEntity[owner.Target].Value;
+					var playState      = impl.UnitPlayState[owner.Target];
+					var unitPosition   = impl.Translation[owner.Target].Value;
+					var unitDirection  = impl.UnitDirection[owner.Target].Value;
 					var relativeTarget = relativeTargetFromEntity[owner.Target].Target;
 
-					var velocityUpdater   = impl.VelocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
-					var controllerUpdater = impl.ControllerFromEntity.GetUpdater(owner.Target).Out(out var controller);
+					var velocityUpdater   = impl.Velocity.GetUpdater(owner.Target).Out(out var velocity);
+					var controllerUpdater = impl.Controller.GetUpdater(owner.Target).Out(out var controller);
 
 					var attackStartTick = UTick.CopyDelta(tick, ability.AttackStartTick);
 
@@ -124,9 +124,9 @@ namespace Systems.GamePlay.CTate
 								continue;
 
 							rigidBodies.Clear();
-							CreateRigidBody.Execute(ref rigidBodies, seekEnemies.HitShapeContainerFromEntity[enemy].AsNativeArray(),
+							CreateRigidBody.Execute(ref rigidBodies, seekEnemies.HitShapeContainer[enemy].AsNativeArray(),
 								enemy,
-								impl.LocalToWorldFromEntity, impl.TranslationFromEntity, physicsColliderFromEntity);
+								impl.LocalToWorld, impl.Translation, physicsColliderFromEntity);
 							for (var i = 0; i != rigidBodies.Length; i++)
 							{
 								var cc = new CustomCollide(rigidBodies[i]) {WorldFromMotion = {pos = {z = 0}}};
@@ -155,7 +155,7 @@ namespace Systems.GamePlay.CTate
 					if ((state.Phase & EAbilityPhase.Active) == 0)
 						return;
 
-					var statistics = impl.UnitSettingsFromEntity[owner.Target];
+					var statistics = impl.UnitSettings[owner.Target];
 
 					controller.ControlOverVelocity.x = true;
 
@@ -170,7 +170,7 @@ namespace Systems.GamePlay.CTate
 					}
 					else if (tick >= UTick.AddMs(attackStartTick, TaterazayBasicAttackAbility.DelaySlashMs) && ability.NextAttackDelay <= 0)
 					{
-						var targetPosition = impl.TranslationFromEntity[relativeTarget].Value.x + 12.5f * unitDirection;
+						var targetPosition = impl.Translation[relativeTarget].Value.x + 12.5f * unitDirection;
 						velocity.Value.x = AbilityUtility.GetTargetVelocityX(new AbilityUtility.GetTargetVelocityParameters
 							{
 								TargetPosition   = targetPosition,
@@ -202,8 +202,6 @@ namespace Systems.GamePlay.CTate
 				.WithReadOnly(seekingStateFromEntity)
 				.WithReadOnly(relativeTeamFromEntity)
 				.Run();
-
-			return default;
 		}
 	}
 }

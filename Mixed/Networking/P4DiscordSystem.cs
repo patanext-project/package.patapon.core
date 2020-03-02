@@ -85,7 +85,7 @@ namespace Patapon4TLB.Core
 
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	[AlwaysUpdateSystem]
-	public class P4ConnectToMasterServerFromDiscord : GameBaseSystem
+	public class P4ConnectToMasterServerFromDiscord : AbsGameBaseSystem
 	{
 		private bool m_HasPendingRequest;
 

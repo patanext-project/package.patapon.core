@@ -59,7 +59,7 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 	}
 
 	[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-	public class ReceivePressureEventRpcSystem : JobGameBaseSystem
+	public class ReceivePressureEventRpcSystem : AbsGameBaseSystem
 	{
 		private CreateSnapshotSystem                   m_CreateSnapshotSystem;
 		private EndSimulationEntityCommandBufferSystem m_EndBarrier;
@@ -72,7 +72,7 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 			m_CreateSnapshotSystem = World.GetOrCreateSystem<CreateSnapshotSystem>();
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var playerRelativeFromEntity = GetComponentDataFromEntity<Relative<PlayerDescription>>(true);
 			var networkOwnerFromEntity   = GetComponentDataFromEntity<NetworkOwner>(true);
@@ -84,8 +84,7 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 			var ghostMap = m_CreateSnapshotSystem.GhostToEntityMap;
 
 			var tick = World.GetExistingSystem<ServerSimulationSystemGroup>().ServerTick;
-
-			inputDeps =
+			
 				Entities
 					.ForEach((in PressureEventFromClientRpc ev, in ReceiveRpcCommandRequestComponent receiveData) =>
 					{
@@ -115,12 +114,10 @@ namespace Patapon.Mixed.RhythmEngine.Rpc
 					.WithReadOnly(networkOwnerFromEntity)
 					.WithNativeDisableParallelForRestriction(stateFromEntity)
 					.WithNativeDisableParallelForRestriction(comboFromEntity)
-					.Schedule(inputDeps);
+					.Schedule();
 
 			m_EndBarrier.CreateCommandBuffer().DestroyEntity(m_EventQuery);
-			m_EndBarrier.AddJobHandleForProducer(inputDeps);
-
-			return inputDeps;
+			m_EndBarrier.AddJobHandleForProducer(Dependency);
 		}
 	}
 }

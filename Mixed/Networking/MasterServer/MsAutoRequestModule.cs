@@ -20,11 +20,8 @@ namespace Patapon4TLB.Core.MasterServer
 			MsAutoRequestModule<TAutoRequest, TOriginalRequest, TProcessing, TResponse, TCompletion> n;
 			switch (original.System)
 			{
-				case GameBaseSystem gameBaseSystem:
+				case AbsGameBaseSystem gameBaseSystem:
 					gameBaseSystem.GetModule(out n);
-					break;
-				case JobGameBaseSystem jobGameBaseSystem:
-					jobGameBaseSystem.GetModule(out n);
 					break;
 				default:
 					throw new Exception("Invalid system");

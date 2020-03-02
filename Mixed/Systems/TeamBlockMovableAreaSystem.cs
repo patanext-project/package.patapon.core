@@ -11,17 +11,16 @@ namespace Patapon.Mixed.GamePlay.Team
 {
 	//[UpdateInGroup(typeof(OrderGroup.Simulation.UpdateEntities.Interaction))]
 	[UpdateInGroup(typeof(InitializationSystemGroup))]
-	public class TeamBlockMovableAreaSystem : JobComponentSystem
+	public class TeamBlockMovableAreaSystem : SystemBase
 	{
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
-			inputDeps = new CleanJob().Schedule(this, inputDeps);
-			inputDeps = new Job
+			Dependency = new CleanJob().Schedule(this, Dependency);
+			Dependency = new Job
 			{
 				LivableHealthFromEntity    = GetComponentDataFromEntity<LivableHealth>(),
 				BlockMovableAreaFromEntity = GetComponentDataFromEntity<TeamBlockMovableArea>()
-			}.ScheduleSingle(this, inputDeps);
-			return inputDeps;
+			}.ScheduleSingle(this, Dependency);
 		}
 
 		private struct CleanJob : IJobForEach<TeamBlockMovableArea>

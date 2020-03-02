@@ -24,7 +24,7 @@ namespace Systems.GamePlay.CYari
 			m_ProjectileProvider = World.GetOrCreateSystem<SpearProjectile.Provider>();
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var tick                   = ServerTick;
 			var impl                   = new BasicUnitAbilityImplementation(this);
@@ -41,13 +41,13 @@ namespace Systems.GamePlay.CYari
 						return;
 
 					var seekingState = seekingStateFromEntity[owner.Target];
-					var statistics   = impl.UnitSettingsFromEntity[owner.Target];
-					var unitPosition = impl.TranslationFromEntity[owner.Target].Value;
-					var direction    = impl.UnitDirectionFromEntity[owner.Target].Value;
+					var statistics   = impl.UnitSettings[owner.Target];
+					var unitPosition = impl.Translation[owner.Target].Value;
+					var direction    = impl.UnitDirection[owner.Target].Value;
 
-					var playStateUpdater  = impl.UnitPlayStateFromEntity.GetUpdater(owner.Target).Out(out var playState);
-					var velocityUpdater   = impl.VelocityFromEntity.GetUpdater(owner.Target).Out(out var velocity);
-					var controllerUpdater = impl.ControllerFromEntity.GetUpdater(owner.Target).Out(out var controller);
+					var playStateUpdater  = impl.UnitPlayState.GetUpdater(owner.Target).Out(out var playState);
+					var velocityUpdater   = impl.Velocity.GetUpdater(owner.Target).Out(out var velocity);
+					var controllerUpdater = impl.Controller.GetUpdater(owner.Target).Out(out var controller);
 
 					var attackStartTick = UTick.CopyDelta(tick, ability.AttackStartTick);
 
@@ -97,7 +97,7 @@ namespace Systems.GamePlay.CYari
 					velocityUpdater.CompareAndUpdate(velocity);
 					controllerUpdater.CompareAndUpdate(controller);
 
-					impl.LocalToWorldFromEntity.TryGet(seekingState.Enemy, out var enemyLtw);
+					impl.LocalToWorld.TryGet(seekingState.Enemy, out var enemyLtw);
 					var targetPosition = enemyLtw.Position;
 
 					var throwDeltaPosition = PredictTrajectory.Simple(throwOffset, new float3(ability.ThrowVec.x * direction, ability.ThrowVec.y, 0), new float3(0, -22, 0));
@@ -155,8 +155,6 @@ namespace Systems.GamePlay.CYari
 				.WithReadOnly(seekingStateFromEntity)
 				.WithReadOnly(chargeCommandFromEntity)
 				.Run();
-
-			return default;
 		}
 	}
 }

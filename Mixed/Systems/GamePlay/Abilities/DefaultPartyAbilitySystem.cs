@@ -19,11 +19,11 @@ namespace Systems.GamePlay
 	[UpdateInGroup(typeof(RhythmAbilitySystemGroup))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
 	[AlwaysSynchronizeSystem]
-	public class DefaultPartyAbilitySystem : JobGameBaseSystem
+	public class DefaultPartyAbilitySystem : AbsGameBaseSystem
 	{
 		private LazySystem<TargetDamageEvent.Provider> m_EventProvider;
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var tick                 = ServerTick;
 			var comboStateFromEntity = GetComponentDataFromEntity<GameComboState>();
@@ -60,7 +60,7 @@ namespace Systems.GamePlay
 						if (seekingStateFromEntity.TryGet(owner.Target, out var seeking) && seeking.Enemy == default)
 							gainHealth += 6;
 
-						var position = impl.LocalToWorldFromEntity[owner.Target].Position;
+						var position = impl.LocalToWorld[owner.Target].Position;
 						var evEnt    = ecb.CreateEntity(evArchetype);
 						ecb.AddComponent(evEnt, new TargetDamageEvent {Destination = owner.Target, Origin = owner.Target, Damage = gainHealth});
 						ecb.AddComponent(evEnt, new Translation
@@ -102,8 +102,6 @@ namespace Systems.GamePlay
 				.WithReadOnly(livableHealthFromEntity)
 				.WithReadOnly(seekingStateFromEntity)
 				.Run();
-
-			return default;
 		}
 	}
 }

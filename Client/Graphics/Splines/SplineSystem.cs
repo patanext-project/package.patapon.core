@@ -39,7 +39,7 @@ namespace package.patapon.core
 	// TODO: UPGRADE
 	[UpdateInGroup(typeof(PresentationSystemGroup))]
 	[UpdateAfter(typeof(UpdateSplinePointsSystem))]
-	public class SplineSystem : JobComponentSystem
+	public class SplineSystem : SystemBase
 	{
 		private FastDictionary<int, Vector3[]> ArrayPoolBySize;
 
@@ -161,15 +161,13 @@ namespace package.patapon.core
 			entities.Dispose();
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
-			m_LastJobHandle = new JobGetResult
+			Dependency = m_LastJobHandle = new JobGetResult
 			{
 				PointsFromEntity = GetBufferFromEntity<DSplinePoint>(true),
 				ResultFromEntity = GetBufferFromEntity<DSplineResult>()
-			}.Schedule(m_SplineQuery, inputDeps);
-
-			return m_LastJobHandle;
+			}.Schedule(m_SplineQuery, Dependency);
 		}
 
 		[UpdateInGroup(typeof(PresentationSystemGroup))]

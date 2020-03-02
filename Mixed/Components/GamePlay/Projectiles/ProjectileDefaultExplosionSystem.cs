@@ -21,7 +21,7 @@ namespace Components.GamePlay.Projectiles
 {
 	[UpdateInGroup(typeof(OrderGroup.Simulation.SpawnEntities.SpawnEvent))]
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
-	public class ProjectileDefaultExplosionSystem : JobGameBaseSystem
+	public class ProjectileDefaultExplosionSystem : AbsGameBaseSystem
 	{
 		private EntityArchetype                                          m_DamageEventArchetype;
 		private OrderGroup.Simulation.DeleteEntities.CommandBufferSystem m_DeleteBarrier;
@@ -56,11 +56,11 @@ namespace Components.GamePlay.Projectiles
 			m_DamageEventArchetype  = World.GetOrCreateSystem<TargetDamageEvent.Provider>().EntityArchetype;
 		}
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
+		protected override void OnUpdate()
 		{
 			var hitShapeEntities = m_HitShapeQuery.ToEntityArrayAsync(Allocator.TempJob, out var dep1);
 			
-			inputDeps = new ProcessProjectileExplosion
+			Dependency = new ProcessProjectileExplosion
 			{
 				Tick         = GetTick(true),
 				HitShapeEntities = hitShapeEntities,
@@ -89,17 +89,15 @@ namespace Components.GamePlay.Projectiles
 				Ecb                   = m_SpawnBarrier.CreateCommandBuffer().ToConcurrent(),
 				ImpulseEventArchetype = m_ImpulseEventArchetype,
 				DamageEventArchetype  = m_DamageEventArchetype
-			}.Schedule(m_ExplodedQuery, JobHandle.CombineDependencies(inputDeps, dep1));
+			}.Schedule(m_ExplodedQuery, JobHandle.CombineDependencies(Dependency, dep1));
 			// We could have used EntityCommandBuffer.DestroyEntity(EntityQuery) but that mean we are destroying entities that we don't even know that exist.
-			inputDeps = new DestroyProjectileJob
+			Dependency = new DestroyProjectileJob
 			{
 				Ecb = m_DeleteBarrier.CreateCommandBuffer().ToConcurrent()
-			}.Schedule(m_ProjectileQuery, inputDeps);
+			}.Schedule(m_ProjectileQuery, Dependency);
 
-			m_DeleteBarrier.AddJobHandleForProducer(inputDeps);
-			m_SpawnBarrier.AddJobHandleForProducer(inputDeps);
-
-			return inputDeps;
+			m_DeleteBarrier.AddJobHandleForProducer(Dependency);
+			m_SpawnBarrier.AddJobHandleForProducer(Dependency);
 		}
 
 		//[BurstCompile]
