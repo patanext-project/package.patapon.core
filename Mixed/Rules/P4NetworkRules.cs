@@ -19,6 +19,8 @@ namespace Patapon.Mixed.Rules
 		public RuleProperties<Data>.Property<Interpolation> UnitPresentationInterpolation;
 		public RuleProperties<Data>.Property<bool>          AbilityUsePredicted;
 
+		public override int Version => 2;
+
 		protected override void AddRuleProperties()
 		{
 			RhythmEngineUsePredicted      = Rule.Add(null, data => data.RhythmEngineUsePredicted);
@@ -28,9 +30,14 @@ namespace Patapon.Mixed.Rules
 
 		protected override void SetDefaultProperties()
 		{
-			RhythmEngineUsePredicted.Value      = false;
+			RhythmEngineUsePredicted.Value      = true;
 			UnitPresentationInterpolation.Value = Interpolation.DoubleInterpolated;
 			AbilityUsePredicted.Value           = false;
+		}
+
+		protected override void OnUpgrade(int previousVersion)
+		{
+			RhythmEngineUsePredicted.Value = true;
 		}
 
 		public struct Data : IComponentData

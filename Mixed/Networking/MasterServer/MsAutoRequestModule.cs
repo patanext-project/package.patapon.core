@@ -23,6 +23,9 @@ namespace Patapon4TLB.Core.MasterServer
 				case AbsGameBaseSystem gameBaseSystem:
 					gameBaseSystem.GetModule(out n);
 					break;
+				case BaseSystemMasterServerService serviceSystem:
+					serviceSystem.GetModule(out n);
+					break;
 				default:
 					throw new Exception("Invalid system");
 			}

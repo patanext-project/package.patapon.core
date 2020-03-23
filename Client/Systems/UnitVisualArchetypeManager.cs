@@ -18,6 +18,8 @@ namespace Patapon.Client.Systems
 			m_PoolByArchetype["UH.basic"]     = new AsyncAssetPool<GameObject>("core://Client/Models/UberHero/Character.prefab");
 			m_PoolByArchetype["UH.yarida"]    = new AsyncAssetPool<GameObject>("core://Client/Models/UberHero/CharacterYarida.prefab");
 			m_PoolByArchetype["UH.taterazay"] = new AsyncAssetPool<GameObject>("core://Client/Models/UberHero/CharacterTaterazay.prefab");
+			m_PoolByArchetype["UH.pingrek"] = new AsyncAssetPool<GameObject>("core://Client/Models/UberHero/Character.prefab");
+			m_PoolByArchetype["UH.kibadda"] = new AsyncAssetPool<GameObject>("core://Client/Models/UberHero/Character.prefab");
 		}
 
 		protected override void OnUpdate()

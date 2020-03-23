@@ -17,6 +17,7 @@ using Patapon4TLB.Core;
 using Revolution;
 using Rpc;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Data;
 using StormiumTeam.GameBase.EcsComponents;
@@ -207,7 +208,7 @@ namespace Patapon.Server.GameModes.Training
 					});
 
 					var displayEquipment = new UnitDisplayedEquipment();
-					var targetKit        = UnitKnownTypes.Kibadda;
+					var targetKit        = UnitKnownTypes.Pingrek;
 					var statistics       = default(UnitStatistics);
 					var definedAbilities = entityMgr.AddBuffer<UnitDefinedAbilities>(spawnedUnit);
 					KitTempUtility.Set(targetKit, ref statistics, definedAbilities, ref displayEquipment);
@@ -323,6 +324,8 @@ namespace Patapon.Server.GameModes.Training
 
 			protected override bool OnRun()
 			{
+				m_WorldCtx.GetExistingSystem<GameEventRuleSystemGroup>().Process();
+				
 				m_QueryBuilderCtx.From.ForEach((Entity ent, ref TrainingRoomSetKit rpc) =>
 				{
 					var targetKit = default(NativeString64);
@@ -335,7 +338,10 @@ namespace Patapon.Server.GameModes.Training
 							targetKit = UnitKnownTypes.Yarida;
 							break;
 						case 2:
-							targetKit = UnitKnownTypes.Yumiyacha;
+							targetKit = UnitKnownTypes.Pingrek;
+							break;
+						case 3:
+							targetKit = UnitKnownTypes.Kibadda;
 							break;
 					}
 

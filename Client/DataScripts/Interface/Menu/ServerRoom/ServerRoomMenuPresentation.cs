@@ -82,7 +82,8 @@ namespace DataScripts.Interface.Menu.ServerRoom
 			// add popup buttons...
 			var taterazayChoice = entityMgr.Instantiate(popupButtonPrefab);
 			var yaridaChoice = entityMgr.Instantiate(popupButtonPrefab);
-			var yumiyachaChoice = entityMgr.Instantiate(popupButtonPrefab);
+			var pingrekChoice = entityMgr.Instantiate(popupButtonPrefab);
+			var kibaddaChoice = entityMgr.Instantiate(popupButtonPrefab);
 			var exitChoice = entityMgr.Instantiate(popupButtonPrefab);
 
 			button = taterazayChoice;
@@ -99,11 +100,18 @@ namespace DataScripts.Interface.Menu.ServerRoom
 			entityMgr.SetComponentData(button, new UIGridPosition {Value = new int2(0, 1)});
 			entityMgr.ReplaceOwnerData(button, changeKitPopup);
 
-			button = yumiyachaChoice;
-			entityMgr.SetComponentData(button, new UIButtonText {Value = "Yumiyacha"});
+			button = pingrekChoice;
+			entityMgr.SetComponentData(button, new UIButtonText {Value = "Pingrek"});
 			entityMgr.AddComponentData(button, new SetEnableStatePopupAction());
-			entityMgr.AddComponentData(button, new ButtonChangeKit { Target = P4OfficialKit.Yumiyacha });
-			entityMgr.SetComponentData(button, new UIGridPosition {Value    = new int2(0, 1)});
+			entityMgr.AddComponentData(button, new ButtonChangeKit { Target = P4OfficialKit.Pingrek });
+			entityMgr.SetComponentData(button, new UIGridPosition {Value    = new int2(0, 2)});
+			entityMgr.ReplaceOwnerData(button, changeKitPopup);
+			
+			button = kibaddaChoice;
+			entityMgr.SetComponentData(button, new UIButtonText {Value = "Kibadda"});
+			entityMgr.AddComponentData(button, new SetEnableStatePopupAction());
+			entityMgr.AddComponentData(button, new ButtonChangeKit { Target = P4OfficialKit.Kibadda });
+			entityMgr.SetComponentData(button, new UIGridPosition {Value    = new int2(0, 3)});
 			entityMgr.ReplaceOwnerData(button, changeKitPopup);
 
 			button = exitChoice;
@@ -247,6 +255,12 @@ namespace DataScripts.Interface.Menu.ServerRoom
 					var request = EntityManager.CreateEntity(typeof(HeadOnChangeTeamRpc), typeof(SendRpcCommandRequestComponent));
 					EntityManager.SetComponentData(request, new HeadOnChangeTeamRpc {Team = i});
 				}
+			}
+
+			if (Input.GetKeyDown(KeyCode.Escape) && definition.waitingFrame.activeSelf)
+			{
+				EntityManager.CreateEntity(typeof(RequestDisconnectFromServer));
+				World.GetExistingSystem<ClientMenuSystem>().SetMenu(World.GetExistingSystem<ServerRoomMenu>().PreviousMenu);
 			}
 		}
 

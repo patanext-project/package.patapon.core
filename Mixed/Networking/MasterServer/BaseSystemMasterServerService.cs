@@ -70,7 +70,7 @@ namespace Patapon4TLB.Core.MasterServer
 			}
 		}
 		
-		protected void GetModule<TModule>(out TModule module)
+		protected internal void GetModule<TModule>(out TModule module)
 			where TModule : BaseSystemModule, new()
 		{
 			if (m_ModuleRegister == null)

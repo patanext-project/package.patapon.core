@@ -12,6 +12,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.NetCode;
+using Unity.Transforms;
 
 namespace Systems.GamePlay.CTate
 {
@@ -61,17 +62,13 @@ namespace Systems.GamePlay.CTate
 					// re-enable buff
 					ecb.RemoveComponent<Disabled>(ability.BuffEntity);
 
-					buffFromEntity[ability.BuffEntity] = new EnergyFieldBuff
+					SetComponent(ability.BuffEntity, new EnergyFieldBuff
 					{
-						Direction = impl.UnitDirection[owner.Target].Value,
-						Position  = impl.Translation[owner.Target].Value,
-
-						MinDistance = ability.MinDistance,
-						MaxDistance = ability.MaxDistance,
-
 						DamageReduction = ability.GivenDamageReduction,
-						Defense         = impl.UnitSettings[owner.Target].Defense,
-					};
+						Defense = GetComponent<UnitPlayState>(owner.Target).Defense
+					});
+					SetComponent(ability.BuffEntity, new Translation {Value = GetComponent<Translation>(owner.Target).Value});
+					SetComponent(ability.BuffEntity, new UnitDirection {Value = GetComponent<UnitDirection>(owner.Target).Value});
 					buffSourceFromEntity[ability.BuffEntity] = new BuffSource {Source = owner.Target};
 					if (relativeTeamFromEntity.TryGet(owner.Target, out var relativeTeam))
 						buffForTargetFromEntity[ability.BuffEntity] = new BuffForTarget {Target = relativeTeam.Target};

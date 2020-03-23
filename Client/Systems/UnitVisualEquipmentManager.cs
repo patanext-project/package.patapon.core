@@ -26,6 +26,7 @@ namespace Patapon.Client.Systems
 			m_PoolByArchetype["Shields/default_shield"] = new AsyncAssetPool<GameObject>(builder.GetFile("Shields/default_shield.prefab"));
 			m_PoolByArchetype["Masks/n_taterazay"]      = new AsyncAssetPool<GameObject>(builder.GetFile("Masks/charibasa.prefab"));
 			m_PoolByArchetype["Masks/n_yarida"]         = new AsyncAssetPool<GameObject>(builder.GetFile("Masks/n_yarida.prefab"));
+			m_PoolByArchetype["Masks/n_kibadda"]         = new AsyncAssetPool<GameObject>(builder.GetFile("Masks/n_kibadda.prefab"));
 		} 
 
 		protected override void OnUpdate()

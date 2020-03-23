@@ -1,6 +1,7 @@
 using System;
 using P4TLB.MasterServer;
 using Patapon.Mixed.RhythmEngine;
+using Patapon.Mixed.Units;
 using Revolution;
 using Scripts.Utilities;
 using StormiumTeam.GameBase;
@@ -10,20 +11,13 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Networking.Transport;
+using Unity.Transforms;
 using UnityEngine;
 
 namespace Patapon.Mixed.GamePlay.Abilities.CTate
 {
 	public struct EnergyFieldBuff : /*IReadWriteComponentSnapshot<EnergyFieldBuff>, ISnapshotDelta<EnergyFieldBuff>*/ IComponentData
 	{
-		public int    Direction;
-		public float3 Position;
-
-		// these variables will be set by the ability system later...
-
-		public float MinDistance;
-		public float MaxDistance;
-
 		public float DamageReduction;
 		public int   Defense;
 
@@ -115,7 +109,7 @@ namespace Patapon.Mixed.GamePlay.Abilities.CTate
 					AccelerationFactor = 1
 				});
 
-				var buff = EntityManager.CreateEntity(typeof(BuffModifierDescription), typeof(BuffForTarget), typeof(BuffSource), typeof(EnergyFieldBuff));
+				var buff = EntityManager.CreateEntity(typeof(BuffModifierDescription), typeof(Translation), typeof(UnitDirection), typeof(BuffDistance), typeof(BuffForTarget), typeof(BuffSource), typeof(EnergyFieldBuff));
 				EntityManager.ReplaceOwnerData(buff, entity);
 				EntityManager.SetEnabled(buff, false);
 

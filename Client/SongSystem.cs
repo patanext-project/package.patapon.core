@@ -35,6 +35,9 @@ namespace Patapon.Client
 
 			Files = new Dictionary<string, DescriptionFileJsonData>();
 
+			var directory = new DirectoryInfo(Application.persistentDataPath + "/songs");
+			directory.Create();
+			
 			var songFiles = new List<string>();
 			songFiles.AddRange(Directory.GetFiles(Application.streamingAssetsPath + "/songs", "*.json", SearchOption.TopDirectoryOnly));
 			songFiles.AddRange(Directory.GetFiles(Application.persistentDataPath + "/songs", "*.json", SearchOption.TopDirectoryOnly));
@@ -59,7 +62,7 @@ namespace Patapon.Client
 				}
 		}
 
-		protected override void OnUpdate()x
+		protected override void OnUpdate()
 		{
 			if (MapTargetSongId == null)
 				MapTargetSongId = GetSingleton<ForcedSongRule>().SongId.ToString();

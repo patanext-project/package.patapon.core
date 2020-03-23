@@ -61,43 +61,44 @@ namespace Patapon4TLB.GameModes
 			Entity button;
 
 			var popupButtonPrefab = EntityManager.CreateEntity(typeof(UIButton), typeof(UIButtonText), typeof(UIGridPosition), typeof(Prefab));
-			var continueChoice = EntityManager.Instantiate(popupButtonPrefab);
-			var taterazayChoice = EntityManager.Instantiate(popupButtonPrefab);
-			var yaridaChoice    = EntityManager.Instantiate(popupButtonPrefab);
-			var yumiyachaChoice    = EntityManager.Instantiate(popupButtonPrefab);
-			var exitChoice      = EntityManager.Instantiate(popupButtonPrefab);
-
 			var i = 0;
 			
-			button = continueChoice;
+			button = EntityManager.Instantiate(popupButtonPrefab);
 			EntityManager.SetComponentData(button, new UIButtonText {Value              = "Continue"});
 			EntityManager.AddComponentData(button, new SetEnableStatePopupAction {Value = false});
 			EntityManager.SetComponentData(button, new UIGridPosition {Value            = new int2(0, i++)});
 			EntityManager.AddComponentData(button, new UIFirstSelected());
 			EntityManager.ReplaceOwnerData(button, m_PopupEntity);
 			
-			button = taterazayChoice;
+			button = EntityManager.Instantiate(popupButtonPrefab);
 			EntityManager.SetComponentData(button, new UIButtonText {Value = "Taterazay"});
 			EntityManager.AddComponentData(button, new SetEnableStatePopupAction());
 			EntityManager.AddComponentData(button, new ButtonChangeKit {Id = 0});
 			EntityManager.SetComponentData(button, new UIGridPosition {Value    = new int2(0, i++)});
 			EntityManager.ReplaceOwnerData(button, m_PopupEntity);
 			
-			button = yaridaChoice;
+			button = EntityManager.Instantiate(popupButtonPrefab);
 			EntityManager.SetComponentData(button, new UIButtonText {Value = "Yarida"});
 			EntityManager.AddComponentData(button, new SetEnableStatePopupAction());
 			EntityManager.AddComponentData(button, new ButtonChangeKit {Id = 1});
 			EntityManager.SetComponentData(button, new UIGridPosition {Value    = new int2(0, i++)});
 			EntityManager.ReplaceOwnerData(button, m_PopupEntity);
 			
-			button = yumiyachaChoice;
-			EntityManager.SetComponentData(button, new UIButtonText {Value = "Yumiyacha"});
+			button = EntityManager.Instantiate(popupButtonPrefab);
+			EntityManager.SetComponentData(button, new UIButtonText {Value = "Pingrek"});
 			EntityManager.AddComponentData(button, new SetEnableStatePopupAction());
 			EntityManager.AddComponentData(button, new ButtonChangeKit {Id   = 2});
 			EntityManager.SetComponentData(button, new UIGridPosition {Value = new int2(0, i++)});
 			EntityManager.ReplaceOwnerData(button, m_PopupEntity);
 			
-			button = exitChoice;
+			button = EntityManager.Instantiate(popupButtonPrefab);
+			EntityManager.SetComponentData(button, new UIButtonText {Value = "Kibadda"});
+			EntityManager.AddComponentData(button, new SetEnableStatePopupAction());
+			EntityManager.AddComponentData(button, new ButtonChangeKit {Id   = 3});
+			EntityManager.SetComponentData(button, new UIGridPosition {Value = new int2(0, i++)});
+			EntityManager.ReplaceOwnerData(button, m_PopupEntity);
+			
+			button = EntityManager.Instantiate(popupButtonPrefab);
 			EntityManager.SetComponentData(button, new UIButtonText {Value = "Return to desktop"});
 			EntityManager.AddComponentData(button, new TempMenu.QuitGamePopupAction());
 			EntityManager.AddComponentData(button, new SetEnableStatePopupAction {Value = false});

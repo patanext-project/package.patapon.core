@@ -37,10 +37,13 @@ namespace Patapon.Mixed.Systems
 		{
 			var spawnEcb   = this.L(ref m_SpawnBarrier).CreateCommandBuffer().ToConcurrent();
 			var destroyEcb = this.L(ref m_DeleteBarrier).CreateCommandBuffer();
-			var tick       = GetTick(GetSingleton<P4NetworkRules.Data>().RhythmEngineUsePredicted);
+			var isPredicted = GetSingleton<P4NetworkRules.Data>().RhythmEngineUsePredicted;
+			isPredicted = true;
+			
+			var tick       = GetTick(isPredicted);
 			var isServer   = IsServer;
 
-			if (!isServer && !GetSingleton<P4NetworkRules.Data>().RhythmEngineUsePredicted)
+			if (!isServer && !isPredicted)
 			{
 				//tick.Value += (GetTick(true).Value - GetTick(false).Value) / 4;
 				tick = UTick.AddMsNextFrame(tick, 50);

@@ -1,3 +1,4 @@
+using Systems.GamePlay.CPingrek;
 using package.stormiumteam.shared.ecs;
 using Patapon.Mixed.GamePlay.Abilities.CTate;
 using Patapon.Mixed.Units;
@@ -17,28 +18,30 @@ namespace Patapon.Mixed.GameModes.Rules
 	[AlwaysSynchronizeSystem]
 	[UpdateInGroup(typeof(GameEventRuleSystemGroup))]
 	[UpdateBefore(typeof(ApplyDefensiveBonusToDamageRuleSystem))]
-	public class ApplyEnergyFieldBuffRuleSystem : RuleBaseSystem
+	public class ApplyHealingBuffRuleSystem : RuleBaseSystem
 	{
+		private LazySystem<TargetDamageEvent.Provider> m_EventProvider;
+
 		protected override void OnUpdate()
 		{
 			var relativeTeamFromEntity  = GetComponentDataFromEntity<Relative<TeamDescription>>(true);
 			var buffContainerFromEntity = GetBufferFromEntity<BuffContainer>(true);
 			var buffSourceFromEntity    = GetComponentDataFromEntity<BuffSource>(true);
-			var energyFieldFromEntity   = GetComponentDataFromEntity<EnergyFieldBuff>(true);
+			var energyFieldFromEntity   = GetComponentDataFromEntity<HealingBuff>(true);
 
-			var ecb = new EntityCommandBuffer(Allocator.TempJob);
+			var damageArchetype = this.L(ref m_EventProvider).EntityArchetype;
+			var ecb             = m_EventProvider.Value.CreateEntityCommandBuffer();
 
 			Entities.ForEach((Entity ent, ref UnitPlayState playState, in Translation translation) =>
 			        {
 				        if (!relativeTeamFromEntity.TryGet(ent, out var relativeTeam))
 					        return;
-
+				        
 				        if (!buffContainerFromEntity.Exists(relativeTeam.Target))
 					        return;
-
-				        var highestDefensiveBonus      = 0.0f;
-				        var lowestDamageReductionBonus = 1.0f;
-				        var anyBuff                    = false;
+				        
+				        var highestHealing = 0.0f;
+				        var anyBuff        = false;
 
 				        var container = buffContainerFromEntity[relativeTeam.Target];
 				        var positionX = translation.Value.x;
@@ -57,33 +60,26 @@ namespace Patapon.Mixed.GameModes.Rules
 					        if ((positionX - sourceX) * GetComponent<UnitDirection>(buffEntity).Value > 0)
 						        power = math.clamp(math.unlerp(distance.Max, distance.Min, math.abs(positionX - sourceX)), 0, 1);
 
-					        highestDefensiveBonus      = math.max(highestDefensiveBonus, math.lerp(0, buff.Defense, power));
-					        lowestDamageReductionBonus = math.min(lowestDamageReductionBonus, math.lerp(1, buff.DamageReduction, power));
-
-					        anyBuff |= power > 0;
+					        highestHealing =  math.max(highestHealing, math.lerp(0, buff.Value, power));
+					        anyBuff        |= power > 0;
 				        }
-
+				        
 				        if (anyBuff)
 				        {
-					        playState.Defense += Mathf.RoundToInt(highestDefensiveBonus);
-
-					        var previousDmgReduction = playState.ReceiveDamagePercentage;
-					        playState.ReceiveDamagePercentage *= playState.ReceiveDamagePercentage * lowestDamageReductionBonus;
-					        if (playState.ReceiveDamagePercentage < 0.5f && previousDmgReduction > 0.5f)
-						        playState.ReceiveDamagePercentage = 0.5f;
-
-					        ecb.AddComponent<EnergyFieldBuff.HasBonusTag>(ent);
+					        var ev = ecb.CreateEntity(damageArchetype);
+					        ecb.SetComponent(ev, new TargetDamageEvent
+					        {
+						        Origin      = default,
+						        Destination = ent,
+						        Damage      = (int) math.round(highestHealing)
+					        });
+					        ecb.AddComponent(ev, new Translation {Value = translation.Value + new float3(0, 1, 0)});
 				        }
-				        else
-					        ecb.RemoveComponent<EnergyFieldBuff.HasBonusTag>(ent);
 			        })
 			        .WithReadOnly(relativeTeamFromEntity)
 			        .WithReadOnly(buffContainerFromEntity)
 			        .WithReadOnly(energyFieldFromEntity)
 			        .Run();
-
-			ecb.Playback(EntityManager);
-			ecb.Dispose();
 		}
 	}
 }

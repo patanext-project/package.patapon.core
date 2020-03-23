@@ -115,7 +115,7 @@ namespace Patapon.Mixed.GameModes
 			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.KibaPierceAttack), 0, AbilitySelection.Top));
 			definedAbilities.Add(new UnitDefinedAbilities(MasterServerAbilities.GetInternal(P4OfficialAbilities.KibaPierceDefend), 0, AbilitySelection.Top));
 
-			display.Mask           = new NativeString64("Masks/n_yarida");
+			display.Mask           = new NativeString64("Masks/n_kibadda");
 			display.RightEquipment = new NativeString64("Spears/default_spear");
 		}
 
