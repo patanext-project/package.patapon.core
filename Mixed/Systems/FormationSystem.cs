@@ -90,7 +90,7 @@ namespace Patapon4TLB.Default
 					for (var ent = 0; ent != entities.Length; ent++)
 					{
 						var buffer = EntityManager.GetBuffer<FormationChild>(entities[ent]);
-						buffer.Reserve(buffer.Capacity + 1);
+						buffer.Capacity = (buffer.Capacity + 1);
 						buffer.Clear();
 					}
 				}

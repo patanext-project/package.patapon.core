@@ -36,7 +36,7 @@ namespace Systems.GamePlay
 			public ComponentDataFromEntity<Translation> Translation;
 
 			[NativeDisableParallelForRestriction]
-			public ComponentDataFromEntity<Velocity> Velocity;
+			public ComponentDataFromEntity<SVelocity> Velocity;
 
 			[NativeDisableParallelForRestriction]
 			public ComponentDataFromEntity<UnitControllerState> ControllerState;
@@ -54,7 +54,7 @@ namespace Systems.GamePlay
 			{
 				Translation     = GetComponentDataFromEntity<Translation>(true),
 				PlayState       = GetComponentDataFromEntity<UnitPlayState>(true),
-				Velocity        = GetComponentDataFromEntity<Velocity>(),
+				Velocity        = GetComponentDataFromEntity<SVelocity>(),
 				ControllerState = GetComponentDataFromEntity<UnitControllerState>(),
 				CursorRelative  = GetComponentDataFromEntity<Relative<UnitTargetDescription>>()
 			};

@@ -40,7 +40,7 @@ namespace Patapon.Mixed.GamePlay.Projectiles
 
 			Entities
 				.WithNone<ProjectileEndedTag>()
-				.ForEach((Entity entity, int nativeThreadIndex, ref Translation translation, ref Velocity velocity, in Owner owner, in SpearProjectile projectile) =>
+				.ForEach((Entity entity, int nativeThreadIndex, ref Translation translation, ref SVelocity velocity, in Owner owner, in SpearProjectile projectile) =>
 				{
 					Entity* tryGetChain = stackalloc[] {entity, owner.Target};
 					if (!teamRelativeFromEntity.TryGetChain(tryGetChain, 2, out var teamRelative))

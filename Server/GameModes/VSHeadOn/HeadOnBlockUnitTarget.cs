@@ -17,7 +17,7 @@ namespace Patapon.Server.GameModes.VSHeadOn
 			protected override void OnUpdate()
 			{
 				var tick = ServerTick;
-				Entities.ForEach((ref UnitControllerState controller, ref Velocity vel, ref HeadOnBlockUnitTarget block, in OwnerActiveAbility activeAbility) =>
+				Entities.ForEach((ref UnitControllerState controller, ref SVelocity vel, ref HeadOnBlockUnitTarget block, in OwnerActiveAbility activeAbility) =>
 				{
 					if (block.Enabled)
 					{

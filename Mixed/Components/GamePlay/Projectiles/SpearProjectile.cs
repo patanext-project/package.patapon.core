@@ -37,7 +37,7 @@ namespace Systems.GamePlay.CYari
 				{
 					typeof(ProjectileDescription),
 					typeof(SpearProjectile),
-					typeof(Velocity),
+					typeof(SVelocity),
 					typeof(Translation),
 					typeof(LocalToWorld),
 
@@ -63,7 +63,7 @@ namespace Systems.GamePlay.CYari
 
 				EntityManager.ReplaceOwnerData(entity, data.Owner);
 				EntityManager.SetComponentData(entity, new Translation {Value               = data.Position});
-				EntityManager.SetComponentData(entity, new Velocity {Value                  = data.Velocity});
+				EntityManager.SetComponentData(entity, new SVelocity {Value                  = data.Velocity});
 				EntityManager.SetComponentData(entity, new SpearProjectile {DetectionRadius = 0.1f, Gravity  = data.Gravity});
 				EntityManager.SetComponentData(entity, new ProjectileAgeTime {StartMs       = tick.Ms, EndMs = tick.Ms + 3000});
 
@@ -120,7 +120,7 @@ namespace Systems.GamePlay.CYari
 					typeof(ProjectileDescription),
 					typeof(SpearProjectile),
 					typeof(FearSpearProjectile),
-					typeof(Velocity),
+					typeof(SVelocity),
 					typeof(Translation),
 					typeof(LocalToWorld),
 
@@ -146,7 +146,7 @@ namespace Systems.GamePlay.CYari
 
 				EntityManager.ReplaceOwnerData(entity, data.Owner);
 				EntityManager.SetComponentData(entity, new Translation {Value               = data.Position});
-				EntityManager.SetComponentData(entity, new Velocity {Value                  = data.Velocity});
+				EntityManager.SetComponentData(entity, new SVelocity {Value                  = data.Velocity});
 				EntityManager.SetComponentData(entity, new SpearProjectile {DetectionRadius = 0.1f, Gravity  = data.Gravity});
 				EntityManager.SetComponentData(entity, new ProjectileAgeTime {StartMs       = tick.Ms, EndMs = tick.Ms + 3000});
 

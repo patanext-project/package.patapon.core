@@ -40,7 +40,7 @@ namespace Patapon.Mixed.Units
 
 				typeof(PhysicsCollider),
 				typeof(PhysicsMass),
-				typeof(Velocity),
+				typeof(SVelocity),
 				typeof(GroundState),
 
 				typeof(LivableHealth),

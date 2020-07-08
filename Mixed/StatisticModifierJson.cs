@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Patapon.Mixed.GamePlay;
 using Unity.Collections;
 using Unity.Serialization;
+using Unity.Serialization.Json;
 using UnityEngine;
 
 namespace DefaultNamespace

@@ -60,7 +60,7 @@ namespace Patapon4TLB.Core.Snapshots
 				{
 					[0] = typeof(Use),
 					[1] = typeof(Translation),
-					[2] = typeof(Velocity)
+					[2] = typeof(SVelocity)
 				};
 		}
 
@@ -78,7 +78,7 @@ namespace Patapon4TLB.Core.Snapshots
 				var tick = World.GetExistingSystem<GhostPredictionSystemGroup>().PredictingTick;
 
 				var predictedFromEntity = GetComponentDataFromEntity<Predicted<VelocityPredictedTranslation>>(true); 
-				Entities.ForEach((Entity entity, ref Translation translation, ref Velocity velocity) =>
+				Entities.ForEach((Entity entity, ref Translation translation, ref SVelocity velocity) =>
 				{
 					if (!predictedFromEntity.Exists(entity))
 						return;

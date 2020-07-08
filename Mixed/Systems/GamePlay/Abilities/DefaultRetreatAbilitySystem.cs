@@ -24,7 +24,7 @@ namespace Systems.GamePlay
 			var unitPlayStateFromEntity       = GetComponentDataFromEntity<UnitPlayState>(true);
 			var translationFromEntity         = GetComponentDataFromEntity<Translation>();
 			var unitControllerStateFromEntity = GetComponentDataFromEntity<UnitControllerState>();
-			var velocityFromEntity            = GetComponentDataFromEntity<Velocity>();
+			var velocityFromEntity            = GetComponentDataFromEntity<SVelocity>();
 
 			var impl = new BasicUnitAbilityImplementation(this);
 

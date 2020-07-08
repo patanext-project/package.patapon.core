@@ -116,7 +116,7 @@ namespace package.patapon.core.Animation.Units
 			var abilityState = EntityManager.GetComponentData<AbilityState>(abilityEntity);
 			var engineSet = EntityManager.GetComponentData<AbilityEngineSet>(abilityEntity);
 			var jumpAbility  = EntityManager.GetComponentData<DefaultJumpAbility>(abilityEntity);
-			var velocity     = EntityManager.GetComponentData<Velocity>(targetEntity);
+			var velocity     = EntityManager.GetComponentData<SVelocity>(targetEntity);
 
 			if (abilityState.Phase == EAbilityPhase.None)
 			{

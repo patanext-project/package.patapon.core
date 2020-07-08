@@ -27,7 +27,7 @@ namespace Patapon.Mixed.GamePlay
 				outputs.Add(new RigidBody
 				{
 					Entity        = inputs[i],
-					Collider      = collider.ColliderPtr,
+					Collider      = collider.Value,
 					WorldFromBody = new RigidTransform(quaternion.identity, translation.Value)
 				});
 			}
@@ -61,7 +61,7 @@ namespace Patapon.Mixed.GamePlay
 				outputs.Add(new RigidBody
 				{
 					Entity        = inputs[i],
-					Collider      = collider.ColliderPtr,
+					Collider      = collider.Value,
 					WorldFromBody = new RigidTransform(ltw.Value)
 				});
 			}
@@ -95,7 +95,7 @@ namespace Patapon.Mixed.GamePlay
 
 				RigidBody rigidBody = default;
 				rigidBody.Entity        = inputs[i].Value;
-				rigidBody.Collider      = collider.ColliderPtr;
+				rigidBody.Collider      = collider.Value;
 				rigidBody.WorldFromBody = new RigidTransform(ltw.Value);
 
 				if (inputs[i].AttachedToParent)

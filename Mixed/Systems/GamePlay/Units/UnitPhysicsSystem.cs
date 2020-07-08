@@ -39,7 +39,7 @@ namespace Patapon.Mixed.GamePlay
 			Entities
 				.WithAll<UnitDescription>()
 				.ForEach((Entity                  entity,
-				          ref UnitControllerState controllerState, ref GroundState groundState, ref Translation translation, ref Velocity velocity,
+				          ref UnitControllerState controllerState, ref GroundState groundState, ref Translation translation, ref SVelocity velocity,
 				          in  UnitPlayState       unitPlayState) =>
 				{
 					if (velocity.Value.y > 0)

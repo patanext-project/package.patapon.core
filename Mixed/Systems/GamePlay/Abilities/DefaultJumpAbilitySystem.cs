@@ -20,7 +20,7 @@ namespace Systems.GamePlay
 		{
 			var tick                          = ServerTick;
 			var unitControllerStateFromEntity = GetComponentDataFromEntity<UnitControllerState>();
-			var velocityFromEntity            = GetComponentDataFromEntity<Velocity>();
+			var velocityFromEntity            = GetComponentDataFromEntity<SVelocity>();
 
 			var impl = new BasicUnitAbilityImplementation(this);
 

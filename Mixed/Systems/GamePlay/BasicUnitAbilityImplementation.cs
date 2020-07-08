@@ -17,7 +17,7 @@ namespace Patapon.Mixed.GamePlay
 		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Translation>         Translation;
 		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<LocalToWorld>        LocalToWorld;
 		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitControllerState> Controller;
-		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<Velocity>            Velocity;
+		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<SVelocity>            Velocity;
 		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<UnitDirection>       UnitDirection;
 
 		[NativeDisableParallelForRestriction] public ComponentDataFromEntity<GroundState> GroundState;
@@ -33,7 +33,7 @@ namespace Patapon.Mixed.GamePlay
 			Translation   = system.GetComponentDataFromEntity<Translation>();
 			LocalToWorld  = system.GetComponentDataFromEntity<LocalToWorld>();
 			Controller    = system.GetComponentDataFromEntity<UnitControllerState>();
-			Velocity      = system.GetComponentDataFromEntity<Velocity>();
+			Velocity      = system.GetComponentDataFromEntity<SVelocity>();
 			UnitDirection = system.GetComponentDataFromEntity<UnitDirection>();
 
 			GroundState = system.GetComponentDataFromEntity<GroundState>();

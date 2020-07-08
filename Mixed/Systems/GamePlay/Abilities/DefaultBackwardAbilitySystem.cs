@@ -25,7 +25,7 @@ namespace Systems.GamePlay
 			var groundStateFromEntity         = GetComponentDataFromEntity<GroundState>(true);
 			var targetOffsetFromEntity        = GetComponentDataFromEntity<UnitTargetOffset>(true);
 			var unitControllerStateFromEntity = GetComponentDataFromEntity<UnitControllerState>();
-			var velocityFromEntity            = GetComponentDataFromEntity<Velocity>();
+			var velocityFromEntity            = GetComponentDataFromEntity<SVelocity>();
 			var relativeTargetFromEntity      = GetComponentDataFromEntity<Relative<UnitTargetDescription>>(true);
 
 			var impl = new BasicUnitAbilityImplementation(this);

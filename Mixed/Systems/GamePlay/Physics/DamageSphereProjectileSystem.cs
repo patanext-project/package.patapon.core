@@ -13,7 +13,7 @@ namespace Patapon.Mixed.GamePlay.Physics
 		protected override void OnUpdate()
 		{
 			var dt = Time.DeltaTime;
-			Entities.ForEach((ref Translation translation, ref Velocity velocity, in DamageSphereProjectile projectile) =>
+			Entities.ForEach((ref Translation translation, ref SVelocity velocity, in DamageSphereProjectile projectile) =>
 			{
 				Debug.DrawRay(translation.Value, velocity.Value * dt, Color.green, 0.25f);
 				velocity.Value    += projectile.Gravity * dt;
@@ -43,7 +43,7 @@ namespace Patapon.Mixed.GamePlay.Physics
 				typeof(ProjectileDescription),
 				typeof(Translation),
 				typeof(LocalToWorld),
-				typeof(Velocity),
+				typeof(SVelocity),
 				typeof(DamageSphereProjectile),
 			};
 		}
@@ -51,7 +51,7 @@ namespace Patapon.Mixed.GamePlay.Physics
 		public override void SetEntityData(Entity entity, Create data)
 		{
 			EntityManager.SetComponentData(entity, new Translation {Value        = data.Position});
-			EntityManager.SetComponentData(entity, new Velocity {Value           = data.Velocity});
+			EntityManager.SetComponentData(entity, new SVelocity {Value           = data.Velocity});
 			EntityManager.SetComponentData(entity, new DamageSphereProjectile {Gravity = data.Gravity});
 		}
 	}

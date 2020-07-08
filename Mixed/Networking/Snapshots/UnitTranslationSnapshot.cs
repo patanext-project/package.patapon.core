@@ -109,7 +109,7 @@ namespace Patapon4TLB.Core.Snapshots
 					return;
 
 				var dt = Time.DeltaTime;
-				var velocityFromEntity = GetComponentDataFromEntity<Velocity>();
+				var velocityFromEntity = GetComponentDataFromEntity<SVelocity>();
 				Entities.ForEach((Entity entity, ref NetSynchronize.TargetPosition target, ref Translation translation) =>
 				{
 					if (!velocityFromEntity.TryGet(entity, out var velocity))
@@ -140,7 +140,7 @@ namespace Patapon4TLB.Core.Snapshots
 		}
 
 		[UpdateInGroup(typeof(GhostUpdateSystemGroup))]
-		[UpdateAfter(typeof(Velocity.Synchronize))]
+		[UpdateAfter(typeof(SVelocity.Synchronize))]
 		public class LocalUpdate : ComponentUpdateSystemInterpolated<NetSynchronize.TargetPosition, UnitTranslationSnapshot>
 		{
 			private LazySystem<TranslationPredictedUpdate> m_PredictedSystem;
@@ -165,7 +165,7 @@ namespace Patapon4TLB.Core.Snapshots
 
 				var dt = Time.DeltaTime;
 				var interpolationType = GetSingleton<P4NetworkRules.Data>().UnitPresentationInterpolation;
-				var velocityFromEntity = GetComponentDataFromEntity<Velocity>();
+				var velocityFromEntity = GetComponentDataFromEntity<SVelocity>();
 				return Entities.ForEach((Entity entity, ref NetSynchronize.TargetPosition target, ref Translation translation) =>
 				{
 					if (interpolationType == P4NetworkRules.Interpolation.DoublePredicted)

@@ -158,7 +158,7 @@ namespace package.patapon.core.Animation.Units
 
 			if (abilityActive) systemData.Behaviour.ForceAnimation = true;
 
-			var velocity = EntityManager.GetComponentData<Velocity>(backend.DstEntity);
+			var velocity = EntityManager.GetComponentData<SVelocity>(backend.DstEntity);
 			var targetAnimation = math.abs(velocity.Value.x) > 0f || abilityActive ? TargetType.Walking : TargetType.Idle;
 			if (targetAnimation == TargetType.Walking)
 				systemData.LastWalk = Time.ElapsedTime;

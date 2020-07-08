@@ -63,7 +63,7 @@ namespace package.patapon.core.Models.InGame.Throwable
 			var target  = backend.DstEntity;
 
 			backend.transform.position = EntityManager.GetComponentData<Translation>(target).Value;
-			var dir   = EntityManager.GetComponentData<Velocity>(target).normalized;
+			var dir   = EntityManager.GetComponentData<SVelocity>(target).normalized;
 			var angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 			backend.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
 		}

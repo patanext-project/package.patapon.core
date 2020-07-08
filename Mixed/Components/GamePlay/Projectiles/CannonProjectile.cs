@@ -39,7 +39,7 @@ namespace Systems.GamePlay.CYari
 				{
 					typeof(ProjectileDescription),
 					typeof(CannonProjectile),
-					typeof(Velocity),
+					typeof(SVelocity),
 					typeof(Translation),
 					typeof(LocalToWorld),
 
@@ -64,7 +64,7 @@ namespace Systems.GamePlay.CYari
 
 				EntityManager.ReplaceOwnerData(entity, data.Owner);
 				EntityManager.SetComponentData(entity, new Translation {Value                = data.Position});
-				EntityManager.SetComponentData(entity, new Velocity {Value                   = data.Velocity});
+				EntityManager.SetComponentData(entity, new SVelocity {Value                   = data.Velocity});
 				EntityManager.SetComponentData(entity, new CannonProjectile {DetectionRadius = 0.25f, Gravity  = data.Gravity});
 				EntityManager.SetComponentData(entity, new ProjectileAgeTime {StartMs        = tick.Ms, EndMs = tick.Ms + 3000});
 

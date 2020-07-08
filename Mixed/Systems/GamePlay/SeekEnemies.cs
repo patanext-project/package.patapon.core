@@ -97,7 +97,7 @@ namespace Patapon.Mixed.GamePlay
 
 						RigidBody rigidBody = default;
 						rigidBody.Entity        = hitShape.Value;
-						rigidBody.Collider      = Collider[hitShape.Value].ColliderPtr;
+						rigidBody.Collider      = Collider[hitShape.Value].Value;
 						rigidBody.WorldFromBody = new RigidTransform(ltw.Value);
 
 						if (hitShape.AttachedToParent)
