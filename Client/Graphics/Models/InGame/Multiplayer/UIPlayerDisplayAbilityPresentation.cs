@@ -1,6 +1,7 @@
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
 using package.patapon.core.Animation.Units;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Modules;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using Unity.Entities;

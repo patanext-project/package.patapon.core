@@ -1,6 +1,7 @@
 using System.Text;
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using TMPro;
 using Unity.Entities;

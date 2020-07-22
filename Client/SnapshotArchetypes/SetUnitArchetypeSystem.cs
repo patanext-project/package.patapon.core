@@ -2,6 +2,7 @@ using DefaultNamespace;
 using GameBase.Roles.Components;
 using package.patapon.core;
 using package.stormiumteam.shared.ecs;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using Unity.Entities;
 using Unity.Mathematics;

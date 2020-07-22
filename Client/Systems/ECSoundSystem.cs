@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;

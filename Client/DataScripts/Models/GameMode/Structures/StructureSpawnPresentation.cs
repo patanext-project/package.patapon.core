@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using GameBase.Roles.Components;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;

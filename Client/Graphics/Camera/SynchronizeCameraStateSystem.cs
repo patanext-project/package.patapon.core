@@ -1,4 +1,7 @@
 using package.stormiumteam.shared.ecs;
+using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Utility.DOTS.xMonoBehaviour;
+using StormiumTeam.GameBase.Utility.Misc;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;

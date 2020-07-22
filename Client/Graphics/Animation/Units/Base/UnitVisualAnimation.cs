@@ -1,5 +1,6 @@
 using System;
 using package.patapon.core.Animation;
+using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;

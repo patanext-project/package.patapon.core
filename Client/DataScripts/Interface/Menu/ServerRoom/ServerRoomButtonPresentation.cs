@@ -1,6 +1,7 @@
 using System;
 using DataScripts.Interface.Menu.UIECS;
 using Patapon.Client.PoolingSystems;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using TMPro;

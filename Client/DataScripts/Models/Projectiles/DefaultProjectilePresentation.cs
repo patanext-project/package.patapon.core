@@ -1,5 +1,6 @@
 using System;
 using Patapon.Client.Systems;
+using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;

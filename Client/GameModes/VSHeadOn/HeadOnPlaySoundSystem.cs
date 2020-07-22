@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using package.patapon.core.Animation.Units;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;
 using Unity.Entities;

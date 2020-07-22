@@ -1,6 +1,7 @@
 using package.patapon.core.Animation.Units;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Systems;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;
 using Unity.Entities;

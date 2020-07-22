@@ -2,6 +2,7 @@ using System;
 using DataScripts.Interface.Menu.UIECS;
 using GameBase.Roles.Components;
 using Patapon.Client.PoolingSystems;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Modules;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;

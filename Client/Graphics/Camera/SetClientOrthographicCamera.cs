@@ -1,5 +1,6 @@
 using package.patapon.core;
 using package.stormiumteam.shared.ecs;
+using StormiumTeam.GameBase.Utility.DOTS.xMonoBehaviour;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;

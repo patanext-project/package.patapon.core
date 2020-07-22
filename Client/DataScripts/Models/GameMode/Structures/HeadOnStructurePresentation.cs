@@ -4,6 +4,7 @@ using System.Linq;
 using GameBase.Roles.Components;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Systems;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling;

@@ -1,5 +1,6 @@
 using System;
 using package.patapon.core.Models.InGame.VFXDamage;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using UnityEngine;

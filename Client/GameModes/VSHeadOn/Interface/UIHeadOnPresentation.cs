@@ -1,5 +1,6 @@
 using System;
 using GameBase.Roles.Components;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using TMPro;
 using Unity.Collections;

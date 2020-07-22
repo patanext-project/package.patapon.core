@@ -1,5 +1,6 @@
 using System;
 using package.stormiumteam.shared.ecs;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Modules;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
