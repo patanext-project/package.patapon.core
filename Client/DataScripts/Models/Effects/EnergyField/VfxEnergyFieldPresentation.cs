@@ -1,13 +1,8 @@
 using System;
-using DataScripts.Models.GameMode.Structures;
-using DefaultNamespace;
 using package.stormiumteam.shared.ecs;
-using Patapon.Mixed.GamePlay.Abilities.CTate;
-using Patapon.Mixed.Units;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
 using StormiumTeam.GameBase.Modules;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;

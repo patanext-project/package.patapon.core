@@ -1,9 +1,5 @@
 using System;
-using package.stormiumteam.shared.ecs;
 using Patapon.Client.Systems;
-using Stormium.Core.Projectiles;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Systems;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;

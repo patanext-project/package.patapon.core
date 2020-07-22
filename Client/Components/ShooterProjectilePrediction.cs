@@ -1,8 +1,6 @@
-using System;
 using Patapon.Client.Systems;
 using Unity.Entities;
 using Unity.Mathematics;
-using UnityEngine;
 
 namespace Components
 {

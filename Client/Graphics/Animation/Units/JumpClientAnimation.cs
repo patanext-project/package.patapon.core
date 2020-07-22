@@ -1,11 +1,6 @@
 using System.Collections.Generic;
+using GameBase.Roles.Components;
 using Patapon.Client.Graphics.Animation.Units;
-using Patapon.Mixed.GamePlay;
-using Patapon.Mixed.GamePlay.Abilities;
-using Patapon.Mixed.RhythmEngine;
-using Patapon.Mixed.RhythmEngine.Flow;
-using StormiumTeam.GameBase;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;

@@ -1,20 +1,12 @@
 using System;
 using DataScripts.Interface.Menu.UIECS;
 using DataScripts.Interface.Popup;
+using GameBase.Roles.Components;
+using GameBase.Roles.Descriptions;
 using P4TLB.MasterServer;
 using package.stormiumteam.shared.ecs;
-using Patapon.Mixed.GameModes;
-using Patapon.Mixed.GameModes.VSHeadOn;
-using Patapon.Mixed.Units;
-using Patapon4TLB.Core.MasterServer.Data;
-using Patapon4TLB.Core.MasterServer.P4.EntityDescription;
-using Patapon4TLB.Default;
-using Rpc;
-using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Jobs;
-using Unity.NetCode;
 using UnityEngine;
 
 namespace DataScripts.Interface.Menu.ServerRoom

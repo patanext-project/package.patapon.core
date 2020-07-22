@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using DefaultNamespace;
-using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Utility.Pooling;
 using Unity.Entities;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 
 namespace Patapon.Client.Systems
 {

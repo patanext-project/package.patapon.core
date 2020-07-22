@@ -1,15 +1,10 @@
 using System;
 using DataScripts.Interface.Menu.TemporaryMenu;
-using DataScripts.Interface.Menu.UIECS;
-using DataScripts.Interface.Popup;
-using DefaultNamespace;
 using package.patapon.core.Animation;
 using Patapon.Client.PoolingSystems;
-using Patapon4TLB.Core.MasterServer.Data;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
-using Unity.NetCode;
 using UnityEngine;
 
 namespace DataScripts.Interface.Menu.ServerList

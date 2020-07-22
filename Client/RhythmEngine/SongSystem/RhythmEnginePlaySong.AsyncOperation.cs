@@ -1,4 +1,4 @@
-using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Modules;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 

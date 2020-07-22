@@ -1,14 +1,7 @@
-using System;
 using System.Collections.Generic;
-using DefaultNamespace;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Graphics.Animation.Units;
-using Patapon.Mixed.GamePlay;
-using Patapon.Mixed.GamePlay.Abilities;
-using Patapon.Mixed.GamePlay.Abilities.CTate;
-using StormiumTeam.GameBase;
 using Unity.Entities;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;

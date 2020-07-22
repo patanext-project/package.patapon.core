@@ -3,20 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using DataScripts.Interface.Menu.UIECS;
 using DataScripts.Interface.Popup;
-using DefaultNamespace;
 using P4TLB.MasterServer;
 using package.patapon.core.Animation;
-using package.stormiumteam.shared.ecs;
 using Patapon.Client.PoolingSystems;
-using Patapon.Mixed.GameModes;
-using Patapon.Mixed.GameModes.VSHeadOn;
-using Patapon4TLB.Core.MasterServer.Data;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using TMPro;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.NetCode;
 using UnityEngine;
 
 namespace DataScripts.Interface.Menu.ServerRoom

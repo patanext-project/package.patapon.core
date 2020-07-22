@@ -1,21 +1,12 @@
-using System;
-using System.Drawing;
-using DefaultNamespace;
-using package.stormiumteam.shared.ecs;
-using Patapon.Mixed.GameModes.VSHeadOn;
-using Patapon.Mixed.Units;
-using Patapon4TLB.GameModes;
+using GameBase.Roles.Components;
 using Patapon4TLB.GameModes.Interface;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Pooling;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.UI;
 using Color = UnityEngine.Color;
 
 namespace DataScripts.Interface.GameMode.VSHeadOn

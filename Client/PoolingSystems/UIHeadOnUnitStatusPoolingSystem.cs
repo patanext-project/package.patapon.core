@@ -1,11 +1,6 @@
-using DefaultNamespace;
-using Patapon.Mixed.GameModes.VSHeadOn;
-using Patapon.Mixed.Units;
 using Patapon4TLB.GameModes.Interface;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
-using Unity.NetCode;
-using UnityEngine;
 
 namespace Patapon.Client.PoolingSystems
 {

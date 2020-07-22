@@ -1,12 +1,7 @@
 using System.Text;
-using Misc.Extensions;
-using package.stormiumteam.shared.ecs;
-using Patapon.Mixed.GameModes.VSHeadOn;
-using Patapon.Mixed.Units;
-using Patapon4TLB.Default.Player;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Systems;
+using GameBase.Roles.Components;
+using GameBase.Roles.Descriptions;
+using StormiumTeam.GameBase.Utility.AssetBackend;
 using TMPro;
 using Unity.Entities;
 using Unity.Transforms;

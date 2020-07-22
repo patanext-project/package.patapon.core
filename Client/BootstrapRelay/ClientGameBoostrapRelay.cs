@@ -1,12 +1,9 @@
-using Bootstraps.Full;
 using DataScripts.Interface.Menu;
 using DataScripts.Interface.Menu.TemporaryMenu;
-using StormiumTeam.GameBase;
-using Unity.NetCode;
+using StormiumTeam.GameBase.BaseSystems;
 
 namespace BootstrapRelay
 {
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class ClientGameBoostrapRelay : AbsGameBaseSystem
 	{
 		protected override void OnCreate()

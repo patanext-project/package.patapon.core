@@ -1,13 +1,9 @@
-using DefaultNamespace;
 using package.patapon.core.Animation.Units;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Systems;
-using Patapon.Mixed.GamePlay.Abilities.CTate;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
+using StormiumTeam.GameBase.BaseSystems;
+using StormiumTeam.GameBase.Modules;
 using Unity.Entities;
-using Unity.Jobs;
-using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.AddressableAssets;

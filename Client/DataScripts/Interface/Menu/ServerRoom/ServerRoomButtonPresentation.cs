@@ -1,13 +1,10 @@
 using System;
 using DataScripts.Interface.Menu.UIECS;
-using DefaultNamespace;
-using package.stormiumteam.shared.ecs;
 using Patapon.Client.PoolingSystems;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using TMPro;
 using Unity.Entities;
-using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;

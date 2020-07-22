@@ -4,7 +4,7 @@ using DataScripts.Models.Equipments;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Graphics.Animation.Units;
 using Patapon.Client.Systems;
-using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Utility.AssetBackend;
 using Unity.Mathematics;
 using UnityEngine;
 

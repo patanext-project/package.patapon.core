@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using package.patapon.core.Animation.Units;
-using Patapon.Mixed.GameModes;
-using Patapon.Mixed.GameModes.VSHeadOn;
-using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.BaseSystems;
+using StormiumTeam.GameBase.Modules;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.AddressableAssets;

@@ -1,18 +1,15 @@
 using System;
 using System.Collections.Generic;
 using DataScripts.Models.Equipments;
+using package.patapon.core;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Graphics.Animation.Units;
 using Patapon.Client.Systems;
-using Patapon.Mixed.GamePlay.Abilities;
-using Patapon.Mixed.Units;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
+using StormiumTeam.GameBase.BaseSystems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Components.Archetypes
 {

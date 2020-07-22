@@ -1,16 +1,10 @@
-using System;
 using DefaultNamespace;
+using GameBase.Roles.Components;
 using package.patapon.core;
 using package.stormiumteam.shared.ecs;
-using Patapon.Mixed.GamePlay.Abilities;
-using Patapon.Mixed.Units;
-using Revolution;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Data;
+using StormiumTeam.GameBase.BaseSystems;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Mathematics;
-using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
 using EActivationType = Patapon.Mixed.GamePlay.Abilities.EActivationType;

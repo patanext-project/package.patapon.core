@@ -1,7 +1,5 @@
-using Patapon.Mixed.Units;
-using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.BaseSystems;
 using Unity.Entities;
-using Unity.Mathematics;
 using UnityEngine;
 
 namespace DataScripts.Models.Equipments

@@ -1,6 +1,5 @@
-using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.BaseSystems;
 using Unity.Entities;
-using Unity.NetCode;
 
 namespace Graphics.Camera.Follower
 {

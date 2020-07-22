@@ -1,12 +1,8 @@
 using package.stormiumteam.shared.ecs;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Data;
-using StormiumTeam.GameBase.Misc;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
+using UnityEditor;
 
 namespace package.patapon.core
 {
@@ -54,7 +50,7 @@ namespace package.patapon.core
 				.WithAll<GameCamera>()
 				.ForEach((Entity entity, ref SystemData update) =>
 				{
-					update.Mode     = CameraMode.Default;
+					update.Mode     = SceneView.CameraMode.Default;
 					update.Priority = int.MinValue;
 				})
 				.Run();
@@ -156,7 +152,7 @@ namespace package.patapon.core
 
 		private struct SystemData : IComponentData
 		{
-			public CameraMode Mode;
+			public SceneView.CameraMode Mode;
 			public int        Priority;
 
 			public Entity      StateEntity;

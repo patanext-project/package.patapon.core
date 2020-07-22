@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Utility.Pooling;
 using Unity.Entities;
 using UnityEngine;
 

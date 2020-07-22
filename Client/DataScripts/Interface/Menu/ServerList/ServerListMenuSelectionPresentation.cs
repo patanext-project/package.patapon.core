@@ -1,14 +1,10 @@
 using System;
 using DataScripts.Interface.Menu.ServerRoom;
-using DefaultNamespace;
 using Patapon.Client.PoolingSystems;
-using Patapon4TLB.Core.MasterServer;
-using Patapon4TLB.Core.MasterServer.Data;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using TMPro;
 using Unity.Entities;
-using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.UI;
 

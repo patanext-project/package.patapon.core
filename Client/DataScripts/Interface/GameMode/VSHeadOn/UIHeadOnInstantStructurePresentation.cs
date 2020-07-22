@@ -1,5 +1,3 @@
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Systems;
 using UnityEngine;
 using UnityEngine.UI;
 

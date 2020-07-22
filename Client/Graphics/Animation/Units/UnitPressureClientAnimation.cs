@@ -1,11 +1,7 @@
+using GameBase.Roles.Components;
+using GameBase.Roles.Descriptions;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Graphics.Animation.Units;
-using Patapon.Mixed;
-using Patapon.Mixed.RhythmEngine;
-using Patapon.Mixed.RhythmEngine.Flow;
-using Patapon.Mixed.Units;
-using Patapon4TLB.Default.Player;
-using StormiumTeam.GameBase;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;

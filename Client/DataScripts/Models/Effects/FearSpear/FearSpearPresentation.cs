@@ -1,12 +1,7 @@
 using System;
-using Systems.GamePlay.CYari;
 using DataScripts.Models.Units.Projectiles;
-using DefaultNamespace;
-using Revolution;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
-using Unity.NetCode;
 using UnityEngine.Rendering;
 
 namespace DataScripts.Models.Units.Effects.FearSpear

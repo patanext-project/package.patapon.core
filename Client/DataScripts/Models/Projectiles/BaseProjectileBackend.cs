@@ -1,4 +1,4 @@
-using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Utility.AssetBackend;
 using Unity.Mathematics;
 
 namespace DataScripts.Models.Units.Projectiles

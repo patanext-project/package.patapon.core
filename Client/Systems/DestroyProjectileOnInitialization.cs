@@ -1,5 +1,3 @@
-using Revolution;
-using StormiumTeam.GameBase;
 using Unity.Entities;
 
 namespace Patapon.Client.Systems

@@ -1,9 +1,3 @@
-using System;
-using package.stormiumteam.shared.ecs;
-using Patapon.Mixed.GameModes.VSHeadOn;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Systems;
 using UnityEngine;
 using UnityEngine.UI;
 

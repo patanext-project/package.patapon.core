@@ -1,10 +1,4 @@
-using System.Collections.Generic;
-using Systems.GamePlay.CYari;
-using DefaultNamespace;
-using Graphics.Animation.Base;
 using Patapon.Client.Graphics.Animation.Units;
-using Patapon.Mixed.GamePlay.Abilities.CYari;
-using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;

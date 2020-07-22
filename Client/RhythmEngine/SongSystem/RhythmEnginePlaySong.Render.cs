@@ -1,12 +1,6 @@
 using System.Collections.Generic;
 using P4TLB.MasterServer;
 using Patapon.Client.Systems;
-using Patapon.Mixed.GamePlay.Abilities.CTate;
-using Patapon.Mixed.GamePlay.Abilities.CYari;
-using Patapon.Mixed.GamePlay.RhythmEngine;
-using Patapon.Mixed.RhythmEngine;
-using Patapon.Mixed.RhythmEngine.Definitions;
-using Patapon.Mixed.RhythmEngine.Flow;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;

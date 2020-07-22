@@ -1,20 +1,12 @@
 using System;
-using DataScripts.Interface.Menu;
-using package.stormiumteam.shared.ecs;
-using Patapon.Client.PoolingSystems;
-using Patapon.Mixed.GameModes;
-using Patapon.Mixed.GameModes.VSHeadOn;
-using Revolution;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Systems;
+using GameBase.Roles.Components;
+using StormiumTeam.GameBase.Utility.AssetBackend;
 using TMPro;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
-using Entity = Unity.Entities.Entity;
 
 namespace Patapon4TLB.GameModes.Interface
 {

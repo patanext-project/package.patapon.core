@@ -1,16 +1,7 @@
 using DataScripts.Interface.Menu.UIECS;
 using DataScripts.Interface.Popup;
-using P4TLB.MasterServer;
 using package.stormiumteam.shared.ecs;
-using Patapon4TLB.Core.MasterServer.Data;
-using Patapon4TLB.Core.MasterServer.P4.EntityDescription;
-using Patapon4TLB.Default;
-using Rpc;
-using StormiumTeam.GameBase;
-using Unity.Collections;
 using Unity.Entities;
-using Unity.Jobs;
-using Unity.NetCode;
 
 namespace Patapon4TLB.GameModes.Training
 {

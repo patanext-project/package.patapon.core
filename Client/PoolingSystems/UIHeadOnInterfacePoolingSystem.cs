@@ -1,16 +1,9 @@
 using System;
-using Systems;
-using DefaultNamespace;
-using package.patapon.core.FeverWorm;
 using Patapon.Client.OrderSystems;
-using Patapon.Mixed.GameModes.VSHeadOn;
 using Patapon4TLB.GameModes.Interface;
-using StormiumTeam.GameBase.Misc;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
-using Unity.NetCode;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Patapon.Client.PoolingSystems
 {

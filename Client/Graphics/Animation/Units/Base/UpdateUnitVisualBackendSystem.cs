@@ -2,11 +2,7 @@ using System.Collections.Generic;
 using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Systems;
-using Patapon.Mixed.Units;
-using Patapon.Mixed.Units.Statistics;
 using Unity.Entities;
-using Unity.Jobs;
-using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
 

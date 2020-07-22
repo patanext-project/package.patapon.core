@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Text;
-using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Utility.AssetBackend;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace package.patapon.core.FeverWorm

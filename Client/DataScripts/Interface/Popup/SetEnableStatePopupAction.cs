@@ -1,7 +1,6 @@
 using DataScripts.Interface.Menu.UIECS;
-using StormiumTeam.GameBase;
+using GameBase.Roles.Components;
 using Unity.Entities;
-using Unity.Jobs;
 
 namespace DataScripts.Interface.Popup
 {

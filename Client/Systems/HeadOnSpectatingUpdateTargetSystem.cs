@@ -1,10 +1,7 @@
 using DefaultNamespace;
-using GameModes.VSHeadOn;
 using package.patapon.core;
 using package.stormiumteam.shared.ecs;
-using StormiumTeam.GameBase;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Mathematics;
 
 namespace Patapon.Client.Systems

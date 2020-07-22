@@ -1,8 +1,5 @@
-using Misc;
-using StormiumTeam.GameBase.BaseSystems;
+using System.Data;
 using Unity.Entities;
-using Unity.Jobs;
-using UnityEngine;
 
 namespace DefaultNamespace
 {

@@ -1,11 +1,7 @@
 using DataScripts.Interface.Menu.UIECS;
 using DataScripts.Interface.Popup;
 using package.stormiumteam.shared.ecs;
-using Patapon.Mixed.GameModes.VSHeadOn;
-using Rpc;
 using Unity.Entities;
-using Unity.Jobs;
-using Unity.NetCode;
 
 namespace GameModes.VSHeadOn
 {

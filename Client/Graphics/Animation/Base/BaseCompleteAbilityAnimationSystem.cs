@@ -1,7 +1,6 @@
 using package.patapon.core.Animation;
 using package.patapon.core.Animation.Units;
 using Patapon.Client.Graphics.Animation.Units;
-using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Playables;
 

@@ -1,9 +1,6 @@
 using System;
-using Systems.GamePlay.CYari;
-using DefaultNamespace;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
-using Unity.NetCode;
 using UnityEngine.Rendering;
 
 namespace DataScripts.Models.Units.Projectiles

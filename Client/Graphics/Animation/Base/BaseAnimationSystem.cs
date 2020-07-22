@@ -1,12 +1,10 @@
 using System;
-using Modules;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Graphics.Animation.Units;
-using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.BaseSystems;
+using StormiumTeam.GameBase.Modules;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Jobs;
-using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Playables;
 

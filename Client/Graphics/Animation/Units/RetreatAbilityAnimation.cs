@@ -1,9 +1,5 @@
 using System.Collections.Generic;
 using Patapon.Client.Graphics.Animation.Units;
-using Patapon.Mixed.GamePlay;
-using Patapon.Mixed.GamePlay.Abilities;
-using StormiumTeam.GameBase;
-using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Animations;

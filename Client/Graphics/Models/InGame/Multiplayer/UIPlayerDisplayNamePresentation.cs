@@ -1,9 +1,7 @@
 using DefaultNamespace;
-using Misc.Extensions;
-using package.stormiumteam.shared.ecs;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Systems;
+using GameBase.Roles.Components;
+using GameBase.Roles.Descriptions;
+using StormiumTeam.GameBase.Utility.AssetBackend;
 using TMPro;
 using Unity.Collections;
 using Unity.Entities;

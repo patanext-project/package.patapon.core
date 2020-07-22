@@ -1,14 +1,9 @@
 using System;
-using DefaultNamespace;
-using Misc.Extensions;
 using Patapon.Client.PoolingSystems;
-using Patapon.Mixed.GameModes;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using TMPro;
-using Unity.Collections;
 using Unity.Entities;
-using Unity.NetCode;
 using UnityEngine;
 
 namespace DataScripts.Interface.GameMode.Global

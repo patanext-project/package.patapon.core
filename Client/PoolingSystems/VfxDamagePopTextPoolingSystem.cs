@@ -1,11 +1,7 @@
 using System;
-using DefaultNamespace;
 using package.patapon.core.Models.InGame.VFXDamage;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
-using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.Rendering;
 

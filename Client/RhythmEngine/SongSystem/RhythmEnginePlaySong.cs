@@ -1,19 +1,13 @@
-using Misc;
-using Misc.Extensions;
+using GameBase.Roles.Components;
+using GameBase.Roles.Descriptions;
+using package.patapon.core;
 using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
-using Patapon.Mixed.GamePlay.Abilities;
-using Patapon.Mixed.GamePlay.RhythmEngine;
-using Patapon.Mixed.GamePlay.Units;
-using Patapon.Mixed.RhythmEngine;
-using Patapon.Mixed.RhythmEngine.Flow;
-using Patapon.Mixed.Units;
-using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.BaseSystems;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.NetCode;
 using UnityEngine;
 
 namespace Patapon.Client.RhythmEngine

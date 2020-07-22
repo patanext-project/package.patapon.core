@@ -1,7 +1,6 @@
 using System.ComponentModel;
-using StormiumTeam.GameBase.BaseSystems;
+using System.Data;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;

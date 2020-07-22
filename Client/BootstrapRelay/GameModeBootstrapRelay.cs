@@ -1,15 +1,9 @@
-using Bootstraps;
 using DataScripts.Interface.Menu;
-using DataScripts.Interface.Menu.ServerRoom;
-using DefaultNamespace;
-using Patapon.Mixed.GamePlay;
 using Unity.Entities;
-using Unity.NetCode;
 using UnityEngine;
 
 namespace BootstrapRelay
 {
-[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class GameModeBootstrapRelay :  ComponentSystem
 	{
 		protected override void OnCreate()

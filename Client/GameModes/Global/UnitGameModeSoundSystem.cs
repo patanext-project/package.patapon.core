@@ -1,16 +1,10 @@
 using System.Collections.Generic;
-using DefaultNamespace;
 using package.patapon.core.Animation.Units;
 using package.stormiumteam.shared.ecs;
 using Patapon.Client.Graphics.Animation.Units;
-using Patapon.Mixed.GameModes;
-using Patapon.Mixed.Units;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.BaseSystems;
+using StormiumTeam.GameBase.Modules;
 using Unity.Entities;
-using Unity.Jobs;
-using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 

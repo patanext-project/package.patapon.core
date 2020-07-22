@@ -1,17 +1,13 @@
-using Misc.Extensions;
-using package.stormiumteam.shared.ecs;
+using GameBase.Roles.Components;
+using GameBase.Roles.Descriptions;
 using Patapon.Client.OrderSystems.Vfx;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Utility.AssetBackend;
 using TMPro;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Serialization;
 
 namespace package.patapon.core.Models.InGame.VFXDamage
 {

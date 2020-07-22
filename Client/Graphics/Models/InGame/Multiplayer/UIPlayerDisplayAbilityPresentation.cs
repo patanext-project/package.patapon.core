@@ -1,11 +1,8 @@
-using System;
-using DefaultNamespace;
-using Misc.Extensions;
+using GameBase.Roles.Components;
+using GameBase.Roles.Descriptions;
 using package.patapon.core.Animation.Units;
-using package.stormiumteam.shared.ecs;
-using Patapon4TLB.Default.Player;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Modules;
+using StormiumTeam.GameBase.Utility.AssetBackend;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;

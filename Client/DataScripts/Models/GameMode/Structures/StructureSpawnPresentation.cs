@@ -1,15 +1,8 @@
 using System.Collections.Generic;
-using DefaultNamespace;
-using Misc.Extensions;
-using package.stormiumteam.shared.ecs;
-using Patapon.Mixed.GameModes.VSHeadOn;
-using Patapon.Mixed.Units;
-using Patapon4TLB.GameModes;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Systems;
+using GameBase.Roles.Components;
+using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
-using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
 using Entity = Unity.Entities.Entity;

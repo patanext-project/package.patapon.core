@@ -1,9 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using GameBase.Roles.Components;
 using package.stormiumteam.shared.ecs;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
+using StormiumTeam.GameBase.Utility.AssetBackend;
 using UnityEngine;
 
 namespace DataScripts.Models.GameMode.Structures

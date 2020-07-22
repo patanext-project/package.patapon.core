@@ -1,4 +1,4 @@
-using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Utility.AssetBackend;
 using UnityEngine;
 
 namespace DataScripts.Models.Equipments

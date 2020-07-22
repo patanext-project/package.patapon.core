@@ -1,10 +1,7 @@
 using System;
-using Systems;
 using DataScripts.Interface.Popup;
-using Patapon.Client.OrderSystems;
-using StormiumTeam.GameBase.Misc;
+using StormiumTeam.GameBase.Utility.uGUI.Systems;
 using Unity.Entities;
-using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,10 +11,7 @@ namespace Patapon.Client.PoolingSystems
 	{
 		public static Canvas Create(World world, int order, string name, float scalerMatchWidthOrHeight = 0.5f)
 		{
-			if (world.GetExistingSystem<ClientSimulationSystemGroup>() == null)
-				throw new Exception("CanvasUtility.Create was called in a non client world, world caller: " + world.Name);
-
-			var canvasSystem = world.GetOrCreateSystem<ClientCanvasSystem>();
+			var canvasSystem = world.GetOrCreateSystem<CanvasSystem>();
 
 			var canvas = canvasSystem.CreateCanvas(out _, name + " Canvas", defaultAddRaycaster: false);
 			canvas.renderMode     = RenderMode.ScreenSpaceCamera;
@@ -39,7 +33,7 @@ namespace Patapon.Client.PoolingSystems
 			return canvas;
 		}
 
-		public static void DisableInteractionOnActivePopup(World world, Canvas canvas, EntityQuery customQuery = null)
+		public static void DisableInteractionOnActivePopup(World world, Canvas canvas, EntityQuery customQuery = default)
 		{
 			if (canvas.GetComponent<CanvasGroup>() == null)
 				canvas.gameObject.AddComponent<CanvasGroup>();
@@ -47,7 +41,7 @@ namespace Patapon.Client.PoolingSystems
 			{
 				var comp = canvas.gameObject.AddComponent<DisableInteractionOnPopup>();
 				comp.World = world;
-				comp.Query = customQuery ?? world.EntityManager.CreateEntityQuery(typeof(UIPopup));
+				comp.Query = customQuery == default ? world.EntityManager.CreateEntityQuery(typeof(UIPopup)) : customQuery;
 			}
 		}
 

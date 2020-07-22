@@ -1,19 +1,12 @@
 using System;
 using DataScripts.Interface.Menu.ServerList;
-using DefaultNamespace;
-using EcsComponents.MasterServer;
 using P4TLB.MasterServer;
 using package.patapon.core.Animation;
-using package.stormiumteam.shared.ecs;
 using Patapon.Client.PoolingSystems;
-using Patapon4TLB.Core;
-using Patapon4TLB.Core.MasterServer;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.External.Discord;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using TMPro;
 using Unity.Entities;
-using Unity.NetCode;
 using UnityEngine;
 
 namespace DataScripts.Interface.Menu
