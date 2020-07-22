@@ -1,4 +1,5 @@
 using System;
+using PataNext.Client.Core.Addressables;
 using PataNext.Client.DataScripts.Models.Projectiles;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;

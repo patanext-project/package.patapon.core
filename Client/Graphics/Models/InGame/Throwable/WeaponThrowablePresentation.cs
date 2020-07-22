@@ -1,4 +1,5 @@
 using System;
+using PataNext.Client.Core.Addressables;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;

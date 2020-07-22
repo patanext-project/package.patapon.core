@@ -1,4 +1,5 @@
 using System;
+using PataNext.Client.Core.Addressables;
 using PataNext.Client.DataScripts.Interface.Effects.VfxDamage;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
@@ -8,7 +9,6 @@ using UnityEngine.Rendering;
 
 namespace PataNext.Client.PoolingSystems
 {
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	[UpdateInGroup(typeof(OrderGroup.Simulation))]
 	public class VfxDamagePopTextPoolingSystem : PoolingSystem<VfxDamagePopTextBackend, VfxDamagePopTextPresentation>
 	{

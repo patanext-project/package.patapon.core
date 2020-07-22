@@ -1,4 +1,5 @@
 using System;
+using PataNext.Client.Core.Addressables;
 using PataNext.Client.GameModes.VSHeadOn.Interface;
 using PataNext.Client.OrderSystems;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
@@ -7,7 +8,6 @@ using UnityEngine;
 
 namespace PataNext.Client.PoolingSystems
 {
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class UIHeadOnInterfacePoolingSystem : PoolingSystem<UIHeadOnBackend, UIHeadOnPresentation>
 	{
 		private Canvas m_Canvas;

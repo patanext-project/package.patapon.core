@@ -1,5 +1,6 @@
 using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
+using PataNext.Client.Core.Addressables;
 using PataNext.Client.Graphics;
 using PataNext.Client.Graphics.Animation.Base;
 using PataNext.Client.Systems;

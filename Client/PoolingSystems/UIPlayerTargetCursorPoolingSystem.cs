@@ -1,6 +1,7 @@
 using System;
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
+using PataNext.Client.Core.Addressables;
 using PataNext.Client.Graphics.Models.InGame.Multiplayer;
 using PataNext.Client.OrderSystems;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;

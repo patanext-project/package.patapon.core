@@ -1,10 +1,11 @@
+using PataNext.Client.Core.Addressables;
 using PataNext.Client.GameModes.VSHeadOn.Interface;
+using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 
 namespace PataNext.Client.PoolingSystems
 {
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class UIHeadOnUnitStatusPoolingSystem : PoolingSystem<UIHeadOnUnitStatusBackend, UIHeadOnUnitStatusPresentation>
 	{
 		protected override string AddressableAsset =>

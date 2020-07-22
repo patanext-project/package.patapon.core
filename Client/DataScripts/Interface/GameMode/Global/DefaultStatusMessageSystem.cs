@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using GameBase.Roles.Components;
 using package.stormiumteam.shared.ecs;
+using PataNext.Client.Core.Addressables;
 using PataNext.Client.Graphics.Animation.Base;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;

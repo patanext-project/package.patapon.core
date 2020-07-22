@@ -1,5 +1,6 @@
 using System;
 using package.stormiumteam.shared.ecs;
+using PataNext.Client.Core.Addressables;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Modules;
 using StormiumTeam.GameBase.Utility.AssetBackend;

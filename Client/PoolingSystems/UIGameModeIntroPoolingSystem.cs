@@ -1,15 +1,16 @@
 using System;
+using PataNext.Client.Core.Addressables;
 using PataNext.Client.DataScripts.Interface.GameMode.Global;
 using PataNext.Client.OrderSystems;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using StormiumTeam.GameBase.Utility.Rendering;
+using StormiumTeam.GameBase.Utility.uGUI.Systems;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace PataNext.Client.PoolingSystems
 {
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class UIGameModeIntroPoolingSystem : PoolingSystem<UIGameModeIntroBackend, UIGameModeIntroPresentation>
 	{
 		protected override string AddressableAsset =>

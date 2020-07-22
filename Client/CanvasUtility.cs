@@ -11,7 +11,7 @@ namespace PataNext.Client
 	{
 		public static Canvas Create(World world, int order, string name, float scalerMatchWidthOrHeight = 0.5f)
 		{
-			var canvasSystem = world.GetOrCreateSystem<CanvasSystem>();
+			var canvasSystem = world.GetOrCreateSystem<ClientCanvasSystem>();
 
 			var canvas = canvasSystem.CreateCanvas(out _, name + " Canvas", defaultAddRaycaster: false);
 			canvas.renderMode     = RenderMode.ScreenSpaceCamera;

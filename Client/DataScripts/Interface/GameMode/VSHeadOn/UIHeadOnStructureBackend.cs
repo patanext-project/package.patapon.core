@@ -1,4 +1,5 @@
 using GameBase.Roles.Components;
+using PataNext.Client.Core.Addressables;
 using PataNext.Client.GameModes.VSHeadOn.Interface;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.AssetBackend;

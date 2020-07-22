@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using PataNext.Client.Core.Addressables;
 using StormiumTeam.GameBase.Utility.Pooling;
 using Unity.Entities;
 using UnityEngine;

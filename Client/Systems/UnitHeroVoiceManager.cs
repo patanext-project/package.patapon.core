@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using P4TLB.MasterServer;
+using PataNext.Client.Core.Addressables;
 using PataNext.Client.Graphics.Animation.Base;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;

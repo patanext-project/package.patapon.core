@@ -2,6 +2,7 @@ using System;
 using GameBase.Roles.Components;
 using GameBase.Roles.Interfaces;
 using package.stormiumteam.shared.ecs;
+using PataNext.Client.Core.Addressables;
 using PataNext.Client.DataScripts.Interface.Popup;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.AssetBackend;
