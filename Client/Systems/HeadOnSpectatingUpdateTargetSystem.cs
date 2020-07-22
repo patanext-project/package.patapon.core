@@ -1,3 +1,4 @@
+using GameBase.Camera;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Graphics.Camera;
 using Unity.Entities;

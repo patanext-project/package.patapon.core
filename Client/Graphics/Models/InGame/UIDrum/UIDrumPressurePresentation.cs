@@ -4,9 +4,12 @@ using GameBase.Roles.Descriptions;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.OrderSystems;
+using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
+using StormiumTeam.GameBase.BaseSystems.Ext;
 using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.DOTS;
 using StormiumTeam.GameBase.Utility.DOTS.xMonoBehaviour;
 using StormiumTeam.GameBase.Utility.Pooling;
 using StormiumTeam.GameBase.Utility.uGUI.Systems;
@@ -145,9 +148,9 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 
 			Entity engine = default;
 			if (cameraState.StateData.Target != default)
-				engine = PlayerComponentFinder.GetComponentFromPlayer<RhythmEngineDescription>(EntityManager, m_EngineQuery, cameraState.StateData.Target, player);
+				engine = PlayerComponentFinder.GetRelativeChild<RhythmEngineDescription>(EntityManager, m_EngineQuery, cameraState.StateData.Target, player);
 			else
-				engine = PlayerComponentFinder.FindPlayerComponent(m_EngineQuery, player);
+				engine = PlayerComponentFinder.FromQueryFindPlayerChild(m_EngineQuery, player);
 
 			if (engine == default)
 				return;

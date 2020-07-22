@@ -3,6 +3,7 @@ using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
 using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.BaseSystems.Ext;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using TMPro;

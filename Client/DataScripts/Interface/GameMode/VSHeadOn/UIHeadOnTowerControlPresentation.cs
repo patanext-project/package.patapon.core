@@ -1,5 +1,6 @@
 using System;
 using GameBase.Roles.Components;
+using package.stormiumteam.shared.ecs;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.UI;

@@ -1,5 +1,6 @@
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
+using StormiumTeam.GameBase.BaseSystems.Ext;
 using StormiumTeam.Shared;
 using Unity.Entities;
 

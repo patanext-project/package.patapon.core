@@ -234,7 +234,7 @@ namespace PataNext.Client.Graphics.Splines
 			void Pop()
 			{
 				// kinda weird to do a check on World, but there were some problems with it
-				if (m_EntityManager?.World == null)
+				if (m_EntityManager.World?.IsCreated == false)
 					return;
 
 				if (!m_EntityManager.Exists(m_Entity))

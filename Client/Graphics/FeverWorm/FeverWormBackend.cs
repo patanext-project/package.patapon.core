@@ -2,8 +2,11 @@ using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
 using PataNext.Client.OrderSystems;
 using PataNext.Client.RhythmEngine.SongSystem;
+using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.BaseSystems.Ext;
 using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.DOTS;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using StormiumTeam.GameBase.Utility.Rendering;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
@@ -92,9 +95,9 @@ namespace PataNext.Client.Graphics.FeverWorm
 
 			Entity engine;
 			if (cameraState.Target != default)
-				engine = PlayerComponentFinder.GetComponentFromPlayer<RhythmEngineDescription>(EntityManager, m_EngineQuery, cameraState.Target, player);
+				engine = PlayerComponentFinder.GetRelativeChild<RhythmEngineDescription>(EntityManager, m_EngineQuery, cameraState.Target, player);
 			else
-				engine = PlayerComponentFinder.FindPlayerComponent(m_EngineQuery, player);
+				engine = PlayerComponentFinder.FromQueryFindPlayerChild(m_EngineQuery, player);
 
 			if (engine == default)
 				return;

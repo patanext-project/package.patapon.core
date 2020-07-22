@@ -1,8 +1,11 @@
 using System.Text;
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
+using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.BaseSystems.Ext;
 using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.DOTS;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using StormiumTeam.Shared;
 using TMPro;
@@ -62,9 +65,9 @@ namespace PataNext.Client.DataScripts.Interface.GameMode.Global
 			
 			var cameraState = this.GetComputedCameraState().StateData;
 			if (cameraState.Target != default)
-				engine = PlayerComponentFinder.GetComponentFromPlayer<RhythmEngineDescription>(EntityManager, m_EngineQuery, cameraState.Target, player);
+				engine = PlayerComponentFinder.GetRelativeChild<RhythmEngineDescription>(EntityManager, m_EngineQuery, cameraState.Target, player);
 			else
-				engine = PlayerComponentFinder.FindPlayerComponent(m_EngineQuery, player);
+				engine = PlayerComponentFinder.FromQueryFindPlayerChild(m_EngineQuery, player);
 
 			if (engine == default)
 				return;

@@ -2,7 +2,10 @@ using System;
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
 using PataNext.Client.OrderSystems;
+using PataNext.Module.Simulation.Components.Roles;
+using StormiumTeam.GameBase.BaseSystems.Ext;
 using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.DOTS;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using StormiumTeam.GameBase.Utility.Rendering;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
@@ -97,9 +100,9 @@ namespace PataNext.Client.RhythmEngine
 			
 			var cameraState = this.GetComputedCameraState().StateData;
 			if (cameraState.Target != default)
-				engine = PlayerComponentFinder.GetComponentFromPlayer<RhythmEngineDescription>(EntityManager, m_EngineQuery, cameraState.Target, player);
+				engine = PlayerComponentFinder.GetRelativeChild<RhythmEngineDescription>(EntityManager, m_EngineQuery, cameraState.Target, player);
 			else
-				engine = PlayerComponentFinder.FindPlayerComponent(m_EngineQuery, player);
+				engine = PlayerComponentFinder.FromQueryFindPlayerChild(m_EngineQuery, player);
 
 			if (engine == default)
 				return;
@@ -225,8 +228,7 @@ namespace PataNext.Client.RhythmEngine
 		{
 		}
 	}
-
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
+	
 	public class RhythmEngineBeatFrameCreate : PoolingSystem<RhythmEngineBeatFrameBackend, RhythmEngineBeatFramePresentation>
 	{		
 		private            Canvas m_Canvas;

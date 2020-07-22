@@ -1,11 +1,13 @@
+using GameBase.Camera;
+using GameBase.Roles.Descriptions;
 using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Utility.DOTS.xCamera;
 using StormiumTeam.GameBase.Utility.DOTS.xMonoBehaviour;
 using StormiumTeam.GameBase.Utility.Rendering;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEditor;
 
 namespace PataNext.Client.Graphics.Camera
 {
@@ -16,7 +18,7 @@ namespace PataNext.Client.Graphics.Camera
 
 	public class CameraModifyTargetSystemGroup : ComponentSystemGroup
 	{
-		
+
 	}
 
 	[UpdateInGroup(typeof(OrderGroup.Presentation.UpdateCamera))]
@@ -41,7 +43,7 @@ namespace PataNext.Client.Graphics.Camera
 		{
 			if (!m_CameraWithoutUpdateComp.IsEmptyIgnoreFilter) EntityManager.AddComponent(m_CameraWithoutUpdateComp, typeof(SystemData));
 
-			Entity defaultCamera                             = default;
+			Entity defaultCamera = default;
 			if (HasSingleton<DefaultCamera>())
 			{
 				defaultCamera = GetSingletonEntity<DefaultCamera>();
@@ -53,7 +55,7 @@ namespace PataNext.Client.Graphics.Camera
 				.WithAll<GameCamera>()
 				.ForEach((Entity entity, ref SystemData update) =>
 				{
-					update.Mode     = SceneView.CameraMode.Default;
+					update.Mode     = CameraMode.Default;
 					update.Priority = int.MinValue;
 				})
 				.Run();
@@ -86,7 +88,7 @@ namespace PataNext.Client.Graphics.Camera
 				.Run(); // use ScheduleSingle() when it will be out.
 
 			Entities
-				.WithAll<GamePlayerLocalTag>()
+				.WithAll<PlayerIsLocal>()
 				.ForEach((Entity entity, in ServerCameraState cameraState) =>
 				{
 					var camera                                        = defaultCamera;
@@ -110,15 +112,15 @@ namespace PataNext.Client.Graphics.Camera
 				.WithName("Check_ServerCameraState_AndReplaceSystemData")
 				.WithReadOnly(cameraTargetFromEntity)
 				.Run(); // use ScheduleSingle() when it will be out.
-			
+
 			Entities.ForEach((ref ComputedCameraState computed, in SystemData systemData) =>
 			{
 				computed.UseModifier = true;
-				
+
 				computed.Focus       = systemData.Focus;
 				computed.StateData   = systemData.StateData;
 				computed.StateEntity = systemData.StateEntity;
-				
+
 				if (!math.all(computed.StateData.Offset.rot.value))
 					computed.StateData.Offset.rot = quaternion.identity;
 			}).Run();
@@ -155,7 +157,7 @@ namespace PataNext.Client.Graphics.Camera
 
 		private struct SystemData : IComponentData
 		{
-			public SceneView.CameraMode Mode;
+			public CameraMode Mode;
 			public int        Priority;
 
 			public Entity      StateEntity;

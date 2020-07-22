@@ -1,4 +1,5 @@
 using GameBase.Roles.Components;
+using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.GameModes.VSHeadOn.Interface;
 using StormiumTeam.GameBase;

@@ -3,7 +3,9 @@ using GameBase.Roles.Descriptions;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.Graphics.Animation.Base;
+using PataNext.Module.Simulation.Components;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.BaseSystems.Ext;
 using StormiumTeam.GameBase.Modules;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
@@ -108,9 +110,9 @@ namespace PataNext.Client.Graphics.Models.InGame.Multiplayer
 			if (!EntityManager.TryGetComponentData(targetEntity, out Relative<PlayerDescription> relativePlayer))
 				return;
 
-			EntityManager.TryGetComponentData(relativePlayer.Target, out GamePlayerCommand playerCommand);
+			EntityManager.TryGetComponentData(relativePlayer.Target, out PlayerInput playerInput);
 
-			var command = playerCommand.Base;
+			var command = playerInput;
 			definition.Set((int) command.Ability);
 
 			if (backend.lastAbility != command.Ability || (backend.wasSelectingAbility != command.IsSelectingAbility && command.IsSelectingAbility))

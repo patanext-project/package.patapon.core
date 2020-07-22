@@ -2,8 +2,10 @@ using GameBase.Roles.Components;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Graphics;
 using PataNext.Client.Graphics.Camera;
+using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
+using StormiumTeam.GameBase.Utility.DOTS.xCamera;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
@@ -39,7 +41,6 @@ namespace PataNext.Client.SnapshotArchetypes
 	}
 
 	[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation))]
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class UpdateUnitCameraModifierSystem : AbsGameBaseSystem
 	{
 		private LazySystem<GrabInputSystem> m_GrabInputSystem;

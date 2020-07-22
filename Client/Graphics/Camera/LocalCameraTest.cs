@@ -1,3 +1,4 @@
+using GameBase.Camera;
 using Unity.Entities;
 using UnityEngine;
 

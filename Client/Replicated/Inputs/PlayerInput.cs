@@ -1,9 +1,17 @@
 using System;
+using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using package.stormiumteam.shared;
 using Unity.Entities;
 
 namespace PataNext.Module.Simulation.Components
 {
+	public enum AbilitySelection
+	{
+		Horizontal = 0,
+		Top        = 1,
+		Bottom     = 2
+	}
+
 	public unsafe struct PlayerInput : IComponentData
 	{
 		public struct RhythmAction
@@ -41,6 +49,12 @@ namespace PataNext.Module.Simulation.Components
 				fixed (byte* fixedPtr = actions)
 					return new Span<RhythmAction>(fixedPtr, sizeof(byte) * 4);
 			}
+		}
+
+		public AbilitySelection Ability;
+
+		public class Register : RegisterGameHostComponentSystemBase<PlayerInput>
+		{
 		}
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using package.stormiumteam.shared.ecs;
+using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;

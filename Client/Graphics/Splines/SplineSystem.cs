@@ -27,12 +27,6 @@ namespace PataNext.Client.Graphics.Splines
 				for (var i = 0; i != length; i++) points[i] = new DSplinePoint {Position = transforms[i].localPosition};
 			});
 		}
-
-		[UpdateInGroup(typeof(PresentationSystemGroup))]
-		[UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
-		public class DefaultWorldUpdateSplinePointsSystem : UpdateSplinePointsSystem
-		{
-		}
 	}
 
 	// TODO: UPGRADE
@@ -167,13 +161,6 @@ namespace PataNext.Client.Graphics.Splines
 				PointsFromEntity = GetBufferFromEntity<DSplinePoint>(true),
 				ResultFromEntity = GetBufferFromEntity<DSplineResult>()
 			}.Schedule(m_SplineQuery, Dependency);
-		}
-
-		[UpdateInGroup(typeof(PresentationSystemGroup))]
-		[UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
-		[UpdateAfter(typeof(UpdateSplinePointsSystem))]
-		public class DefaultWorldSplineSystem : SplineSystem
-		{
 		}
 
 		[BurstCompile]

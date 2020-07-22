@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using GameBase.Roles.Components;
 using PataNext.Client.Graphics.Animation.Base;
 using PataNext.Client.Graphics.Animation.Units.Base;
+using PataNext.Module.Simulation.Components.Roles;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;

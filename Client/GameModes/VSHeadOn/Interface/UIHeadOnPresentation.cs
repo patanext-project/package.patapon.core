@@ -1,5 +1,6 @@
 using System;
 using GameBase.Roles.Components;
+using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;

@@ -1,4 +1,5 @@
 ﻿using System;
+using GameBase.Camera;
 using StormiumTeam.GameBase;
 using Unity.Entities;
 using Unity.Mathematics;

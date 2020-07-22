@@ -4,6 +4,7 @@ using GameBase.Roles.Descriptions;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.Graphics.Models.InGame.Multiplayer;
 using PataNext.Client.OrderSystems;
+using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using UnityEngine.Rendering;
