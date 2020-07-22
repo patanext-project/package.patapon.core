@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using P4TLB.MasterServer;
-using Patapon.Client.Systems;
+using PataNext.Client.Systems;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Patapon.Client.RhythmEngine
+namespace PataNext.Client.RhythmEngine.SongSystem
 {
 	public partial class RhythmEnginePlaySong
 	{

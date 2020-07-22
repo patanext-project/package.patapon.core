@@ -1,14 +1,14 @@
-using Components;
-using Components.Archetypes;
-using DataScripts.Models.Equipments;
 using package.stormiumteam.shared.ecs;
-using Patapon.Client.Graphics.Animation.Units;
-using Patapon.Client.Systems;
+using PataNext.Client.Components;
+using PataNext.Client.Components.Archetypes;
+using PataNext.Client.DataScripts.Models.Equipments;
+using PataNext.Client.Graphics.Animation.Units.Base;
+using PataNext.Client.Systems;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace DataScripts.Models.Units
+namespace PataNext.Client.DataScripts.Models
 {
 	public class ShooterProjectileComponent : MonoBehaviour, IBackendReceiver
 	{

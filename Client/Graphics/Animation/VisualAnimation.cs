@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
-namespace package.patapon.core.Animation
+namespace PataNext.Client.Graphics.Animation
 {
 	public class PlayableBehaviorData
 	{

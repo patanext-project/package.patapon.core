@@ -11,7 +11,7 @@ using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 
-namespace package.patapon.core
+namespace PataNext.Client.Graphics.Splines
 {
 	[UpdateInGroup(typeof(PresentationSystemGroup))]
 	public class UpdateSplinePointsSystem : ComponentSystem
@@ -46,7 +46,7 @@ namespace package.patapon.core
 
 		private EntityQuery m_SplineQuery;
 
-		private Dictionary<Camera, NativeArray<bool>> m_ValidSplinePerCamera;
+		private Dictionary<UnityEngine.Camera, NativeArray<bool>> m_ValidSplinePerCamera;
 
 		// -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
 		// Methods
@@ -60,7 +60,7 @@ namespace package.patapon.core
 				typeof(DSplineBoundsData),
 				typeof(DSplineResult)
 			);
-			m_ValidSplinePerCamera = new Dictionary<Camera, NativeArray<bool>>();
+			m_ValidSplinePerCamera = new Dictionary<UnityEngine.Camera, NativeArray<bool>>();
 			ArrayPoolBySize        = new FastDictionary<int, Vector3[]>();
 
 			RenderPipelineManager.beginFrameRendering  += OnBeginFrameRendering;
@@ -77,7 +77,7 @@ namespace package.patapon.core
 			RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
 		}
 
-		private void OnBeginFrameRendering(ScriptableRenderContext ctx, Camera[] cameras)
+		private void OnBeginFrameRendering(ScriptableRenderContext ctx, UnityEngine.Camera[] cameras)
 		{
 			foreach (var previous in m_ValidSplinePerCamera) previous.Value.Dispose();
 			m_ValidSplinePerCamera.Clear();
@@ -95,7 +95,7 @@ namespace package.patapon.core
 			}
 		}
 
-		private unsafe void OnBeginCameraRendering(ScriptableRenderContext ctx, Camera cam)
+		private unsafe void OnBeginCameraRendering(ScriptableRenderContext ctx, UnityEngine.Camera cam)
 		{
 			//< -------- -------- -------- -------- -------- -------- -------- ------- //
 			// Finish the current job

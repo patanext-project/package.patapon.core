@@ -1,11 +1,11 @@
-using System;
-using DataScripts.Interface.Popup;
+using PataNext.Client.DataScripts.Interface.Popup;
+using StormiumTeam.GameBase.Utility.Rendering;
 using StormiumTeam.GameBase.Utility.uGUI.Systems;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Patapon.Client.PoolingSystems
+namespace PataNext.Client
 {
 	public static class CanvasUtility
 	{

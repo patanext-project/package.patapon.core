@@ -1,4 +1,4 @@
-namespace DataScripts.Models.GameMode.Structures
+namespace PataNext.Client.DataScripts.Models.GameMode.Structures
 {
 	public class DissolveMaterialProperty : MaterialPropertyBase<float>
 	{

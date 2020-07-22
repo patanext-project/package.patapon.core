@@ -1,7 +1,7 @@
 using StormiumTeam.GameBase;
 using Unity.Entities;
 
-namespace package.patapon.core.Animation.Units
+namespace PataNext.Client.Graphics.Animation.Base
 {
 	[UpdateInGroup(typeof(OrderGroup.Presentation.CharacterAnimation))]
 	public class ClientUnitAnimationGroup : ComponentSystemGroup

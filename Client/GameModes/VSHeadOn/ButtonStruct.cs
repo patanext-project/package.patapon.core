@@ -1,9 +1,9 @@
-using DataScripts.Interface.Menu.UIECS;
-using DataScripts.Interface.Popup;
 using package.stormiumteam.shared.ecs;
+using PataNext.Client.Core.DOTSxUI.Components;
+using PataNext.Client.DataScripts.Interface.Popup;
 using Unity.Entities;
 
-namespace GameModes.VSHeadOn
+namespace PataNext.Client.GameModes.VSHeadOn
 {
 	public struct ButtonSpectate : IComponentData
 	{

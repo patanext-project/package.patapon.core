@@ -3,6 +3,7 @@ using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using StormiumTeam.Shared;
 using TMPro;
 using Unity.Entities;
@@ -10,7 +11,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using Entity = Unity.Entities.Entity;
 
-namespace DataScripts.Interface.GameMode.Global
+namespace PataNext.Client.DataScripts.Interface.GameMode.Global
 {
 	public class UIGameModeIntroPresentation : RuntimeAssetPresentation<UIGameModeIntroPresentation>
 	{

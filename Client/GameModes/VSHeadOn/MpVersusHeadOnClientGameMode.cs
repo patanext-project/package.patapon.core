@@ -1,16 +1,13 @@
-using DataScripts.Interface.Menu.ServerList;
-using DataScripts.Interface.Menu.ServerRoom;
-using DataScripts.Interface.Menu.UIECS;
-using DataScripts.Interface.Popup;
-using GameModes.VSHeadOn;
 using package.stormiumteam.shared.ecs;
+using PataNext.Client.Core.DOTSxUI.Components;
+using PataNext.Client.DataScripts.Interface.Popup;
 using StormiumTeam.GameBase.BaseSystems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Patapon4TLB.GameModes
+namespace PataNext.Client.GameModes.VSHeadOn
 {
 
 	[UpdateInGroup(typeof(ClientGameModeSystemGroup))]

@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using GameBase.Roles.Components;
 using package.stormiumteam.shared.ecs;
-using Patapon.Client.Systems;
+using PataNext.Client.Systems;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
+using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Transforms;
@@ -16,7 +17,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using EntityQuery = Unity.Entities.EntityQuery;
 
-namespace DataScripts.Models.GameMode.Structures
+namespace PataNext.Client.DataScripts.Models.GameMode.Structures
 {
 	public class HeadOnStructurePresentation : RuntimeAssetPresentation<HeadOnStructurePresentation>
 	{

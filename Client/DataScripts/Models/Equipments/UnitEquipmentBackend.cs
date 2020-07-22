@@ -1,7 +1,7 @@
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using UnityEngine;
 
-namespace DataScripts.Models.Equipments
+namespace PataNext.Client.DataScripts.Models.Equipments
 {
 	public class UnitEquipmentBackend : RuntimeAssetBackend<BaseUnitEquipmentPresentation>
 	{

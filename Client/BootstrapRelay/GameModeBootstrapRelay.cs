@@ -1,8 +1,8 @@
-using DataScripts.Interface.Menu;
+using PataNext.Client.DataScripts.Interface.Menu;
 using Unity.Entities;
 using UnityEngine;
 
-namespace BootstrapRelay
+namespace PataNext.Client.BootstrapRelay
 {
 	public class GameModeBootstrapRelay :  ComponentSystem
 	{

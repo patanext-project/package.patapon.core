@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
-using Patapon.Client.Systems;
+using PataNext.Client.Systems;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 
-namespace Patapon.Client.Graphics.Animation.Units
+namespace PataNext.Client.Graphics.Animation.Units.Base
 {
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	[UpdateAfter(typeof(RenderInterpolationSystem))]

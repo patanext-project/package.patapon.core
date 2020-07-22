@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Patapon4TLB.GameModes.Interface
+namespace PataNext.Client.GameModes.VSHeadOn.Interface
 {
 	public class UIHeadOnScoreFrame : MonoBehaviour
 	{

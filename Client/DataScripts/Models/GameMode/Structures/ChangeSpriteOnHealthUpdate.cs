@@ -5,7 +5,7 @@ using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using UnityEngine;
 
-namespace DataScripts.Models.GameMode.Structures
+namespace PataNext.Client.DataScripts.Models.GameMode.Structures
 {
 	public class ChangeSpriteOnHealthUpdate : MonoBehaviour, IBackendReceiver
 	{

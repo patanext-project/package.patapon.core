@@ -1,13 +1,13 @@
 using System;
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
-using package.patapon.core.Models.InGame.Multiplayer;
-using Patapon.Client.OrderSystems;
+using PataNext.Client.Graphics.Models.InGame.Multiplayer;
+using PataNext.Client.OrderSystems;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using UnityEngine.Rendering;
 
-namespace Patapon.Client.PoolingSystems
+namespace PataNext.Client.PoolingSystems
 {
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class UIPlayerDisplayNamePoolingSystem : PoolingSystem<UIPlayerDisplayNameBackend, UIPlayerDisplayNamePresentation>

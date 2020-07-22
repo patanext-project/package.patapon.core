@@ -1,13 +1,13 @@
 using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.DOTS.xMonoBehaviour;
-using StormiumTeam.GameBase.Utility.Misc;
+using StormiumTeam.GameBase.Utility.Rendering;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEditor;
 
-namespace package.patapon.core
+namespace PataNext.Client.Graphics.Camera
 {
 	public struct CurrentCameraStateSource : IComponentData
 	{

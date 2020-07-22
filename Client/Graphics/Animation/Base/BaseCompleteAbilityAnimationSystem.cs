@@ -1,10 +1,7 @@
-using package.patapon.core.Animation;
-using package.patapon.core.Animation.Units;
-using Patapon.Client.Graphics.Animation.Units;
 using UnityEngine;
 using UnityEngine.Playables;
 
-namespace Graphics.Animation.Base
+namespace PataNext.Client.Graphics.Animation.Base
 {
 	public abstract class BaseCompleteAbilityAnimationSystem<TThis, TSystemData> : BaseAbilityAnimationSystem
 	<

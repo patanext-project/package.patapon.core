@@ -1,7 +1,7 @@
 using Unity.Entities;
 using Unity.Mathematics;
 
-namespace package.patapon.core
+namespace PataNext.Client.Graphics.Camera
 {
 	public struct CameraTargetAnchor : IComponentData
 	{

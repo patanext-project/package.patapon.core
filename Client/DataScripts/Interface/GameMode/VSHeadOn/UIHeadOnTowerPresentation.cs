@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DataScripts.Interface.GameMode.VSHeadOn
+namespace PataNext.Client.DataScripts.Interface.GameMode.VSHeadOn
 {
 	public class UIHeadOnTowerPresentation : UIHeadOnStructurePresentationBase
 	{

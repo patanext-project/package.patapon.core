@@ -1,13 +1,13 @@
 using System;
-using DataScripts.Interface.GameMode.Global;
-using Patapon.Client.OrderSystems;
-using StormiumTeam.GameBase.Utility.Misc;
+using PataNext.Client.DataScripts.Interface.GameMode.Global;
+using PataNext.Client.OrderSystems;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
+using StormiumTeam.GameBase.Utility.Rendering;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Patapon.Client.PoolingSystems
+namespace PataNext.Client.PoolingSystems
 {
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class UIGameModeIntroPoolingSystem : PoolingSystem<UIGameModeIntroBackend, UIGameModeIntroPresentation>

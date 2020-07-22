@@ -1,9 +1,9 @@
 using System;
-using DataScripts.Models.Equipments;
+using PataNext.Client.DataScripts.Models.Equipments;
 using Unity.Collections;
 using UnityEngine;
 
-namespace Components.Archetypes
+namespace PataNext.Client.Components.Archetypes
 {
 	public interface IEquipmentRoot
 	{

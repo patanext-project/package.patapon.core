@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Data;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Utility.Rules;
 using Unity.Entities;
@@ -7,7 +6,7 @@ using Unity.Mathematics;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-namespace DefaultNamespace
+namespace PataNext.Client.Rules
 {
 	public struct P4GraphicsRule : IComponentData
 	{

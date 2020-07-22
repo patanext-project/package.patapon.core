@@ -1,8 +1,8 @@
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
-using package.patapon.core;
 using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
+using PataNext.Client.Graphics;
 using StormiumTeam.GameBase.BaseSystems;
 using Unity.Burst;
 using Unity.Collections;
@@ -10,7 +10,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Patapon.Client.RhythmEngine
+namespace PataNext.Client.RhythmEngine.SongSystem
 {
 	[AlwaysUpdateSystem]
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]

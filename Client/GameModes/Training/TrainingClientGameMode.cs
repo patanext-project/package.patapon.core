@@ -1,16 +1,14 @@
 using System;
-using DataScripts.Interface.Menu;
-using DataScripts.Interface.Menu.TemporaryMenu;
-using DataScripts.Interface.Menu.UIECS;
-using DataScripts.Interface.Popup;
-using Patapon4TLB.GameModes.Training;
+using PataNext.Client.Core.DOTSxUI.Components;
+using PataNext.Client.DataScripts.Interface.Menu;
+using PataNext.Client.DataScripts.Interface.Popup;
 using StormiumTeam.GameBase.BaseSystems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Patapon4TLB.GameModes
+namespace PataNext.Client.GameModes.Training
 {
 
 	[UpdateInGroup(typeof(ClientGameModeSystemGroup))]

@@ -1,13 +1,13 @@
 using System;
-using Patapon.Client.PoolingSystems;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
+using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using TMPro;
 using Unity.Entities;
 using UnityEngine;
 
-namespace DataScripts.Interface.GameMode.Global
+namespace PataNext.Client.DataScripts.Interface.GameMode.Global
 {
 	public class UIGameModeStatusMessagePresentation : RuntimeAssetPresentation<UIGameModeStatusMessagePresentation>
 	{

@@ -1,7 +1,7 @@
 using Unity.Entities;
 using UnityEngine;
 
-namespace Graphics.Camera
+namespace PataNext.Client.Graphics.Camera
 {
 	public class LocalCameraTest : ComponentSystem
 	{

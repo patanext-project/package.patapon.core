@@ -7,7 +7,7 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.Networking;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
-namespace Patapon.Client.RhythmEngine
+namespace PataNext.Client.RhythmEngine.SongSystem
 {
 	public class SongDescription : IDisposable
 	{

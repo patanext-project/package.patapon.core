@@ -4,7 +4,7 @@ using StormiumTeam.GameBase.Utility.Pooling;
 using Unity.Entities;
 using UnityEngine;
 
-namespace Patapon.Client.Systems
+namespace PataNext.Client.Systems
 {
 	public struct VisualThrowableDefinition : IComponentData
 	{

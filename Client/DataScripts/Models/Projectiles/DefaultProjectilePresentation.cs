@@ -1,12 +1,14 @@
 using System;
-using Patapon.Client.Systems;
+using package.stormiumteam.shared.ecs;
+using PataNext.Client.Systems;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace DataScripts.Models.Units.Projectiles
+namespace PataNext.Client.DataScripts.Models.Projectiles
 {
 	public class DefaultProjectilePresentation : BaseProjectilePresentation
 	{

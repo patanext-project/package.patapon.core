@@ -1,13 +1,15 @@
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
-using Patapon.Client.PoolingSystems;
+using package.stormiumteam.shared.ecs;
+using PataNext.Client.PoolingSystems;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 
-namespace package.patapon.core.Models.InGame.Multiplayer
+namespace PataNext.Client.Graphics.Models.InGame.Multiplayer
 {
 	public class UIPlayerTargetCursorPresentation : RuntimeAssetPresentation<UIPlayerTargetCursorPresentation>
 	{

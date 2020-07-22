@@ -4,6 +4,7 @@ using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Modules;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
+using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -11,7 +12,7 @@ using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace DataScripts.Models.Effects.EnergyField
+namespace PataNext.Client.DataScripts.Models.Effects.EnergyField
 {
 	public class VfxEnergyFieldPresentation : RuntimeAssetPresentation<VfxEnergyFieldPresentation>
 	{

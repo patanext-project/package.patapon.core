@@ -1,7 +1,7 @@
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using Unity.Mathematics;
 
-namespace DataScripts.Models.Units.Projectiles
+namespace PataNext.Client.DataScripts.Models.Projectiles
 {
 	public abstract class BaseProjectilePresentation : RuntimeAssetPresentation<BaseProjectilePresentation>
 	{

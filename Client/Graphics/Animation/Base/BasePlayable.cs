@@ -1,9 +1,9 @@
 using System;
-using package.patapon.core.Animation.Units;
+using PataNext.Client.Graphics.Animation.Units.Base;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
-namespace Patapon.Client.Graphics.Animation.Units
+namespace PataNext.Client.Graphics.Animation.Base
 {
 	public abstract class BasePlayable<TInit> : PlayableBehaviour
 	{

@@ -1,6 +1,7 @@
+using StormiumTeam.GameBase.Utility.Misc;
 using Unity.Entities;
 
-namespace Patapon.Client.OrderSystems.Vfx
+namespace PataNext.Client.OrderSystems.Vfx
 {
 	[UpdateInGroup(typeof(OrderSystemGroup))]
 	[UpdateAfter(typeof(InGameVfxOrderingSystem.Begin))]

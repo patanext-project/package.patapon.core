@@ -1,14 +1,16 @@
-using DefaultNamespace;
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
+using package.stormiumteam.shared.ecs;
+using PataNext.Client.Rules;
 using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using TMPro;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 
-namespace package.patapon.core.Models.InGame.Multiplayer
+namespace PataNext.Client.Graphics.Models.InGame.Multiplayer
 {
 	public class UIPlayerDisplayNamePresentation : RuntimeAssetPresentation<UIPlayerDisplayNamePresentation>
 	{

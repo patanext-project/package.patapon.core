@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-namespace DataScripts.Models.Equipments
+namespace PataNext.Client.DataScripts.Models.Equipments
 {
 	public class ThrowableProjectileComponent : MonoBehaviour
 	{

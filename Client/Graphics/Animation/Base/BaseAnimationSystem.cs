@@ -1,6 +1,7 @@
 using System;
 using package.stormiumteam.shared.ecs;
-using Patapon.Client.Graphics.Animation.Units;
+using PataNext.Client.Graphics.Animation.Units;
+using PataNext.Client.Graphics.Animation.Units.Base;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;
 using Unity.Collections;
@@ -8,7 +9,7 @@ using Unity.Entities;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Playables;
 
-namespace package.patapon.core.Animation.Units
+namespace PataNext.Client.Graphics.Animation.Base
 {
 	[AlwaysSynchronizeSystem]
 	public abstract class BaseAnimationSystem : AbsGameBaseSystem

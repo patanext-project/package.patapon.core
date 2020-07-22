@@ -1,11 +1,12 @@
 using System;
-using DataScripts.Interface.Menu.UIECS;
 using GameBase.Roles.Components;
-using Patapon.Client.PoolingSystems;
+using package.stormiumteam.shared.ecs;
+using PataNext.Client.Core.DOTSxUI.Components;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Modules;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
+using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using TMPro;
 using Unity.Collections;
 using Unity.Entities;
@@ -13,7 +14,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace DataScripts.Interface.Popup
+namespace PataNext.Client.DataScripts.Interface.Popup
 {
 	public class PopupButtonPresentation : RuntimeAssetPresentation<PopupButtonPresentation>
 	{
@@ -71,8 +72,7 @@ namespace DataScripts.Interface.Popup
 			}
 		}
 	}
-
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
+	
 	public class PopupButtonPoolingSystem : PoolingSystem<PopupButtonBackend, PopupButtonPresentation, PopupButtonPoolingSystem.CheckValidity>
 	{
 		public struct CheckValidity : ICheckValidity

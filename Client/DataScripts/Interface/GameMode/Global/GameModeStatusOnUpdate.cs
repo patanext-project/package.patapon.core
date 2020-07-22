@@ -3,7 +3,7 @@ using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.Shared;
 using Unity.Entities;
 
-namespace DataScripts.Interface.GameMode.Global
+namespace PataNext.Client.DataScripts.Interface.GameMode.Global
 {
 	public delegate bool GameModeStatusFindTranslation(ref string str);
 

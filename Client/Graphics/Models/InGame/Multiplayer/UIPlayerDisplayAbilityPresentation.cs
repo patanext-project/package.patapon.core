@@ -1,15 +1,17 @@
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
-using package.patapon.core.Animation.Units;
+using package.stormiumteam.shared.ecs;
+using PataNext.Client.Graphics.Animation.Base;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Modules;
 using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-namespace package.patapon.core.Models.InGame.Multiplayer
+namespace PataNext.Client.Graphics.Models.InGame.Multiplayer
 {
 	public class UIPlayerDisplayAbilityPresentation : RuntimeAssetPresentation<UIPlayerDisplayAbilityPresentation>
 	{

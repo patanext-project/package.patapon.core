@@ -1,7 +1,7 @@
 using Unity.Entities;
 using Unity.Mathematics;
 
-namespace DataScripts.Interface.Menu.UIECS
+namespace PataNext.Client.Core.DOTSxUI.Components
 {
 	public struct UIRect : IComponentData
 	{

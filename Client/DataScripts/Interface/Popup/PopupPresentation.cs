@@ -1,12 +1,12 @@
 using System;
-using DataScripts.Interface.Popup;
 using GameBase.Roles.Components;
 using GameBase.Roles.Interfaces;
 using package.stormiumteam.shared.ecs;
-using Patapon.Client.PoolingSystems;
+using PataNext.Client.DataScripts.Interface.Popup;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
+using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using TMPro;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -15,7 +15,7 @@ using UnityEngine.UI;
 
 [assembly: RegisterGenericComponentType(typeof(Relative<PopupDescription>))]
 
-namespace DataScripts.Interface.Popup
+namespace PataNext.Client.DataScripts.Interface.Popup
 {
 	public class UIPopup : IComponentData
 	{

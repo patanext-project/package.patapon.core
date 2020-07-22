@@ -1,14 +1,14 @@
 using System.Collections.Generic;
-using package.patapon.core.Animation.Units;
 using package.stormiumteam.shared.ecs;
-using Patapon.Client.Graphics.Animation.Units;
+using PataNext.Client.Graphics.Animation.Base;
+using PataNext.Client.Graphics.Animation.Units.Base;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-namespace GameModes.Global
+namespace PataNext.Client.GameModes.Global
 {
 	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 	[AlwaysSynchronizeSystem]

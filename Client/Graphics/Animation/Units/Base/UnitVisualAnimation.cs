@@ -1,5 +1,4 @@
 using System;
-using package.patapon.core.Animation;
 using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
@@ -8,7 +7,7 @@ using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Rendering;
 
-namespace Patapon.Client.Graphics.Animation.Units
+namespace PataNext.Client.Graphics.Animation.Units.Base
 {
 	public abstract class UnitVisualPresentation : RuntimeAssetPresentation<UnitVisualPresentation>
 	{

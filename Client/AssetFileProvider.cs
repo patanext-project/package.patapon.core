@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.ResourceManagement.ResourceLocations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
-namespace DefaultNamespace
+namespace PataNext.Client
 {
 	[DisplayName("Yes")]
 	public class AssetFileProvider : TextDataProvider

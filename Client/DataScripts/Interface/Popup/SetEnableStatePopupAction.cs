@@ -1,8 +1,8 @@
-using DataScripts.Interface.Menu.UIECS;
 using GameBase.Roles.Components;
+using PataNext.Client.Core.DOTSxUI.Components;
 using Unity.Entities;
 
-namespace DataScripts.Interface.Popup
+namespace PataNext.Client.DataScripts.Interface.Popup
 {
 	public struct SetEnableStatePopupAction : IComponentData
 	{

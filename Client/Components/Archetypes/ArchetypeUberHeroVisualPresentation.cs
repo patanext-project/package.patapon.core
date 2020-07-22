@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
-using DataScripts.Models.Equipments;
-using package.patapon.core;
 using package.stormiumteam.shared.ecs;
-using Patapon.Client.Graphics.Animation.Units;
-using Patapon.Client.Systems;
+using PataNext.Client.DataScripts.Models.Equipments;
+using PataNext.Client.Graphics;
+using PataNext.Client.Graphics.Animation.Units.Base;
+using PataNext.Client.Systems;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Components.Archetypes
+namespace PataNext.Client.Components.Archetypes
 {
 	public class ArchetypeUberHeroVisualPresentation : UnitVisualPresentation, IEquipmentRoot
 	{

@@ -2,7 +2,7 @@ using StormiumTeam.GameBase.BaseSystems;
 using Unity.Entities;
 using UnityEngine;
 
-namespace DataScripts.Models.Equipments
+namespace PataNext.Client.DataScripts.Models.Equipments
 {
 	public class ShieldBehavior : MonoBehaviour
 	{

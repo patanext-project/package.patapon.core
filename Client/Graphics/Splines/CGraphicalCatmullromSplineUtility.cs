@@ -4,7 +4,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace package.patapon.core
+namespace PataNext.Client.Graphics.Splines
 {
     public static class CGraphicalCatmullromSplineUtility
     {

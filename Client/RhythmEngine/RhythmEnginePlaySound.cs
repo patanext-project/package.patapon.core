@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using DefaultNamespace;
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
 using package.stormiumteam.shared.ecs;
+using PataNext.Client.Rules;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;
 using Unity.Collections;
@@ -13,7 +13,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using Random = Unity.Mathematics.Random;
 
-namespace RhythmEngine
+namespace PataNext.Client.RhythmEngine
 {
 	[AlwaysUpdateSystem]
 	[UpdateInGroup(typeof(PresentationSystemGroup))]

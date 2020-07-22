@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace package.patapon.core.FeverWorm
+namespace PataNext.Client.Graphics.FeverWorm
 {
 	public class FeverWormPresentation : RuntimeAssetPresentation<FeverWormPresentation>
 	{

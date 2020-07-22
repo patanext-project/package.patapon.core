@@ -1,6 +1,6 @@
 using Unity.Entities;
 
-namespace Patapon.Client.Systems
+namespace PataNext.Client.Systems
 {
 	[UpdateInGroup(typeof(AfterSnapshotIsAppliedSystemGroup))]
 	public class DestroyProjectileOnInitialization : ComponentSystem

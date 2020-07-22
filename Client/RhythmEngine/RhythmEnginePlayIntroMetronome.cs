@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
-using package.patapon.core.Animation.Units;
+using PataNext.Client.Graphics.Animation.Base;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;
 using Unity.Entities;
@@ -9,7 +9,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-namespace RhythmEngine
+namespace PataNext.Client.RhythmEngine
 {
 	[AlwaysUpdateSystem]
 	[UpdateInGroup(typeof(PresentationSystemGroup))]

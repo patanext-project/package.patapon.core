@@ -1,11 +1,11 @@
 using System;
-using Patapon.Client.OrderSystems;
-using Patapon4TLB.GameModes.Interface;
+using PataNext.Client.GameModes.VSHeadOn.Interface;
+using PataNext.Client.OrderSystems;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using UnityEngine;
 
-namespace Patapon.Client.PoolingSystems
+namespace PataNext.Client.PoolingSystems
 {
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class UIHeadOnInterfacePoolingSystem : PoolingSystem<UIHeadOnBackend, UIHeadOnPresentation>

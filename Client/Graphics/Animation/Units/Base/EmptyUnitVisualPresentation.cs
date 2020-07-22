@@ -1,4 +1,4 @@
-namespace Patapon.Client.Graphics.Animation.Units
+namespace PataNext.Client.Graphics.Animation.Units.Base
 {
 	public class EmptyUnitVisualPresentation : UnitVisualPresentation
 	{

@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using P4TLB.MasterServer;
-using package.patapon.core.Animation.Units;
+using PataNext.Client.Graphics.Animation.Base;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-namespace Patapon.Client.Systems
+namespace PataNext.Client.Systems
 {
 	// todo: this class should be removed once there will be a correct way to get voices...
 	public class UnitHeroVoiceManager : AbsGameBaseSystem

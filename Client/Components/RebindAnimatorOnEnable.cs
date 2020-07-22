@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Components
+namespace PataNext.Client.Components
 {
 	public class RebindAnimatorOnEnable : MonoBehaviour
 	{

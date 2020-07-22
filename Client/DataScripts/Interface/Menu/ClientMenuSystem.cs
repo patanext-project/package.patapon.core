@@ -1,12 +1,11 @@
 using System;
 using Karambolo.Common;
-using package.patapon.core.Animation;
-using Patapon.Client.PoolingSystems;
+using PataNext.Client.Graphics.Animation;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DataScripts.Interface.Menu
+namespace PataNext.Client.DataScripts.Interface.Menu
 {
 	public struct MenuData : IComponentData
 	{

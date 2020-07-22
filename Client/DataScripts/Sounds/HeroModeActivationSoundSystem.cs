@@ -1,8 +1,8 @@
-using package.patapon.core;
-using package.patapon.core.Animation.Units;
 using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
-using Patapon.Client.Systems;
+using PataNext.Client.Graphics;
+using PataNext.Client.Graphics.Animation.Base;
+using PataNext.Client.Systems;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;
 using Unity.Entities;
@@ -10,7 +10,7 @@ using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-namespace DataScripts.Sounds
+namespace PataNext.Client.DataScripts.Sounds
 {
 	public class HeroModeActivationSoundSystem : AbsGameBaseSystem
 	{

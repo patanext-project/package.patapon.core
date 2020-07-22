@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DataScripts.Models.GameMode.Structures
+namespace PataNext.Client.DataScripts.Models.GameMode.Structures
 {
 	public abstract class MaterialPropertyBase : MonoBehaviour
 	{

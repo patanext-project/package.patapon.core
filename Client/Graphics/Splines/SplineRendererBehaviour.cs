@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using package.stormiumteam.shared;
 using Unity.Entities;
 using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 #if UNITY_EDITOR
-using UnityEditor;
 
 #endif
 
-namespace package.patapon.core
+namespace PataNext.Client.Graphics.Splines
 {
 	// TODO: UPGRADE
 	[Serializable]
@@ -150,7 +150,7 @@ namespace package.patapon.core
 			
 			if (lineRendererArray == null || lineRendererArray.Length == 0) lineRendererArray = new[] {lineRenderer};
 
-			var currCam = Camera.current;
+			var currCam = UnityEngine.Camera.current;
 
 			var isSelected = Selection.activeGameObject == gameObject;
 			Gizmos.color = isSelected ? Color.blue : Color.magenta;

@@ -1,14 +1,15 @@
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
 using package.stormiumteam.shared.ecs;
-using Patapon.Client.Graphics.Animation.Units;
+using PataNext.Client.Graphics.Animation.Base;
+using PataNext.Client.Graphics.Animation.Units.Base;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
-namespace package.patapon.core.Animation.Units
+namespace PataNext.Client.Graphics.Animation.Units
 {
 	[UpdateInGroup(typeof(ClientUnitAnimationGroup))]
 	public class UnitPressureClientAnimation : BaseAnimationSystem

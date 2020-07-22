@@ -1,7 +1,7 @@
 using package.stormiumteam.shared.ecs;
 using Unity.Entities;
 
-namespace DefaultNamespace
+namespace PataNext.Client
 {
 	public class PlayerName : IComponentData
 	{

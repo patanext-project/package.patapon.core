@@ -1,16 +1,15 @@
-using DefaultNamespace;
 using GameBase.Roles.Components;
-using package.patapon.core;
 using package.stormiumteam.shared.ecs;
+using PataNext.Client.Graphics;
+using PataNext.Client.Graphics.Camera;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
-using EActivationType = Patapon.Mixed.GamePlay.Abilities.EActivationType;
 
-namespace SnapshotArchetypes
+namespace PataNext.Client.SnapshotArchetypes
 {
 	[UpdateInGroup(typeof(AfterSnapshotIsAppliedSystemGroup))]
 	public class SetUnitArchetypeSystem : ComponentSystem

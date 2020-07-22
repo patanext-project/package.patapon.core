@@ -1,10 +1,9 @@
-using DefaultNamespace;
-using package.patapon.core;
 using package.stormiumteam.shared.ecs;
+using PataNext.Client.Graphics.Camera;
 using Unity.Entities;
 using Unity.Mathematics;
 
-namespace Patapon.Client.Systems
+namespace PataNext.Client.Systems
 {
 	[UpdateInGroup(typeof(CameraModifyTargetSystemGroup))]
 	[AlwaysSynchronizeSystem]

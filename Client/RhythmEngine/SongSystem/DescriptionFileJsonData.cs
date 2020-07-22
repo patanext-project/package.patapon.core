@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Patapon.Client.RhythmEngine
+namespace PataNext.Client.RhythmEngine.SongSystem
 {
 	[Serializable]
 	public struct DescriptionFileJsonData

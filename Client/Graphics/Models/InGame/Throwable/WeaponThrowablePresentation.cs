@@ -1,12 +1,13 @@
 using System;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
+using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace package.patapon.core.Models.InGame.Throwable
+namespace PataNext.Client.Graphics.Models.InGame.Throwable
 {
 	public class WeaponThrowablePresentation : RuntimeAssetPresentation<WeaponThrowablePresentation>
 	{

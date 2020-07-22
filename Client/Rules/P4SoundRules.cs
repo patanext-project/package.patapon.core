@@ -1,9 +1,8 @@
-using System.Data;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Utility.Rules;
 using Unity.Entities;
 
-namespace DefaultNamespace
+namespace PataNext.Client.Rules
 {
 	public class P4SoundRules : RuleBaseSystem<P4SoundRules.Data>
 	{

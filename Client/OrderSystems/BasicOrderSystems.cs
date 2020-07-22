@@ -1,6 +1,7 @@
+using StormiumTeam.GameBase.Utility.Misc;
 using Unity.Entities;
 
-namespace Patapon.Client.OrderSystems
+namespace PataNext.Client.OrderSystems
 {
 	[UpdateInGroup(typeof(OrderSystemGroup))]
 	[UpdateAfter(typeof(UIGameModeOrderingSystem.Begin))]

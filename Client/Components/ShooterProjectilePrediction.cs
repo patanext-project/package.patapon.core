@@ -1,8 +1,8 @@
-using Patapon.Client.Systems;
+using PataNext.Client.Systems;
 using Unity.Entities;
 using Unity.Mathematics;
 
-namespace Components
+namespace PataNext.Client.Components
 {
 	public struct ShooterProjectilePrediction : IComponentData
 	{

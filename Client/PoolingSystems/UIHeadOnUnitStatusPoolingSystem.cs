@@ -1,8 +1,8 @@
-using Patapon4TLB.GameModes.Interface;
+using PataNext.Client.GameModes.VSHeadOn.Interface;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 
-namespace Patapon.Client.PoolingSystems
+namespace PataNext.Client.PoolingSystems
 {
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class UIHeadOnUnitStatusPoolingSystem : PoolingSystem<UIHeadOnUnitStatusBackend, UIHeadOnUnitStatusPresentation>

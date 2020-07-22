@@ -1,16 +1,17 @@
 using GameBase.Roles.Components;
-using Patapon4TLB.GameModes.Interface;
+using PataNext.Client.GameModes.VSHeadOn.Interface;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
+using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
 using Color = UnityEngine.Color;
 
-namespace DataScripts.Interface.GameMode.VSHeadOn
+namespace PataNext.Client.DataScripts.Interface.GameMode.VSHeadOn
 {
 	public abstract class UIHeadOnStructurePresentationBase : RuntimeAssetPresentation<UIHeadOnStructurePresentationBase>
 	{

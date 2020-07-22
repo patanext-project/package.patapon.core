@@ -1,10 +1,9 @@
-using System.Data;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Utility.Rules;
 using Unity.Entities;
 using UnityEngine;
 
-namespace DefaultNamespace
+namespace PataNext.Client.Rules
 {
 	public class P4ColorRules : RuleBaseSystem<P4ColorRules.Data>
 	{

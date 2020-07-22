@@ -1,3 +1,3 @@
-namespace DefaultNamespace
+namespace PataNext.Client
 {
 }

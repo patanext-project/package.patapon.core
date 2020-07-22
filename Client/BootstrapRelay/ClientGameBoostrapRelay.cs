@@ -1,8 +1,7 @@
-using DataScripts.Interface.Menu;
-using DataScripts.Interface.Menu.TemporaryMenu;
+using PataNext.Client.DataScripts.Interface.Menu;
 using StormiumTeam.GameBase.BaseSystems;
 
-namespace BootstrapRelay
+namespace PataNext.Client.BootstrapRelay
 {
 	public class ClientGameBoostrapRelay : AbsGameBaseSystem
 	{

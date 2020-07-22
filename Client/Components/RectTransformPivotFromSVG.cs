@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Components
+namespace PataNext.Client.Components
 {
 	[RequireComponent(typeof(RectTransform))]
 	[RequireComponent(typeof(SVGImage))]

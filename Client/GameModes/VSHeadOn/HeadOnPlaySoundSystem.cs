@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using package.patapon.core.Animation.Units;
+using PataNext.Client.Graphics.Animation.Base;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;
@@ -7,7 +7,7 @@ using Unity.Entities;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-namespace DataScripts.Interface.GameMode.VSHeadOn
+namespace PataNext.Client.GameModes.VSHeadOn
 {
 	[UpdateInGroup(typeof(OrderGroup.Presentation.InterfaceRendering))]
 	public class HeadOnPlaySoundSystem : AbsGameBaseSystem

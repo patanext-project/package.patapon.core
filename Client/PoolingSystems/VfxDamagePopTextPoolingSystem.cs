@@ -1,12 +1,12 @@
 using System;
-using package.patapon.core.Models.InGame.VFXDamage;
+using PataNext.Client.DataScripts.Interface.Effects.VfxDamage;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Patapon.Client.PoolingSystems
+namespace PataNext.Client.PoolingSystems
 {
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	[UpdateInGroup(typeof(OrderGroup.Simulation))]

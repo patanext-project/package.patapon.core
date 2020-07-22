@@ -4,7 +4,7 @@ using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
 
-namespace package.patapon.core
+namespace PataNext.Client.Graphics.Camera
 {
 	public struct AnchorOrthographicCameraData : IComponentData
 	{
@@ -24,18 +24,18 @@ namespace package.patapon.core
 		public float2     Anchor;
 	}
 
-	[RequireComponent(typeof(GameObjectEntity), typeof(Camera))]
+	[RequireComponent(typeof(GameObjectEntity), typeof(UnityEngine.Camera))]
 	[ExecuteInEditMode]
 	public class AnchorOrthographicCameraBehaviour : MonoBehaviour
 	{
-		private Camera m_Camera;
+		private UnityEngine.Camera m_Camera;
 
 		[SerializeField] private float2           m_DebugTarget;
 		private                  GameObjectEntity m_GameObjectEntity;
 
 		private void OnEnable()
 		{
-			m_Camera           = GetComponent<Camera>();
+			m_Camera           = GetComponent<UnityEngine.Camera>();
 			m_GameObjectEntity = GetComponent<GameObjectEntity>();
 
 			RefreshData();
@@ -43,7 +43,7 @@ namespace package.patapon.core
 
 		private void OnValidate()
 		{
-			m_Camera           = GetComponent<Camera>();
+			m_Camera           = GetComponent<UnityEngine.Camera>();
 			m_GameObjectEntity = GetComponent<GameObjectEntity>();
 
 			RefreshData(true);

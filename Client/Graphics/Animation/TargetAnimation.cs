@@ -1,7 +1,7 @@
 using System;
 using Unity.Mathematics;
 
-namespace package.patapon.core.Animation
+namespace PataNext.Client.Graphics.Animation
 {
 	public struct TargetAnimation
 	{

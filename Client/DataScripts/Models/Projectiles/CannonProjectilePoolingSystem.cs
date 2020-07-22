@@ -3,7 +3,7 @@ using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using UnityEngine.Rendering;
 
-namespace DataScripts.Models.Units.Projectiles
+namespace PataNext.Client.DataScripts.Models.Projectiles
 {
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class CannonProjectilePoolingSystem : PoolingSystem<DefaultProjectileBackend, BaseProjectilePresentation>

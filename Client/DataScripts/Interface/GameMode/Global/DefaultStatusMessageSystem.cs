@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using GameBase.Roles.Components;
-using package.patapon.core.Animation.Units;
 using package.stormiumteam.shared.ecs;
+using PataNext.Client.Graphics.Animation.Base;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-namespace DataScripts.Interface.GameMode.Global
+namespace PataNext.Client.DataScripts.Interface.GameMode.Global
 {
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class DefaultStatusMessageSystem : AbsGameBaseSystem

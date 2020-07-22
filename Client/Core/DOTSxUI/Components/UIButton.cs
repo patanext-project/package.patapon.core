@@ -1,6 +1,6 @@
 using Unity.Entities;
 
-namespace DataScripts.Interface.Menu.UIECS
+namespace PataNext.Client.Core.DOTSxUI.Components
 {
 	public struct UIButton : IComponentData
 	{

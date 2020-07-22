@@ -1,11 +1,10 @@
-using package.patapon.core;
 using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase.Utility.DOTS.xMonoBehaviour;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace p4tlb
+namespace PataNext.Client.Graphics.Camera
 {
 	public class SetClientOrthographicCamera : ComponentSystem
 	{
@@ -13,12 +12,12 @@ namespace p4tlb
 
 		protected override void OnCreate()
 		{
-			m_Query = GetEntityQuery(typeof(GameCamera), typeof(Camera), ComponentType.Exclude<IsActive>());
+			m_Query = GetEntityQuery(typeof(GameCamera), typeof(UnityEngine.Camera), ComponentType.Exclude<IsActive>());
 		}
 
 		protected override void OnUpdate()
 		{
-			Entities.With(m_Query).ForEach((Entity e, Camera camera) =>
+			Entities.With(m_Query).ForEach((Entity e, UnityEngine.Camera camera) =>
 			{
 				camera.orthographicSize = 10;
 				camera.orthographic     = true;

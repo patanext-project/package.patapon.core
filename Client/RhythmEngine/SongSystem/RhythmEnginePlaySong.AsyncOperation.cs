@@ -2,7 +2,7 @@ using StormiumTeam.GameBase.Modules;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-namespace Patapon.Client.RhythmEngine
+namespace PataNext.Client.RhythmEngine.SongSystem
 {
 	public partial class RhythmEnginePlaySong
 	{

@@ -5,7 +5,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Patapon.Client.Systems
+namespace PataNext.Client.Systems
 {
 	[AlwaysSynchronizeSystem]
 	[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation))]

@@ -1,10 +1,10 @@
 using System;
-using DataScripts.Models.Units.Projectiles;
+using PataNext.Client.DataScripts.Models.Projectiles;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using UnityEngine.Rendering;
 
-namespace DataScripts.Models.Units.Effects.FearSpear
+namespace PataNext.Client.DataScripts.Models.Effects.FearSpear
 {
 	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
 	public class FearSpearProjectilePoolingSystem : PoolingSystem<DefaultProjectileBackend, BaseProjectilePresentation>

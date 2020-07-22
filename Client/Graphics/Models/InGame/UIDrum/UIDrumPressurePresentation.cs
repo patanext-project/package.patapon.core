@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
 using package.stormiumteam.shared.ecs;
-using Patapon.Client.OrderSystems;
+using PataNext.Client.OrderSystems;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Utility.AssetBackend;
@@ -16,7 +16,7 @@ using Entity = Unity.Entities.Entity;
 using EntityQuery = Unity.Entities.EntityQuery;
 using Random = UnityEngine.Random;
 
-namespace package.patapon.core.Models.InGame.UIDrum
+namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 {
 	public class UIDrumPressurePresentation : RuntimeAssetPresentation<UIDrumPressurePresentation>
 	{
@@ -104,7 +104,7 @@ namespace package.patapon.core.Models.InGame.UIDrum
 			if (m_CameraQuery.CalculateEntityCount() > 0)
 			{
 				cameraEntity = m_CameraQuery.GetSingletonEntity();
-				var cameraObject = EntityManager.GetComponentObject<Camera>(cameraEntity);
+				var cameraObject = EntityManager.GetComponentObject<UnityEngine.Camera>(cameraEntity);
 				cameraPosition = cameraObject.transform.position;
 			}
 
@@ -136,7 +136,7 @@ namespace package.patapon.core.Models.InGame.UIDrum
 			{
 				m_Canvas.transform.position = Vector3.zero;
 				m_Canvas.renderMode         = RenderMode.ScreenSpaceCamera;
-				m_Canvas.worldCamera        = EntityManager.GetComponentObject<Camera>(cameraEntity);
+				m_Canvas.worldCamera        = EntityManager.GetComponentObject<UnityEngine.Camera>(cameraEntity);
 			}
 			
 			var pixelRange     = new float2(canvasRect.width, canvasRect.height);
