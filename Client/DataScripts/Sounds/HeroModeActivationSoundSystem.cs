@@ -72,7 +72,7 @@ namespace PataNext.Client.DataScripts.Sounds
 			var playSoundAllocation = UnsafeAllocation.From(ref playSound);
 			Entities.ForEach((Entity ent, ref AbilityInternalData internalData, in AbilityState state, in AbilityActivation activation) =>
 			{
-				if (activation.Type == EActivationType.Normal || (state.Phase & EAbilityPhase.HeroActivation) == 0)
+				if (activation.Type == EAbilityActivationType.Normal || (state.Phase & EAbilityPhase.HeroActivation) == 0)
 				{
 					internalData.HeroActive = false;
 					return;

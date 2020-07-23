@@ -162,7 +162,6 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 			
 			var process  = EntityManager.GetComponentData<RhythmEngineLocalState>(engine);
 			var settings = EntityManager.GetComponentData<RhythmEngineSettings>(engine);
-			var state = EntityManager.GetComponentData<RhythmEngineState>(engine);
 
 			if (!EntityManager.HasComponent<RhythmEngineIsPlaying>(engine) || RhythmEngineUtility.GetFlowBeat(process.Elapsed, settings.BeatInterval) < 0)
 			{
