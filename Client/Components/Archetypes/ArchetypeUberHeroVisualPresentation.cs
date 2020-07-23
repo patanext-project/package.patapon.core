@@ -1,17 +1,24 @@
 using System;
 using System.Collections.Generic;
+using GameHost.Core.Native.xUnity;
+using GameHost.Simulation.Utility.Resource;
+using GameHost.Simulation.Utility.Resource.Systems;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.DataScripts.Models.Equipments;
 using PataNext.Client.Graphics;
 using PataNext.Client.Graphics.Animation.Units.Base;
 using PataNext.Client.Systems;
+using PataNext.Module.Simulation.Components.GamePlay.Abilities;
 using PataNext.Module.Simulation.Components.Units;
+using PataNext.Module.Simulation.Resources;
+using PataNext.Module.Simulation.Resources.Keys;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
+using Utility.GameResources;
 
 namespace PataNext.Client.Components.Archetypes
 {
@@ -117,22 +124,29 @@ namespace PataNext.Client.Components.Archetypes
 		public class LocalSystem : AbsGameBaseSystem
 		{
 			private UnitVisualEquipmentManager m_EquipmentManager;
+			private GameResourceModule<UnitAttachmentResource, UnitAttachmentResourceKey> attachmentModule;
 
 			protected override void OnCreate()
 			{
 				base.OnCreate();
 				m_EquipmentManager = World.GetOrCreateSystem<UnitVisualEquipmentManager>();
+				
+				GetModule(out attachmentModule);
 			}
 
 			protected override void OnUpdate()
 			{
+				var (maskAttachResource, maskKey) = attachmentModule.GetResourceTuple(nameof(RootType.Mask));
+				var (leftEquipResource, leftEquipKey) = attachmentModule.GetResourceTuple(nameof(RootType.LeftEquipment));
+				var (rightEquipResource, rightEquipKey) = attachmentModule.GetResourceTuple(nameof(RootType.RightEquipment));
+
 				Entities.ForEach((ArchetypeUberHeroVisualPresentation presentation) =>
 				{
 					var backend = presentation.Backend;
 					if (!EntityManager.Exists(backend.DstEntity))
 						return;
 
-					if (!EntityManager.TryGetComponentData(backend.DstEntity, out UnitDisplayedEquipment displayedEquipment))
+					if (!EntityManager.TryGetBuffer(backend.DstEntity, out DynamicBuffer<UnitDisplayedEquipment> displayedEquipment))
 						return;
 
 					foreach (var kvp in presentation.RootHashMap)
@@ -141,19 +155,20 @@ namespace PataNext.Client.Components.Archetypes
 						var root = kvp.Value;
 
 						var equipmentTarget = default(NativeString64);
-						switch (type)
+						foreach (var equipment in displayedEquipment)
 						{
-							case RootType.Mask:
-								equipmentTarget = displayedEquipment.Mask;
-								break;
-							case RootType.LeftEquipment:
-								equipmentTarget = displayedEquipment.LeftEquipment;
-								break;
-							case RootType.RightEquipment:
-								equipmentTarget = displayedEquipment.RightEquipment;
-								break;
-							default:
-								throw new ArgumentOutOfRangeException();
+							switch (equipment.Attachment)
+							{
+								case { } resource when resource == maskAttachResource && type == RootType.Mask:
+									maskKey.Value.CopyToNativeString(equipmentTarget);
+									break;
+								case { } resource when resource == leftEquipResource && type == RootType.LeftEquipment:
+									leftEquipKey.Value.CopyToNativeString(equipmentTarget);
+									break;
+								case { } resource when resource == rightEquipResource && type == RootType.RightEquipment:
+									rightEquipKey.Value.CopyToNativeString(equipmentTarget);
+									break;
+							}
 						}
 
 						if (!root.EquipmentId.Equals(equipmentTarget) || !root.UnitEquipmentBackend.HasIncomingPresentation)
@@ -169,13 +184,15 @@ namespace PataNext.Client.Components.Archetypes
 					}
 
 					var scale = 1f;
-					if (EntityManager.TryGetComponentData(backend.DstEntity, out LivableHealth health) && health.IsDead)
+					// Scaling in general should be done in another system...
+					/*if (EntityManager.TryGetComponentData(backend.DstEntity, out LivableHealth health) && health.IsDead)
 					{
 						scale = 0;
-					}
+					}*/
 
 					ref var heroModeScaling = ref presentation.m_HeroModeScaling;
-					if (EntityManager.TryGetComponentData(backend.DstEntity, out OwnerActiveAbility ownerAbility)
+					// Hero mode scaling shouldn't be done here.
+					/*if (EntityManager.TryGetComponentData(backend.DstEntity, out OwnerActiveAbility ownerAbility)
 					    && EntityManager.TryGetComponentData(ownerAbility.Active, out AbilityActivation activation)
 					    && activation.Type == EActivationType.HeroMode)
 					{
@@ -186,7 +203,7 @@ namespace PataNext.Client.Components.Archetypes
 						heroModeScaling = math.lerp(heroModeScaling, 1, Time.DeltaTime * 1.75f);
 						heroModeScaling = math.lerp(heroModeScaling, 1, Time.DeltaTime * 1.25f);
 						heroModeScaling = math.clamp(heroModeScaling, 1, 1.325f);
-					}
+					}*/
 
 					presentation.transform.localScale = Vector3.one * (scale * presentation.m_HeroModeScaling);
 					presentation.OnSystemUpdate();

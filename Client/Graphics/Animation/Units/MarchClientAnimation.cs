@@ -2,7 +2,12 @@ using System.Collections.Generic;
 using GameBase.Roles.Components;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Graphics.Animation.Base;
+using PataNext.Client.Graphics.Animation.Components;
 using PataNext.Client.Graphics.Animation.Units.Base;
+using PataNext.Module.Simulation.Components.GamePlay.Abilities;
+using PataNext.Module.Simulation.Components.GamePlay.Units;
+using PataNext.Module.Simulation.GameBase.Physics.Components;
+using StormiumTeam.GameBase.Utility.Misc;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
@@ -11,25 +16,6 @@ using UnityEngine.Playables;
 
 namespace PataNext.Client.Graphics.Animation.Units
 {
-	public struct AnimationIdleTime : IComponentData
-	{
-		public float Value;
-
-		public class System : SystemBase
-		{
-			protected override void OnUpdate()
-			{
-				var dt = Time.DeltaTime;
-				Entities.ForEach((ref AnimationIdleTime idleTime) =>
-				{
-					idleTime.Value += dt;
-					if (idleTime.Value < 0)
-						idleTime.Value = 0;
-				}).Schedule();
-			}
-		}
-	}
-
 	[UpdateInGroup(typeof(ClientUnitAnimationGroup))]
 	public class MarchAbilityClientAnimationSystem : BaseAbilityAnimationSystem
 	{
@@ -152,7 +138,7 @@ namespace PataNext.Client.Graphics.Animation.Units
 
 			if (abilityActive) systemData.Behaviour.ForceAnimation = true;
 
-			var velocity = EntityManager.GetComponentData<SVelocity>(backend.DstEntity);
+			var velocity = EntityManager.GetComponentData<Velocity>(backend.DstEntity);
 			var targetAnimation = math.abs(velocity.Value.x) > 0f || abilityActive ? TargetType.Walking : TargetType.Idle;
 			if (targetAnimation == TargetType.Walking)
 				systemData.LastWalk = Time.ElapsedTime;

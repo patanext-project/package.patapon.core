@@ -112,7 +112,7 @@ namespace PataNext.Client.DataScripts.Models.Projectiles
 
 				if (EntityManager.TryGetComponentData(entity, out Translation translation))
 					backend.pos = translation.Value;
-				if (EntityManager.TryGetComponentData(entity, out SVelocity velocity))
+				if (EntityManager.TryGetComponentData(entity, out Velocity velocity))
 				{
 					var dir   = velocity.normalized;
 					var angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;

@@ -7,8 +7,8 @@ namespace PataNext.Module.Simulation.Components.Units
 {
 	public struct UnitDisplayedEquipment : IBufferElementData
 	{
-		public GameResource<IUnitAttachmentResource> Attachment;
-		public GameResource<IEquipmentResource>      Resource;
+		public GameResource<UnitAttachmentResource> Attachment;
+		public GameResource<EquipmentResource>      Resource;
 
 		public class Register : RegisterGameHostComponentBuffer<UnitDisplayedEquipment>
 		{

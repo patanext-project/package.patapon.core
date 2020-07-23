@@ -6,9 +6,9 @@ namespace PataNext.Module.Simulation.Components.Units
 {
 	public readonly struct UnitCurrentKit : IComponentData
 	{
-		public readonly GameResource<IUnitKitResource> Resource;
+		public readonly GameResource<UnitKitResource> Resource;
 
-		public UnitCurrentKit(GameResource<IUnitKitResource> id)
+		public UnitCurrentKit(GameResource<UnitKitResource> id)
 		{
 			Resource = id;
 		}

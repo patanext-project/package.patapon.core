@@ -1,11 +1,15 @@
 using System.Collections.Generic;
+using DefaultNamespace.Utility.DOTS;
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.OrderSystems;
 using PataNext.Module.Simulation.Components;
+using PataNext.Module.Simulation.Components.GamePlay.RhythmEngine;
+using PataNext.Module.Simulation.Components.GamePlay.RhythmEngine.Structures;
 using PataNext.Module.Simulation.Components.Roles;
+using PataNext.Module.Simulation.Game.RhythmEngine;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.BaseSystems.Ext;
@@ -156,11 +160,11 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 			if (engine == default)
 				return;
 			
-			var process  = EntityManager.GetComponentData<FlowEngineProcess>(engine);
+			var process  = EntityManager.GetComponentData<RhythmEngineLocalState>(engine);
 			var settings = EntityManager.GetComponentData<RhythmEngineSettings>(engine);
 			var state = EntityManager.GetComponentData<RhythmEngineState>(engine);
 
-			if (state.IsPaused || process.GetFlowBeat(settings.BeatInterval) < 0)
+			if (!EntityManager.HasComponent<RhythmEngineIsPlaying>(engine) || RhythmEngineUtility.GetFlowBeat(process.Elapsed, settings.BeatInterval) < 0)
 			{
 				// destroy everything!
 				Entities.ForEach((UIDrumPressureBackend backend) =>
@@ -171,7 +175,7 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 			}
 
 			var key = 1;
-			foreach (var ac in playerCommand.Base.GetRhythmActions())
+			foreach (var ac in playerCommand.Actions)
 			{
 				if (!ac.WasPressed)
 				{
@@ -208,7 +212,7 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 				var keyPos = new float2(math.lerp(-width, width, keyRange.x), math.lerp(-height, height, keyRange.y));
 
 				var beGameObject = DrumBackendPools[key].Dequeue();
-				using (new SetTemporaryActiveWorld(World))
+				using (new SetTemporaryInjectionWorld(World))
 				{
 					beGameObject.name = $"BackendPressure (Key: {key})";
 					beGameObject.SetActive(true);
@@ -226,7 +230,7 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 				backend.SetPresentationFromPool(DrumPresentationPools[key]);
 
 				var prevRand     = backend.rand;
-				var absRealScore = math.abs(FlowEngineProcess.GetScore(process.Milliseconds, settings.BeatInterval));
+				var absRealScore = math.abs(RhythmEngineUtility.GetScore(process.Elapsed, settings.BeatInterval));
 
 				backend.play    = true;
 				backend.key     = key;
