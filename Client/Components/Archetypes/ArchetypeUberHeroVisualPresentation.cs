@@ -5,6 +5,7 @@ using PataNext.Client.DataScripts.Models.Equipments;
 using PataNext.Client.Graphics;
 using PataNext.Client.Graphics.Animation.Units.Base;
 using PataNext.Client.Systems;
+using PataNext.Module.Simulation.Components.Units;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using Unity.Collections;

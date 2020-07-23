@@ -1,15 +1,18 @@
 using System.Collections.Generic;
+using GameHost.ShareSimuWorldFeature;
+using GameHost.Simulation.Utility.Resource.Systems;
 using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Systems;
+using PataNext.Module.Simulation.Components.Units;
+using PataNext.Module.Simulation.Resources.Keys;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 
 namespace PataNext.Client.Graphics.Animation.Units.Base
 {
-	[UpdateInGroup(typeof(ClientPresentationSystemGroup))]
-	[UpdateAfter(typeof(RenderInterpolationSystem))]
+	[UpdateInGroup(typeof(PresentationSystemGroup))]
 	[AlwaysSynchronizeSystem]
 	public class UpdateUnitVisualBackendSystem : SystemBase
 	{
@@ -27,6 +30,8 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 		protected override void OnUpdate()
 		{
 			m_UpdateArchetypeList.Clear();
+
+			var resourceMgr = World.GetExistingSystem<GameResourceManager>();
 
 			var __i        = 1;
 			var indexArray = UnsafeAllocation.From(ref __i);
@@ -51,15 +56,16 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 
 				// Load presentation
 				var unitArchetype = "UH.basic"; // this will be dynamic in the future (based on entity class)
-				if (EntityManager.TryGetComponentData(backend.DstEntity, out UnitCurrentKit currentKit))
+				if (EntityManager.TryGetComponentData(backend.DstEntity, out UnitCurrentKit currentKit)
+				    && currentKit.Resource.TryGet(resourceMgr, out UnitKitResourceKey key))
 				{
-					unitArchetype = $"UH.{currentKit.Value}";
+					unitArchetype = $"UH.{key.Value}";
 				}
-				
+
 				if (backend.CurrentArchetype != unitArchetype)
 				{
 					Debug.Log($"{backend.CurrentArchetype} -> {unitArchetype}");
-					
+
 					backend.CurrentArchetype = unitArchetype;
 					m_UpdateArchetypeList.Add((backend, unitArchetype));
 				}

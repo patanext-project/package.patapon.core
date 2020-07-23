@@ -5,6 +5,7 @@ using GameBase.Roles.Components;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.Systems;
+using PataNext.Module.Simulation.Components.Units;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.BaseSystems.Ext;

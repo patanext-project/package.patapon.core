@@ -4,6 +4,7 @@ using PataNext.Client.Graphics;
 using PataNext.Client.Graphics.Camera;
 using PataNext.Module.Simulation.Components;
 using PataNext.Module.Simulation.Components.Roles;
+using PataNext.Module.Simulation.Components.Units;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.BaseSystems.Ext;

@@ -2,6 +2,7 @@ using System;
 using GameBase.Roles.Components;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
+using PataNext.Module.Simulation.Components.Units;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;

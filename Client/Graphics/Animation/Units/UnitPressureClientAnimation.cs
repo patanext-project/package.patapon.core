@@ -4,6 +4,7 @@ using package.stormiumteam.shared.ecs;
 using PataNext.Client.Graphics.Animation.Base;
 using PataNext.Client.Graphics.Animation.Units.Base;
 using PataNext.Module.Simulation.Components.Roles;
+using PataNext.Module.Simulation.Components.Units;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;

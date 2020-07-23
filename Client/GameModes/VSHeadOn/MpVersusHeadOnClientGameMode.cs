@@ -1,6 +1,7 @@
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.DOTSxUI.Components;
 using PataNext.Client.DataScripts.Interface.Popup;
+using PataNext.Module.Simulation.Components.Units;
 using StormiumTeam.GameBase.BaseSystems;
 using Unity.Collections;
 using Unity.Entities;
