@@ -1,3 +1,4 @@
+using GameBase.Roles.Components;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.Graphics.Animation.Base;
 using PataNext.Client.Graphics.Animation.Units.Base;

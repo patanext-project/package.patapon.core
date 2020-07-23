@@ -1,3 +1,4 @@
+using PataNext.Module.Simulation.Components.Roles;
 using Unity.Entities;
 
 namespace PataNext.Client.Systems

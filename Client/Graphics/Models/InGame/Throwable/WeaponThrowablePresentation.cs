@@ -19,8 +19,7 @@ namespace PataNext.Client.Graphics.Models.InGame.Throwable
 	{
 		
 	}
-
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
+	
 	public class WeaponThrowablePoolingSystem : PoolingSystem<WeaponThrowableBackend, WeaponThrowablePresentation>
 	{
 		protected override string AddressableAsset =>
@@ -46,8 +45,7 @@ namespace PataNext.Client.Graphics.Models.InGame.Throwable
 			sortingGroup.sortingOrder     = 0;
 		}
 	}
-
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
+	
 	[UpdateAfter(typeof(WeaponThrowablePoolingSystem))]
 	public class WeaponThrowableRenderSystem : BaseRenderSystem<WeaponThrowablePresentation>
 	{

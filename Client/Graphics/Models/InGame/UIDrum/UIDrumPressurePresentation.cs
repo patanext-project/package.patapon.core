@@ -4,6 +4,7 @@ using GameBase.Roles.Descriptions;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.OrderSystems;
+using PataNext.Module.Simulation.Components;
 using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
@@ -114,7 +115,7 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 			}
 
 			var player  = this.GetFirstSelfGamePlayer();
-			if (!EntityManager.TryGetComponentData(player, out GamePlayerCommand playerCommand))
+			if (!EntityManager.TryGetComponentData(player, out PlayerInputComponent playerCommand))
 				return;
 
 			var cameraState = this.GetComputedCameraState();

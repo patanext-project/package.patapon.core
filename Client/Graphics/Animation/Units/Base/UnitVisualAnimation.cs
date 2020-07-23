@@ -2,6 +2,7 @@ using System;
 using package.stormiumteam.shared.ecs;
 using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.AssetBackend.Components;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using UnityEngine;
@@ -141,8 +142,7 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 	{
 		public Entity Backend;
 	}
-
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
+	
 	public class UnitVisualBackendSpawnSystem : PoolingSystem<UnitVisualBackend, UnitVisualPresentation>
 	{
 		protected override string AddressableAsset => "core://Client/Models/UberHero/EmptyPresentation.prefab";

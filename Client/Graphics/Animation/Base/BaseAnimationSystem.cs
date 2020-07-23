@@ -2,6 +2,7 @@ using System;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Graphics.Animation.Units;
 using PataNext.Client.Graphics.Animation.Units.Base;
+using PataNext.Client.Modules;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;
 using Unity.Collections;

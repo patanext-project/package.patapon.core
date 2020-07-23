@@ -45,8 +45,7 @@ namespace PataNext.Client.DataScripts.Interface.Popup
 	{
 		public override bool PresentationWorldTransformStayOnSpawn => false;
 	}
-
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
+	
 	[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation))]
 	public class PopupPoolingSystem : PoolingSystem<PopupBackend, PopupPresentation>
 	{

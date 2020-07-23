@@ -2,9 +2,11 @@ using GameBase.Roles.Components;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Graphics;
 using PataNext.Client.Graphics.Camera;
+using PataNext.Module.Simulation.Components;
 using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
+using StormiumTeam.GameBase.BaseSystems.Ext;
 using StormiumTeam.GameBase.Utility.DOTS.xCamera;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -43,11 +45,12 @@ namespace PataNext.Client.SnapshotArchetypes
 	[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation))]
 	public class UpdateUnitCameraModifierSystem : AbsGameBaseSystem
 	{
-		private LazySystem<GrabInputSystem> m_GrabInputSystem;
-
 		protected override void OnUpdate()
 		{
-			var userCommand         = this.L(ref m_GrabInputSystem).LocalCommand;
+			var player = this.GetFirstSelfGamePlayer();
+			if (player == default || !EntityManager.TryGetComponentData(player, out PlayerInputComponent playerInput))
+				return;
+			
 			var dt                  = Time.DeltaTime;
 			var directionFromEntity = GetComponentDataFromEntity<UnitDirection>(true);
 
@@ -74,7 +77,7 @@ namespace PataNext.Client.SnapshotArchetypes
 					    && abilityActivationFromEntity.TryGet(controller.Incoming, out var activation) && activation.Type == EActivationType.HeroMode
 					    && abilityStateFromEntity.TryGet(controller.Incoming, out var state) && (state.Phase & EAbilityPhase.ActiveOrChaining) == 0)
 					{
-						if (math.abs(userCommand.Panning) < 0.1f)
+						if (math.abs(playerInput.Panning) < 0.1f)
 						{
 							cameraData.HeroModeZoom            =  true;
 							cameraData.HeroModeZoomProgression += dt;
@@ -135,7 +138,7 @@ namespace PataNext.Client.SnapshotArchetypes
 						// in future, set y and z
 						float3 positionResult = default;
 						positionResult.x =  useTargetPosition ? targetPosition : translation.Value.x;
-						positionResult.x += userCommand.Panning * (cameraModifier.FieldOfView + 4f * direction.Value);
+						positionResult.x += playerInput.Panning * (cameraModifier.FieldOfView + 4f * direction.Value);
 						positionResult.x += cameraModifier.FieldOfView * targetOffset * direction.Value;
 
 						if (!isImmediate)

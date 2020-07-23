@@ -110,7 +110,7 @@ namespace PataNext.Client.Graphics.Models.InGame.Multiplayer
 			if (!EntityManager.TryGetComponentData(targetEntity, out Relative<PlayerDescription> relativePlayer))
 				return;
 
-			EntityManager.TryGetComponentData(relativePlayer.Target, out PlayerInput playerInput);
+			EntityManager.TryGetComponentData(relativePlayer.Target, out PlayerInputComponent playerInput);
 
 			var command = playerInput;
 			definition.Set((int) command.Ability);

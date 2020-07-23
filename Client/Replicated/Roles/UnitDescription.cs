@@ -14,7 +14,7 @@ namespace PataNext.Module.Simulation.Components.Roles
 		{
 		}
 
-		public class Register : RegisterGameHostComponentSystemBase<UnitDescription>
+		public class Register : RegisterGameHostComponentData<UnitDescription>
 		{
 		}
 	}
