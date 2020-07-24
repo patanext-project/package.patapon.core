@@ -26,7 +26,7 @@ namespace PataNext.Client.Graphics.Camera
 			
 			Entities.ForEach((ref Translation translation, in AnchorOrthographicCameraData cameraData, in ComputedCameraState computed) =>
 			{
-				if (!targetAnchorFromEntity.Exists(computed.StateData.Target))
+				if (!targetAnchorFromEntity.HasComponent(computed.StateData.Target))
 					return;
 
 				var anchor    = targetAnchorFromEntity[computed.StateData.Target];

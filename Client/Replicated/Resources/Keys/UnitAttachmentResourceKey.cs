@@ -2,6 +2,10 @@
 using GameHost.Native;
  using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using GameHost.Simulation.Utility.Resource.Components;
+ using PataNext.Module.Simulation.Resources.Keys;
+ using Unity.Entities;
+
+ [assembly: RegisterGenericComponentType(typeof(GameResourceKey<UnitAttachmentResourceKey>))]
 
 namespace PataNext.Module.Simulation.Resources.Keys
 {

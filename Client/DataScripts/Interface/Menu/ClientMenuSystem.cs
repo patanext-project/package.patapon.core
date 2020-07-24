@@ -35,7 +35,7 @@ namespace PataNext.Client.DataScripts.Interface.Menu
 			m_QuadBackground = bgGo.GetComponent<Image>();
 			CanvasUtility.ExtendRectTransform(m_QuadBackground.GetComponent<RectTransform>());
 
-			SetBackgroundCanvasColor(Color.black);
+			SetBackgroundCanvasColor(Color.clear);
 		}
 
 		protected override void OnUpdate()

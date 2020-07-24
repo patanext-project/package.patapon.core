@@ -19,6 +19,6 @@ namespace PataNext.Client.Components.Archetypes
 		public UnitEquipmentBackend UnitEquipmentBackend;
 
 		[NonSerialized]
-		public NativeString64 EquipmentId;
+		public FixedString64 EquipmentId;
 	}
 }

@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using DefaultNamespace.Utility.DOTS;
 using GameBase.Roles.Components;
 using GameBase.Roles.Descriptions;
+using GameBase.Time.Components;
+using GameHost.ShareSimuWorldFeature.Systems;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.OrderSystems;
@@ -32,7 +35,7 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 	{
 		public Animator animator;
 
-		public SVGImage drumImage;
+		public SVGImage   drumImage;
 		public SVGImage[] effectImages;
 
 		public Sprite[] sprites;
@@ -46,14 +49,14 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 
 	public class UIDrumPressureBackend : RuntimeAssetBackend<UIDrumPressurePresentation>
 	{
-		public int   key, rand;
+		public int    key, rand;
 		public double endTime;
 
 		public bool perfect;
 
 		public bool play;
 	}
-	
+
 	[AlwaysUpdateSystem]
 	[UpdateInGroup(typeof(OrderGroup.Presentation.InterfaceRendering))]
 	[AlwaysSynchronizeSystem]
@@ -61,18 +64,18 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 	{
 		public Dictionary<int, AsyncAssetPool<GameObject>> DrumPresentationPools = new Dictionary<int, AsyncAssetPool<GameObject>>();
 		public Dictionary<int, AssetPool<GameObject>>      DrumBackendPools      = new Dictionary<int, AssetPool<GameObject>>();
-		
+
 		public Dictionary<int, int> DrumVariantCount = new Dictionary<int, int>();
-		
+
 		private static readonly int StrHashPlay    = Animator.StringToHash("Play");
 		private static readonly int StrHashVariant = Animator.StringToHash("Variant");
 		private static readonly int StrHashKey     = Animator.StringToHash("Key");
 		private static readonly int StrHashPerfect = Animator.StringToHash("Perfect");
 
-		private Canvas m_Canvas;
+		private Canvas      m_Canvas;
 		private EntityQuery m_CameraQuery;
 		private EntityQuery m_EngineQuery;
-		
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -102,9 +105,9 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 		protected override void OnStartRunning()
 		{
 			base.OnStartRunning();
-			
+
 			m_Canvas.sortingLayerID = SortingLayer.NameToID("OverlayUI");
-			m_Canvas.sortingOrder = (int) World.GetOrCreateSystem<UIDrumPressureOrderingSystem>().Order;
+			m_Canvas.sortingOrder   = (int) World.GetOrCreateSystem<UIDrumPressureOrderingSystem>().Order;
 		}
 
 		protected override void OnUpdate()
@@ -118,7 +121,7 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 				cameraPosition = cameraObject.transform.position;
 			}
 
-			var player  = this.GetFirstSelfGamePlayer();
+			var player = this.GetFirstSelfGamePlayer();
 			if (!EntityManager.TryGetComponentData(player, out PlayerInputComponent playerCommand))
 				return;
 
@@ -127,8 +130,8 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 			var isWorldSpace = cameraState.StateData.Target != default;
 			if (!EntityManager.HasComponent<UnitDescription>(cameraState.StateData.Target))
 				isWorldSpace = false;
-			
-			var canvasRect   = m_Canvas.pixelRect;
+
+			var canvasRect = m_Canvas.pixelRect;
 			if (isWorldSpace && cameraEntity != default)
 			{
 				var translation = EntityManager.GetComponentData<Translation>(cameraState.StateData.Target);
@@ -148,39 +151,38 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 				m_Canvas.renderMode         = RenderMode.ScreenSpaceCamera;
 				m_Canvas.worldCamera        = EntityManager.GetComponentObject<UnityEngine.Camera>(cameraEntity);
 			}
-			
-			var pixelRange     = new float2(canvasRect.width, canvasRect.height);
+
+			var pixelRange = new float2(canvasRect.width, canvasRect.height);
 
 			Entity engine = default;
 			if (cameraState.StateData.Target != default)
 				engine = PlayerComponentFinder.GetRelativeChild<RhythmEngineDescription>(EntityManager, m_EngineQuery, cameraState.StateData.Target, player);
 			else
 				engine = PlayerComponentFinder.FromQueryFindPlayerChild(m_EngineQuery, player);
-
+			
 			if (engine == default)
 				return;
-			
+
 			var process  = EntityManager.GetComponentData<RhythmEngineLocalState>(engine);
 			var settings = EntityManager.GetComponentData<RhythmEngineSettings>(engine);
 
 			if (!EntityManager.HasComponent<RhythmEngineIsPlaying>(engine) || RhythmEngineUtility.GetFlowBeat(process.Elapsed, settings.BeatInterval) < 0)
 			{
 				// destroy everything!
-				Entities.ForEach((UIDrumPressureBackend backend) =>
-				{
-					backend.Return(true, true);
-				}).WithStructuralChanges().Run();
+				Entities.ForEach((UIDrumPressureBackend backend) => { backend.Return(true, true); }).WithStructuralChanges().Run();
 				return;
 			}
 
 			var key = 1;
 			foreach (var ac in playerCommand.Actions)
 			{
-				if (!ac.WasPressed)
+				if (!ac.InterFrame.HasBeenPressed(GetSingleton<InterFrame>().Range))
 				{
 					key++;
 					continue;
 				}
+
+				Console.WriteLine($"{ac.InterFrame.Pressed} {GetSingleton<InterFrame>().Begin.Frame}");
 
 				var keyRange = new float2();
 				if (key <= 2)
@@ -253,7 +255,7 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 					if (backend.play)
 					{
 						var color = presentation.colors[backend.key - 1];
-						color.a                               = 1;
+						color.a = 1;
 						foreach (var effectImage in presentation.effectImages)
 						{
 							effectImage.color = color;
@@ -268,7 +270,7 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 						presentation.animator.SetFloat(StrHashVariant, backend.rand);
 						presentation.animator.SetTrigger(StrHashPlay);
 					}
-					
+
 					presentation.animator.Update(Time.DeltaTime);
 				}
 
@@ -277,7 +279,7 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 
 				backend.Return(true, true);
 			}).WithStructuralChanges().Run();
-			
+
 			return;
 		}
 
@@ -286,7 +288,7 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 			var go = new GameObject("(Not Init) BackendPressure", typeof(RectTransform), typeof(UIDrumPressureBackend), typeof(GameObjectEntity));
 			go.SetActive(false);
 			go.GetComponent<UIDrumPressureBackend>().SetRootPool(poolCaller);
-			
+
 			return go;
 		}
 	}

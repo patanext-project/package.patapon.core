@@ -66,7 +66,7 @@ namespace PataNext.Client.Graphics.Camera
 				.ForEach((Entity entity, in LocalCameraState cameraState) =>
 				{
 					var camera                                        = defaultCamera;
-					if (cameraTargetFromEntity.Exists(entity)) camera = cameraTargetFromEntity[entity].Value;
+					if (cameraTargetFromEntity.HasComponent(entity)) camera = cameraTargetFromEntity[entity].Value;
 
 					var updater = updateFromEntity.GetUpdater(camera);
 					if (!updater.Out(out var cameraStateUpdate).possess)
@@ -92,7 +92,7 @@ namespace PataNext.Client.Graphics.Camera
 				.ForEach((Entity entity, in ServerCameraState cameraState) =>
 				{
 					var camera                                        = defaultCamera;
-					if (cameraTargetFromEntity.Exists(entity)) camera = cameraTargetFromEntity[entity].Value;
+					if (cameraTargetFromEntity.HasComponent(entity)) camera = cameraTargetFromEntity[entity].Value;
 
 					var updater = updateFromEntity.GetUpdater(camera);
 					if (!updater.Out(out var cameraStateUpdate).possess)

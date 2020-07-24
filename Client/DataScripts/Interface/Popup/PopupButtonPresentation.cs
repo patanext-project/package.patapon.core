@@ -92,7 +92,7 @@ namespace PataNext.Client.DataScripts.Interface.Popup
 
 			public bool IsValid(Entity target)
 			{
-				return !DisabledFromEntity.Exists(target) && !DisabledFromEntity.Exists(PopupFromEntity[target].Target);
+				return !DisabledFromEntity.HasComponent(target) && !DisabledFromEntity.HasComponent(PopupFromEntity[target].Target);
 			}
 		}
 		

@@ -2,7 +2,11 @@
 using GameHost.Native;
  using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using GameHost.Simulation.Utility.Resource.Components;
+ using PataNext.Module.Simulation.Resources.Keys;
+ using Unity.Entities;
 
+ [assembly: RegisterGenericComponentType(typeof(GameResourceKey<UnitKitResourceKey>))]
+ 
 namespace PataNext.Module.Simulation.Resources.Keys
 {
 	public readonly struct UnitKitResourceKey : IGameResourceKeyDescription, IEquatable<UnitKitResourceKey>

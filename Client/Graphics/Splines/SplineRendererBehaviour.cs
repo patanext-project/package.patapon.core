@@ -116,10 +116,17 @@ namespace PataNext.Client.Graphics.Splines
 			IsLooping = false;
 			
 			var goEntity = GetComponent<GameObjectEntity>();
-			if (!Application.isPlaying || goEntity?.EntityManager == null)
+			if (!Application.isPlaying || goEntity == null || goEntity.EntityManager != default)
 				return;
 
-			goEntity.EntityManager.SetComponentData(goEntity.Entity, GetData());
+			try
+			{
+				goEntity.EntityManager.SetComponentData(goEntity.Entity, GetData());
+			}
+			catch (NullReferenceException nullRef)
+			{
+			}
+
 			MarkDirty();
 		}
 

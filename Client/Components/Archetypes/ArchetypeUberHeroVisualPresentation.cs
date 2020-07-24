@@ -154,7 +154,7 @@ namespace PataNext.Client.Components.Archetypes
 						var type = kvp.Key;
 						var root = kvp.Value;
 
-						var equipmentTarget = default(NativeString64);
+						var equipmentTarget = default(FixedString64);
 						foreach (var equipment in displayedEquipment)
 						{
 							switch (equipment.Attachment)
