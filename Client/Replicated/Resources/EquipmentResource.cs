@@ -1,11 +1,10 @@
-﻿﻿using GameHost.Simulation.Utility.Resource;
- using GameHost.Simulation.Utility.Resource.Interfaces;
+﻿﻿using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
+using GameHost.Simulation.Utility.Resource;
+using GameHost.Simulation.Utility.Resource.Components;
+using GameHost.Simulation.Utility.Resource.Interfaces;
 using PataNext.Module.Simulation.Components.Roles;
- using PataNext.Module.Simulation.Resources;
- using Unity.Entities;
+using PataNext.Module.Simulation.Resources.Keys;
 
- [assembly: RegisterGenericComponentType(typeof(GameResource<EquipmentResource>))]
- 
 namespace PataNext.Module.Simulation.Resources
 {
 	/// <summary>

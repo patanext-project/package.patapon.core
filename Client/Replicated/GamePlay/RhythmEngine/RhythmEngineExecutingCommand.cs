@@ -1,5 +1,7 @@
 ﻿﻿using System;
  using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
+ using GameHost.Simulation.Utility.Resource;
+ using PataNext.Module.Simulation.Resources;
  using Unity.Entities;
  using Unity.Mathematics;
 
@@ -7,8 +9,8 @@
  {
 	 public struct RhythmEngineExecutingCommand : IComponentData
 	 {
-		 public Entity Previous;
-		 public Entity CommandTarget;
+		 public GameResource<RhythmCommandResource> Previous;
+		 public GameResource<RhythmCommandResource> CommandTarget;
 
 		 /// <summary>
 		 /// At which 'activation' beat will the command start?

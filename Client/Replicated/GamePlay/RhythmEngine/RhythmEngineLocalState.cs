@@ -12,6 +12,9 @@ using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 		public TimeSpan     Elapsed                { get; set; }
 
 		public bool CanRunCommands => Elapsed > TimeSpan.Zero;
+		
+		public int  CurrentBeat;
+		public uint NewBeatTick;
 
 		public bool IsRecovery(int activationBeat)
 		{

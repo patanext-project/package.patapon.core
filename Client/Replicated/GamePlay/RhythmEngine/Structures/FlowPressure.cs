@@ -1,11 +1,24 @@
 ﻿﻿using System;
+ using PataNext.Module.Simulation.Game.RhythmEngine;
 
  namespace PataNext.Module.Simulation.Components.GamePlay.RhythmEngine.Structures
 {
+	public struct ComputedSliderFlowPressure
+	{
+		public bool IsSlider => End.IsSliderEnd;
+
+		public FlowPressure Start, End;
+	}
+
 	public struct FlowPressure
 	{
 		public const float  Error   = 0.99f;
-		public const double Perfect = 0.275f;
+		public const double Perfect = 0.2f;
+
+		/// <summary>
+		/// Is this the end of a slider?
+		/// </summary>
+		public bool IsSliderEnd;
 
 		/// <summary>
 		///     Our custom Rhythm Key (Pata 1, Pon 2, Don 3, Chaka 4)
@@ -30,7 +43,18 @@
 		///     If we made one at 13.8f, the score should be the same (but negative)!
 		/// </example>
 		public float Score;
-		
+
+		public FlowPressure(int keyId, TimeSpan time, TimeSpan beatInterval)
+		{
+			FlowBeat = RhythmEngineUtility.GetFlowBeat(time, beatInterval);
+			Score    = RhythmEngineUtility.GetScore(time, beatInterval);
+
+			KeyId = keyId;
+			Time  = time;
+
+			IsSliderEnd = false;
+		}
+
 		public float GetAbsoluteScore()
 		{
 			return Math.Abs(Score);

@@ -182,8 +182,6 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 					continue;
 				}
 
-				Console.WriteLine($"{ac.InterFrame.Pressed} {GetSingleton<InterFrame>().Begin.Frame}");
-
 				var keyRange = new float2();
 				if (key <= 2)
 				{
@@ -245,6 +243,10 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 					DrumVariantCount[key] = Random.Range(0, 2);
 					i++;
 				}
+
+				Console.WriteLine($"{key} -> {absRealScore}");
+				
+				key++;
 			}
 
 			Entities.ForEach((UIDrumPressureBackend backend) =>
