@@ -45,8 +45,9 @@ namespace PataNext.Game.Inputs.Actions
 					action.UpCount   = 0;
 					action.Active    = false;
 
-					foreach (var input in layout.Inputs)
+					for (var i = 0; i < layout.Inputs.Count; i++)
 					{
+						var input = layout.Inputs[i];
 						if (Backend.GetInputControl(input.Target) is ButtonControl buttonControl)
 						{
 							action.DownCount += buttonControl.wasPressedThisFrame ? 1u : 0;
