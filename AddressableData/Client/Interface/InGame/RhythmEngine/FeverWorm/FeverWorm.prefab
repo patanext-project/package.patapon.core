@@ -357,6 +357,7 @@ GameObject:
   - component: {fileID: 3685724462371945694}
   - component: {fileID: 2449037845399044618}
   - component: {fileID: 3549741937864239649}
+  - component: {fileID: 7259901853454158698}
   m_Layer: 0
   m_Name: FeverWorm
   m_TagString: Untagged
@@ -411,7 +412,7 @@ SortingGroup:
   m_GameObject: {fileID: 1564734834012336423}
   m_Enabled: 1
   m_SortingLayerID: -611796131
-  m_SortingLayer: 4
+  m_SortingLayer: 8
   m_SortingOrder: 0
 --- !u!114 &3549741937864239649
 MonoBehaviour:
@@ -474,6 +475,18 @@ MonoBehaviour:
   - {fileID: 3605293246990088059}
   - {fileID: 7913511881320536704}
   - {fileID: 253388529080014578}
+--- !u!114 &7259901853454158698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1564734834012336423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bf10cdea1344482e91a4f2b58506b77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1564734834016026459
 GameObject:
   m_ObjectHideFlags: 0
@@ -1599,6 +1612,7 @@ MonoBehaviour:
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1629,9 +1643,6 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_outlineColor:
-    serializedVersion: 2
-    rgba: 4278190080
   m_fontSize: 5
   m_fontSizeBase: 5
   m_fontWeight: 400
@@ -1642,7 +1653,6 @@ MonoBehaviour:
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 8192
   m_textAlignment: 65535
-  m_isAlignmentEnumConverted: 0
   m_characterSpacing: 0
   m_wordSpacing: 0
   m_lineSpacing: 0
@@ -1652,10 +1662,8 @@ MonoBehaviour:
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
-  m_firstOverflowCharacterIndex: -1
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
-  m_isTextTruncated: 0
   m_enableKerning: 1
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
@@ -1663,33 +1671,22 @@ MonoBehaviour:
   m_parseCtrlCharacters: 1
   m_isOrthographic: 0
   m_isCullingEnabled: 0
-  m_ignoreCulling: 1
   m_horizontalMapping: 0
   m_verticalMapping: 0
   m_uvLineOffset: 0
   m_geometrySortingOrder: 0
   m_IsTextObjectScaleStatic: 0
   m_VertexBufferAutoSizeReduction: 1
-  m_firstVisibleCharacter: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
   m_margin: {x: 0, y: 0, z: 0, w: 0}
-  m_textInfo:
-    textComponent: {fileID: 4097195041690242988}
-    characterCount: 7
-    spriteCount: 0
-    spaceCount: 0
-    wordCount: 1
-    linkCount: 0
-    lineCount: 1
-    pageCount: 1
-    materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_spriteAnimator: {fileID: 0}
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 3823267860560282931}
   m_maskType: 0
+  _SortingLayerID: 0
+  _SortingOrder: 0
 --- !u!1 &4452241508074279931
 GameObject:
   m_ObjectHideFlags: 0
@@ -1829,6 +1826,7 @@ MonoBehaviour:
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1859,9 +1857,6 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_outlineColor:
-    serializedVersion: 2
-    rgba: 4278190080
   m_fontSize: 11.5
   m_fontSizeBase: 11.5
   m_fontWeight: 400
@@ -1872,7 +1867,6 @@ MonoBehaviour:
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 1024
   m_textAlignment: 65535
-  m_isAlignmentEnumConverted: 1
   m_characterSpacing: 0
   m_wordSpacing: 0
   m_lineSpacing: 0
@@ -1882,10 +1876,8 @@ MonoBehaviour:
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
-  m_firstOverflowCharacterIndex: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
-  m_isTextTruncated: 0
   m_enableKerning: 1
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
@@ -1893,33 +1885,22 @@ MonoBehaviour:
   m_parseCtrlCharacters: 1
   m_isOrthographic: 0
   m_isCullingEnabled: 0
-  m_ignoreCulling: 1
   m_horizontalMapping: 0
   m_verticalMapping: 0
   m_uvLineOffset: 0
   m_geometrySortingOrder: 0
   m_IsTextObjectScaleStatic: 0
   m_VertexBufferAutoSizeReduction: 1
-  m_firstVisibleCharacter: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
   m_margin: {x: 0, y: 0, z: 0, w: 0}
-  m_textInfo:
-    textComponent: {fileID: 5348634912716433613}
-    characterCount: 7
-    spriteCount: 0
-    spaceCount: 0
-    wordCount: 1
-    linkCount: 0
-    lineCount: 1
-    pageCount: 1
-    materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_spriteAnimator: {fileID: 0}
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 7481283615622906031}
   m_maskType: 0
+  _SortingLayerID: 0
+  _SortingOrder: 0
 --- !u!1 &4522399260558245364
 GameObject:
   m_ObjectHideFlags: 0
@@ -2014,6 +1995,7 @@ MonoBehaviour:
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -2044,9 +2026,6 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_outlineColor:
-    serializedVersion: 2
-    rgba: 4278190080
   m_fontSize: 8.6
   m_fontSizeBase: 12
   m_fontWeight: 400
@@ -2057,7 +2036,6 @@ MonoBehaviour:
   m_HorizontalAlignment: 4
   m_VerticalAlignment: 8192
   m_textAlignment: 65535
-  m_isAlignmentEnumConverted: 0
   m_characterSpacing: 0
   m_wordSpacing: 0
   m_lineSpacing: 0
@@ -2067,10 +2045,8 @@ MonoBehaviour:
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
-  m_firstOverflowCharacterIndex: -1
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
-  m_isTextTruncated: 0
   m_enableKerning: 1
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
@@ -2078,33 +2054,22 @@ MonoBehaviour:
   m_parseCtrlCharacters: 1
   m_isOrthographic: 0
   m_isCullingEnabled: 0
-  m_ignoreCulling: 1
   m_horizontalMapping: 0
   m_verticalMapping: 0
   m_uvLineOffset: 0
   m_geometrySortingOrder: 0
   m_IsTextObjectScaleStatic: 0
   m_VertexBufferAutoSizeReduction: 1
-  m_firstVisibleCharacter: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
   m_margin: {x: 1.1106997, y: 0, z: 0, w: 0}
-  m_textInfo:
-    textComponent: {fileID: 6017652804229252177}
-    characterCount: 3
-    spriteCount: 0
-    spaceCount: 0
-    wordCount: 1
-    linkCount: 0
-    lineCount: 1
-    pageCount: 1
-    materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_spriteAnimator: {fileID: 0}
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 8168531969904220366}
   m_maskType: 0
+  _SortingLayerID: 0
+  _SortingOrder: 0
 --- !u!1 &5037110282186187368
 GameObject:
   m_ObjectHideFlags: 0
@@ -2537,6 +2502,7 @@ MonoBehaviour:
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -2567,9 +2533,6 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_outlineColor:
-    serializedVersion: 2
-    rgba: 4278190080
   m_fontSize: 7
   m_fontSizeBase: 7
   m_fontWeight: 400
@@ -2580,7 +2543,6 @@ MonoBehaviour:
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 8192
   m_textAlignment: 65535
-  m_isAlignmentEnumConverted: 0
   m_characterSpacing: 0
   m_wordSpacing: 0
   m_lineSpacing: 0
@@ -2590,10 +2552,8 @@ MonoBehaviour:
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
-  m_firstOverflowCharacterIndex: -1
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
-  m_isTextTruncated: 0
   m_enableKerning: 1
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
@@ -2601,33 +2561,22 @@ MonoBehaviour:
   m_parseCtrlCharacters: 1
   m_isOrthographic: 0
   m_isCullingEnabled: 0
-  m_ignoreCulling: 1
   m_horizontalMapping: 0
   m_verticalMapping: 0
   m_uvLineOffset: 0
   m_geometrySortingOrder: 0
   m_IsTextObjectScaleStatic: 0
   m_VertexBufferAutoSizeReduction: 1
-  m_firstVisibleCharacter: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
   m_margin: {x: 0, y: 0, z: 0, w: 0}
-  m_textInfo:
-    textComponent: {fileID: 5492188293662755085}
-    characterCount: 6
-    spriteCount: 0
-    spaceCount: 0
-    wordCount: 1
-    linkCount: 0
-    lineCount: 1
-    pageCount: 1
-    materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_spriteAnimator: {fileID: 0}
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 2992730005081489314}
   m_maskType: 0
+  _SortingLayerID: 0
+  _SortingOrder: 0
 --- !u!1 &5696356829706628842
 GameObject:
   m_ObjectHideFlags: 0
@@ -2921,6 +2870,7 @@ MonoBehaviour:
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -2951,9 +2901,6 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_outlineColor:
-    serializedVersion: 2
-    rgba: 4278190080
   m_fontSize: 15
   m_fontSizeBase: 15
   m_fontWeight: 400
@@ -2964,7 +2911,6 @@ MonoBehaviour:
   m_HorizontalAlignment: 4
   m_VerticalAlignment: 8192
   m_textAlignment: 65535
-  m_isAlignmentEnumConverted: 0
   m_characterSpacing: 0
   m_wordSpacing: 0
   m_lineSpacing: 0
@@ -2974,10 +2920,8 @@ MonoBehaviour:
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
-  m_firstOverflowCharacterIndex: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
-  m_isTextTruncated: 0
   m_enableKerning: 1
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
@@ -2985,33 +2929,22 @@ MonoBehaviour:
   m_parseCtrlCharacters: 1
   m_isOrthographic: 0
   m_isCullingEnabled: 0
-  m_ignoreCulling: 1
   m_horizontalMapping: 0
   m_verticalMapping: 0
   m_uvLineOffset: 0
   m_geometrySortingOrder: 0
   m_IsTextObjectScaleStatic: 0
   m_VertexBufferAutoSizeReduction: 1
-  m_firstVisibleCharacter: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
   m_margin: {x: 0, y: 0, z: 0, w: 0}
-  m_textInfo:
-    textComponent: {fileID: 5799207947548679242}
-    characterCount: 1
-    spriteCount: 0
-    spaceCount: 0
-    wordCount: 1
-    linkCount: 0
-    lineCount: 1
-    pageCount: 1
-    materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_spriteAnimator: {fileID: 0}
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 5648348975829178964}
   m_maskType: 0
+  _SortingLayerID: 0
+  _SortingOrder: 0
 --- !u!1 &6359968646829137418
 GameObject:
   m_ObjectHideFlags: 0
@@ -3310,18 +3243,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5f4c136e271a9ce4b831d40518d69dbe, type: 3}
---- !u!212 &3443125014079909268 stripped
-SpriteRenderer:
-  m_CorrespondingSourceObject: {fileID: 4215195526368404324, guid: 5f4c136e271a9ce4b831d40518d69dbe,
-    type: 3}
-  m_PrefabInstance: {fileID: 1564734834826252016}
-  m_PrefabAsset: {fileID: 0}
---- !u!212 &5559041525703725151 stripped
-SpriteRenderer:
-  m_CorrespondingSourceObject: {fileID: 6382340481078582959, guid: 5f4c136e271a9ce4b831d40518d69dbe,
-    type: 3}
-  m_PrefabInstance: {fileID: 1564734834826252016}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8476061530459131570 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6923733603769729090, guid: 5f4c136e271a9ce4b831d40518d69dbe,
@@ -3331,6 +3252,18 @@ Transform:
 --- !u!212 &3957606274942040878 stripped
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 2547687167064896990, guid: 5f4c136e271a9ce4b831d40518d69dbe,
+    type: 3}
+  m_PrefabInstance: {fileID: 1564734834826252016}
+  m_PrefabAsset: {fileID: 0}
+--- !u!212 &3443125014079909268 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 4215195526368404324, guid: 5f4c136e271a9ce4b831d40518d69dbe,
+    type: 3}
+  m_PrefabInstance: {fileID: 1564734834826252016}
+  m_PrefabAsset: {fileID: 0}
+--- !u!212 &5559041525703725151 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 6382340481078582959, guid: 5f4c136e271a9ce4b831d40518d69dbe,
     type: 3}
   m_PrefabInstance: {fileID: 1564734834826252016}
   m_PrefabAsset: {fileID: 0}
@@ -3413,12 +3346,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5f4c136e271a9ce4b831d40518d69dbe, type: 3}
---- !u!4 &6636830781668117156 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6923733603769729090, guid: 5f4c136e271a9ce4b831d40518d69dbe,
-    type: 3}
-  m_PrefabInstance: {fileID: 4327054798086310630}
-  m_PrefabAsset: {fileID: 0}
 --- !u!212 &2258549248157876024 stripped
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 2547687167064896990, guid: 5f4c136e271a9ce4b831d40518d69dbe,
@@ -3434,6 +3361,12 @@ SpriteRenderer:
 --- !u!212 &7250348671825171529 stripped
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 6382340481078582959, guid: 5f4c136e271a9ce4b831d40518d69dbe,
+    type: 3}
+  m_PrefabInstance: {fileID: 4327054798086310630}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &6636830781668117156 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6923733603769729090, guid: 5f4c136e271a9ce4b831d40518d69dbe,
     type: 3}
   m_PrefabInstance: {fileID: 4327054798086310630}
   m_PrefabAsset: {fileID: 0}

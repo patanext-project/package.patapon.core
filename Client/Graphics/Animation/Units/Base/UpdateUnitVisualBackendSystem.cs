@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Utility.Resource.Systems;
@@ -59,7 +60,7 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 				if (EntityManager.TryGetComponentData(backend.DstEntity, out UnitCurrentKit currentKit)
 				    && currentKit.Resource.TryGet(resourceMgr, out UnitKitResourceKey key))
 				{
-					unitArchetype = $"UH.{key.Value}";
+					unitArchetype = $"UH.{key.Value.ToString()}";
 				}
 
 				if (backend.CurrentArchetype != unitArchetype)
@@ -73,10 +74,13 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 
 			foreach (var (be, archetype) in m_UpdateArchetypeList)
 			{
+				Console.WriteLine($"{archetype}");
 				if (World.GetExistingSystem<UnitVisualArchetypeManager>().TryGetArchetypePool(archetype, out var pool))
 				{
+					Console.WriteLine("return " + be.Presentation);
 					be.ReturnPresentation();
 					be.SetPresentationFromPool(pool);
+					Console.WriteLine(pool.AssetId);
 				}
 			}
 		}

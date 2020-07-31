@@ -1,5 +1,6 @@
 {
     "name": "package.patapon.client",
+    "rootNamespace": "",
     "references": [
         "package.patapon.mixed",
         "package.guerro.shared",
@@ -7,6 +8,7 @@
         "package.stormiumteam.gamebase",
         "package.stormiumteam.networking",
         "patapon.masterserver.shared",
+        "Unity.Build",
         "Unity.VectorGraphics",
         "Revolution.NetCode",
         "Revolution.Snapshot",
@@ -35,7 +37,8 @@
         "Karambolo.Common.dll",
         "Karambolo.PO.dll",
         "System.Memory.dll",
-        "System.Runtime.CompilerServices.Unsafe.dll"
+        "System.Runtime.CompilerServices.Unsafe.dll",
+        "Mono.Options.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

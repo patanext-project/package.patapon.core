@@ -243,8 +243,6 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 					DrumVariantCount[key] = Random.Range(0, 2);
 					i++;
 				}
-
-				Console.WriteLine($"{key} -> {absRealScore}");
 				
 				key++;
 			}

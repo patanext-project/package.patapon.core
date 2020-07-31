@@ -15,7 +15,10 @@ namespace PataNext.Client.Graphics.Camera
 
 		protected override void OnUpdate()
 		{
-			Entities.WithAll<Local>().ForEach((ref LocalCameraState state) => { state.Data.Offset.pos.x += Input.GetAxis("Horizontal"); });
+			Entities.WithAll<Local>().ForEach((ref LocalCameraState state) =>
+			{
+				state.Data.Offset.pos.x += Input.GetAxis("Horizontal");
+			});
 		}
 
 		public struct Local : IComponentData

@@ -143,7 +143,9 @@ namespace PataNext.Client.Graphics.Camera
 					else
 					{
 						modifier.Rotation    = quaternion.identity;
-						modifier.FieldOfView = 0;
+						modifier.FieldOfView = 6;
+
+						computed.Focus = modifier.FieldOfView;
 					}
 
 					translation.Value = modifier.Position + offset.pos;

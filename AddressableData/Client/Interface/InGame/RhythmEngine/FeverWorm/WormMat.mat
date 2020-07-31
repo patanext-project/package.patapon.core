@@ -68,6 +68,7 @@ Material:
     - _BaseColor: {r: 0, g: 0, b: 0, a: 1}
     - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     - _SummonPosition: {r: -4.45, g: 5.981, b: 0, a: 0}
+  m_BuildTextureStacks: []
 --- !u!114 &2088612226448586456
 MonoBehaviour:
   m_ObjectHideFlags: 11

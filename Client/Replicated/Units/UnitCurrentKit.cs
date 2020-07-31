@@ -1,4 +1,5 @@
-﻿using GameHost.Simulation.Utility.Resource;
+﻿using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
+using GameHost.Simulation.Utility.Resource;
 using PataNext.Module.Simulation.Resources;
 using Unity.Entities;
 
@@ -12,5 +13,8 @@ namespace PataNext.Module.Simulation.Components.Units
 		{
 			Resource = id;
 		}
+		
+		public class Register : RegisterGameHostComponentData<UnitCurrentKit>
+		{}
 	}
 }
