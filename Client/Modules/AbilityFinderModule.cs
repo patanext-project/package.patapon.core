@@ -1,4 +1,4 @@
-using GameBase.Roles.Components;
+using StormiumTeam.GameBase.Roles.Components;
 using StormiumTeam.GameBase.Utility.Modules;
 using Unity.Burst;
 using Unity.Collections;

@@ -1,10 +1,10 @@
 using System;
-using GameBase.Roles.Components;
-using GameBase.Roles.Interfaces;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.DataScripts.Interface.Popup;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.Roles.Components;
+using StormiumTeam.GameBase.Roles.Interfaces;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;

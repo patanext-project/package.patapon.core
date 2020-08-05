@@ -1,6 +1,6 @@
 ﻿using System;
-using GameBase.Camera;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase._Camera;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;

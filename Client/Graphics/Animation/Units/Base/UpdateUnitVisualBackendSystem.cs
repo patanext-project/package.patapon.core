@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Utility.Resource.Systems;
 using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;

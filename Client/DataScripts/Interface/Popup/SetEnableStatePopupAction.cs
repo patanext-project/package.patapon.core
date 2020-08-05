@@ -1,5 +1,5 @@
-using GameBase.Roles.Components;
 using PataNext.Client.Core.DOTSxUI.Components;
+using StormiumTeam.GameBase.Roles.Components;
 using Unity.Entities;
 
 namespace PataNext.Client.DataScripts.Interface.Popup

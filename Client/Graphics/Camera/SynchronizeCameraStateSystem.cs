@@ -1,7 +1,7 @@
-using GameBase.Camera;
-using GameBase.Roles.Descriptions;
 using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase._Camera;
+using StormiumTeam.GameBase.Roles.Descriptions;
 using StormiumTeam.GameBase.Utility.DOTS.xCamera;
 using StormiumTeam.GameBase.Utility.DOTS.xMonoBehaviour;
 using StormiumTeam.GameBase.Utility.Rendering;

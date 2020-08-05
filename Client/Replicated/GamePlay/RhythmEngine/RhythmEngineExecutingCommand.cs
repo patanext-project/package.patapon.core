@@ -1,5 +1,4 @@
-﻿﻿using System;
- using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
+﻿using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
  using GameHost.Simulation.Utility.Resource;
  using PataNext.Module.Simulation.Resources;
  using Unity.Entities;

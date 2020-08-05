@@ -1,4 +1,4 @@
-using GameBase.Camera;
+using StormiumTeam.GameBase._Camera;
 using Unity.Entities;
 using UnityEngine;
 

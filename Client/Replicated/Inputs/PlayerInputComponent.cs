@@ -1,7 +1,6 @@
 using System;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using GameHost.Simulation.Utility.InterTick;
-using package.stormiumteam.shared;
 using Unity.Entities;
 
 namespace PataNext.Module.Simulation.Components
