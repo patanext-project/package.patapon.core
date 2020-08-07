@@ -22,7 +22,7 @@ namespace PataNext.Client.Graphics.Animation.Base
 			Root  = rootMixer;
 			Graph = graph;
 
-			Mixer = AnimationMixerPlayable.Create(graph, 4, true);
+			Mixer = AnimationMixerPlayable.Create(graph, 0, true);
 			Mixer.SetPropagateSetTime(true);
 			OnInitialize(init);
 			rootMixer.AddInput(self, 0);

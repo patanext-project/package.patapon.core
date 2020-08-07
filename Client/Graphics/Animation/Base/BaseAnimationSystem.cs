@@ -7,6 +7,7 @@ using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;
 using Unity.Collections;
 using Unity.Entities;
+using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Playables;
 
@@ -110,10 +111,14 @@ namespace PataNext.Client.Graphics.Animation.Base
 			m_LastPlayableInit = init;
 		}
 
+		protected abstract void OnAnimationInject(UnitVisualAnimation animation, ref TPlayableInit initData);
+
 		protected void InjectAnimation(UnitVisualAnimation animation, TPlayableInit initData)
 		{
 			if (!animation.ContainsSystem(SystemType))
 			{
+				OnAnimationInject(animation, ref initData);
+
 				m_LastPlayableInit = initData;
 				animation.InsertSystem<TSystemData>(SystemType, OnAnimationAdded, OnAnimationRemoved);
 			}
@@ -155,11 +160,17 @@ namespace PataNext.Client.Graphics.Animation.Base
 			where THandleData : struct
 		{
 			var handleDataPair = module.Get<TComponent, THandleData>(index);
-			if (handleDataPair?.Handle.Result == null)
+			if (handleDataPair == null || !handleDataPair.Handle.IsValid() || !handleDataPair.Handle.IsDone)
 			{
+				if (handleDataPair != null && handleDataPair.Handle.IsValid() == false)
+				{
+					Debug.LogError(handleDataPair.Handle.OperationException);
+					Debug.LogError(handleDataPair.Handle.Status);
+				}
+				
 				return new AsyncOperationModule.HandleDataPair<TComponent, THandleData>();
 			}
-
+			
 			module.Handles.RemoveAtSwapBack(index);
 			index--;
 

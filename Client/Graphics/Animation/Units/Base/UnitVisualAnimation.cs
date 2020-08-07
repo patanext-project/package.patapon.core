@@ -66,6 +66,13 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 			m_PlayableGraph.Play();
 		}
 
+		public void SetTargetAnimationWithTypeKeepTransition(Type type)
+		{
+			CurrAnimation = new TargetAnimation(type,
+				transitionStart: CurrAnimation.TransitionStart, transitionEnd: CurrAnimation.TransitionEnd,
+				previousType: CurrAnimation.Type);
+		}
+
 		public void SetTargetAnimation(TargetAnimation target)
 		{
 			CurrAnimation = target;

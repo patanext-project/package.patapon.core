@@ -12,10 +12,11 @@ using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 		Active           = 1 << 1,
 		Chaining         = 1 << 2,
 		ActiveOrChaining = Active | Chaining,
+
 		/// <summary>
-		/// This state is used when the Hero mode is getting activated since they do possess a delay of a beat...
+		///     This state is used when the Hero mode is getting activated since they do possess a delay of a beat...
 		/// </summary>
-		HeroActivation = 1 << 3,
+		HeroActivation = 1 << 3
 	}
 
 	public struct AbilityState : IComponentData
@@ -23,7 +24,11 @@ using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 		public EAbilityPhase Phase;
 
 		public int Combo;
-		public int ImperfectCountWhileActive;
+		/// <summary>
+		/// How much imperfect commands were entered while in Hero Mode?
+		/// This does include bad rhythm'ed commands and commands in <see cref="AbilityCommands.HeroModeAllowedCommands"/>
+		/// </summary>
+		public int HeroModeImperfectCountWhileActive;
 
 		public int UpdateVersion;
 		public int ActivationVersion;

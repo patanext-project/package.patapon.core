@@ -76,8 +76,8 @@ namespace PataNext.Client.Graphics.Animation.Units
 		{
 			UpdatePersistent(animation);
 
-			/*if (!animation.CurrAnimation.AllowOverride)
-				return;*/
+			if (!animation.CurrAnimation.AllowOverride)
+				return;
 
 			if (!EntityManager.TryGetComponentData(targetEntity, out Relative<PlayerDescription> relativePlayer)
 			    || !EntityManager.TryGetComponentData(relativePlayer.Target, out PlayerInputComponent playerCommand))
@@ -89,20 +89,15 @@ namespace PataNext.Client.Graphics.Animation.Units
 			var process  = EntityManager.GetComponentData<RhythmEngineLocalState>(relativeEngine.Target);
 			var settings = EntityManager.GetComponentData<RhythmEngineSettings>(relativeEngine.Target);
 
-			if (!EntityManager.HasComponent<RhythmEngineIsPlaying>(relativeEngine.Target) 
+			if (!EntityManager.HasComponent<RhythmEngineIsPlaying>(relativeEngine.Target)
 			    || RhythmEngineUtility.GetFlowBeat(process.Elapsed, settings.BeatInterval) < 0)
 				return;
 
-			var pressureKey = -1;
+			var pressureKey   = -1;
 			var rhythmActions = playerCommand.Actions;
-				for (var i = 0; pressureKey < 0 && i != rhythmActions.Length; i++)
-					if (interFrame.Range.Contains(rhythmActions[i].InterFrame.Pressed))
-						pressureKey = i;
-
-				if (EntityManager.TryGetComponentData(targetEntity, out AnimationIdleTime idleTime))
-			{
-				EntityManager.SetComponentData(targetEntity, default(AnimationIdleTime));
-			}
+			for (var i = 0; pressureKey < 0 && i != rhythmActions.Length; i++)
+				if (interFrame.Range.Contains(rhythmActions[i].InterFrame.Pressed))
+					pressureKey = i;
 
 			if (!animation.ContainsSystem(SystemType)) animation.InsertSystem<SystemData>(SystemType, AddAnimationData, RemoveAnimationData);
 
@@ -111,12 +106,14 @@ namespace PataNext.Client.Graphics.Animation.Units
 				return;
 
 			pressureKey++;
+			
+			ResetIdleTime(targetEntity);
 
 			// invert keys...
 			if (EntityManager.TryGetComponentData(targetEntity, out UnitDirection unitDirection)
 			    && unitDirection.IsLeft)
 			{
-				if (pressureKey == RhythmKeys.Pata) pressureKey       = RhythmKeys.Pon;
+				if (pressureKey == RhythmKeys.Pata) pressureKey     = RhythmKeys.Pon;
 				else if (pressureKey == RhythmKeys.Pon) pressureKey = RhythmKeys.Pata;
 			}
 
@@ -164,6 +161,7 @@ namespace PataNext.Client.Graphics.Animation.Units
 
 			protected override void OnInitialize(PlayableInitData data)
 			{
+				Mixer.SetInputCount(4);
 				for (var i = 0; i != data.Clips.Length; i++)
 				{
 					var clipPlayable = AnimationClipPlayable.Create(Graph, data.Clips[i]);
