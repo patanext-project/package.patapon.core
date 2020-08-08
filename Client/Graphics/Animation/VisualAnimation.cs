@@ -161,18 +161,15 @@ namespace PataNext.Client.Graphics.Animation
 				Index    = m_SystemData.Count,
 				Graph    = m_PlayableGraph
 			};
-			var systemData = new T();
-			m_SystemData[type] = new SystemData<T> {Data = systemData};
-
-			addDelegate(ref data, ref systemData);
-
 			m_SystemData[type] = new SystemData<T>
 			{
-				Data           = systemData,
+				Data           = new T(),
 				Index          = m_SystemData.Count,
 				Type           = type,
 				RemoveDelegate = removeDelegate
 			};
+
+			addDelegate(ref data, ref ((SystemData<T>) m_SystemData[type]).Data);
 		}
 
 		public ref T GetSystemData<T>(Type type)

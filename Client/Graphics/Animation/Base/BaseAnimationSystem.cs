@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Graphics.Animation.Components;
 using PataNext.Client.Graphics.Animation.Units.Base;
 using PataNext.Client.Modules;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;
+using StormiumTeam.GameBase.Utility.Misc;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
@@ -93,6 +95,57 @@ namespace PataNext.Client.Graphics.Animation.Base
 			AbilityFinder.Update();
 			return true;
 		}
+
+		public void SetAnimOverride<TKey>(OverrideObjectComponent overrides, in Dictionary<TKey, AnimationClip> origin, Action<TKey, AnimationClip> onResult)
+			where TKey : IAbilityAnimClip
+		{
+			foreach (var pair in origin)
+			{
+				if (overrides != null)
+				{
+					overrides.TryGetPresentationObject(pair.Key.Key, out var clip, pair.Value);
+					onResult(pair.Key, clip);
+				}
+				else
+					onResult(pair.Key, pair.Value);
+			}
+		}
+
+		public void SetAnimOverride<TKey>(OverrideObjectComponent overrides, Dictionary<TKey, AnimationClip> map, Dictionary<TKey, AnimationClip> destination)
+			where TKey : IAbilityAnimClip
+		{
+			var originalDest = destination;
+			if (map == destination)
+				destination = new Dictionary<TKey, AnimationClip>(map);
+
+			foreach (var pair in map)
+			{
+				if (overrides != null)
+				{
+					overrides.TryGetPresentationObject(pair.Key.Key, out var clip, pair.Value);
+					destination[pair.Key] = clip;
+				}
+				else
+					destination[pair.Key] = pair.Value;
+			}
+
+			if (originalDest == destination)
+				return;
+
+			originalDest.Clear();
+			foreach (var pair in destination)
+				originalDest.Add(pair.Key, pair.Value);
+		}
+
+		private           bool useAutomaticAsyncOp;
+		protected virtual bool AutomaticAsyncOperation => useAutomaticAsyncOp;
+
+		protected void PreLoadAnimationAsset<THandle>(string path, THandle handle)
+			where THandle : struct, IAbilityAnimationKey
+		{
+			LoadAssetAsync<AnimationClip, THandle>(path, handle);
+			useAutomaticAsyncOp = true;
+		}
 	}
 
 	public interface IPlayableSystemData<TPlayable>
@@ -100,9 +153,21 @@ namespace PataNext.Client.Graphics.Animation.Base
 		TPlayable Behaviour { get; set; }
 	}
 
-	public abstract class BaseAbilityAnimationSystem<TPlayable, TPlayableInit, TSystemData> : BaseAbilityAnimationSystem
+	public interface IAbilityAnimationKey
+	{
+		string Key { get; set; }
+	}
+	
+	public interface IAbilityAnimClip : IAbilityAnimationKey
+	{
+		AnimationClip Clip { get; set; }
+	}
+
+	public abstract class BaseAbilityAnimationSystem<TPlayable, TPlayableInit, TSystemData, THandleData, TClip> : BaseAbilityAnimationSystem
 		where TPlayable : BaseAbilityPlayable<TPlayableInit>, IPlayableBehaviour, new()
 		where TSystemData : struct, IPlayableSystemData<TPlayable>
+		where THandleData : struct, IAbilityAnimationKey
+		where TClip : struct, IAbilityAnimClip
 	{
 		private TPlayableInit m_LastPlayableInit;
 
@@ -124,9 +189,14 @@ namespace PataNext.Client.Graphics.Animation.Base
 			}
 		}
 
+		protected virtual ScriptPlayable<TPlayable> GetNewPlayable(ref VisualAnimation.ManageData data, ref TSystemData systemData)
+		{
+			return ScriptPlayable<TPlayable>.Create(data.Graph);
+		}
+
 		protected virtual void OnAnimationAdded(ref VisualAnimation.ManageData data, ref TSystemData systemData)
 		{
-			var playable = ScriptPlayable<TPlayable>.Create(data.Graph);
+			var playable = GetNewPlayable(ref data, ref systemData);
 			var behavior = playable.GetBehaviour();
 
 			behavior.Visual = ((UnitVisualAnimation) data.Handle).GetBehaviorData();
@@ -138,19 +208,27 @@ namespace PataNext.Client.Graphics.Animation.Base
 		{
 
 		}
-	}
-
-	public abstract class BaseAbilityAnimationSystem<TPlayable, TPlayableInit> : BaseAbilityAnimationSystem
-	<
-		TPlayable,
-		TPlayableInit,
-		BaseAbilityAnimationSystem<TPlayable, TPlayableInit>.DefaultSystemData
-	>
-		where TPlayable : BaseAbilityPlayable<TPlayableInit>, IPlayableBehaviour, new()
-	{
-		public struct DefaultSystemData : IPlayableSystemData<TPlayable>
+		
+		protected override void OnAsyncOpUpdate(ref int index)
 		{
-			public TPlayable Behaviour { get; set; }
+			if (!AutomaticAsyncOperation)
+				return;
+			
+			var (handle, data) = DefaultAsyncOperation.InvokeExecute<AnimationClip, THandleData>(AsyncOp, ref index);
+			if (!handle.IsValid() || handle.Result == null)
+				return;
+			
+			OnAsyncOpElement(data, new TClip {Clip = handle.Result, Key = data.Key});
+		}
+
+		protected virtual void OnAsyncOpElement(THandleData handle, TClip result)
+		{
+			
+		}
+
+		protected override bool OnBeforeForEach()
+		{
+			return base.OnBeforeForEach() && AsyncOp.Handles.Count == 0;
 		}
 	}
 

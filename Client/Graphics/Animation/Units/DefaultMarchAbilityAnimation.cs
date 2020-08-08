@@ -19,13 +19,28 @@ using UnityEngine.Playables;
 
 namespace PataNext.Client.Graphics.Animation.Units
 {
+	[UpdateInGroup(typeof(ClientUnitAnimationGroup))]
 	public class DefaultMarchAbilityAnimation : BaseAbilityAnimationSystem
 	<
 		DefaultMarchAbilityAnimation.SystemPlayable,
 		DefaultMarchAbilityAnimation.PlayableInitData,
-		DefaultMarchAbilityAnimation.SystemData
+		DefaultMarchAbilityAnimation.SystemData,
+		DefaultMarchAbilityAnimation.OperationHandleData,
+		DefaultMarchAbilityAnimation.Sub
 	>
 	{
+		public enum SubType
+		{
+			Normal    = 0,
+			Ferocious = 1
+		}
+
+		public enum TargetType
+		{
+			Idle    = 0,
+			Walking = 1
+		}
+
 		private readonly AddressBuilderClient m_AddrPath = AddressBuilder.Client()
 		                                                                 .Folder("Models")
 		                                                                 .Folder("UberHero")
@@ -33,61 +48,49 @@ namespace PataNext.Client.Graphics.Animation.Units
 		                                                                 .Folder("Shared");
 
 		private Dictionary<TargetType, Dictionary<Sub, AnimationClip>> m_Clips;
-		private int                                                    m_LoadSuccess;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
 			m_Clips = new Dictionary<TargetType, Dictionary<Sub, AnimationClip>>();
-			LoadAssetAsync<AnimationClip, OperationHandleData>(m_AddrPath.GetFile("Idle.anim"), new OperationHandleData
+			PreLoadAnimationAsset(m_AddrPath.GetFile("Idle.anim"), new OperationHandleData
 			{
-				key  = "marchAbility/idle.clip",
+				Key  = "marchAbility/idle.clip",
 				type = TargetType.Idle,
 				sub  = SubType.Normal
 			});
-			LoadAssetAsync<AnimationClip, OperationHandleData>(m_AddrPath.GetFile("Walking.anim"), new OperationHandleData
+			PreLoadAnimationAsset(m_AddrPath.GetFile("Walking.anim"), new OperationHandleData
 			{
-				key  = "marchAbility/walking.clip",
+				Key  = "marchAbility/walking.clip",
 				type = TargetType.Walking,
 				sub  = SubType.Normal
 			});
-			LoadAssetAsync<AnimationClip, OperationHandleData>(m_AddrPath.GetFile("WalkingFerocious.anim"), new OperationHandleData
+			PreLoadAnimationAsset(m_AddrPath.GetFile("WalkingFerocious.anim"), new OperationHandleData
 			{
-				key  = "marchAbility/walking_ferocious.clip",
+				Key  = "marchAbility/walking_ferocious.clip",
 				type = TargetType.Walking,
 				sub  = SubType.Ferocious
 			});
 		}
 
-		protected override void OnAsyncOpUpdate(ref int index)
+		protected override void OnAsyncOpElement(OperationHandleData data, Sub result)
 		{
-			var (handle, data) = DefaultAsyncOperation.InvokeExecute<AnimationClip, OperationHandleData>(AsyncOp, ref index);
-			if (!handle.IsValid() || handle.Result == null)
-				return;
-
 			if (!m_Clips.TryGetValue(data.type, out var map))
 				m_Clips[data.type] = map = new Dictionary<Sub, AnimationClip>();
 
-			map[new Sub {sub = data.sub, key = data.key}] = handle.Result;
-			m_LoadSuccess++;
+			result.sub  = data.sub;
+			map[result] = result.Clip;
 		}
 
 		protected override void OnAnimationInject(UnitVisualAnimation animation, ref PlayableInitData initData)
 		{
 			initData.Clips = new Dictionary<TargetType, Dictionary<Sub, AnimationClip>>();
 
-			var objOverride = CurrentPresentation.GetComponent<OverrideObjectComponent>();
 			foreach (var kvp in m_Clips)
 			{
 				initData.Clips[kvp.Key] = new Dictionary<Sub, AnimationClip>(m_Clips[kvp.Key]);
-				foreach (var clip in kvp.Value)
-				{
-					var replaced = clip.Value;
-					if (objOverride != null)
-						objOverride.TryGetPresentationObject(clip.Key.key, out replaced, clip.Value);
-					initData.Clips[kvp.Key][clip.Key] = replaced;
-				}
+				SetAnimOverride(CurrentPresentation.GetComponent<OverrideObjectComponent>(), kvp.Value, initData.Clips[kvp.Key]);
 			}
 		}
 
@@ -98,17 +101,14 @@ namespace PataNext.Client.Graphics.Animation.Units
 
 		protected override void OnUpdate(Entity targetEntity, UnitVisualBackend backend, UnitVisualAnimation animation)
 		{
-			if (!EntityManager.TryGetComponentData<AnimationIdleTime>(targetEntity, out var idleTime))
-			{
-				EntityManager.AddComponentData<AnimationIdleTime>(targetEntity, new AnimationIdleTime());
-			}
+			if (!EntityManager.TryGetComponentData<AnimationIdleTime>(targetEntity, out var idleTime)) EntityManager.AddComponentData(targetEntity, new AnimationIdleTime());
 
 			var currAnim = animation.CurrAnimation;
 			if (currAnim.Type != SystemType && !currAnim.AllowOverride)
 			{
 				if (animation.ContainsSystem(SystemType))
 					animation.GetSystemData<SystemData>(SystemType).Behaviour.Weight = 0;
-				
+
 				return;
 			}
 
@@ -143,13 +143,11 @@ namespace PataNext.Client.Graphics.Animation.Units
 			var subType = SubType.Normal;
 			if (EntityManager.TryGetComponentData(targetEntity, out UnitEnemySeekingState seekingState)
 			    && seekingState.Enemy != default)
-			{
 				subType = SubType.Ferocious;
-			}
 
 			systemData.Behaviour.TargetAnimation    = targetAnimation;
 			systemData.Behaviour.SubTargetAnimation = subType;
-			
+
 			if (!doAnimation)
 				return;
 
@@ -161,22 +159,12 @@ namespace PataNext.Client.Graphics.Animation.Units
 			return GetEntityQuery(typeof(DefaultMarchAbility), typeof(Owner));
 		}
 
-		public enum TargetType
+		public struct Sub : IAbilityAnimClip
 		{
-			Idle    = 0,
-			Walking = 1
-		}
-
-		public struct Sub
-		{
-			public string  key;
 			public SubType sub;
-		}
 
-		public enum SubType
-		{
-			Normal    = 0,
-			Ferocious = 1
+			public string        Key  { get; set; }
+			public AnimationClip Clip { get; set; }
 		}
 
 		public struct PlayableInitData
@@ -186,8 +174,19 @@ namespace PataNext.Client.Graphics.Animation.Units
 
 		public class SystemPlayable : BaseAbilityPlayable<PlayableInitData>
 		{
+			public const float TRANSITION_TIME = 0.2f;
+
+			public bool ForceAnimation; // no transition
+
+			public  Transition                                                         FromTransition;
 			private Dictionary<TargetType, Dictionary<SubType, AnimationClipPlayable>> m_ClipPlayableMap;
 			private Dictionary<TargetType, AnimationMixerPlayable>                     m_MixerMap;
+			private TargetType                                                         m_PreviousAnimation;
+			public  SubType                                                            SubTargetAnimation;
+
+			public TargetType TargetAnimation;
+			public Transition ToTransition;
+			public float      Weight;
 
 			protected override void OnInitialize(PlayableInitData init)
 			{
@@ -205,7 +204,7 @@ namespace PataNext.Client.Graphics.Animation.Units
 						var cp = AnimationClipPlayable.Create(Graph, subKvp.Value);
 						if (cp.IsNull())
 							throw new InvalidOperationException("null clip");
-						
+
 						Graph.Connect(cp, 0, mixer, (int) subKvp.Key.sub);
 						m_ClipPlayableMap[kvp.Key][subKvp.Key.sub] = cp;
 					}
@@ -214,18 +213,6 @@ namespace PataNext.Client.Graphics.Animation.Units
 					Mixer.AddInput(mixer, 0, 1);
 				}
 			}
-
-			public bool  ForceAnimation; // no transition
-			public float Weight;
-
-			public Transition FromTransition;
-			public Transition ToTransition;
-
-			public  TargetType TargetAnimation;
-			public  SubType    SubTargetAnimation;
-			private TargetType m_PreviousAnimation;
-
-			public const float TRANSITION_TIME = 0.2f;
 
 			public override void PrepareFrame(Playable playable, FrameData info)
 			{
@@ -236,10 +223,10 @@ namespace PataNext.Client.Graphics.Animation.Units
 					var offset = 0f;
 					if (m_PreviousAnimation == TargetType.Walking) // walking
 					{
-						var clipPlayable = (AnimationClipPlayable) m_MixerMap[m_PreviousAnimation].GetInput(((int) SubTargetAnimation) % m_ClipPlayableMap[m_PreviousAnimation].Count);
+						var clipPlayable = (AnimationClipPlayable) m_MixerMap[m_PreviousAnimation].GetInput((int) SubTargetAnimation % m_ClipPlayableMap[m_PreviousAnimation].Count);
 						var length       = clipPlayable.GetAnimationClip().length;
 						var mod          = clipPlayable.GetTime() % length;
-						
+
 						// For transitions, we need to see when to start the next animation, and we need to be sure to start at zero
 						// 1.
 						// - We first check if the modulo result is bigger than the length of the playing animation, and if it is, reduce it by the modulo result
@@ -284,10 +271,7 @@ namespace PataNext.Client.Graphics.Animation.Units
 
 				// why does the mixer report 4 inputs???
 				var inputCount = Mixer.GetInputCount();
-				for (var i = 0; i != inputCount; i++)
-				{
-					Mixer.SetInputWeight(i, i == (int) TargetAnimation ? FromTransition.Evaluate(global, 0, 1) : ToTransition.Evaluate(global));
-				}
+				for (var i = 0; i != inputCount; i++) Mixer.SetInputWeight(i, i == (int) TargetAnimation ? FromTransition.Evaluate(global, 0, 1) : ToTransition.Evaluate(global));
 
 				Weight = 1 - Visual.CurrAnimation.GetTransitionWeightFixed(Visual.VisualAnimation.RootTime);
 				if (Visual.CurrAnimation.Type != typeof(DefaultMarchAbilityAnimation) && !Visual.CurrAnimation.CanBlend(Visual.RootTime))
@@ -304,11 +288,12 @@ namespace PataNext.Client.Graphics.Animation.Units
 			public SystemPlayable Behaviour { get; set; }
 		}
 
-		private struct OperationHandleData
+		public struct OperationHandleData : IAbilityAnimationKey
 		{
-			public string     key;
 			public TargetType type;
 			public SubType    sub;
+
+			public string Key { get; set; }
 		}
 	}
 }
