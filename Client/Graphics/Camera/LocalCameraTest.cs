@@ -15,9 +15,10 @@ namespace PataNext.Client.Graphics.Camera
 
 		protected override void OnUpdate()
 		{
+			var dt = Time.DeltaTime;
 			Entities.WithAll<Local>().ForEach((ref LocalCameraState state) =>
 			{
-				state.Data.Offset.pos.x += Input.GetAxis("Horizontal");
+				state.Data.Offset.pos.x += Input.GetAxis("Horizontal") * dt;
 			});
 		}
 

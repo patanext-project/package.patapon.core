@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using GameHost.Core;
 using GameHost.Core.RPC.AvailableRpcCommands;
@@ -7,15 +8,17 @@ using RevolutionSnapshot.Core.Buffers;
 using StormiumTeam.GameBase.Bootstrapping;
 using Unity.Collections;
 using Unity.Entities;
+using UnityEngine;
 using Utilities;
 
 namespace PataNext.Client.Bootstraps.Startup
 {
 	public class EditorStartupBootstrap : BaseBootstrapSystem
 	{
-		private int step = 0;
+		private int step = 0; 
 		protected override void Register(Entity bootstrap)
 		{
+			Debug.LogError("Register Bootstrap " + World.Name);
 			EntityManager.SetComponentData(bootstrap, new BootstrapComponent {Name = nameof(EditorStartupBootstrap)});
 		}
 
