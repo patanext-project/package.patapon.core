@@ -133,7 +133,7 @@ namespace PataNext.Client.Graphics.Animation.Units
 			// Start animation if Behavior.ActiveId and Retreat.ActiveId is different
 			if ((abilityState.Phase & EAbilityPhase.ActiveOrChaining) != 0 && abilityState.ActivationVersion != data.ActiveId)
 			{
-				var stopAt = animation.RootTime + 3f;
+				var stopAt = animation.RootTime + 2.75f;
 				animation.SetTargetAnimation(new TargetAnimation(SystemType, allowOverride: false, allowTransition: false,
 					stopAt: stopAt));
 
@@ -223,7 +223,9 @@ namespace PataNext.Client.Graphics.Animation.Units
 			var currAnim = behavior.Visual.CurrAnimation;
 
 			systemData.Weight = 0;
-			if (currAnim.Type == SystemType)
+			if (currAnim.CanBlend(behavior.Root.GetTime()) && currAnim.PreviousType == SystemType)
+				systemData.Weight = currAnim.GetTransitionWeightFixed(behavior.Root.GetTime());
+			else if (currAnim.Type == SystemType)
 				systemData.Weight = 1;
 
 			behavior.Root.SetInputWeight(VisualAnimation.GetIndexFrom(behavior.Root, behavior.Self), systemData.Weight);
