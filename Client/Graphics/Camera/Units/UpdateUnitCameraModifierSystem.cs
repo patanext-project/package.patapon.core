@@ -1,11 +1,13 @@
 using GameHost.ShareSimuWorldFeature.Systems;
 using package.stormiumteam.shared.ecs;
+using PataNext.Module.Simulation.Components;
 using PataNext.Module.Simulation.Components.GamePlay.Abilities;
 using PataNext.Module.Simulation.Components.GamePlay.Units;
 using PataNext.Module.Simulation.Components.Roles;
 using PataNext.Module.Simulation.Components.Units;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
+using StormiumTeam.GameBase.BaseSystems.Ext;
 using StormiumTeam.GameBase.Roles.Components;
 using StormiumTeam.GameBase.Utility.DOTS.xCamera;
 using Unity.Entities;
@@ -52,12 +54,9 @@ namespace PataNext.Client.Graphics.Camera.Units
 				return;
 
 			var interFrame = GetSingleton<InterFrame>();
-			if (interFrame.End.Frame == previousFrame.End.Frame)
-			{
-				return;
-			}
 
-			previousFrame = interFrame;
+			var localPlayer = this.GetFirstSelfGamePlayer();
+			EntityManager.TryGetComponentData(localPlayer, out PlayerInputComponent playerInput);
 
 			var dt                  = Time.DeltaTime;
 			var directionFromEntity = GetComponentDataFromEntity<UnitDirection>(true);
@@ -85,7 +84,7 @@ namespace PataNext.Client.Graphics.Camera.Units
 					    && abilityActivationFromEntity.TryGet(controller.Incoming, out var activation) && activation.Type == EAbilityActivationType.HeroMode
 					    && abilityStateFromEntity.TryGet(controller.Incoming, out var state) && (state.Phase & EAbilityPhase.ActiveOrChaining) == 0)
 					{
-						//if (math.abs(userCommand.Panning) < 0.1f)
+						if (math.abs(playerInput.Panning) < 0.1f)
 						{
 							cameraData.HeroModeZoom            =  true;
 							cameraData.HeroModeZoomProgression += dt;
@@ -145,13 +144,17 @@ namespace PataNext.Client.Graphics.Camera.Units
 
 						// in future, set y and z
 						float3 positionResult = default;
-						positionResult.x = useTargetPosition ? targetPosition : translation.Value.x;
-						//positionResult.x += userCommand.Panning * (cameraModifier.FieldOfView + 4f * direction.Value);
+						positionResult.x =  useTargetPosition ? targetPosition : translation.Value.x;
 						positionResult.x += cameraModifier.FieldOfView * targetOffset * direction.Value;
 
 						if (!isImmediate)
 						{
-							cameraModifier.Position.x = Mathf.SmoothDamp(cameraModifier.Position.x, positionResult.x, ref cameraData.PositionVelocity, 0.5f, 100, interFrame.Begin.Delta * (interFrame.End.Frame - interFrame.Begin.Frame + 1));
+							var panningModifier = playerInput.Panning * (cameraModifier.FieldOfView + 4f * direction.Value);
+							
+							cameraData.InterpolatedPosition = Mathf.SmoothDamp(cameraData.InterpolatedPosition, positionResult.x, ref cameraData.PositionVelocity, 0.5f, 100, interFrame.Begin.Delta * (interFrame.End.Frame - interFrame.Begin.Frame + 1));
+							cameraData.InterpolatedPanning  = Mathf.SmoothDamp(cameraData.InterpolatedPanning, panningModifier, ref cameraData.PanningVelocity, 0.175f, 100, dt);
+
+							cameraModifier.Position.x = cameraData.InterpolatedPosition + cameraData.InterpolatedPanning;
 						}
 						else
 						{
@@ -181,7 +184,11 @@ namespace PataNext.Client.Graphics.Camera.Units
 			public bool  HeroModeZoom;
 			public float HeroModeZoomProgression;
 
+			public float InterpolatedPosition;
+			public float InterpolatedPanning;
+
 			public float PositionVelocity;
+			public float PanningVelocity;
 			public float FocalVelocity;
 		}
 	}

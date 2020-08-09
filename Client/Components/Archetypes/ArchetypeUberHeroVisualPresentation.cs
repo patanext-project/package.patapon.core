@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using GameHost.Core.Native.xUnity;
+using GameHost.Simulation.Utility.Resource.Systems;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.DataScripts.Models.Equipments;
 using PataNext.Client.Graphics.Animation.Units.Base;
@@ -113,20 +114,25 @@ namespace PataNext.Client.Components.Archetypes
 		{
 		}
 
-		private float m_HeroModeScaling;
+		private float m_HeroModeScaling = 1;
 		
 		[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation))]
 		public class LocalSystem : AbsGameBaseSystem
 		{
 			private UnitVisualEquipmentManager m_EquipmentManager;
 			private GameResourceModule<UnitAttachmentResource, UnitAttachmentResourceKey> attachmentModule;
+			private GameResourceModule<EquipmentResource, EquipmentResourceKey> equipmentModule;
+
+			private GameResourceManager resourceMgr;
 
 			protected override void OnCreate()
 			{
 				base.OnCreate();
 				m_EquipmentManager = World.GetOrCreateSystem<UnitVisualEquipmentManager>();
+				resourceMgr        = World.GetOrCreateSystem<GameResourceManager>();
 				
 				GetModule(out attachmentModule);
+				GetModule(out equipmentModule);
 			}
 
 			protected override void OnUpdate()
@@ -150,30 +156,42 @@ namespace PataNext.Client.Components.Archetypes
 						var root = kvp.Value;
 
 						var equipmentTarget = default(FixedString64);
+						var attachmentTarget = default(FixedString64);
 						foreach (var equipment in displayedEquipment)
 						{
+							if (resourceMgr.TryGetResource(equipment.Resource, out EquipmentResourceKey key))
+								key.Value.CopyToNativeString(ref equipmentTarget);
+							
 							switch (equipment.Attachment)
 							{
 								case { } resource when resource == maskAttachResource && type == RootType.Mask:
-									maskKey.Value.CopyToNativeString(equipmentTarget);
+									maskKey.Value.CopyToNativeString(ref attachmentTarget);
 									break;
 								case { } resource when resource == leftEquipResource && type == RootType.LeftEquipment:
-									leftEquipKey.Value.CopyToNativeString(equipmentTarget);
+									leftEquipKey.Value.CopyToNativeString(ref attachmentTarget);
 									break;
 								case { } resource when resource == rightEquipResource && type == RootType.RightEquipment:
-									rightEquipKey.Value.CopyToNativeString(equipmentTarget);
+									rightEquipKey.Value.CopyToNativeString(ref attachmentTarget);
 									break;
 							}
+
+							if (attachmentTarget.Length > 0)
+								break;
 						}
 
-						if (!root.EquipmentId.Equals(equipmentTarget) || !root.UnitEquipmentBackend.HasIncomingPresentation)
+						if (attachmentTarget.Length > 0 && 
+							(!root.EquipmentId.Equals(equipmentTarget) || !root.UnitEquipmentBackend.HasIncomingPresentation))
 						{
 							root.EquipmentId = equipmentTarget;
+
+
+							Console.WriteLine($"Set Equipment {equipmentTarget.ToString()} - {attachmentTarget.ToString()} - {maskKey.Value.ToString()}");
 							
 							root.UnitEquipmentBackend.ReturnPresentation();
 							if (m_EquipmentManager.TryGetPool(equipmentTarget.ToString(), out var pool))
 							{
 								root.UnitEquipmentBackend.SetPresentationFromPool(pool);
+								Console.WriteLine($"SetPresnetationFromPool {equipmentTarget.ToString()}");
 							}
 						}
 					}
