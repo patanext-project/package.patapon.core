@@ -163,9 +163,7 @@ namespace PataNext.Client.Graphics.Camera.Units
 					}
 
 					if (math.isnan(cameraModifier.Position.x) || math.abs(cameraModifier.Position.x) > 4000.0f) cameraModifier.Position.x = 0;
-
-					Debug.DrawRay(cameraModifier.Position, Vector3.up * 4, Color.blue);
-
+					
 					anchor.Type  = AnchorType.Screen;
 					anchor.Value = new float2(0, 0.7f);
 				})

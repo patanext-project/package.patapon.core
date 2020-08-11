@@ -26,7 +26,8 @@
         "Unity.Collections",
         "Unity.Jobs",
         "Unity.Burst",
-        "Unity.RenderPipelines.Universal.Runtime"
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.InternalAPIEngineBridge.015"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

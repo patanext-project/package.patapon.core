@@ -134,28 +134,16 @@ namespace PataNext.Client.Graphics.Animation.Units
 
 			InjectAnimation(animation);
 			
-			ref var data = ref animation.GetSystemData<SystemData>(SystemType);
+			var owner     = EntityManager.GetComponentData<Owner>(abilityEntity);
+			var velocityY = EntityManager.GetComponentData<Velocity>(owner.Target).Value.y;
 
-			var abilityState = EntityManager.GetComponentData<AbilityState>(abilityEntity);
-			var jumpAbility  = EntityManager.GetComponentData<DefaultJumpAbility>(abilityEntity);
-
-			GameCommandState commandState;
-			uint             processMs;
-			float            velocityY;
-			if (EntityManager.TryGetComponentData(abilityEntity, out Owner owner))
-			{
-				velocityY = EntityManager.GetComponentData<Velocity>(owner.Target).Value.y;
-
-				if (!EntityManager.TryGetComponentData(owner.Target, out Relative<RhythmEngineDescription> engineRelative))
-					return;
-
-				commandState = EntityManager.GetComponentData<GameCommandState>(engineRelative.Target);
-				processMs    = (uint) (EntityManager.GetComponentData<RhythmEngineLocalState>(engineRelative.Target).Elapsed.Ticks / TimeSpan.TicksPerMillisecond);
-			}
-			else
+			if (!EntityManager.TryGetComponentData(owner.Target, out Relative<RhythmEngineDescription> engineRelative))
 				return;
 
+			var commandState = EntityManager.GetComponentData<GameCommandState>(engineRelative.Target);
+			var processMs    = (uint) (EntityManager.GetComponentData<RhythmEngineLocalState>(engineRelative.Target).Elapsed.Ticks / TimeSpan.TicksPerMillisecond);
 
+			var abilityState = EntityManager.GetComponentData<AbilityState>(abilityEntity);
 			if (abilityState.Phase == EAbilityPhase.None)
 			{
 				if (currAnim.Type == SystemType)
@@ -164,16 +152,18 @@ namespace PataNext.Client.Graphics.Animation.Units
 				return;
 			}
 
+			var jumpAbility = EntityManager.GetComponentData<DefaultJumpAbility>(abilityEntity);
 			ResetIdleTime(targetEntity);
 
+			ref var data = ref animation.GetSystemData<SystemData>(SystemType);
 			if ((abilityState.Phase & EAbilityPhase.WillBeActive) != 0 && data.StartAt < 0 && abilityState.UpdateVersion >= data.ActiveId)
 			{
 				var delay = math.max(commandState.StartTimeMs - 200 - processMs, 0) * 0.001f;
 				Console.WriteLine("Delay: " + delay);
 				// StartTime - StartJump Animation Approx Length in ms - Time, aka delay 0.2s before the command
 
-				data.StartAt            = animation.RootTime + delay;
-				data.ActiveId           = abilityState.UpdateVersion + 1;
+				data.StartAt  = animation.RootTime + delay;
+				data.ActiveId = abilityState.UpdateVersion + 1;
 			}
 
 			// Start animation if Behavior.ActiveId and Jump.ActiveId is different... or if we need to start now

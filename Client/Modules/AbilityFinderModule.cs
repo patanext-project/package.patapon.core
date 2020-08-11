@@ -57,7 +57,8 @@ namespace PataNext.Client.Modules
 
 		public Entity GetAbility(Entity owner)
 		{
-			return m_OwnerToAbilityMap.TryGetValue(owner, out var value) ? value.Ability : default;
+			m_OwnerToAbilityMap.TryGetValue(owner, out var value);
+			return value.Ability;
 		}
 
 		private struct ValueAbility

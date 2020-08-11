@@ -1,4 +1,5 @@
 ﻿﻿using System;
+ using GameHost.ShareSimuWorldFeature;
  using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
  using Unity.Entities;
 
@@ -45,6 +46,7 @@
 
 		public class Register : RegisterGameHostComponentData<GameCommandState>
 		{
+			protected override ICustomComponentDeserializer CustomDeserializer => new DefaultSingleDeserializer<GameCommandState>();
 		}
 	}
 }

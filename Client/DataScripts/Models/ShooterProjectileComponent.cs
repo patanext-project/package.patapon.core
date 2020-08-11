@@ -24,7 +24,6 @@ namespace PataNext.Client.DataScripts.Models
 
 		public void OnBackendSet()
 		{
-			Debug.LogError($"On Set Data for {Backend.DstEntity}");
 			if (!Backend.DstEntityManager.HasComponent<ShooterProjectileVisualTarget>(Backend.DstEntity))
 			{
 				Backend.DstEntityManager.AddComponentData(Backend.DstEntity, new ShooterProjectileVisualTarget());

@@ -14,9 +14,9 @@ using UnityEngine.Rendering;
 namespace PataNext.Client.Graphics.Splines
 {
 	[UpdateInGroup(typeof(PresentationSystemGroup))]
-	public class UpdateSplinePointsSystem : ComponentSystem
+	public class UpdateSplinePointsSystem : SystemBase
 	{
-		protected override void OnUpdate()
+		protected override unsafe void OnUpdate()
 		{
 			Entities.WithAll<DSplineValidTag>().ForEach((SplineRendererBehaviour renderer, DynamicBuffer<DSplinePoint> points) =>
 			{
@@ -24,8 +24,11 @@ namespace PataNext.Client.Graphics.Splines
 				var length     = transforms.Length;
 
 				points.ResizeUninitialized(length);
-				for (var i = 0; i != length; i++) points[i] = new DSplinePoint {Position = transforms[i].localPosition};
-			});
+
+				var unsafePoints = (DSplinePoint*) points.GetUnsafePtr();
+				for (var i = 0; i != length; i++)
+					unsafePoints[i].Position = transforms[i].localPosition;
+			}).WithoutBurst().Run();
 		}
 	}
 
@@ -73,6 +76,7 @@ namespace PataNext.Client.Graphics.Splines
 
 		private void OnBeginFrameRendering(ScriptableRenderContext ctx, UnityEngine.Camera[] cameras)
 		{
+			Profiler.BeginSample("SplineSystem -");
 			foreach (var previous in m_ValidSplinePerCamera) previous.Value.Dispose();
 			m_ValidSplinePerCamera.Clear();
 
@@ -87,6 +91,7 @@ namespace PataNext.Client.Graphics.Splines
 					ValidSplines = m_ValidSplinePerCamera[cameras[cam]]
 				}.Schedule(m_SplineQuery, m_LastJobHandle);
 			}
+			Profiler.EndSample();
 		}
 
 		private unsafe void OnBeginCameraRendering(ScriptableRenderContext ctx, UnityEngine.Camera cam)
@@ -94,6 +99,7 @@ namespace PataNext.Client.Graphics.Splines
 			//< -------- -------- -------- -------- -------- -------- -------- ------- //
 			// Finish the current job
 			//> -------- -------- -------- -------- -------- -------- -------- ------- //
+			Profiler.BeginSample("SplineSystem +");
 			m_LastJobHandle.Complete();
 
 			var previousCount = -1;
@@ -149,6 +155,7 @@ namespace PataNext.Client.Graphics.Splines
 				}
 			}
 
+			Profiler.EndSample();
 			Profiler.EndSample();
 
 			entities.Dispose();

@@ -144,48 +144,41 @@ namespace PataNext.Client.Components.Archetypes
 				Entities.ForEach((ArchetypeUberHeroVisualPresentation presentation) =>
 				{
 					var backend = presentation.Backend;
-					if (!EntityManager.Exists(backend.DstEntity))
-						return;
-
 					if (!EntityManager.TryGetBuffer(backend.DstEntity, out DynamicBuffer<UnitDisplayedEquipment> displayedEquipment))
 						return;
-
+					
 					foreach (var kvp in presentation.RootHashMap)
 					{
 						var type = kvp.Key;
 						var root = kvp.Value;
 
 						var equipmentTarget = default(FixedString64);
-						var attachmentTarget = default(FixedString64);
 						foreach (var equipment in displayedEquipment)
 						{
-							if (resourceMgr.TryGetResource(equipment.Resource, out EquipmentResourceKey key))
-								key.Value.CopyToNativeString(ref equipmentTarget);
-							
+							EquipmentResourceKey key;
 							switch (equipment.Attachment)
 							{
 								case { } resource when resource == maskAttachResource && type == RootType.Mask:
-									maskKey.Value.CopyToNativeString(ref attachmentTarget);
+									if (resourceMgr.TryGetResource(equipment.Resource, out key))
+										key.Value.CopyToNativeString(ref equipmentTarget);
 									break;
 								case { } resource when resource == leftEquipResource && type == RootType.LeftEquipment:
-									leftEquipKey.Value.CopyToNativeString(ref attachmentTarget);
+									if (resourceMgr.TryGetResource(equipment.Resource, out key))
+										key.Value.CopyToNativeString(ref equipmentTarget);
 									break;
 								case { } resource when resource == rightEquipResource && type == RootType.RightEquipment:
-									rightEquipKey.Value.CopyToNativeString(ref attachmentTarget);
+									if (resourceMgr.TryGetResource(equipment.Resource, out key))
+										key.Value.CopyToNativeString(ref equipmentTarget);
 									break;
 							}
 
-							if (attachmentTarget.Length > 0)
+							if (equipmentTarget.Length > 0)
 								break;
 						}
 
-						if (attachmentTarget.Length > 0 && 
-							(!root.EquipmentId.Equals(equipmentTarget) || !root.UnitEquipmentBackend.HasIncomingPresentation))
+						if (!root.EquipmentId.Equals(equipmentTarget) || !root.UnitEquipmentBackend.HasIncomingPresentation)
 						{
 							root.EquipmentId = equipmentTarget;
-
-
-							Console.WriteLine($"Set Equipment {equipmentTarget.ToString()} - {attachmentTarget.ToString()} - {maskKey.Value.ToString()}");
 							
 							root.UnitEquipmentBackend.ReturnPresentation();
 							if (m_EquipmentManager.TryGetPool(equipmentTarget.ToString(), out var pool))
@@ -193,6 +186,8 @@ namespace PataNext.Client.Components.Archetypes
 								root.UnitEquipmentBackend.SetPresentationFromPool(pool);
 								Console.WriteLine($"SetPresnetationFromPool {equipmentTarget.ToString()}");
 							}
+
+							displayedEquipment = EntityManager.GetBuffer<UnitDisplayedEquipment>(backend.DstEntity);
 						}
 					}
 

@@ -1,3 +1,4 @@
+using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using Unity.Entities;
 
@@ -18,6 +19,7 @@ namespace PataNext.Simulation.Mixed.Abilities.Defaults
 
 		public class Register : RegisterGameHostComponentData<DefaultRetreatAbility>
 		{
+			protected override ICustomComponentDeserializer CustomDeserializer => new DefaultSingleDeserializer<DefaultRetreatAbility>();
 		}
 	}
 }

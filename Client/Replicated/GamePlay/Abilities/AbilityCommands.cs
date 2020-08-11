@@ -1,4 +1,5 @@
 using GameHost.Native;
+using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using GameHost.Simulation.Utility.Resource;
 using PataNext.Module.Simulation.Resources;
@@ -25,6 +26,7 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Abilities
 		
 		public class Register : RegisterGameHostComponentData<AbilityCommands>
 		{
+			protected override ICustomComponentDeserializer CustomDeserializer => new DefaultSingleDeserializer<AbilityCommands>();
 		}
 	}
 }

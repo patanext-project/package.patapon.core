@@ -32,10 +32,10 @@ namespace PataNext.Game.Inputs.Actions
 		{
 			protected override void OnUpdate()
 			{
+				var currentLayout = EntityManager.GetComponentData<InputCurrentLayout>(GetSingletonEntity<InputCurrentLayout>());
+
 				foreach (var entity in InputQuery.ToEntityArray(Allocator.Temp))
 				{
-					var currentLayout = EntityManager.GetComponentData<InputCurrentLayout>(GetSingletonEntity<InputCurrentLayout>());
-
 					var layouts = GetLayouts(entity);
 					if (!layouts.TryGetOrDefault(currentLayout.Id, out var layout))
 						return;

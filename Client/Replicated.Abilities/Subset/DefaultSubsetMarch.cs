@@ -1,4 +1,5 @@
 using System;
+using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using Unity.Entities;
 
@@ -43,8 +44,10 @@ namespace PataNext.Simulation.Mixed.Abilities.Subset
 		///	This variable was named 'Delta'
 		/// </remarks>
 		public float ActiveTime;
-		
+
 		public class Register : RegisterGameHostComponentData<DefaultSubsetMarch>
-		{}
+		{
+			protected override ICustomComponentDeserializer CustomDeserializer => new DefaultSingleDeserializer<DefaultSubsetMarch>();
+		}
 	}
 }

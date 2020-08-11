@@ -1,4 +1,5 @@
-﻿using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
+﻿using GameHost.ShareSimuWorldFeature;
+using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using Unity.Entities;
 
 namespace PataNext.Module.Simulation.Components.Units
@@ -17,6 +18,7 @@ namespace PataNext.Module.Simulation.Components.Units
 
 		public class Register : RegisterGameHostComponentData<UnitDirection>
 		{
+			protected override ICustomComponentDeserializer CustomDeserializer => new DefaultSingleDeserializer<UnitDirection>();
 		}
 	}
 }
