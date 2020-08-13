@@ -2,34 +2,31 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using package.stormiumteam.shared.ecs;
-using PataNext.Client.Core.Addressables;
+using PataNext.Client.Graphics.Animation;
 using PataNext.Client.Graphics.Animation.Base;
 using PataNext.Client.Graphics.Animation.Units.Base;
 using PataNext.Module.Simulation.Components.GamePlay.Abilities;
 using PataNext.Module.Simulation.Components.GamePlay.RhythmEngine;
 using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase.Roles.Components;
-using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
+using Entity = Unity.Entities.Entity;
 
-namespace PataNext.Client.Graphics.Animation.Units.CTate
+namespace Client.Graphics.Animation.Units
 {
-	public abstract class SingleAnimationSystemBase : BaseCompleteAbilityAnimationSystem
+	public abstract class HeroModeActivationAnimationSystemBase : BaseCompleteAbilityAnimationSystem
 	<
-		SingleAnimationSystemBase.Handle,
-		SingleAnimationSystemBase.AbilityClip,
-		SingleAnimationSystemBase.SystemData
+		HeroModeActivationAnimationSystemBase.Handle,
+		HeroModeActivationAnimationSystemBase.AbilityClip,
+		HeroModeActivationAnimationSystemBase.SystemData
 	>
 	{
 		private Dictionary<AbilityClip, AnimationClip> clipMap = new Dictionary<AbilityClip, AnimationClip>();
 
 		public abstract string DefaultResourceClip { get; }
-		public abstract string DefaultKeyClip      { get; }
-
-		public virtual bool          AllowOverride        => true;
-		public     virtual    EAbilityPhase KeepAnimationAtPhase => EAbilityPhase.Active;
+		public virtual  string DefaultKeyClip      => "heroMode/activation.clip";
 
 		protected override void OnCreate()
 		{
@@ -48,30 +45,18 @@ namespace PataNext.Client.Graphics.Animation.Units.CTate
 			var currAnim      = animation.CurrAnimation;
 			var abilityEntity = AbilityFinder.GetAbility(backend.DstEntity);
 			EntityManager.TryGetComponentData<AbilityState>(abilityEntity, out var abilityState);
-			if (abilityEntity == default || (abilityState.Phase & KeepAnimationAtPhase) == 0)
+			if (abilityEntity == default || (abilityState.Phase & EAbilityPhase.HeroActivation) == 0)
 			{
-				if (currAnim.Type == SystemType && ((abilityState.Phase & EAbilityPhase.Chaining) == 0 || animation.RootTime > currAnim.StopAt))
+				if (currAnim.Type == SystemType)
 					animation.SetTargetAnimation(new TargetAnimation(default, previousType: currAnim.Type));
 
 				return;
 			}
-			
+
 			ResetIdleTime(targetEntity);
-
-			if (!EntityManager.TryGetComponentData(EntityManager.GetComponentData<Owner>(abilityEntity).Target, out Relative<RhythmEngineDescription> engineRelative))
-				return;
-
-			var commandState   = EntityManager.GetComponentData<GameCommandState>(engineRelative.Target);
-			var processMs      = (int) (EntityManager.GetComponentData<RhythmEngineLocalState>(engineRelative.Target).Elapsed.Ticks / TimeSpan.TicksPerMillisecond);
-			var beatIntervalMs = (int) (EntityManager.GetComponentData<RhythmEngineSettings>(engineRelative.Target).BeatInterval.Ticks / TimeSpan.TicksPerMillisecond);
-
-			var canBeTransitioned = commandState.IsInputActive(processMs, beatIntervalMs);
-			if (!currAnim.AllowOverride || currAnim.Type != SystemType && canBeTransitioned)
-				return;
-
 			InjectAnimation(animation);
 
-			animation.SetTargetAnimation(new TargetAnimation(SystemType, allowOverride: AllowOverride, stopAt: animation.RootTime + 0.25));
+			animation.SetTargetAnimation(new TargetAnimation(SystemType, allowOverride: false));
 
 			ref var systemData = ref animation.GetSystemData<SystemData>(SystemType);
 			if (abilityState.UpdateVersion != systemData.ActivationId)
@@ -79,11 +64,6 @@ namespace PataNext.Client.Graphics.Animation.Units.CTate
 				systemData.ActivationId = abilityState.UpdateVersion;
 				systemData.StartTime    = animation.RootTime;
 			}
-		}
-
-		protected virtual void OnAbilityUpdate(UnitVisualAnimation animation, ref SystemData systemData)
-		{
-			systemData.StartTime = animation.RootTime;
 		}
 
 		private class Playable__ : PlayableSystem

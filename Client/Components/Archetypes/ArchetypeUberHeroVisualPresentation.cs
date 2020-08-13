@@ -6,6 +6,7 @@ using package.stormiumteam.shared.ecs;
 using PataNext.Client.DataScripts.Models.Equipments;
 using PataNext.Client.Graphics.Animation.Units.Base;
 using PataNext.Client.Systems;
+using PataNext.Module.Simulation.Components.GamePlay.Abilities;
 using PataNext.Module.Simulation.Components.Units;
 using PataNext.Module.Simulation.Resources;
 using PataNext.Module.Simulation.Resources.Keys;
@@ -13,6 +14,7 @@ using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 using Utility.GameResources;
 
@@ -200,9 +202,9 @@ namespace PataNext.Client.Components.Archetypes
 
 					ref var heroModeScaling = ref presentation.m_HeroModeScaling;
 					// Hero mode scaling shouldn't be done here.
-					/*if (EntityManager.TryGetComponentData(backend.DstEntity, out OwnerActiveAbility ownerAbility)
+					if (EntityManager.TryGetComponentData(backend.DstEntity, out OwnerActiveAbility ownerAbility)
 					    && EntityManager.TryGetComponentData(ownerAbility.Active, out AbilityActivation activation)
-					    && activation.Type == EActivationType.HeroMode)
+					    && activation.Type == EAbilityActivationType.HeroMode)
 					{
 						heroModeScaling = 1.325f;
 					}
@@ -211,7 +213,7 @@ namespace PataNext.Client.Components.Archetypes
 						heroModeScaling = math.lerp(heroModeScaling, 1, Time.DeltaTime * 1.75f);
 						heroModeScaling = math.lerp(heroModeScaling, 1, Time.DeltaTime * 1.25f);
 						heroModeScaling = math.clamp(heroModeScaling, 1, 1.325f);
-					}*/
+					}
 
 					presentation.transform.localScale = Vector3.one * (scale * presentation.m_HeroModeScaling);
 					presentation.OnSystemUpdate();

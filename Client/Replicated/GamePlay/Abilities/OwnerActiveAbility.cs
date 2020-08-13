@@ -1,8 +1,11 @@
-﻿using GameHost;
+﻿using System;
+using GameHost;
 using GameHost.Native;
 using GameHost.Native.Fixed;
 using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
+using GameHost.Simulation.Utility.Resource;
+using PataNext.Module.Simulation.Resources;
 using RevolutionSnapshot.Core.Buffers;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -14,9 +17,16 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Abilities
 	{
 		private struct Replica
 		{
-			public int                         LastCommandActiveTime, LastActivationTime;
-			public GhGameEntity                Active,                Incoming;
-			public FixedBuffer32<GhGameEntity> CurrentCombo;
+			public int LastCommandActiveTime;
+			public int LastActivationTime;
+
+			public GhGameEntity Active;
+			public GhGameEntity Incoming;
+
+			/// <summary>
+			///     Current combo of the entity...
+			/// </summary>
+			public FixedBuffer32<GameResource<RhythmCommandResource>> CurrentCombo; //< 32 bytes should suffice, it would be 4 combo commands...
 		}
 
 		public int LastCommandActiveTime;
@@ -28,27 +38,11 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Abilities
 		/// <summary>
 		///     Current combo of the entity...
 		/// </summary>
-		public FixedBuffer32<Entity> CurrentCombo; //< 32 bytes should suffice, it would be 4 combo commands...
-
-		public void AddCombo(Entity ent)
-		{
-			while (CurrentCombo.GetLength() >= CurrentCombo.GetCapacity())
-				CurrentCombo.RemoveAt(0);
-			CurrentCombo.Add(ent);
-		}
-
-		public bool RemoveCombo(Entity ent)
-		{
-			var index = CurrentCombo.IndexOf(ent);
-			if (index < 0)
-				return false;
-			CurrentCombo.RemoveAt(index);
-			return true;
-		}
+		public FixedBuffer32<GameResource<RhythmCommandResource>> CurrentCombo; //< 32 bytes should suffice, it would be 4 combo commands...
 
 		public class Register : RegisterGameHostComponentData<OwnerActiveAbility>
 		{
-			protected override ICustomComponentDeserializer CustomDeserializer { get; }
+			protected override ICustomComponentDeserializer CustomDeserializer => new CustomSingleDeserializer<OwnerActiveAbility, OwnerActiveAbility>();
 		}
 
 		public int Size => UnsafeUtility.SizeOf<Replica>();
@@ -60,10 +54,10 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Abilities
 			LastCommandActiveTime = replica.LastCommandActiveTime;
 			ghEntityToUEntity.TryGetValue(replica.Active, out Active);
 			ghEntityToUEntity.TryGetValue(replica.Incoming, out Incoming);
-			CurrentCombo.SetLength(replica.CurrentCombo.GetLength());
 
-			for (var i = 0; i != replica.CurrentCombo.Span.Length; i++) 
-				ghEntityToUEntity.TryGetValue(replica.CurrentCombo.Span[i], out CurrentCombo.Span[i]);
+			CurrentCombo = replica.CurrentCombo;
+
+			component = this;
 		}
 	}
 }

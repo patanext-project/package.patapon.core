@@ -165,7 +165,9 @@ namespace PataNext.Client.Graphics.Camera.Units
 						}
 						else
 						{
-							cameraModifier.Position.x = positionResult.x;
+							cameraModifier.Position.x       = positionResult.x;
+							// make sure that the interpolation data is also immediate
+							cameraData.InterpolatedPosition = positionResult.x;
 						}
 					}
 
