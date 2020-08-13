@@ -1,3 +1,4 @@
+using System;
 using GameHost.ShareSimuWorldFeature.Systems;
 using package.stormiumteam.shared.ecs;
 using PataNext.Module.Simulation.Components;
@@ -150,8 +151,14 @@ namespace PataNext.Client.Graphics.Camera.Units
 						if (!isImmediate)
 						{
 							var panningModifier = playerInput.Panning * (cameraModifier.FieldOfView + 4f * direction.Value);
-							
-							cameraData.InterpolatedPosition = Mathf.SmoothDamp(cameraData.InterpolatedPosition, positionResult.x, ref cameraData.PositionVelocity, 0.5f, 100, interFrame.Begin.Delta * (interFrame.End.Frame - interFrame.Begin.Frame + 1));
+
+							var interFrameDelta = interFrame.Begin.Delta * (interFrame.End.Frame - interFrame.Begin.Frame + 1);
+							if (interFrameDelta > 0)
+							{
+								// passing a value at 0 will set the Velocity to NaN
+								cameraData.InterpolatedPosition = Mathf.SmoothDamp(cameraData.InterpolatedPosition, positionResult.x, ref cameraData.PositionVelocity, 0.5f, 100, interFrameDelta);
+							}
+
 							cameraData.InterpolatedPanning  = Mathf.SmoothDamp(cameraData.InterpolatedPanning, panningModifier, ref cameraData.PanningVelocity, 0.175f, 100, dt);
 
 							cameraModifier.Position.x = cameraData.InterpolatedPosition + cameraData.InterpolatedPanning;
@@ -162,7 +169,10 @@ namespace PataNext.Client.Graphics.Camera.Units
 						}
 					}
 
-					if (math.isnan(cameraModifier.Position.x) || math.abs(cameraModifier.Position.x) > 4000.0f) cameraModifier.Position.x = 0;
+					if (math.isnan(cameraModifier.Position.x) || math.abs(cameraModifier.Position.x) > 4000.0f)
+					{
+						cameraModifier.Position.x = 0;
+					}
 					
 					anchor.Type  = AnchorType.Screen;
 					anchor.Value = new float2(0, 0.7f);

@@ -35,7 +35,7 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 			protected override void OnInitialize(Init init)
 			{
 				if (GetType() == typeof(PlayableSystem))
-					throw new InvalidOperationException("");
+					throw new InvalidOperationException("Replace GetNewPlayable");
 				
 				System = init.System;
 				Debug.Log("OnInitialize SystemType: " + SystemType);

@@ -170,7 +170,7 @@ namespace PataNext.Client.Graphics.Animation.Units
 			if ((abilityState.Phase & EAbilityPhase.Active) != 0 && abilityState.UpdateVersion > data.ActiveId
 			    || data.StartAt > 0 && data.StartAt < animation.RootTime)
 			{
-				var stopAt = animation.RootTime + (commandState.ChainEndTimeMs - processMs) * 0.001f - 1.25f;
+				var stopAt = animation.RootTime + (commandState.ChainEndTimeMs - processMs) * 0.001f - 1.1f;
 				Console.WriteLine($"{stopAt - animation.RootTime} --> {commandState.ChainEndTimeMs} - {processMs}");
 				animation.SetTargetAnimation(new TargetAnimation(SystemType, false, false, stopAt: stopAt));
 
