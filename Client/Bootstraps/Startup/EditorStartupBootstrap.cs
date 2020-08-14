@@ -6,6 +6,7 @@ using GameHost.InputBackendFeature;
 using GameHost.ShareSimuWorldFeature;
 using RevolutionSnapshot.Core.Buffers;
 using StormiumTeam.GameBase.Bootstrapping;
+using StormiumTeam.GameBase.Data;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
@@ -62,6 +63,9 @@ namespace PataNext.Client.Bootstraps.Startup
 					writer.WriteStaticString(new IPEndPoint(IPAddress.Parse("127.0.0.1"), cghInputBackend.Address.Address.Port).ToString());
 					connector.BroadcastRequest("addinputsystem", writer);
 				}
+
+				var request = EntityManager.CreateEntity(typeof(RequestMapLoad));
+				EntityManager.SetComponentData(request, new RequestMapLoad {Key = new FixedString512("arena_of_tolerance")});
 
 				step++;
 			}

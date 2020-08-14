@@ -1,7 +1,9 @@
 using System;
+using package.stormiumteam.shared.ecs;
 using PataNext.Client.OrderSystems;
 using PataNext.Module.Simulation.Components.GamePlay.RhythmEngine;
 using PataNext.Module.Simulation.Components.Roles;
+using PataNext.Simulation.mixed.Components.GamePlay.RhythmEngine;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems.Ext;
 using StormiumTeam.GameBase.Roles.Components;
@@ -104,8 +106,13 @@ namespace PataNext.Client.DataScripts.Models.RhythmEngine.FeverWorm
 
 			var comboState = EntityManager.GetComponentData<GameCombo.State>(engine);
 			var comboSettings = EntityManager.GetComponentData<GameCombo.Settings>(engine);
-			//SummonEnergyReal = real(comboState.JinnEnergy, comboState.JinnEnergyMax); // TODO: JinnEnergy
-			SummonEnergyReal = 0;
+			
+			if (EntityManager.TryGetComponentData(engine, out RhythmSummonEnergy energy)
+			    && EntityManager.TryGetComponentData(engine, out RhythmSummonEnergyMax energyMax))
+			{
+				SummonEnergyReal = real(energy.Value, energyMax.MaxValue);
+			}
+
 			ComboScoreReal   = comboState.Score;
 			ComboCount       = comboState.Count;
 			IsFever          = comboSettings.CanEnterFever(comboState.Count, comboState.Score);

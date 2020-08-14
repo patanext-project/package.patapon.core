@@ -7,6 +7,7 @@ using GameHost.ShareSimuWorldFeature;
 using Mono.Options;
 using RevolutionSnapshot.Core.Buffers;
 using StormiumTeam.GameBase.Bootstrapping;
+using StormiumTeam.GameBase.Data;
 using Unity.Collections;
 using Unity.Entities;
 using Utilities;
@@ -30,6 +31,9 @@ namespace PataNext.Client.Bootstraps.Startup
 
 						World.GetExistingSystem<ConnectToGameHostSimulationSystem>()
 						     .Connect(IPEndPointUtility.Parse(con.Address));
+						
+						var request = EntityManager.CreateEntity(typeof(RequestMapLoad));
+						EntityManager.SetComponentData(request, new RequestMapLoad {Key = new FixedString512("arena_of_tolerance")});
 					}
 				}
 			};

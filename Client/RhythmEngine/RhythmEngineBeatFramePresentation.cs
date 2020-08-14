@@ -1,8 +1,10 @@
 using System;
 using GameHost.ShareSimuWorldFeature.Systems;
+using package.stormiumteam.shared.ecs;
 using PataNext.Client.OrderSystems;
 using PataNext.Module.Simulation.Components.GamePlay.RhythmEngine;
 using PataNext.Module.Simulation.Components.Roles;
+using PataNext.Simulation.mixed.Components.GamePlay.RhythmEngine;
 using StormiumTeam.GameBase.BaseSystems.Ext;
 using StormiumTeam.GameBase.Roles.Components;
 using StormiumTeam.GameBase.Roles.Descriptions;
@@ -167,18 +169,20 @@ public class RhythmEngineBeatFramePresentation : RuntimeAssetPresentation<Rhythm
 
 				case RhythmEngineBeatFrameBackend.Phase.Fever:
 				{
-					// goooo crazy // TODO: Implement JinnEnergy
-					if (true/* comboState.JinnEnergy < comboState.JinnEnergyMax*/)
+					// goooo crazy
+					if (!EntityManager.TryGetComponentData(engine, out RhythmSummonEnergy energy)
+					    || !EntityManager.TryGetComponentData(engine, out RhythmSummonEnergyMax energyMax)
+					    || energy.Value < energyMax.MaxValue)
 					{
 						for (var i = 0; i != 3; i++) TargetColor[i] = Mathf.Lerp(TargetColor[i], new Random((uint) Environment.TickCount).NextFloat(), Time.DeltaTime * 25f);
 
 						TargetColor[CurrentHue % 3] = 1;
 					}
-					// this color should be customizable but i'm lazy to add that settings so... eh...
-					/*else
+					// this color should be customizable but i'm lazy to add that settings so... eh...*
+					else
 					{
 						TargetColor = new Color(1, 0.86f, 0, 1);
-					}*/
+					}
 
 					break;
 				}
