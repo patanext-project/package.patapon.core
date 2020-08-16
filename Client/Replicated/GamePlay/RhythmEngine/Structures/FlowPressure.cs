@@ -13,7 +13,7 @@
 	public struct FlowPressure
 	{
 		public const float  Error   = 0.99f;
-		public const double Perfect = 0.2f;
+		public const double Perfect = 0.16f;
 
 		/// <summary>
 		/// Is this the end of a slider?

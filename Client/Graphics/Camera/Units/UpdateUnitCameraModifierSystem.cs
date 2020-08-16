@@ -150,7 +150,7 @@ namespace PataNext.Client.Graphics.Camera.Units
 
 						if (!isImmediate)
 						{
-							var panningModifier = playerInput.Panning * (cameraModifier.FieldOfView + 4f * direction.Value);
+							var panningModifier = playerInput.Panning * ((cameraModifier.FieldOfView + 4f) * direction.Value);
 
 							var interFrameDelta = interFrame.Begin.Delta * (interFrame.End.Frame - interFrame.Begin.Frame + 1);
 							if (interFrameDelta > 0)

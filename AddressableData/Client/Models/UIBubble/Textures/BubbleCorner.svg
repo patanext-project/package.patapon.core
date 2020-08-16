@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   sodipodi:docname="BubbleCorner.svg"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   id="svg8"
+   version="1.1"
+   viewBox="0 0 1024 256"
+   height="256mm"
+   width="1024mm">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     inkscape:window-maximized="1"
+     inkscape:window-y="-8"
+     inkscape:window-x="1912"
+     inkscape:window-height="1017"
+     inkscape:window-width="1920"
+     inkscape:pagecheckerboard="true"
+     width="1024mm"
+     showgrid="false"
+     inkscape:document-rotation="0"
+     inkscape:current-layer="layer1"
+     inkscape:document-units="mm"
+     inkscape:cy="1558.462"
+     inkscape:cx="3676.5247"
+     inkscape:zoom="0.12374369"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     inkscape:groupmode="layer"
+     inkscape:label="Layer 1">
+    <path
+       sodipodi:nodetypes="ccccc"
+       d="M 824.42859,8.9822806e-6 H 1024 V 206.10714 H 824.42859 Z"
+       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:5.44029;stroke-linecap:round;paint-order:stroke fill markers"
+       id="rect849" />
+    <path
+       sodipodi:nodetypes="cccc"
+       id="path847"
+       d="M -3.1500001e-6,206.10714 H 824.42857 V 8.9822811e-6 C 601.88125,8.9822811e-6 -3.1500001e-6,-0.3559767 -3.1500001e-6,206.10714 Z"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.696723px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       id="rect849-6"
+       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:7.36108;stroke-linecap:round;paint-order:stroke fill markers"
+       d="M -3.1500001e-6,206.10714 H 1024 V 256 H -3.1500001e-6 Z"
+       sodipodi:nodetypes="ccccc" />
+  </g>
+</svg>

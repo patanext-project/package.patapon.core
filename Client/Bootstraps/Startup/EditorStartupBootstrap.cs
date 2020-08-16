@@ -4,11 +4,14 @@ using GameHost.Core;
 using GameHost.Core.RPC.AvailableRpcCommands;
 using GameHost.InputBackendFeature;
 using GameHost.ShareSimuWorldFeature;
+using PataNext.Client.DataScripts.Interface.Bubble;
 using RevolutionSnapshot.Core.Buffers;
 using StormiumTeam.GameBase.Bootstrapping;
 using StormiumTeam.GameBase.Data;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
+using Unity.Transforms;
 using UnityEngine;
 using Utilities;
 
@@ -16,7 +19,8 @@ namespace PataNext.Client.Bootstraps.Startup
 {
 	public class EditorStartupBootstrap : BaseBootstrapSystem
 	{
-		private int step = 0; 
+		private int step = 0;
+
 		protected override void Register(Entity bootstrap)
 		{
 			Debug.LogError("Register Bootstrap " + World.Name);
