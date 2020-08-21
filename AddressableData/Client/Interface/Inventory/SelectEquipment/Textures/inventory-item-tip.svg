@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="75.000328"
+   height="50.000153"
+   viewBox="0 0 19.843836 13.229207"
+   version="1.1"
+   id="svg2449"
+   sodipodi:docname="inventory-item-tip.svg"
+   inkscape:version="1.1-dev (fb4e0d3, 2020-08-16)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2445" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.6"
+     inkscape:cx="94.642857"
+     inkscape:cy="9.9107143"
+     inkscape:document-units="mm"
+     inkscape:current-layer="g8075-5"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-44.333796,-27.328623)">
+    <g
+       id="g2443"
+       transform="matrix(1.2330703,0,0,1.2330703,-174.53847,-214.34981)">
+      <rect
+         ry="0.1764828"
+         y="179.74474"
+         x="244.82765"
+         height="10.73015"
+         width="0.39080009"
+         id="rect5588-1"
+         style="opacity:1;vector-effect:none;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.786085;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers fill stroke" />
+      <rect
+         ry="0.1764828"
+         y="179.71667"
+         x="147.73897"
+         height="10.73015"
+         width="0.39080015"
+         id="rect5588-0-5"
+         style="opacity:1;vector-effect:none;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.786085;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers fill stroke" />
+      <g
+         id="g8075-5"
+         transform="matrix(0.81098378,0,0,0.81098378,205.08942,122.47258)">
+        <path
+           inkscape:connector-curvature="0"
+           style="opacity:1;fill:#595959;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.776454;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+           d="M -18.82135,90.661131 V 103.8903 h 2.6634 c 1.09935,0 1.98438,-0.88503 1.98438,-1.98438 v -9.260414 c 0,-1.099343 -0.88503,-1.984375 -1.98438,-1.984375 z"
+           id="rect6034-4-5-3" />
+      </g>
+    </g>
+  </g>
+</svg>
