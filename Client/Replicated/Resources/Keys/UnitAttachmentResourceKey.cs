@@ -1,11 +1,11 @@
-﻿﻿using System;
+﻿using System;
 using GameHost.Native;
- using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
+using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using GameHost.Simulation.Utility.Resource.Components;
- using PataNext.Module.Simulation.Resources.Keys;
- using Unity.Entities;
+using PataNext.Module.Simulation.Resources.Keys;
+using Unity.Entities;
 
- [assembly: RegisterGenericComponentType(typeof(GameResourceKey<UnitAttachmentResourceKey>))]
+[assembly: RegisterGenericComponentType(typeof(GameResourceKey<UnitAttachmentResourceKey>))]
 
 namespace PataNext.Module.Simulation.Resources.Keys
 {
@@ -16,11 +16,12 @@ namespace PataNext.Module.Simulation.Resources.Keys
 		public class Register : RegisterGameHostComponentData<GameResourceKey<UnitAttachmentResourceKey>>
 		{
 		}
-		
+
 		public UnitAttachmentResourceKey(CharBuffer64 value) => Value = value;
 		public UnitAttachmentResourceKey(string       value) => Value = CharBufferUtility.Create<CharBuffer64>(value);
-		
-		public static implicit operator UnitAttachmentResourceKey(string value) => new UnitAttachmentResourceKey(value);
+
+		public static implicit operator UnitAttachmentResourceKey(string       value) => new UnitAttachmentResourceKey(value);
+		public static implicit operator UnitAttachmentResourceKey(CharBuffer64 value) => new UnitAttachmentResourceKey(value);
 
 		public bool Equals(UnitAttachmentResourceKey other)
 		{

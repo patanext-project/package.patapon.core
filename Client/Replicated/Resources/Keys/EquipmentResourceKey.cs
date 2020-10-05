@@ -1,11 +1,11 @@
-﻿﻿using System;
+﻿using System;
 using GameHost.Native;
- using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
+using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using GameHost.Simulation.Utility.Resource.Components;
- using PataNext.Module.Simulation.Resources.Keys;
- using Unity.Entities;
+using PataNext.Module.Simulation.Resources.Keys;
+using Unity.Entities;
 
- [assembly: RegisterGenericComponentType(typeof(GameResourceKey<EquipmentResourceKey>))]
+[assembly: RegisterGenericComponentType(typeof(GameResourceKey<EquipmentResourceKey>))]
 
 namespace PataNext.Module.Simulation.Resources.Keys
 {
@@ -16,7 +16,7 @@ namespace PataNext.Module.Simulation.Resources.Keys
 		public class Register : RegisterGameHostComponentData<GameResourceKey<EquipmentResourceKey>>
 		{
 		}
-		
+
 		public EquipmentResourceKey(CharBuffer64 value) => Value = value;
 		public EquipmentResourceKey(string       value) => Value = CharBufferUtility.Create<CharBuffer64>(value);
 

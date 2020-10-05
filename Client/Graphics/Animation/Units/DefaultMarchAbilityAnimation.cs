@@ -53,6 +53,14 @@ namespace PataNext.Client.Graphics.Animation.Units
 		{
 			base.OnCreate();
 
+			var animationMap = new AnimationMap<(TargetType target, SubType sub)>("DefaultMarchAbility/Animations")
+			{
+				{"IdleNormal", (TargetType.Idle, SubType.Normal)},
+				{"IdleFerocious", (TargetType.Idle, SubType.Ferocious)},
+				{"WalkingNormal", (TargetType.Walking, SubType.Normal)},
+				{"WalkingFerocious", (TargetType.Walking, SubType.Ferocious)},
+			};
+
 			m_Clips = new Dictionary<TargetType, Dictionary<Sub, AnimationClip>>();
 			PreLoadAnimationAsset(m_AddrPath.GetFile("Idle.anim"), new OperationHandleData
 			{

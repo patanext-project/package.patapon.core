@@ -1,8 +1,8 @@
-﻿﻿using System;
+﻿using System;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
- using Unity.Entities;
+using Unity.Entities;
 
- namespace PataNext.Module.Simulation.Components.GamePlay.RhythmEngine
+namespace PataNext.Module.Simulation.Components.GamePlay.RhythmEngine
 {
 	public enum RhythmEngineState
 	{

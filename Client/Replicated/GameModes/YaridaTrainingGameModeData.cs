@@ -13,15 +13,16 @@ namespace PataNext.Module.Simulation.Components.GameModes
 			// huehuehuehuheuheueheuheuehuheueheuheuehuehueheueheuheuheuhue
 			Backward = 2
 		}
-		
+
 		public EPhase Phase;
 		public float  CurrUberHeroPos;
 		public int    YaridaOvertakeCount;
-		
+
 		public float LastCheckpointScore;
 		public float LastCheckpointTime;
-		
+
 		public class Register : RegisterGameHostComponentData<YaridaTrainingGameModeData>
-		{}
+		{
+		}
 	}
 }

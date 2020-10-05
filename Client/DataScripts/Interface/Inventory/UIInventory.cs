@@ -45,20 +45,6 @@ namespace PataNext.Client.DataScripts.Interface.Inventory
 			}
 		}
 
-		private void Update()
-		{
-			var c = Cursor;
-			if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
-				c.x--;
-			if (Keyboard.current.rightArrowKey.wasPressedThisFrame)
-				c.x++;
-			if (Keyboard.current.upArrowKey.wasPressedThisFrame)
-				c.y--;
-			if (Keyboard.current.downArrowKey.wasPressedThisFrame)
-				c.y++;
-			Cursor = c;
-		}
-
 		public GameObject GetAt(int2 position)
 		{
 			return spawnedColumn[position.x, position.y];
@@ -114,12 +100,12 @@ namespace PataNext.Client.DataScripts.Interface.Inventory
 
 				if (view.y < 0)
 				{
-					view.y = math.max(ItemRange.y, fixedSizeTable.y) - displayedSizeTable.y + 1;
+					view.y = math.max(ItemRange.y + 1, fixedSizeTable.y) - displayedSizeTable.y;
 					if (hasGoneIntoNegativeY)
 						cursor.y = fixedSizeTable.y - 1;
 				}
 
-				if (ViewAsTable.y - 1 > math.max(fixedSizeTable.y, ItemRange.y))
+				if (ViewAsTable.y - 1 > math.max(fixedSizeTable.y - 1, ItemRange.y))
 				{
 					cursor.y = 0;
 					view.y   = 0;
@@ -129,7 +115,7 @@ namespace PataNext.Client.DataScripts.Interface.Inventory
 
 		public int2 AbsoluteCursor
 		{
-			get { return cursor * view; }
+			get { return cursor + view; }
 			set
 			{
 				var newView = value / displayedSizeTable;

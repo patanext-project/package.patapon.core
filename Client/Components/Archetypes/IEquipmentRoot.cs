@@ -1,4 +1,5 @@
 using System;
+using GameHost.Native;
 using PataNext.Client.DataScripts.Models.Equipments;
 using Unity.Collections;
 using UnityEngine;
@@ -9,7 +10,7 @@ namespace PataNext.Client.Components.Archetypes
 	{
 		EquipmentRootData GetRoot(Transform fromTransform);
 	}
-	
+
 	[Serializable]
 	public class EquipmentRootData
 	{
@@ -19,6 +20,6 @@ namespace PataNext.Client.Components.Archetypes
 		public UnitEquipmentBackend UnitEquipmentBackend;
 
 		[NonSerialized]
-		public FixedString64 EquipmentId;
+		public CharBuffer64 AttachmentId, UpdatedEquipmentId;
 	}
 }

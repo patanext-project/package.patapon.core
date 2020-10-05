@@ -1,121 +1,122 @@
-﻿﻿using System;
- using Unity.Mathematics;
- using UnityEngine;
+﻿using System;
+using Unity.Mathematics;
+using UnityEngine;
 
- namespace PataNext.Module.Simulation.Components.GamePlay.RhythmEngine.Structures
- {
-	 public struct Beat
-	 {
-		 public int Target;
+namespace PataNext.Module.Simulation.Components.GamePlay.RhythmEngine.Structures
+{
+	public struct Beat
+	{
+		public int Target;
 
-		 [SerializeField]
-		 private double offset;
-		 [SerializeField]
-		 private int    sliderLength;
+		[SerializeField]
+		private double offset;
 
-		 public double Offset
-		 {
-			 get => offset;
-			 set => offset = math.clamp(value, -1, 1);
-		 }
+		[SerializeField]
+		private int sliderLength;
 
-		 /// <summary>
-		 /// How long is this beat? (in beats)
-		 /// </summary>
-		 public int SliderLength
-		 {
-			 get => sliderLength;
-			 set => sliderLength = Math.Max(0, value);
-		 }
+		public double Offset
+		{
+			get => offset;
+			set => offset = math.clamp(value, -1, 1);
+		}
 
-		 private static float unlerp(TimeSpan a, TimeSpan b, TimeSpan x)
-		 {
-			 if (a != b)
-				 return (float) (x.Ticks - a.Ticks) / (b.Ticks - a.Ticks);
-			 return 0.0f;
-		 }
+		/// <summary>
+		/// How long is this beat? (in beats)
+		/// </summary>
+		public int SliderLength
+		{
+			get => sliderLength;
+			set => sliderLength = Math.Max(0, value);
+		}
 
-		 private static bool isValid(int beat, double offset, TimeSpan commandStart, TimeSpan elapsed, TimeSpan beatInterval, float scoreLimit = 0.6f)
-		 {
-			 elapsed -= commandStart;
+		private static float unlerp(TimeSpan a, TimeSpan b, TimeSpan x)
+		{
+			if (a != b)
+				return (float) (x.Ticks - a.Ticks) / (b.Ticks - a.Ticks);
+			return 0.0f;
+		}
 
-			 var targetTimed = TimeSpan.FromTicks(beat * beatInterval.Ticks);
-			 var targetStart = targetTimed + TimeSpan.FromTicks((long) Math.Round(beatInterval.Ticks * math.clamp(offset, -0.9, +0.9)));
-			 var score       = Math.Abs(unlerp(targetStart, targetStart + beatInterval, elapsed));
+		private static bool isValid(int beat, double offset, TimeSpan commandStart, TimeSpan elapsed, TimeSpan beatInterval, float scoreLimit = 0.6f)
+		{
+			elapsed -= commandStart;
 
-			 return Math.Abs(score) < Math.Min(1, scoreLimit);
-		 }
+			var targetTimed = TimeSpan.FromTicks(beat * beatInterval.Ticks);
+			var targetStart = targetTimed + TimeSpan.FromTicks((long) Math.Round(beatInterval.Ticks * math.clamp(offset, -0.9, +0.9)));
+			var score       = Math.Abs(unlerp(targetStart, targetStart + beatInterval, elapsed));
 
-		 public bool IsStartValid(TimeSpan commandStart, TimeSpan elapsed, TimeSpan beatInterval)
-		 {
-			 return isValid(Target, offset, commandStart, elapsed, beatInterval);
-		 }
+			return Math.Abs(score) < Math.Min(1, scoreLimit);
+		}
 
-		 public bool IsSliderValid(TimeSpan commandStart, TimeSpan elapsed, TimeSpan beatInterval)
-		 {
-			 return isValid(Target + SliderLength, offset, commandStart, elapsed, beatInterval);
-		 }
+		public bool IsStartValid(TimeSpan commandStart, TimeSpan elapsed, TimeSpan beatInterval)
+		{
+			return isValid(Target, offset, commandStart, elapsed, beatInterval);
+		}
 
-		 public bool IsValid(ComputedSliderFlowPressure computed, TimeSpan start, TimeSpan beatInterval)
-		 {
-			 return IsStartValid(start, computed.Start.Time, beatInterval)
-			        && (!computed.IsSlider && sliderLength == 0 || IsSliderValid(start, computed.End.Time, beatInterval));
-		 }
+		public bool IsSliderValid(TimeSpan commandStart, TimeSpan elapsed, TimeSpan beatInterval)
+		{
+			return isValid(Target + SliderLength, offset, commandStart, elapsed, beatInterval);
+		}
 
-		 public bool IsPredictionValid(ComputedSliderFlowPressure computed, TimeSpan start, TimeSpan beatInterval)
-		 {
-			 return IsStartValid(start, computed.Start.Time, beatInterval)
-			        && (!computed.IsSlider || sliderLength > 0 && IsSliderValid(start, computed.End.Time, beatInterval));
-		 }
-	 }
+		public bool IsValid(ComputedSliderFlowPressure computed, TimeSpan start, TimeSpan beatInterval)
+		{
+			return IsStartValid(start, computed.Start.Time, beatInterval)
+			       && (!computed.IsSlider && sliderLength == 0 || IsSliderValid(start, computed.End.Time, beatInterval));
+		}
 
-	 /// <summary>
-	 /// An action that should be attached to a <see cref="RhythmCommandDefinition"/> collection.
-	 /// </summary>
-	 public struct RhythmCommandAction
-	 {
-		 public Beat Beat;
+		public bool IsPredictionValid(ComputedSliderFlowPressure computed, TimeSpan start, TimeSpan beatInterval)
+		{
+			return IsStartValid(start, computed.Start.Time, beatInterval)
+			       && (!computed.IsSlider || sliderLength > 0 && IsSliderValid(start, computed.End.Time, beatInterval));
+		}
+	}
 
-		 /// <summary>
-		 /// The key required for this action to success
-		 /// </summary>
-		 public int Key;
+	/// <summary>
+	/// An action that should be attached to a <see cref="RhythmCommandDefinition"/> collection.
+	/// </summary>
+	public struct RhythmCommandAction
+	{
+		public Beat Beat;
 
-		 public RhythmCommandAction(int beat, int key)
-		 {
-			 Beat = new Beat {Target = beat};
-			 Key  = key;
-		 }
+		/// <summary>
+		/// The key required for this action to success
+		/// </summary>
+		public int Key;
 
-		 public RhythmCommandAction(Beat beat, int key)
-		 {
-			 Beat = beat;
-			 Key  = key;
-		 }
+		public RhythmCommandAction(int beat, int key)
+		{
+			Beat = new Beat {Target = beat};
+			Key  = key;
+		}
 
-		 public override string ToString()
-		 {
-			 return $"(K={Key} {Beat.Target}.{Beat.Offset}-->{Beat.Target + Beat.SliderLength}.{Beat.Offset})";
-		 }
+		public RhythmCommandAction(Beat beat, int key)
+		{
+			Beat = beat;
+			Key  = key;
+		}
 
-		 public static RhythmCommandAction With(int beatTarget, int key)
-		 {
-			 return new RhythmCommandAction(beatTarget, key);
-		 }
+		public override string ToString()
+		{
+			return $"(K={Key} {Beat.Target}.{Beat.Offset}-->{Beat.Target + Beat.SliderLength}.{Beat.Offset})";
+		}
 
-		 public static RhythmCommandAction WithOffset(int beatTarget, float offset, int key)
-		 {
-			 return new RhythmCommandAction(new Beat {Target = beatTarget, Offset = offset}, key);
-		 }
+		public static RhythmCommandAction With(int beatTarget, int key)
+		{
+			return new RhythmCommandAction(beatTarget, key);
+		}
 
-		 public static RhythmCommandAction WithSlider(int beatTarget, int sliderLength, int key)
-		 {
-			 return new RhythmCommandAction(new Beat {Target = beatTarget, SliderLength = sliderLength}, key);
-		 }
+		public static RhythmCommandAction WithOffset(int beatTarget, float offset, int key)
+		{
+			return new RhythmCommandAction(new Beat {Target = beatTarget, Offset = offset}, key);
+		}
 
-		 public static RhythmCommandAction WithOffsetAndSlider(int beatTarget, float offset, int sliderLength, int key)
-		 {
-			 return new RhythmCommandAction(new Beat {Target = beatTarget, Offset = offset, SliderLength = sliderLength}, key);
-		 }
-	 }
- }
+		public static RhythmCommandAction WithSlider(int beatTarget, int sliderLength, int key)
+		{
+			return new RhythmCommandAction(new Beat {Target = beatTarget, SliderLength = sliderLength}, key);
+		}
+
+		public static RhythmCommandAction WithOffsetAndSlider(int beatTarget, float offset, int sliderLength, int key)
+		{
+			return new RhythmCommandAction(new Beat {Target = beatTarget, Offset = offset, SliderLength = sliderLength}, key);
+		}
+	}
+}

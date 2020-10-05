@@ -1,4 +1,4 @@
-﻿﻿namespace PataNext.Module.Simulation.Components.GamePlay.RhythmEngine.Structures
+﻿namespace PataNext.Module.Simulation.Components.GamePlay.RhythmEngine.Structures
 {
 	public struct ActionRange
 	{

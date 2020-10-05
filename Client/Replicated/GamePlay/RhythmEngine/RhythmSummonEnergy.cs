@@ -8,14 +8,16 @@ namespace PataNext.Simulation.mixed.Components.GamePlay.RhythmEngine
 		public int Value;
 
 		public class Register : RegisterGameHostComponentData<RhythmSummonEnergy>
-		{}
+		{
+		}
 	}
 
 	public struct RhythmSummonEnergyMax : IComponentData
 	{
 		public int MaxValue;
-		
+
 		public class Register : RegisterGameHostComponentData<RhythmSummonEnergyMax>
-		{}
+		{
+		}
 	}
 }

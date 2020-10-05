@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using PataNext.Module.Simulation.Components.GamePlay.RhythmEngine.Structures;
 
 namespace PataNext.Module.Simulation.Components.GamePlay.RhythmEngine

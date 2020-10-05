@@ -1,48 +1,48 @@
-﻿﻿using System;
+﻿using System;
 using GameHost.Native;
- using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
+using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using GameHost.Simulation.Utility.Resource.Components;
- using PataNext.Module.Simulation.Resources.Keys;
- using Unity.Entities;
+using PataNext.Module.Simulation.Resources.Keys;
+using Unity.Entities;
 
- [assembly: RegisterGenericComponentType(typeof(GameResourceKey<RhythmCommandResourceKey>))]
+[assembly: RegisterGenericComponentType(typeof(GameResourceKey<RhythmCommandResourceKey>))]
 
- namespace PataNext.Module.Simulation.Resources.Keys
- {
-	 public readonly struct RhythmCommandResourceKey : IGameResourceKeyDescription, IEquatable<RhythmCommandResourceKey>
-	 {
-		 public readonly CharBuffer64 Identifier;
-		 public readonly int          BeatDuration;
+namespace PataNext.Module.Simulation.Resources.Keys
+{
+	public readonly struct RhythmCommandResourceKey : IGameResourceKeyDescription, IEquatable<RhythmCommandResourceKey>
+	{
+		public readonly CharBuffer64 Identifier;
+		public readonly int          BeatDuration;
 
-		 public class Register : RegisterGameHostComponentData<GameResourceKey<RhythmCommandResourceKey>>
-		 {
-		 }
+		public class Register : RegisterGameHostComponentData<GameResourceKey<RhythmCommandResourceKey>>
+		{
+		}
 
-		 public RhythmCommandResourceKey(CharBuffer64 identifier, int beatDuration)
-		 {
-			 Identifier   = identifier;
-			 BeatDuration = beatDuration;
-		 }
+		public RhythmCommandResourceKey(CharBuffer64 identifier, int beatDuration)
+		{
+			Identifier   = identifier;
+			BeatDuration = beatDuration;
+		}
 
-		 public RhythmCommandResourceKey(string value, int beatDuration) : this(CharBufferUtility.Create<CharBuffer64>(value), beatDuration)
-		 {
-		 }
+		public RhythmCommandResourceKey(string value, int beatDuration) : this(CharBufferUtility.Create<CharBuffer64>(value), beatDuration)
+		{
+		}
 
-		 public static implicit operator RhythmCommandResourceKey((string value, int beatDuration) tuple) => new RhythmCommandResourceKey(tuple.value, tuple.beatDuration);
+		public static implicit operator RhythmCommandResourceKey((string value, int beatDuration) tuple) => new RhythmCommandResourceKey(tuple.value, tuple.beatDuration);
 
-		 public bool Equals(RhythmCommandResourceKey other)
-		 {
-			 return Identifier.Equals(other.Identifier);
-		 }
+		public bool Equals(RhythmCommandResourceKey other)
+		{
+			return Identifier.Equals(other.Identifier);
+		}
 
-		 public override bool Equals(object obj)
-		 {
-			 return obj is RhythmCommandResourceKey other && Equals(other);
-		 }
+		public override bool Equals(object obj)
+		{
+			return obj is RhythmCommandResourceKey other && Equals(other);
+		}
 
-		 public override int GetHashCode()
-		 {
-			 return Identifier.GetHashCode();
-		 }
-	 }
- }
+		public override int GetHashCode()
+		{
+			return Identifier.GetHashCode();
+		}
+	}
+}

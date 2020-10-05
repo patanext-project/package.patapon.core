@@ -1,12 +1,12 @@
-﻿﻿using System;
+﻿using System;
 using GameHost.Native;
- using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
+using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using GameHost.Simulation.Utility.Resource.Components;
- using PataNext.Module.Simulation.Resources.Keys;
- using Unity.Entities;
+using PataNext.Module.Simulation.Resources.Keys;
+using Unity.Entities;
 
- [assembly: RegisterGenericComponentType(typeof(GameResourceKey<UnitKitResourceKey>))]
- 
+[assembly: RegisterGenericComponentType(typeof(GameResourceKey<UnitKitResourceKey>))]
+
 namespace PataNext.Module.Simulation.Resources.Keys
 {
 	public readonly struct UnitKitResourceKey : IGameResourceKeyDescription, IEquatable<UnitKitResourceKey>
@@ -19,7 +19,7 @@ namespace PataNext.Module.Simulation.Resources.Keys
 
 		public UnitKitResourceKey(CharBuffer64 value) => Value = value;
 		public UnitKitResourceKey(string       value) => Value = CharBufferUtility.Create<CharBuffer64>(value);
-		
+
 		public bool Equals(UnitKitResourceKey other)
 		{
 			return Value.Equals(other.Value);

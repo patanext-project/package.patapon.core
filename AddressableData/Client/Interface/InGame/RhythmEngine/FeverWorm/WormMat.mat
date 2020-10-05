@@ -53,12 +53,12 @@ Material:
     - _Cull: 2
     - _Cutoff: 0.5
     - _DstBlend: 0
-    - _IsFever: 0
+    - _IsFever: 1
     - _QueueOffset: 0
     - _SampleGI: 0
     - _SrcBlend: 1
-    - _SummonDirectPercentage: 0.9
-    - _SummonPercentage: 0.87
+    - _SummonDirectPercentage: 0.49
+    - _SummonPercentage: 0
     - _Surface: 0
     - _ZWrite: 1
     m_Colors:
@@ -67,7 +67,7 @@ Material:
     - Vector2_2C320A2B: {r: -5.93, g: 1.07, b: 0, a: 0}
     - _BaseColor: {r: 0, g: 0, b: 0, a: 1}
     - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-    - _SummonPosition: {r: -4.45, g: 5.981, b: 0, a: 0}
+    - _SummonPosition: {r: -5.262, g: 5.981, b: 0, a: 0}
   m_BuildTextureStacks: []
 --- !u!114 &2088612226448586456
 MonoBehaviour:

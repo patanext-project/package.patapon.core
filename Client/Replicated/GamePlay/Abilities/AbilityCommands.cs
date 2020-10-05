@@ -23,7 +23,7 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Abilities
 		///     Allowed commands for chaining in hero mode.
 		/// </summary>
 		public FixedBuffer64<GameResource<RhythmCommandResource>> HeroModeAllowedCommands; //< 64 bytes should suffice, it would be up to 8 commands...
-		
+
 		public class Register : RegisterGameHostComponentData<AbilityCommands>
 		{
 			protected override ICustomComponentDeserializer CustomDeserializer => new DefaultSingleDeserializer<AbilityCommands>();

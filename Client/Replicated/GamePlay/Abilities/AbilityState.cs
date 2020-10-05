@@ -1,9 +1,9 @@
-﻿﻿using System;
- using GameHost.ShareSimuWorldFeature;
- using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
- using Unity.Entities;
+﻿using System;
+using GameHost.ShareSimuWorldFeature;
+using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
+using Unity.Entities;
 
- namespace PataNext.Module.Simulation.Components.GamePlay.Abilities
+namespace PataNext.Module.Simulation.Components.GamePlay.Abilities
 {
 	[Flags]
 	public enum EAbilityPhase
@@ -25,6 +25,7 @@
 		public EAbilityPhase Phase;
 
 		public int Combo;
+
 		/// <summary>
 		/// How much imperfect commands were entered while in Hero Mode?
 		/// This does include bad rhythm'ed commands and commands in <see cref="AbilityCommands.HeroModeAllowedCommands"/>

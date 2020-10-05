@@ -1,7 +1,7 @@
-﻿﻿using System;
- using PataNext.Module.Simulation.Game.RhythmEngine;
+﻿using System;
+using PataNext.Module.Simulation.Game.RhythmEngine;
 
- namespace PataNext.Module.Simulation.Components.GamePlay.RhythmEngine.Structures
+namespace PataNext.Module.Simulation.Components.GamePlay.RhythmEngine.Structures
 {
 	public struct ComputedSliderFlowPressure
 	{

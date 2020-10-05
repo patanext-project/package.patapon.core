@@ -6,6 +6,7 @@ using package.stormiumteam.shared.ecs;
 using PataNext.Client.Systems;
 using PataNext.Module.Simulation.Components.Units;
 using PataNext.Module.Simulation.Resources.Keys;
+using StormiumTeam.GameBase.Utility.Pooling;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
@@ -31,7 +32,8 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 		{
 			m_UpdateArchetypeList.Clear();
 
-			var resourceMgr = World.GetExistingSystem<GameResourceManager>();
+			var resourceMgr  = World.GetExistingSystem<GameResourceManager>();
+			var archetypeMgr = World.GetExistingSystem<UnitVisualArchetypeManager>();
 
 			var __i        = 1;
 			var indexArray = UnsafeAllocation.From(ref __i);
@@ -55,33 +57,32 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 				transform.localScale = new Vector3(direction.Value, 1, 1);
 
 				// Load presentation
-				var unitArchetype = "UH.basic"; // this will be dynamic in the future (based on entity class)
-				if (EntityManager.TryGetComponentData(backend.DstEntity, out UnitCurrentKit currentKit)
-				    && currentKit.Resource.TryGet(resourceMgr, out UnitKitResourceKey key))
+				AsyncAssetPool<GameObject> targetArchetypePool = default;
+				if (EntityManager.TryGetComponentData(backend.DstEntity, out UnitArchetype archetype)
+				    && archetype.Resource.TryGet(resourceMgr, out UnitArchetypeResourceKey archetypeResourceKey))
 				{
-					unitArchetype = $"UH.{key.Value.ToString()}";
+					if (EntityManager.TryGetComponentData(backend.DstEntity, out UnitCurrentKit currentKit)
+					    && currentKit.Resource.TryGet(resourceMgr, out UnitKitResourceKey kitResourceKey))
+					{
+						archetypeMgr.TryGetArchetypePool(archetypeResourceKey.Value.ToString(),
+							kitResourceKey.Value.ToString(),
+							out targetArchetypePool);
+					}
+					else
+					{
+						archetypeMgr.TryGetArchetypePool(archetypeResourceKey.Value.ToString(), out targetArchetypePool);
+					}
 				}
 
-				if (backend.CurrentArchetype != unitArchetype)
+				if (targetArchetypePool != null
+				    && backend.CurrentArchetype != targetArchetypePool.AssetId)
 				{
-					Debug.Log($"{backend.CurrentArchetype} -> {unitArchetype}");
+					backend.CurrentArchetype = targetArchetypePool.AssetId;
 
-					backend.CurrentArchetype = unitArchetype;
-					m_UpdateArchetypeList.Add((backend, unitArchetype));
+					backend.ReturnPresentation();
+					backend.SetPresentationFromPool(targetArchetypePool);
 				}
-			}).WithoutBurst().Run();
-
-			foreach (var (be, archetype) in m_UpdateArchetypeList)
-			{
-				Console.WriteLine($"{archetype}");
-				if (World.GetExistingSystem<UnitVisualArchetypeManager>().TryGetArchetypePool(archetype, out var pool))
-				{
-					Console.WriteLine("return " + be.Presentation);
-					be.ReturnPresentation();
-					be.SetPresentationFromPool(pool);
-					Console.WriteLine(pool.AssetId);
-				}
-			}
+			}).WithStructuralChanges().Run();
 		}
 	}
 }

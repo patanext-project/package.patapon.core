@@ -45,6 +45,11 @@ namespace PataNext.Client.Core.Addressables
 
 	public class AddressBuilderInterface : AddressBuilder<AddressBuilderInterface>
 	{
+		public AddressBuilderInterfaceMenu Menu()
+		{
+			return new AddressBuilderInterfaceMenu {m_CurrentAddress = m_CurrentAddress}.Folder("Menu");
+		}
+
 		public AddressBuilderInterfaceGameMode GameMode()
 		{
 			return new AddressBuilderInterfaceGameMode {m_CurrentAddress = m_CurrentAddress}.Folder("GameMode");
@@ -58,6 +63,10 @@ namespace PataNext.Client.Core.Addressables
 	}
 
 	public class AddressBuilderInterfaceGameMode : AddressBuilder<AddressBuilderInterfaceGameMode>
+	{
+	}
+	
+	public class AddressBuilderInterfaceMenu : AddressBuilder<AddressBuilderInterfaceMenu>
 	{
 	}
 }

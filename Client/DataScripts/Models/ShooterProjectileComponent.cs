@@ -48,9 +48,7 @@ namespace PataNext.Client.DataScripts.Models
 			else if (entityMgr.HasComponent<ShooterProjectilePrediction>(dstEntity))
 				entityMgr.RemoveComponent<ShooterProjectilePrediction>(dstEntity);
 
-			if (!(Backend is UnitVisualBackend backend)
-			    || Backend.GetPresentationBoxed() == null
-			    || !(Backend.GetPresentationBoxed() is IEquipmentRoot equipRoot))
+			if (!Backend.TryGetComponent(out IEquipmentRoot equipRoot))
 				return;
 
 			var previousRoot = m_Root;

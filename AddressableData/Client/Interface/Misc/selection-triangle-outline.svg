@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="64"
+   height="64"
+   viewBox="0 0 16.933333 16.933334"
+   version="1.1"
+   id="svg1497"
+   inkscape:version="1.1-dev (fb4e0d3, 2020-08-16)"
+   sodipodi:docname="selection-triangle-outline.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1493" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#a0a0a0"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.6"
+     inkscape:cx="21.964286"
+     inkscape:cy="32.053572"
+     inkscape:document-units="mm"
+     inkscape:current-layer="g25697"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:pagecheckerboard="true" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       style="stroke:none"
+       transform="matrix(3.582792,0,0,3.582792,-998.73988,-329.00406)"
+       id="g25697">
+      <path
+         sodipodi:nodetypes="ccccc"
+         inkscape:connector-curvature="0"
+         id="path3433-6-5"
+         d="m 280.85339,94.19211 -1.61876,-1.807247 3.77751,1.807247 -3.51142,1.807246 z"
+         style="fill:#cc403a;fill-opacity:1;stroke:#ffffff;stroke-width:0.93865;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers" />
+      <path
+         sodipodi:nodetypes="ccccc"
+         inkscape:connector-curvature="0"
+         id="path3433-6"
+         d="m 280.85339,94.192108 -1.61876,-1.807247 3.77751,1.807247 -3.51142,1.807246 z"
+         style="fill:#cc403a;fill-opacity:1;stroke:none;stroke-width:0.93865343;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers" />
+    </g>
+  </g>
+</svg>

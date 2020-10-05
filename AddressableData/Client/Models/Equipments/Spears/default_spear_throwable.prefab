@@ -46,6 +46,7 @@ SpriteRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -136,6 +137,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 5940194993805822043}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3fa199dec56b4b1d9720ec305b581436, type: 3}
+  m_Script: {fileID: 11500000, guid: 0c7c8a7d1be542c182131088fcdbbf6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  projectilePrefab: {fileID: 0}
+  assetReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+  projectileStart: {fileID: 0}

@@ -1,14 +1,14 @@
-﻿﻿using System;
- using GameHost.ShareSimuWorldFeature;
- using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
- using Unity.Entities;
+﻿using System;
+using GameHost.ShareSimuWorldFeature;
+using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
+using Unity.Entities;
 
- namespace PataNext.Module.Simulation.Components.GamePlay.RhythmEngine
+namespace PataNext.Module.Simulation.Components.GamePlay.RhythmEngine
 {
 	public struct GameCommandState : IComponentData
 	{
 		public AbilitySelection Selection;
-		
+
 		public int StartTimeMs;
 		public int EndTimeMs;
 		public int ChainEndTimeMs;
@@ -21,7 +21,7 @@
 		{
 			StartTimeMs = EndTimeMs = ChainEndTimeMs = -1;
 		}
-		
+
 		public readonly bool IsGamePlayActive(int milliseconds)
 		{
 			return milliseconds >= StartTimeMs && milliseconds <= EndTimeMs;

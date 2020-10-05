@@ -1,9 +1,9 @@
-﻿﻿using System;
+﻿using System;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
- using PataNext.Module.Simulation.Components.GamePlay.RhythmEngine.Structures;
- using Unity.Entities;
+using PataNext.Module.Simulation.Components.GamePlay.RhythmEngine.Structures;
+using Unity.Entities;
 
- namespace PataNext.Module.Simulation.Components.GamePlay.RhythmEngine
+namespace PataNext.Module.Simulation.Components.GamePlay.RhythmEngine
 {
 	public struct RhythmEngineLocalState : IRhythmEngineState, IComponentData
 	{
@@ -12,7 +12,7 @@ using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 		public TimeSpan     Elapsed                { get; set; }
 
 		public bool CanRunCommands => Elapsed > TimeSpan.Zero;
-		
+
 		public int  CurrentBeat;
 		public uint NewBeatTick;
 
@@ -20,8 +20,9 @@ using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 		{
 			return RecoveryActivationBeat > activationBeat;
 		}
-		
+
 		public class Register : RegisterGameHostComponentData<RhythmEngineLocalState>
-		{}
+		{
+		}
 	}
 }

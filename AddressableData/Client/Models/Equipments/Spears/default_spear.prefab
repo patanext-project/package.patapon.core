@@ -98,7 +98,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &5855192339426562766
 Transform:
   m_ObjectHideFlags: 0
@@ -257,7 +257,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: default_spear_throwable
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2881395039173550668, guid: 24b0d71c843aec44ba2e85af14bf626f, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 24b0d71c843aec44ba2e85af14bf626f, type: 3}
 --- !u!1 &3753831796350749363 stripped
 GameObject:

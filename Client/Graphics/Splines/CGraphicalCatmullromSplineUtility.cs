@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -158,8 +159,40 @@ namespace PataNext.Client.Graphics.Splines
             // bias and tension controls:
             // http://local.wasp.uwa.edu.au/~pbourke/miscellaneous/interpolation/
 
+            var p0 = previous;
+            var p1 = start;
+            var p2 = end;
+            var p3 = next;
+            
+            float3 safe(float3 val)
+            {
+                if (math.all(math.isnan(val))) 
+                    return float3.zero;
+                return val;
+            }
+            
+            var t01 = math.pow(math.distance(p0, p1), 0.5f);
+            var t12 = math.pow(math.distance(p1, p2), 0.5f);
+            var t23 = math.pow(math.distance(p2, p3), 0.5f);
 
-            var percentComplete        = elapsedTime / duration;
+            var m1 = (1 - tension) * 
+                     (p2 - p1 + t12 * (safe((p1 - p0) / t01) - safe((p2 - p0) / (t01 + t12))));
+            var m2 = (1.0f - tension) * 
+                     (p2 - p1 + t12 * (safe((p3 - p2) / t23) - safe((p3 - p1) / (t12 + t23))));
+            
+           var a = 2.0f * (p1 - p2) + m1 + m2;
+            var b = -3.0f * (p1 - p2) - m1 - m1 - m2;
+            var c = m1;
+            var d = p1;
+
+            var percentComplete = elapsedTime / duration;
+
+            return a * percentComplete * percentComplete * percentComplete +
+                   b * percentComplete * percentComplete +
+                   c * percentComplete +
+                   d;
+
+            /*var percentComplete        = elapsedTime / duration;
             var percentCompleteSquared = math.lengthsq(percentComplete);
             var percentCompleteCubed   = math.dot(percentCompleteSquared, percentComplete);
 
@@ -185,7 +218,7 @@ namespace PataNext.Client.Graphics.Splines
 
             return math.float3(px + sx + ex + nx,
                 py + sy + ey + ny,
-                pz + sz + ez + nz);
+                pz + sz + ez + nz);*/
         }
     }
 }

@@ -76,7 +76,9 @@ namespace PataNext.Client.Graphics.Splines
 		// Fields
 		// -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
 		public int   Step    = 6;
-		public float Tension = 0.5f;
+		
+		[Range(-1, 1)]
+		public float Tension = 0;
 
 		// -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
 		// Unity Methods
