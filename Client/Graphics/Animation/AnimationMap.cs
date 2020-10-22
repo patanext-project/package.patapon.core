@@ -5,29 +5,43 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace PataNext.Client.Graphics.Animation
 {
-	public class AnimationMap<T> : IEnumerable<string>
+	public abstract class AnimationMap : IEnumerable<string>
 	{
-		public readonly string                Prefix;
-		public readonly Dictionary<string, T> KeyDataMap;
+		public readonly string Prefix;
 
 		public AnimationMap(string prefix)
 		{
-			KeyDataMap = new Dictionary<string, T>();
+			Prefix = prefix;
 		}
 
-		public T Resolve(IAnimationClipProvider provider)
-		{
-
-		}
-
-		public IEnumerator<string> GetEnumerator()
-		{
-			return KeyDataMap.Keys.GetEnumerator();
-		}
+		public abstract IEnumerator<string> GetEnumerator();
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return GetEnumerator();
+		}
+
+		public abstract AsyncOperationHandle<AnimationClip> Resolve<TProvider>(string key, TProvider provider)
+			where TProvider : IAnimationClipProvider;
+	}
+
+	public class AnimationMap<T> : AnimationMap
+	{
+		public readonly Dictionary<string, T> KeyDataMap;
+
+		public AnimationMap(string prefix) : base(prefix)
+		{
+			KeyDataMap = new Dictionary<string, T>();
+		}
+
+		public override IEnumerator<string> GetEnumerator()
+		{
+			return KeyDataMap.Keys.GetEnumerator();
+		}
+
+		public override AsyncOperationHandle<AnimationClip> Resolve<TProvider>(string key, TProvider provider)
+		{
+			return provider.Provide(Prefix + key);
 		}
 
 		public void Add(string key)

@@ -6,7 +6,7 @@ namespace PataNext.Client.Core.UnityTypes
 {
 	public class RegisterTranslation : RegisterGameHostComponentData<Translation>
 	{
-		protected override string CustomComponentPath => "PataNext.Module.Simulation.Components::Position";
+		protected override string CustomComponentPath => "StormiumTeam.GameBase.Transform.Components::Position";
 
 		protected override ICustomComponentDeserializer CustomDeserializer => new DefaultSingleDeserializer<Translation>();
 	}

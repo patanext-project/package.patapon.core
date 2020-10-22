@@ -12,35 +12,32 @@ using Unity.Entities;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Playables;
+using UnityEngine.ResourceManagement;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace PataNext.Client.Graphics.Animation.Base
 {
 	[AlwaysSynchronizeSystem]
 	public abstract class BaseAnimationSystem : AbsGameBaseSystem
 	{
-		protected AsyncOperationModule AsyncOp;
-		protected Type                 SystemType;
+		protected Type SystemType;
 
-		protected UnitVisualPresentation CurrentPresentation;
+		protected UnitVisualAnimation CurrentVisualAnimation;
+
+		protected AnimationMap AnimationMap { get; private set; }
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
-
-			SystemType = GetType();
-			GetModule(out AsyncOp);
+			
+			SystemType   = GetType();
+			AnimationMap = GetAnimationMap();
 		}
 
-		protected void LoadAssetAsync<TAsset, TData>(string address, TData data)
-			where TData : struct
-		{
-			AsyncOp.Add(Addressables.LoadAssetAsync<TAsset>(address), data);
-		}
+		protected abstract AnimationMap GetAnimationMap();
 
 		protected override void OnUpdate()
 		{
-			for (var i = 0; i != AsyncOp.Handles.Count; i++) OnAsyncOpUpdate(ref i);
-
 			if (!OnBeforeForEach())
 				return;
 
@@ -50,10 +47,9 @@ namespace PataNext.Client.Graphics.Animation.Base
 					return;
 
 				// main
-				CurrentPresentation = backend.Presentation;
+				CurrentVisualAnimation = animation;
 				OnUpdate(backend.DstEntity, backend, animation);
 			}).WithStructuralChanges().Run();
-			return;
 		}
 
 		protected abstract void OnUpdate(Entity targetEntity, UnitVisualBackend backend, UnitVisualAnimation animation);
@@ -64,13 +60,43 @@ namespace PataNext.Client.Graphics.Animation.Base
 				EntityManager.SetComponentData(targetEntity, default(AnimationIdleTime));
 		}
 
-		protected virtual void OnAsyncOpUpdate(ref int index)
-		{
-		}
-
 		protected virtual bool OnBeforeForEach()
 		{
 			return true;
+		}
+		
+		protected virtual ScriptPlayable<PlayableInnerCall> GetNewPlayable(ref VisualAnimation.ManageData data)
+		{
+			return ScriptPlayable<PlayableInnerCall>.Create(data.Graph);
+		}
+
+		// this should return itself
+		protected abstract IAbilityPlayableSystemCalls GetPlayableCalls();
+
+		public IAnimationClipProvider GetCurrentClipProvider()
+		{
+			return new DefaultAnimationProvider(CurrentVisualAnimation.Presentation, null);
+		}
+
+		protected bool InjectAnimationWithSystemData<TSystemData>(VisualAnimation.AddSystem<TSystemData> add = null, VisualAnimation.RemoveSystem<TSystemData> remove = null)
+			where TSystemData : struct
+		{
+			if (!CurrentVisualAnimation.ContainsSystem(SystemType))
+			{
+				CurrentVisualAnimation.InsertSystem(SystemType,
+					add ?? ((ref VisualAnimation.ManageData data, ref TSystemData systemData) =>
+					{
+						var playable = GetNewPlayable(ref data);
+						var behavior = playable.GetBehaviour();
+
+						behavior.Visual = ((UnitVisualAnimation) data.Handle).GetBehaviorData();
+						behavior.Initialize(this, data.Graph, playable, data.Index, data.Behavior.RootMixer, GetPlayableCalls());
+					}),
+					remove ?? ((data, systemData) => { }));
+				return true;
+			}
+
+			return false;
 		}
 	}
 
@@ -95,57 +121,6 @@ namespace PataNext.Client.Graphics.Animation.Base
 			AbilityFinder.Update();
 			return true;
 		}
-
-		public void SetAnimOverride<TKey>(OverrideObjectComponent overrides, in Dictionary<TKey, AnimationClip> origin, Action<TKey, AnimationClip> onResult)
-			where TKey : IAbilityAnimClip
-		{
-			foreach (var pair in origin)
-			{
-				if (overrides != null)
-				{
-					overrides.TryGetPresentationObject(pair.Key.Key, out var clip, pair.Value);
-					onResult(pair.Key, clip);
-				}
-				else
-					onResult(pair.Key, pair.Value);
-			}
-		}
-
-		public void SetAnimOverride<TKey>(OverrideObjectComponent overrides, Dictionary<TKey, AnimationClip> map, Dictionary<TKey, AnimationClip> destination)
-			where TKey : IAbilityAnimClip
-		{
-			var originalDest = destination;
-			if (map == destination)
-				destination = new Dictionary<TKey, AnimationClip>(map);
-
-			foreach (var pair in map)
-			{
-				if (overrides != null)
-				{
-					overrides.TryGetPresentationObject(pair.Key.Key, out var clip, pair.Value);
-					destination[pair.Key] = clip;
-				}
-				else
-					destination[pair.Key] = pair.Value;
-			}
-
-			if (originalDest == destination)
-				return;
-
-			originalDest.Clear();
-			foreach (var pair in destination)
-				originalDest.Add(pair.Key, pair.Value);
-		}
-
-		private           bool useAutomaticAsyncOp;
-		protected virtual bool AutomaticAsyncOperation => useAutomaticAsyncOp;
-
-		protected void PreLoadAnimationAsset<THandle>(string path, THandle handle)
-			where THandle : struct, IAbilityAnimationKey
-		{
-			LoadAssetAsync<AnimationClip, THandle>(path, handle);
-			useAutomaticAsyncOp = true;
-		}
 	}
 
 	public interface IPlayableSystemData<TPlayable>
@@ -157,79 +132,10 @@ namespace PataNext.Client.Graphics.Animation.Base
 	{
 		string Key { get; set; }
 	}
-	
+
 	public interface IAbilityAnimClip : IAbilityAnimationKey
 	{
 		AnimationClip Clip { get; set; }
-	}
-
-	public abstract class BaseAbilityAnimationSystem<TPlayable, TPlayableInit, TSystemData, THandleData, TClip> : BaseAbilityAnimationSystem
-		where TPlayable : BaseAbilityPlayable<TPlayableInit>, IPlayableBehaviour, new()
-		where TSystemData : struct, IPlayableSystemData<TPlayable>
-		where THandleData : struct, IAbilityAnimationKey
-		where TClip : struct, IAbilityAnimClip
-	{
-		private TPlayableInit m_LastPlayableInit;
-
-		protected void SetInit(TPlayableInit init)
-		{
-			m_LastPlayableInit = init;
-		}
-
-		protected abstract void OnAnimationInject(UnitVisualAnimation animation, ref TPlayableInit initData);
-
-		protected void InjectAnimation(UnitVisualAnimation animation, TPlayableInit initData)
-		{
-			if (!animation.ContainsSystem(SystemType))
-			{
-				OnAnimationInject(animation, ref initData);
-
-				m_LastPlayableInit = initData;
-				animation.InsertSystem<TSystemData>(SystemType, OnAnimationAdded, OnAnimationRemoved);
-			}
-		}
-
-		protected virtual ScriptPlayable<TPlayable> GetNewPlayable(ref VisualAnimation.ManageData data, ref TSystemData systemData)
-		{
-			return ScriptPlayable<TPlayable>.Create(data.Graph);
-		}
-
-		protected virtual void OnAnimationAdded(ref VisualAnimation.ManageData data, ref TSystemData systemData)
-		{
-			var playable = GetNewPlayable(ref data, ref systemData);
-			var behavior = playable.GetBehaviour();
-
-			behavior.Visual = ((UnitVisualAnimation) data.Handle).GetBehaviorData();
-			behavior.Initialize(this, data.Graph, playable, data.Index, data.Behavior.RootMixer, m_LastPlayableInit);
-			systemData.Behaviour = behavior;
-		}
-
-		protected virtual void OnAnimationRemoved(VisualAnimation.ManageData data, TSystemData systemData)
-		{
-
-		}
-		
-		protected override void OnAsyncOpUpdate(ref int index)
-		{
-			if (!AutomaticAsyncOperation)
-				return;
-			
-			var (handle, data) = DefaultAsyncOperation.InvokeExecute<AnimationClip, THandleData>(AsyncOp, ref index);
-			if (!handle.IsValid() || handle.Result == null)
-				return;
-			
-			OnAsyncOpElement(data, new TClip {Clip = handle.Result, Key = data.Key});
-		}
-
-		protected virtual void OnAsyncOpElement(THandleData handle, TClip result)
-		{
-			
-		}
-
-		protected override bool OnBeforeForEach()
-		{
-			return base.OnBeforeForEach() && AsyncOp.Handles.Count == 0;
-		}
 	}
 
 	public class DefaultAsyncOperation
@@ -245,14 +151,96 @@ namespace PataNext.Client.Graphics.Animation.Base
 					Debug.LogError(handleDataPair.Handle.OperationException);
 					Debug.LogError(handleDataPair.Handle.Status);
 				}
-				
+
 				return new AsyncOperationModule.HandleDataPair<TComponent, THandleData>();
 			}
-			
+
 			module.Handles.RemoveAtSwapBack(index);
 			index--;
 
 			return handleDataPair;
+		}
+	}
+
+	public interface IAbilityPlayableSystemCalls
+	{
+		void OnInitialize(PlayableInnerCall behavior);
+		void PrepareFrame(PlayableInnerCall behavior, Playable playable, FrameData info);
+	}
+
+	public class PlayableInnerCall : BaseAbilityPlayable<IAbilityPlayableSystemCalls>
+	{
+		private IAbilityPlayableSystemCalls systemCalls;
+
+		protected override void OnInitialize(IAbilityPlayableSystemCalls init)
+		{
+			systemCalls = init;
+			handles     = new List<(AsyncOperationHandle, Action<AsyncOperationHandle> complete)>();
+			Debug.Log("OnInitialize SystemType: " + SystemType);
+			systemCalls.OnInitialize(this);
+		}
+
+		public override void PrepareFrame(Playable playable, FrameData info)
+		{
+			for (var i = 0; i != handles.Count; i++)
+			{
+				if (handles[i].handle.IsDone)
+				{
+					Debug.LogError("Completed!");
+					handles[i].complete(handles[i].handle);
+					handles.RemoveAt(i--);
+				}
+			}
+			systemCalls.PrepareFrame(this, playable, info);
+		}
+
+		private List<(AsyncOperationHandle handle, Action<AsyncOperationHandle> complete)> handles;
+		public void AddAsyncOp(AsyncOperationHandle handle, Action<AsyncOperationHandle> complete)
+		{
+			handles.Add((handle, complete));
+		}
+	}
+
+	public struct DefaultAnimationProvider : IAnimationClipProvider
+	{
+		public readonly UnitVisualPresentation                                                      Presentation;
+		public readonly Dictionary<string, Dictionary<string, AsyncOperationHandle<AnimationClip>>> CacheClipMap;
+
+		public DefaultAnimationProvider(UnitVisualPresentation presentation, Dictionary<string, Dictionary<string, AsyncOperationHandle<AnimationClip>>> cacheClipMap)
+		{
+			Presentation = presentation;
+			CacheClipMap = cacheClipMap;
+		}
+
+		public AsyncOperationHandle<AnimationClip> Provide(string key)
+		{
+			AsyncOperationHandle<AnimationClip> clipHandle;
+
+			var overrides = Presentation.GetComponents<OverrideObjectComponent>();
+			foreach (var overrideComponent in overrides)
+			{
+				if (overrideComponent.TryGetPresentationObject(key, out AnimationClip clip))
+					return Addressables.ResourceManager.CreateCompletedOperation(clip, null);
+			}
+
+			if (!string.IsNullOrEmpty(Presentation.animationCacheId))
+			{
+				if (CacheClipMap.TryGetValue(Presentation.animationCacheId, out var clipMap))
+				{
+					if (clipMap.TryGetValue(key, out clipHandle)) 
+						return clipHandle;
+				}
+				else
+					CacheClipMap[key] = new Dictionary<string, AsyncOperationHandle<AnimationClip>>();
+			}
+			
+			// HOW
+			/*foreach (var label in Presentation.animationAssetLabels)
+			{
+				Addressables.LoadAssetAsync<>()
+			}*/
+
+			return Addressables.ResourceManager.CreateCompletedOperation(default(AnimationClip), $"No Animation found with key={key}");
 		}
 	}
 }

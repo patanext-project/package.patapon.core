@@ -120,7 +120,7 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 			}
 
 			var player = this.GetFirstSelfGamePlayer();
-			if (!EntityManager.TryGetComponentData(player, out PlayerInputComponent playerCommand))
+			if (!EntityManager.TryGetComponentData(player, out GameRhythmInputComponent playerCommand))
 				return;
 
 			var cameraState = this.GetComputedCameraState();

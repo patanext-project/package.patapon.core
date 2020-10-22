@@ -115,7 +115,7 @@ namespace PataNext.Client.Graphics.Models.InGame.Multiplayer
 			if (!EntityManager.TryGetComponentData(targetEntity, out Relative<PlayerDescription> relativePlayer))
 				return;
 
-			EntityManager.TryGetComponentData(relativePlayer.Target, out PlayerInputComponent command);
+			EntityManager.TryGetComponentData(relativePlayer.Target, out GameRhythmInputComponent command);
 			
 			definition.Set((int) command.Ability);
 			if (backend.lastAbility != command.Ability || command.AbilityInterFrame.HasBeenPressed(m_InterFrame.Range))

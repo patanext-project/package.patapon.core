@@ -1117,6 +1117,7 @@ GameObject:
   - component: {fileID: 55468396677195880}
   - component: {fileID: 4358083776053948735}
   - component: {fileID: 2090451911424806833}
+  - component: {fileID: 4651880247667333977}
   m_Layer: 0
   m_Name: Character
   m_TagString: Untagged
@@ -1164,6 +1165,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Animator: {fileID: 2758844109317685535}
+  animationAssetLabels: []
+  animationCacheId: 
 --- !u!114 &4358083776053948735
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1201,6 +1204,61 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66b3f3973705ed9478c456d1a2160a63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &4651880247667333977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2881115764059121880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f61085e41d8b4d6da0b6bce2ff9a4b28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  presentationObjects:
+  - Key: DefaultMarchAbility/Animations/IdleNormal
+    Object: {fileID: 7400000, guid: a743326603729c74e9497d272ecbb754, type: 2}
+    String: 
+    Int: 0
+    Float: 0
+    Vector: {x: 0, y: 0, z: 0}
+  - Key: DefaultMarchAbility/Animations/WalkingNormal
+    Object: {fileID: 7400000, guid: 8291d9754199c324d97ca09153162e83, type: 2}
+    String: 
+    Int: 0
+    Float: 0
+    Vector: {x: 0, y: 0, z: 0}
+  - Key: DefaultMarchAbility/Animations/WalkingFerocious
+    Object: {fileID: 7400000, guid: 100990157d3dc924c8dc7067446728fe, type: 2}
+    String: 
+    Int: 0
+    Float: 0
+    Vector: {x: 0, y: 0, z: 0}
+  - Key: DrumReaction/Animations/Pata
+    Object: {fileID: 7400000, guid: d9523779290d8d84fa46cf0d7b4c1317, type: 2}
+    String: 
+    Int: 0
+    Float: 0
+    Vector: {x: 0, y: 0, z: 0}
+  - Key: DrumReaction/Animations/Pon
+    Object: {fileID: 7400000, guid: 59c058a851cf489498f8ed6ad60d15e0, type: 2}
+    String: 
+    Int: 0
+    Float: 0
+    Vector: {x: 0, y: 0, z: 0}
+  - Key: DrumReaction/Animations/Don
+    Object: {fileID: 7400000, guid: 1f911b409c6cea7408f76db381877a5c, type: 2}
+    String: 
+    Int: 0
+    Float: 0
+    Vector: {x: 0, y: 0, z: 0}
+  - Key: DrumReaction/Animations/Chaka
+    Object: {fileID: 7400000, guid: 12279f7cebfd4864b9e6d5b45fced26e, type: 2}
+    String: 
+    Int: 0
+    Float: 0
+    Vector: {x: 0, y: 0, z: 0}
 --- !u!1 &2896608108767377027
 GameObject:
   m_ObjectHideFlags: 0

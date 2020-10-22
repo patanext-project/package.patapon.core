@@ -20,6 +20,7 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Abilities
 			public int LastCommandActiveTime;
 			public int LastActivationTime;
 
+			public GhGameEntity Previous;
 			public GhGameEntity Active;
 			public GhGameEntity Incoming;
 
@@ -32,6 +33,7 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Abilities
 		public int LastCommandActiveTime;
 		public int LastActivationTime;
 
+		public Entity PreviousActive;
 		public Entity Active;
 		public Entity Incoming;
 
@@ -52,6 +54,7 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Abilities
 			var replica = reader.ReadValue<Replica>();
 			LastActivationTime    = replica.LastActivationTime;
 			LastCommandActiveTime = replica.LastCommandActiveTime;
+			ghEntityToUEntity.TryGetValue(replica.Previous, out PreviousActive);
 			ghEntityToUEntity.TryGetValue(replica.Active, out Active);
 			ghEntityToUEntity.TryGetValue(replica.Incoming, out Incoming);
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using package.stormiumteam.shared.ecs;
 using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase.Utility.AssetBackend;
@@ -6,16 +7,50 @@ using StormiumTeam.GameBase.Utility.AssetBackend.Components;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.Playables;
 using UnityEngine.Rendering;
+using Object = UnityEngine.Object;
 
 namespace PataNext.Client.Graphics.Animation.Units.Base
 {
 	public abstract class UnitVisualPresentation : RuntimeAssetPresentation<UnitVisualPresentation>
 	{
-		public Animator Animator;
+		public Animator                                     Animator;
+
+		/// <summary>
+		/// Return the folders for animation.
+		/// </summary>
+		/// <remarks>
+		///	The order is the OverrideObject then folders.
+		/// If the first folder does not contains the animation, it will search it on the next.
+		/// </remarks>
+		public AssetLabelReference[] animationAssetLabels;
+
+		/// <summary>
+		/// Get the cache for animation. If empty, animations will not be re-used
+		/// </summary>
+		public string animationCacheId;
 
 		public abstract void UpdateData();
+
+		private void Start()
+		{
+			Addressables.InitializeAsync().Completed += handle =>
+			{
+				foreach (var locator in Addressables.ResourceLocators)
+				{
+					Debug.Log($"{locator.GetType()}; {locator.LocatorId}");
+					foreach (var key in locator.Keys)
+					{
+						Debug.Log($"\t{key}");
+						if (locator.Locate(key, null, out var locations))
+							foreach (var loc in locations)
+								Debug.Log($"{loc.PrimaryKey}; {loc.InternalId}; {loc.ResourceType}");
+					}
+				}
+			};
+		}
 	}
 
 	public class UnitVisualPlayableBehaviourData : PlayableBehaviorData

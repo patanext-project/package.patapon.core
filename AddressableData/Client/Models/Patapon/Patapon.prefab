@@ -29,7 +29,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 8683256278180692956}
-  m_RootOrder: 11
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6832579933458158097
 MonoBehaviour:
@@ -58,6 +58,7 @@ GameObject:
   - component: {fileID: 4873005642106504552}
   - component: {fileID: 1421647470714925021}
   - component: {fileID: 4640344229551965380}
+  - component: {fileID: 8943346756093376261}
   m_Layer: 0
   m_Name: Patapon
   m_TagString: Untagged
@@ -105,6 +106,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Animator: {fileID: 7264503520024424069}
+  animationAssetLabels: []
+  animationCacheId: 
 --- !u!114 &4640344229551965380
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -130,6 +133,43 @@ MonoBehaviour:
     id: 
     root:
       transform: {fileID: 7979306052820383768}
+--- !u!114 &8943346756093376261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3907668261989327659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f61085e41d8b4d6da0b6bce2ff9a4b28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  presentationObjects:
+  - Key: DefaultMarchAbility/Animations/IdleNormal
+    Object: {fileID: 7400000, guid: 57c775ba8ffb0394e929c4f822038490, type: 2}
+    String: 
+    Int: 0
+    Float: 0
+    Vector: {x: 0, y: 0, z: 0}
+  - Key: DefaultMarchAbility/Animations/WalkingNormal
+    Object: {fileID: 7400000, guid: bf1562db45de81444bcee1162137c08e, type: 2}
+    String: 
+    Int: 0
+    Float: 0
+    Vector: {x: 0, y: 0, z: 0}
+  - Key: DrumReaction/Animations/Pata
+    Object: {fileID: 7400000, guid: 38a66dceacda60241b5158c63e22f41c, type: 2}
+    String: 
+    Int: 0
+    Float: 0
+    Vector: {x: 0, y: 0, z: 0}
+  - Key: DrumReaction/Animations/Pon
+    Object: {fileID: 7400000, guid: a7e5a3e984d344e4da33d26e41bf0aec, type: 2}
+    String: 
+    Int: 0
+    Float: 0
+    Vector: {x: 0, y: 0, z: 0}
 --- !u!95 &7264503520024424069
 Animator:
   serializedVersion: 3
@@ -140,7 +180,7 @@ Animator:
   m_GameObject: {fileID: 5024507076093853254}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: eb2f0a20de87ade43a9ed249a2e73ee7, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -178,7 +218,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 8683256278180692956}
-  m_RootOrder: 12
+  m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8367872677400271599
 MonoBehaviour:
@@ -220,11 +260,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7413686126608315794}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.881, z: 0}
+  m_LocalPosition: {x: 0, y: 0.915, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 8683256278180692956}
-  m_RootOrder: 13
+  m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4884236137398083949
 MonoBehaviour:
@@ -261,12 +301,12 @@ PrefabInstance:
     - target: {fileID: 2523075688198006719, guid: cc62b25df501583449b7e12df793f272,
         type: 3}
       propertyPath: irisSize
-      value: 0.43
+      value: 0.45
       objectReference: {fileID: 0}
     - target: {fileID: 3768342926956334077, guid: cc62b25df501583449b7e12df793f272,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.05
+      value: 0.06
       objectReference: {fileID: 0}
     - target: {fileID: 4204970251686719068, guid: cc62b25df501583449b7e12df793f272,
         type: 3}
@@ -341,7 +381,7 @@ PrefabInstance:
     - target: {fileID: 7884119438005783138, guid: cc62b25df501583449b7e12df793f272,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.05
+      value: -0.06
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cc62b25df501583449b7e12df793f272, type: 3}

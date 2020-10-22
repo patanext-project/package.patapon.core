@@ -22,7 +22,9 @@ namespace PataNext.Client.Systems
 
 			m_PoolByArchetype["Swords/default_sword"]   = new AsyncAssetPool<GameObject>(builder.GetFile("Swords/default_sword.prefab"));
 			m_PoolByArchetype["Spears/default_spear"]   = new AsyncAssetPool<GameObject>(builder.GetFile("Spears/default_spear.prefab"));
+			m_PoolByArchetype["Spears/default_spear_smaller"]   = new AsyncAssetPool<GameObject>(builder.GetFile("Spears/default_spear_smaller.prefab"));
 			m_PoolByArchetype["Shields/default_shield"] = new AsyncAssetPool<GameObject>(builder.GetFile("Shields/default_shield.prefab"));
+			m_PoolByArchetype["Helmets/default_helmet_small"] = new AsyncAssetPool<GameObject>(builder.GetFile("Helmets/default_helmet_small.prefab"));
 			m_PoolByArchetype["Masks/n_taterazay"]      = new AsyncAssetPool<GameObject>(builder.GetFile("Masks/n_taterazay.prefab"));
 			m_PoolByArchetype["Masks/n_yarida"]         = new AsyncAssetPool<GameObject>(builder.GetFile("Masks/n_yarida.prefab"));
 			m_PoolByArchetype["Masks/n_kibadda"]         = new AsyncAssetPool<GameObject>(builder.GetFile("Masks/n_kibadda.prefab"));

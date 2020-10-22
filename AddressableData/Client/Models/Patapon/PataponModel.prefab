@@ -30,7 +30,7 @@ Transform:
   m_Children:
   - {fileID: 2017600500354568027}
   m_Father: {fileID: 4204970251686719068}
-  m_RootOrder: 10
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7648939423728046273
 MonoBehaviour:
@@ -190,7 +190,7 @@ Transform:
   m_Children:
   - {fileID: 2215755359830095537}
   m_Father: {fileID: 4204970251686719068}
-  m_RootOrder: 9
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &871528345981891281
 MonoBehaviour:
@@ -232,16 +232,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 531621770180531142}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 7968414700527995671}
-  - {fileID: 8946725167019809588}
-  - {fileID: 415919300745864718}
+  - {fileID: 2898715792804983225}
   - {fileID: 5039152919506286992}
   - {fileID: 3917868132818195482}
-  - {fileID: 3383646948984280078}
   - {fileID: 2613847075651531328}
+  - {fileID: 3383646948984280078}
   - {fileID: 7884119438005783138}
   - {fileID: 3768342926956334077}
   - {fileID: 6000126425289679284}
@@ -283,7 +282,7 @@ Transform:
   - {fileID: 6836620158553018350}
   - {fileID: 6660887541847961906}
   m_Father: {fileID: 4204970251686719068}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &511010728962078391
 MonoBehaviour:
@@ -310,7 +309,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IsLooping: 0
-  CurveMultiplier: 0.05
+  CurveMultiplier: 0.055
   KeepCurveScaling: 0
   lineRenderer: {fileID: 7345771572190157416}
   lineRendererArray:
@@ -396,20 +395,20 @@ LineRenderer:
   m_SortingOrder: 0
   m_Positions:
   - {x: 0, y: 0, z: 0}
-  - {x: 0, y: -0.010285512, z: 0}
-  - {x: 0, y: -0.0236068, z: 0}
-  - {x: 0, y: -0.042793248, z: 0}
-  - {x: 0, y: -0.06815445, z: 0}
-  - {x: 0, y: -0.10000001, z: 0}
-  - {x: 0, y: -0.13658194, z: 0}
-  - {x: 0, y: -0.16738044, z: 0}
-  - {x: 0, y: -0.1920085, z: 0}
-  - {x: 0, y: -0.2100791, z: 0}
-  - {x: 0, y: -0.22120526, z: 0}
-  - {x: 0, y: -0.225, z: 0}
+  - {x: 0, y: -0.018911567, z: 0}
+  - {x: 0, y: -0.041288268, z: 0}
+  - {x: 0, y: -0.071156465, z: 0}
+  - {x: 0, y: -0.10767433, z: 0}
+  - {x: 0, y: -0.15, z: 0}
+  - {x: 0, y: -0.182894, z: 0}
+  - {x: 0, y: -0.20854877, z: 0}
+  - {x: 0, y: -0.22752552, z: 0}
+  - {x: 0, y: -0.2403855, z: 0}
+  - {x: 0, y: -0.2476899, z: 0}
+  - {x: 0, y: -0.25, z: 0}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.05
+    widthMultiplier: 0.055
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -496,7 +495,7 @@ Transform:
   - {fileID: 2583757380866423607}
   - {fileID: 5634879594781022288}
   m_Father: {fileID: 4204970251686719068}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6008223461856771386
 MonoBehaviour:
@@ -523,7 +522,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IsLooping: 0
-  CurveMultiplier: 0.05
+  CurveMultiplier: 0.055
   KeepCurveScaling: 0
   lineRenderer: {fileID: 6765469940043695237}
   lineRendererArray:
@@ -609,20 +608,20 @@ LineRenderer:
   m_SortingOrder: 0
   m_Positions:
   - {x: 0, y: 0, z: 0}
-  - {x: 0, y: -0.010285512, z: 0}
-  - {x: 0, y: -0.0236068, z: 0}
-  - {x: 0, y: -0.042793248, z: 0}
-  - {x: 0, y: -0.06815445, z: 0}
-  - {x: 0, y: -0.10000001, z: 0}
-  - {x: 0, y: -0.13658194, z: 0}
-  - {x: 0, y: -0.16738044, z: 0}
-  - {x: 0, y: -0.1920085, z: 0}
-  - {x: 0, y: -0.2100791, z: 0}
-  - {x: 0, y: -0.22120526, z: 0}
-  - {x: 0, y: -0.225, z: 0}
+  - {x: 0, y: -0.018911567, z: 0}
+  - {x: 0, y: -0.041288268, z: 0}
+  - {x: 0, y: -0.071156465, z: 0}
+  - {x: 0, y: -0.10767433, z: 0}
+  - {x: 0, y: -0.15, z: 0}
+  - {x: 0, y: -0.182894, z: 0}
+  - {x: 0, y: -0.20854877, z: 0}
+  - {x: 0, y: -0.22752552, z: 0}
+  - {x: 0, y: -0.2403855, z: 0}
+  - {x: 0, y: -0.2476899, z: 0}
+  - {x: 0, y: -0.25, z: 0}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.05
+    widthMultiplier: 0.055
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -828,7 +827,7 @@ LineRenderer:
   - {x: 0.3, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.05
+    widthMultiplier: 0.055
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -1076,7 +1075,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2643430214534670923}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.1, z: 0}
+  m_LocalPosition: {x: 0, y: -0.15, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3383646948984280078}
@@ -1461,10 +1460,10 @@ LineRenderer:
   m_SortingOrder: 0
   m_Positions:
   - {x: 0, y: 0, z: 0}
-  - {x: 0.06, y: 0, z: 0}
+  - {x: 0.08, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.05
+    widthMultiplier: 0.055
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -1541,7 +1540,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3945660715489862885}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.225, z: 0}
+  m_LocalPosition: {x: 0, y: -0.25, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3383646948984280078}
@@ -1571,16 +1570,16 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4369638887100858523}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.566, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 483258401414943213}
   - {fileID: 492998523168451826}
   - {fileID: 8520555692650935886}
   - {fileID: 4371983783828880160}
-  m_Father: {fileID: 4204970251686719068}
-  m_RootOrder: 1
+  m_Father: {fileID: 2898715792804983225}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2523075688198006719
 MonoBehaviour:
@@ -1632,7 +1631,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4456992598139123990}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.05, y: 0.25, z: 0}
+  m_LocalPosition: {x: 0.06, y: 0.275, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2805796640577695770}
@@ -1667,7 +1666,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IsLooping: 0
-  CurveMultiplier: 0.05
+  CurveMultiplier: 0.055
   KeepCurveScaling: 0
   lineRenderer: {fileID: 7134058906297730195}
   lineRendererArray:
@@ -1766,7 +1765,7 @@ LineRenderer:
   - {x: 0.3, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.05
+    widthMultiplier: 0.055
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -1873,7 +1872,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5060110049326153058}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.1, z: 0}
+  m_LocalPosition: {x: 0, y: -0.15, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2613847075651531328}
@@ -2067,7 +2066,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6033826295913169204}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.225, z: 0}
+  m_LocalPosition: {x: 0, y: -0.25, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2613847075651531328}
@@ -2098,12 +2097,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6156363001401573507}
   m_LocalRotation: {x: -0, y: 0.7071068, z: 0.7071068, w: 0}
-  m_LocalPosition: {x: -0.05, y: 0.025000006, z: 0}
+  m_LocalPosition: {x: -0.06, y: 0.025000006, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 250893335155896577}
   m_Father: {fileID: 4204970251686719068}
-  m_RootOrder: 7
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 180}
 --- !u!114 &238845191892424537
 MonoBehaviour:
@@ -2144,13 +2143,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6267000027628478332}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.566, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4798710448654543787}
-  m_Father: {fileID: 4204970251686719068}
-  m_RootOrder: 2
+  m_Father: {fileID: 2898715792804983225}
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1161329551137857810
 MonoBehaviour:
@@ -2204,6 +2203,38 @@ Transform:
   m_Children: []
   m_Father: {fileID: 5039152919506286992}
   m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7893233572832737297
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2898715792804983225}
+  m_Layer: 0
+  m_Name: Body
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2898715792804983225
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7893233572832737297}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.6, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 8946725167019809588}
+  - {fileID: 415919300745864718}
+  m_Father: {fileID: 4204970251686719068}
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7992481130942322294
 GameObject:
@@ -2311,12 +2342,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8108202220106886424}
   m_LocalRotation: {x: -0, y: 0.7071068, z: 0.7071068, w: 0}
-  m_LocalPosition: {x: 0.05, y: 0.025000006, z: 0}
+  m_LocalPosition: {x: 0.06, y: 0.025000006, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4726994533713350528}
   m_Father: {fileID: 4204970251686719068}
-  m_RootOrder: 8
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 180}
 --- !u!114 &8189596482086588509
 MonoBehaviour:
@@ -2406,10 +2437,10 @@ LineRenderer:
   m_SortingOrder: 0
   m_Positions:
   - {x: 0, y: 0, z: 0}
-  - {x: -0.06, y: 0, z: 0}
+  - {x: -0.08, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.05
+    widthMultiplier: 0.055
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -2595,7 +2626,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9081573077886726705}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.05, y: 0.25, z: 0}
+  m_LocalPosition: {x: -0.06, y: 0.275, z: 0}
   m_LocalScale: {x: -1, y: 1, z: 1}
   m_Children:
   - {fileID: 776933019276783537}
@@ -2603,7 +2634,7 @@ Transform:
   - {fileID: 3164632710298831570}
   - {fileID: 6849150848585151553}
   m_Father: {fileID: 4204970251686719068}
-  m_RootOrder: 6
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3892267894531903500
 MonoBehaviour:
@@ -2630,7 +2661,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IsLooping: 0
-  CurveMultiplier: 0.05
+  CurveMultiplier: 0.055
   KeepCurveScaling: 0
   lineRenderer: {fileID: 5347314961443293297}
   lineRendererArray:

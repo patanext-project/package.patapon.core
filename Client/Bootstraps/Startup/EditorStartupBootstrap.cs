@@ -27,7 +27,7 @@ namespace PataNext.Client.Bootstraps.Startup
 			Debug.LogError("Register Bootstrap " + World.Name);
 			EntityManager.SetComponentData(bootstrap, new BootstrapComponent {Name = nameof(EditorStartupBootstrap)});
 
-			EntityManager.CreateEntity(typeof(CurrentUnitOverview));
+			//EntityManager.CreateEntity(typeof(CurrentUnitOverview));
 		}
 
 		protected override void Match(Entity bootstrapSingleton)

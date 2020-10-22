@@ -20,14 +20,7 @@ using UnityEngine.Playables;
 namespace PataNext.Client.Graphics.Animation.Units
 {
 	[UpdateInGroup(typeof(ClientUnitAnimationGroup))]
-	public class DefaultMarchAbilityAnimation : BaseAbilityAnimationSystem
-	<
-		DefaultMarchAbilityAnimation.SystemPlayable,
-		DefaultMarchAbilityAnimation.PlayableInitData,
-		DefaultMarchAbilityAnimation.SystemData,
-		DefaultMarchAbilityAnimation.OperationHandleData,
-		DefaultMarchAbilityAnimation.Sub
-	>
+	public class DefaultMarchAbilityAnimation : BaseAbilityAnimationSystem, IAbilityPlayableSystemCalls
 	{
 		public enum SubType
 		{
@@ -41,92 +34,31 @@ namespace PataNext.Client.Graphics.Animation.Units
 			Walking = 1
 		}
 
-		private readonly AddressBuilderClient m_AddrPath = AddressBuilder.Client()
-		                                                                 .Folder("Models")
-		                                                                 .Folder("UberHero")
-		                                                                 .Folder("Animations")
-		                                                                 .Folder("Shared");
-
-		private Dictionary<TargetType, Dictionary<Sub, AnimationClip>> m_Clips;
-
-		protected override void OnCreate()
+		protected override AnimationMap GetAnimationMap()
 		{
-			base.OnCreate();
-
-			var animationMap = new AnimationMap<(TargetType target, SubType sub)>("DefaultMarchAbility/Animations")
+			return new AnimationMap<(TargetType target, SubType sub)>("DefaultMarchAbility/Animations/")
 			{
 				{"IdleNormal", (TargetType.Idle, SubType.Normal)},
 				{"IdleFerocious", (TargetType.Idle, SubType.Ferocious)},
 				{"WalkingNormal", (TargetType.Walking, SubType.Normal)},
 				{"WalkingFerocious", (TargetType.Walking, SubType.Ferocious)},
 			};
-
-			m_Clips = new Dictionary<TargetType, Dictionary<Sub, AnimationClip>>();
-			PreLoadAnimationAsset(m_AddrPath.GetFile("Idle.anim"), new OperationHandleData
-			{
-				Key  = "marchAbility/idle.clip",
-				type = TargetType.Idle,
-				sub  = SubType.Normal
-			});
-			PreLoadAnimationAsset(m_AddrPath.GetFile("Walking.anim"), new OperationHandleData
-			{
-				Key  = "marchAbility/walking.clip",
-				type = TargetType.Walking,
-				sub  = SubType.Normal
-			});
-			PreLoadAnimationAsset(m_AddrPath.GetFile("WalkingFerocious.anim"), new OperationHandleData
-			{
-				Key  = "marchAbility/walking_ferocious.clip",
-				type = TargetType.Walking,
-				sub  = SubType.Ferocious
-			});
-		}
-
-		protected override void OnAsyncOpElement(OperationHandleData data, Sub result)
-		{
-			if (!m_Clips.TryGetValue(data.type, out var map))
-				m_Clips[data.type] = map = new Dictionary<Sub, AnimationClip>();
-
-			result.sub  = data.sub;
-			map[result] = result.Clip;
-		}
-
-		protected override void OnAnimationInject(UnitVisualAnimation animation, ref PlayableInitData initData)
-		{
-			initData.Clips = new Dictionary<TargetType, Dictionary<Sub, AnimationClip>>();
-
-			foreach (var kvp in m_Clips)
-			{
-				initData.Clips[kvp.Key] = new Dictionary<Sub, AnimationClip>(m_Clips[kvp.Key]);
-				SetAnimOverride(CurrentPresentation.GetComponent<OverrideObjectComponent>(), kvp.Value, initData.Clips[kvp.Key]);
-			}
-		}
-
-		protected override bool OnBeforeForEach()
-		{
-			return base.OnBeforeForEach() && AsyncOp.Handles.Count == 0;
 		}
 
 		protected override void OnUpdate(Entity targetEntity, UnitVisualBackend backend, UnitVisualAnimation animation)
 		{
-			if (!EntityManager.TryGetComponentData<AnimationIdleTime>(targetEntity, out var idleTime)) EntityManager.AddComponentData(targetEntity, new AnimationIdleTime());
+			if (!EntityManager.TryGetComponentData<AnimationIdleTime>(targetEntity, out var idleTime))
+				EntityManager.AddComponentData(targetEntity, new AnimationIdleTime());
 
 			var currAnim = animation.CurrAnimation;
 			if (currAnim.Type != SystemType && !currAnim.AllowOverride)
-			{
-				if (animation.ContainsSystem(SystemType))
-					animation.GetSystemData<SystemData>(SystemType).Behaviour.Weight = 0;
-
 				return;
-			}
 
 			var abilityEntity = AbilityFinder.GetAbility(backend.DstEntity);
 			if (abilityEntity == default && currAnim.Type == SystemType || currAnim.CanStartAnimationAt(animation.RootTime))
 				animation.SetTargetAnimationWithTypeKeepTransition(null);
 
-			// OnAnimationInject will fill the Init data.
-			InjectAnimation(animation, new PlayableInitData());
-
+			InjectAnimationWithSystemData<SystemData>();
 
 			ref var systemData  = ref animation.GetSystemData<SystemData>(SystemType);
 			var     doAnimation = currAnim == TargetAnimation.Null || currAnim.Type == SystemType;
@@ -139,7 +71,7 @@ namespace PataNext.Client.Graphics.Animation.Units
 			}
 
 			if (abilityActive)
-				systemData.Behaviour.ForceAnimation = true;
+				systemData.ForceAnimation = true;
 
 			var velocity        = EntityManager.GetComponentData<Velocity>(backend.DstEntity);
 			var targetAnimation = math.abs(velocity.Value.x) > 0.1f || abilityActive ? TargetType.Walking : TargetType.Idle;
@@ -153,8 +85,8 @@ namespace PataNext.Client.Graphics.Animation.Units
 			    && seekingState.Enemy != default)
 				subType = SubType.Ferocious;
 
-			systemData.Behaviour.TargetAnimation    = targetAnimation;
-			systemData.Behaviour.SubTargetAnimation = subType;
+			systemData.TargetAnimation    = targetAnimation;
+			systemData.SubTargetAnimation = subType;
 
 			if (!doAnimation)
 				return;
@@ -162,78 +94,88 @@ namespace PataNext.Client.Graphics.Animation.Units
 			animation.SetTargetAnimation(new TargetAnimation(SystemType, transitionStart: currAnim.TransitionStart, transitionEnd: currAnim.TransitionEnd, previousType: currAnim.PreviousType));
 		}
 
+		protected override IAbilityPlayableSystemCalls GetPlayableCalls()
+		{
+			return this;
+		}
+
 		protected override EntityQuery GetAbilityQuery()
 		{
 			return GetEntityQuery(typeof(DefaultMarchAbility), typeof(Owner));
 		}
 
-		public struct Sub : IAbilityAnimClip
+		public struct SystemData
 		{
-			public SubType sub;
+			public Dictionary<TargetType, Dictionary<SubType, AnimationClipPlayable>> ClipPlayableMap;
+			public Dictionary<TargetType, AnimationMixerPlayable>                     MixerMap;
 
-			public string        Key  { get; set; }
-			public AnimationClip Clip { get; set; }
-		}
+			public double LastWalk;
 
-		public struct PlayableInitData
-		{
-			public Dictionary<TargetType, Dictionary<Sub, AnimationClip>> Clips;
-		}
+			public bool ForceAnimation;
 
-		public class SystemPlayable : BaseAbilityPlayable<PlayableInitData>
-		{
-			public const float TRANSITION_TIME = 0.2f;
-
-			public bool ForceAnimation; // no transition
-
-			public  Transition                                                         FromTransition;
-			private Dictionary<TargetType, Dictionary<SubType, AnimationClipPlayable>> m_ClipPlayableMap;
-			private Dictionary<TargetType, AnimationMixerPlayable>                     m_MixerMap;
-			private TargetType                                                         m_PreviousAnimation;
-			public  SubType                                                            SubTargetAnimation;
-
+			public TargetType PreviousAnimation;
 			public TargetType TargetAnimation;
+			public SubType    SubTargetAnimation;
+
+			public Transition FromTransition;
 			public Transition ToTransition;
-			public float      Weight;
+		}
 
-			protected override void OnInitialize(PlayableInitData init)
+		void IAbilityPlayableSystemCalls.OnInitialize(PlayableInnerCall behavior)
+		{
+			var systemData = behavior.Visual.VisualAnimation.GetSystemData<SystemData>(SystemType);
+			systemData.ClipPlayableMap = new Dictionary<TargetType, Dictionary<SubType, AnimationClipPlayable>>
 			{
-				m_ClipPlayableMap = new Dictionary<TargetType, Dictionary<SubType, AnimationClipPlayable>>();
-				m_MixerMap        = new Dictionary<TargetType, AnimationMixerPlayable>();
+				{TargetType.Idle, new Dictionary<SubType, AnimationClipPlayable>()},
+				{TargetType.Walking, new Dictionary<SubType, AnimationClipPlayable>()}
+			};
+			systemData.MixerMap = new Dictionary<TargetType, AnimationMixerPlayable>
+			{
+				{TargetType.Idle, AnimationMixerPlayable.Create(behavior.Graph, 2, true)},
+				{TargetType.Walking, AnimationMixerPlayable.Create(behavior.Graph, 2, true)}
+			};
+			behavior.Visual.VisualAnimation.GetSystemData<SystemData>(SystemType) = systemData;
 
-				foreach (var kvp in init.Clips)
+			foreach (var kvp in ((AnimationMap<(TargetType target, SubType sub)>) AnimationMap).KeyDataMap)
+			{
+				behavior.AddAsyncOp(AnimationMap.Resolve(kvp.Key, GetCurrentClipProvider()), handle =>
 				{
-					m_ClipPlayableMap[kvp.Key] = new Dictionary<SubType, AnimationClipPlayable>();
+					var cp = AnimationClipPlayable.Create(behavior.Graph, (AnimationClip) handle.Result);
+					if (cp.IsNull())
+						throw new InvalidOperationException("null clip");
 
-					var mixer = AnimationMixerPlayable.Create(Graph, init.Clips.Count, true);
-					var i     = 0;
-					foreach (var subKvp in kvp.Value)
-					{
-						var cp = AnimationClipPlayable.Create(Graph, subKvp.Value);
-						if (cp.IsNull())
-							throw new InvalidOperationException("null clip");
-
-						Graph.Connect(cp, 0, mixer, (int) subKvp.Key.sub);
-						m_ClipPlayableMap[kvp.Key][subKvp.Key.sub] = cp;
-					}
-
-					m_MixerMap[kvp.Key] = mixer;
-					Mixer.AddInput(mixer, 0, 1);
-				}
+					behavior.Graph.Connect(cp, 0, systemData.MixerMap[kvp.Value.target], (int) kvp.Value.sub);
+				});
 			}
 
-			public override void PrepareFrame(Playable playable, FrameData info)
-			{
-				var global = (float) Root.GetTime();
+			behavior.Mixer.AddInput(systemData.MixerMap[TargetType.Idle], 0, 1);
+			behavior.Mixer.AddInput(systemData.MixerMap[TargetType.Walking], 0, 1);
+		}
 
-				if ((Weight >= 1) & (m_PreviousAnimation != TargetAnimation))
+		void IAbilityPlayableSystemCalls.PrepareFrame(PlayableInnerCall bv, Playable playable, FrameData info)
+		{
+			const float TRANSITION_TIME = 0.2f;
+
+			ref var data   = ref bv.Visual.VisualAnimation.GetSystemData<SystemData>(SystemType);
+			var     global = (float) bv.Root.GetTime();
+
+			var weight = 1 - bv.Visual.CurrAnimation.GetTransitionWeightFixed(bv.Visual.VisualAnimation.RootTime);
+			if (bv.Visual.CurrAnimation.Type != typeof(DefaultMarchAbilityAnimation) && !bv.Visual.CurrAnimation.CanBlend(global))
+				weight = 0;
+
+			if ((weight >= 1) & (data.PreviousAnimation != data.TargetAnimation))
+			{
+				var offset = 0f;
+				if (data.PreviousAnimation == TargetType.Walking           // walking
+				&& data.ClipPlayableMap[data.PreviousAnimation].Count > 0) // it's possible that there are no animation at the moment
 				{
-					var offset = 0f;
-					if (m_PreviousAnimation == TargetType.Walking) // walking
+					var clipPlayable = (AnimationClipPlayable) data
+					                                           .MixerMap[data.PreviousAnimation]
+					                                           .GetInput((int) data.SubTargetAnimation % data.ClipPlayableMap[data.PreviousAnimation].Count);
+					if (!clipPlayable.IsNull())
 					{
-						var clipPlayable = (AnimationClipPlayable) m_MixerMap[m_PreviousAnimation].GetInput((int) SubTargetAnimation % m_ClipPlayableMap[m_PreviousAnimation].Count);
-						var length       = clipPlayable.GetAnimationClip().length;
-						var mod          = clipPlayable.GetTime() % length;
+						var length = clipPlayable.GetAnimationClip().length;
+						var mod    = clipPlayable.GetTime() % length;
 
 						// For transitions, we need to see when to start the next animation, and we need to be sure to start at zero
 						// 1.
@@ -252,56 +194,46 @@ namespace PataNext.Client.Graphics.Animation.Units
 						if (offset < 0)
 							offset += length * 0.25f;
 					}
-
-					m_PreviousAnimation = TargetAnimation;
-
-					ToTransition.End(global + offset, global + offset + TRANSITION_TIME);
-					FromTransition.Begin(global + offset, global + offset + TRANSITION_TIME);
-					FromTransition.End(global + offset, global + offset + TRANSITION_TIME);
 				}
 
-				if (ForceAnimation)
-				{
-					ForceAnimation = false;
+				data.PreviousAnimation = data.TargetAnimation;
 
-					m_PreviousAnimation = TargetAnimation;
-
-					ToTransition.End(0, 0);
-					FromTransition.Begin(0, 0);
-					FromTransition.End(0, 0);
-				}
-
-				foreach (var kvp in m_MixerMap)
-				{
-					kvp.Value.SetInputWeight((int) SubType.Normal, SubTargetAnimation == SubType.Normal || !m_ClipPlayableMap[kvp.Key].ContainsKey(SubType.Ferocious) ? 1 : 0);
-					kvp.Value.SetInputWeight((int) SubType.Ferocious, SubTargetAnimation == SubType.Ferocious ? 1 : 0);
-				}
-
-				// why does the mixer report 4 inputs???
-				var inputCount = Mixer.GetInputCount();
-				for (var i = 0; i != inputCount; i++) Mixer.SetInputWeight(i, i == (int) TargetAnimation ? FromTransition.Evaluate(global, 0, 1) : ToTransition.Evaluate(global));
-
-				Weight = 1 - Visual.CurrAnimation.GetTransitionWeightFixed(Visual.VisualAnimation.RootTime);
-				if (Visual.CurrAnimation.Type != typeof(DefaultMarchAbilityAnimation) && !Visual.CurrAnimation.CanBlend(Visual.RootTime))
-					Weight = 0;
-
-				Root.SetInputWeight(VisualAnimation.GetIndexFrom(Root, Self), Weight);
+				data.ToTransition.End(global + offset, global + offset + TRANSITION_TIME);
+				data.FromTransition.Begin(global + offset, global + offset + TRANSITION_TIME);
+				data.FromTransition.End(global + offset, global + offset + TRANSITION_TIME);
 			}
-		}
 
-		public struct SystemData : IPlayableSystemData<SystemPlayable>
-		{
-			public double LastWalk;
+			if (data.ForceAnimation)
+			{
+				data.ForceAnimation = false;
 
-			public SystemPlayable Behaviour { get; set; }
-		}
+				data.PreviousAnimation = data.TargetAnimation;
 
-		public struct OperationHandleData : IAbilityAnimationKey
-		{
-			public TargetType type;
-			public SubType    sub;
+				data.ToTransition.End(0, 0);
+				data.FromTransition.Begin(0, 0);
+				data.FromTransition.End(0, 0);
+			}
 
-			public string Key { get; set; }
+			foreach (var kvp in data.MixerMap)
+			{
+				kvp.Value.SetInputWeight((int) SubType.Normal, data.SubTargetAnimation == SubType.Normal || !data.ClipPlayableMap[kvp.Key].ContainsKey(SubType.Ferocious)
+					? 1
+					: 0);
+				kvp.Value.SetInputWeight((int) SubType.Ferocious, data.SubTargetAnimation == SubType.Ferocious
+					? 1
+					: 0);
+			}
+
+			// why does the mixer report 4 inputs???
+			var inputCount = bv.Mixer.GetInputCount();
+			for (var i = 0; i != inputCount; i++)
+			{
+				bv.Mixer.SetInputWeight(i, i == (int) data.TargetAnimation
+					? data.FromTransition.Evaluate(global, 0, 1)
+					: data.ToTransition.Evaluate(global));
+			}
+
+			bv.Root.SetInputWeight(VisualAnimation.GetIndexFrom(bv.Root, bv.Self), weight);
 		}
 	}
 }

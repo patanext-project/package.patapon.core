@@ -57,7 +57,7 @@ namespace PataNext.Client.Graphics.Camera.Units
 			var interFrame = GetSingleton<InterFrame>();
 
 			var localPlayer = this.GetFirstSelfGamePlayer();
-			EntityManager.TryGetComponentData(localPlayer, out PlayerInputComponent playerInput);
+			EntityManager.TryGetComponentData(localPlayer, out GameRhythmInputComponent playerInput);
 
 			var dt                  = Time.DeltaTime;
 			var directionFromEntity = GetComponentDataFromEntity<UnitDirection>(true);

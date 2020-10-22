@@ -110,9 +110,9 @@ namespace PataNext.Client.DataScripts.Models.RhythmEngine.FeverWorm
 				r.GetPropertyBlock(mpb);
 				{
 					mpb.SetFloat(Progression, interpolatedProgression);
-					mpb.SetFloat(DirectProgression, directProgression);
+					mpb.SetFloat(DirectProgression, interpolatedProgression);
 					mpb.SetInt(IsFever, isFever ? 1 : 0);
-					mpb.SetInt(SummonReady, interpolatedProgression >= directProgression ? 1 : 0);
+					mpb.SetInt(SummonReady, interpolatedProgression >= 1 ? 1 : 0);
 					//mpb.SetVector(SummonPosition, new Vector4(ranges[0].position.x, ranges[1].position.x, 0, 0));
 				}
 				r.SetPropertyBlock(mpb);
