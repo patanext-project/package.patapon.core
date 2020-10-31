@@ -74,7 +74,7 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 				}
 
 				if (targetArchetypePool != null
-				    && backend.CurrentArchetype != targetArchetypePool.AssetId)
+				    && (backend.CurrentArchetype != targetArchetypePool.AssetId || Input.GetKeyDown(KeyCode.R)))
 				{
 					backend.CurrentArchetype = targetArchetypePool.AssetId;
 

@@ -152,7 +152,6 @@ namespace PataNext.Client.Graphics.Animation.Base
 		{
 			systemCalls = init;
 			handles     = new List<(AsyncOperationHandle, Action<AsyncOperationHandle> complete)>();
-			Debug.Log("OnInitialize SystemType: " + SystemType);
 			systemCalls.OnInitialize(this);
 		}
 
@@ -162,7 +161,6 @@ namespace PataNext.Client.Graphics.Animation.Base
 			{
 				if (handles[i].handle.IsDone)
 				{
-					Debug.LogError("Completed!");
 					handles[i].complete(handles[i].handle);
 					handles.RemoveAt(i--);
 				}

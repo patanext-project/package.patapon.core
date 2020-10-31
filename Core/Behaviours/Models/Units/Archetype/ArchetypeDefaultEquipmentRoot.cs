@@ -63,14 +63,14 @@ namespace PataNext.Client.Components.Archetypes
 				kvp.root.AttachmentId = kvp.known switch
 				{
 					KnownTypes.Custom => string.IsNullOrEmpty(kvp.id) ? throw new InvalidOperationException("empty equipId") : kvp.id,
-					KnownTypes.Shoes => "st:pn/equip_root/shoes",
-					KnownTypes.LeftEquipment => "st:pn/equip_root/l_eq",
-					KnownTypes.RightEquipment => "st:pn/equip_root/r_eq",
-					KnownTypes.Cape => "st:pn/equip_root/cape",
-					KnownTypes.Shoulder => "st:pn/equip_root/shoulder",
-					KnownTypes.Helmet => "st:pn/equip_root/helmet",
-					KnownTypes.Hair => "st:pn/equip_root/hair",
-					KnownTypes.Mask => "st:pn/equip_root/mask",
+					KnownTypes.Shoes => "ms://st.pn/equip_root/shoes",
+					KnownTypes.LeftEquipment => "ms://st.pn/equip_root/l_eq",
+					KnownTypes.RightEquipment => "ms://st.pn/equip_root/r_eq",
+					KnownTypes.Cape => "ms://st.pn/equip_root/cape",
+					KnownTypes.Shoulder => "ms://st.pn/equip_root/shoulder",
+					KnownTypes.Helmet => "ms://st.pn/equip_root/helmet",
+					KnownTypes.Hair => "ms://st.pn/equip_root/hair",
+					KnownTypes.Mask => "ms://st.pn/equip_root/mask",
 					_ => throw new NotImplementedException(kvp.known + " was not implemented")
 				};
 

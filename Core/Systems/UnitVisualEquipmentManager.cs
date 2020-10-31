@@ -24,7 +24,7 @@ namespace PataNext.Client.Systems
 			                         .Folder("equipments")
 			                         .Folder("{0}")
 			                         .GetFile("{1}");
-
+			
 			m_PoolByArchetype[string.Format(addr, "swords", "default_sword")]         = new AsyncAssetPool<GameObject>(builder.GetFile("Swords/default_sword.prefab"));
 			m_PoolByArchetype[string.Format(addr, "spears", "default_spear")]         = new AsyncAssetPool<GameObject>(builder.GetFile("Spears/default_spear.prefab"));
 			m_PoolByArchetype[string.Format(addr, "spears", "default_spear:small")]   = new AsyncAssetPool<GameObject>(builder.GetFile("Spears/default_spear_smaller.prefab"));

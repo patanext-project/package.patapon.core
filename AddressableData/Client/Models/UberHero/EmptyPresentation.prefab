@@ -94,6 +94,7 @@ GameObject:
   - component: {fileID: 2059039454955203571}
   - component: {fileID: 2652944876109956728}
   - component: {fileID: 851857155096150516}
+  - component: {fileID: 5719727536422050079}
   m_Layer: 0
   m_Name: EmptyPresentation
   m_TagString: Untagged
@@ -140,9 +141,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d31648df7eb24bb09318399f527999a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Animator: {fileID: 0}
+  Animator: {fileID: 2758844109317685535}
   animationAssetLabels: []
   animationCacheId: 
+--- !u!114 &5719727536422050079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2881115764059121880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f61085e41d8b4d6da0b6bce2ff9a4b28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  presentationObjects: []
 --- !u!1 &6154326189364814180
 GameObject:
   m_ObjectHideFlags: 0
