@@ -1,6 +1,6 @@
 {
     "name": "package.patapon.client",
-    "rootNamespace": "",
+    "rootNamespace": "PataNext.Client",
     "references": [
         "package.patapon.mixed",
         "package.guerro.shared",
@@ -8,6 +8,7 @@
         "package.stormiumteam.gamebase",
         "package.stormiumteam.networking",
         "patapon.masterserver.shared",
+        "package.patapon.core",
         "Unity.Build",
         "Unity.VectorGraphics",
         "Revolution.NetCode",

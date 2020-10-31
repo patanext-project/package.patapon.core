@@ -82,7 +82,7 @@ namespace PataNext.Client.Graphics.Camera.Units
 					var isSpecial   = false;
 
 					if (abilityControllerFromEntity.TryGet(entity, out var controller)
-					    && abilityActivationFromEntity.TryGet(controller.Incoming, out var activation) && activation.Type == EAbilityActivationType.HeroMode
+					    && abilityActivationFromEntity.TryGet(controller.Incoming, out var activation) && activation.Type.HasFlag(EAbilityActivationType.HeroMode)
 					    && abilityStateFromEntity.TryGet(controller.Incoming, out var state) && (state.Phase & EAbilityPhase.ActiveOrChaining) == 0)
 					{
 						if (math.abs(playerInput.Panning) < 0.1f)
@@ -159,13 +159,13 @@ namespace PataNext.Client.Graphics.Camera.Units
 								cameraData.InterpolatedPosition = Mathf.SmoothDamp(cameraData.InterpolatedPosition, positionResult.x, ref cameraData.PositionVelocity, 0.5f, 100, interFrameDelta);
 							}
 
-							cameraData.InterpolatedPanning  = Mathf.SmoothDamp(cameraData.InterpolatedPanning, panningModifier, ref cameraData.PanningVelocity, 0.175f, 100, dt);
+							cameraData.InterpolatedPanning = Mathf.SmoothDamp(cameraData.InterpolatedPanning, panningModifier, ref cameraData.PanningVelocity, 0.175f, 100, dt);
 
 							cameraModifier.Position.x = cameraData.InterpolatedPosition + cameraData.InterpolatedPanning;
 						}
 						else
 						{
-							cameraModifier.Position.x       = positionResult.x;
+							cameraModifier.Position.x = positionResult.x;
 							// make sure that the interpolation data is also immediate
 							cameraData.InterpolatedPosition = positionResult.x;
 						}
@@ -175,7 +175,7 @@ namespace PataNext.Client.Graphics.Camera.Units
 					{
 						cameraModifier.Position.x = 0;
 					}
-					
+
 					anchor.Type  = AnchorType.Screen;
 					anchor.Value = new float2(0, 0.7f);
 				})

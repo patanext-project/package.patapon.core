@@ -1,9 +1,10 @@
 using System;
 using package.stormiumteam.shared.ecs;
+using PataNext.Client.Core.Addressables;
 using PataNext.Client.OrderSystems;
 using PataNext.Module.Simulation.Components.GamePlay.RhythmEngine;
 using PataNext.Module.Simulation.Components.Roles;
-using PataNext.Simulation.mixed.Components.GamePlay.RhythmEngine;
+using PataNext.Simulation.Mixed.Components.GamePlay.RhythmEngine;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems.Ext;
 using StormiumTeam.GameBase.Roles.Components;
@@ -172,7 +173,12 @@ namespace PataNext.Client.DataScripts.Models.RhythmEngine.FeverWorm
 	public class FeverWormCreate : PoolingSystem<FeverWormBackend, FeverWormPresentation>
 	{
 		private            Canvas m_Canvas;
-		protected override string AddressableAsset => "core://Client/Interface/InGame/RhythmEngine/FeverWorm/FeverWorm.prefab";
+		protected override string AddressableAsset => AddressBuilder.Client()
+		                                                            .Interface()
+		                                                            .InGame()
+		                                                            .Folder("RhythmEngine")
+		                                                            .Folder("FeverWorm")
+		                                                            .GetFile("FeverWorm.prefab");
 
 		protected override EntityQuery GetQuery()
 		{

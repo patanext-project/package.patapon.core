@@ -42,10 +42,12 @@ SpriteRenderer:
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -135,10 +137,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 2881115764059121880}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c741e9dcc49797b4dacc9843b22dc1c0, type: 3}
+  m_Script: {fileID: 11500000, guid: d31648df7eb24bb09318399f527999a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Animator: {fileID: 2758844109317685535}
+  Animator: {fileID: 0}
+  animationAssetLabels: []
+  animationCacheId: 
 --- !u!1 &6154326189364814180
 GameObject:
   m_ObjectHideFlags: 0
