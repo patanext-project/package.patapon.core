@@ -7,19 +7,15 @@ namespace PataNext.Client.DataScripts.Models.Projectiles
 	{
 	}
 
-	public class DefaultProjectileBackend : RuntimeAssetBackend<BaseProjectilePresentation>
+	public class ProjectileBackend : RuntimeAssetBackend<BaseProjectilePresentation>
 	{
-		public float3     pos;
-		public quaternion rot;
+		public bool letPresentationUpdateTransform;
 
-		public RigidTransform rt
+		public override void OnReset()
 		{
-			get => new RigidTransform(rot, pos);
-			set
-			{
-				pos = value.pos;
-				rot = value.rot;
-			}
+			base.OnReset();
+
+			letPresentationUpdateTransform = false;
 		}
 	}
 }

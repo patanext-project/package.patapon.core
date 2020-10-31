@@ -42,6 +42,7 @@ SpriteRenderer:
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -137,26 +138,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 8148297217152095254}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc37fbe35e34486286e4ad29c1c4defb, type: 3}
+  m_Script: {fileID: 11500000, guid: 2c7ffabf5e78462c92d6bab96dae7427, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  poolingDelayBeforeAfterExplosion: 1
+  poolingDelayBeforeAfterExplosion: 2
   onIdle:
     animators: []
     trigger: OnIdle
   onExplosion:
     animators: []
     trigger: OnExplosion
-  soundOnExplosion:
-  - {fileID: 8300000, guid: 779a37b2a1eb8d043907ba5be291eae8, type: 3}
-  - {fileID: 8300000, guid: 5368eb37dd332e84ca8f81251e16d5d3, type: 3}
+  soundOnExplosion: []
   soundOnExplosionEmitter:
+    speakerMode: 0
     volume: 1
     spatialBlend: 0
     position:
       x: 0
       y: 0
       z: 0
-    minDistance: 25
-    maxDistance: 40
+    minDistance: 10
+    maxDistance: 20
     rollOf: 0
