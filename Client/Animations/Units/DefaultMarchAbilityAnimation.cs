@@ -8,7 +8,7 @@ using PataNext.Client.Graphics.Animation.Units.Base;
 using PataNext.Module.Simulation.Components.GamePlay.Abilities;
 using PataNext.Module.Simulation.Components.GamePlay.Units;
 using PataNext.Module.Simulation.GameBase.Physics.Components;
-using PataNext.Simulation.Mixed.Abilities.Defaults;
+using PataNext.CoreAbilities.Mixed.Defaults;
 using StormiumTeam.GameBase.Roles.Components;
 using StormiumTeam.GameBase.Utility.Misc;
 using Unity.Entities;

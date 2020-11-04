@@ -3,7 +3,7 @@ using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using Unity.Entities;
 
-namespace PataNext.Simulation.Mixed.Abilities.Subset
+namespace PataNext.CoreAbilities.Mixed.Subset
 {
 	/// <summary>
 	/// Represent a subset of the march ability that can be used on other abilities.

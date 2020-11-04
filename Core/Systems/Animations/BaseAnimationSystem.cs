@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using Collections.Pooled;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Graphics.Animation.Components;
 using PataNext.Client.Graphics.Animation.Units.Base;
@@ -12,6 +14,7 @@ using Unity.Entities;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Playables;
+using UnityEngine.Pool;
 using UnityEngine.ResourceManagement;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
@@ -29,7 +32,7 @@ namespace PataNext.Client.Graphics.Animation.Base
 		protected override void OnCreate()
 		{
 			base.OnCreate();
-			
+
 			SystemType   = GetType();
 			AnimationMap = GetAnimationMap();
 		}
@@ -64,7 +67,7 @@ namespace PataNext.Client.Graphics.Animation.Base
 		{
 			return true;
 		}
-		
+
 		protected virtual ScriptPlayable<PlayableInnerCall> GetNewPlayable(ref VisualAnimation.ManageData data)
 		{
 			return ScriptPlayable<PlayableInnerCall>.Create(data.Graph);
@@ -165,10 +168,12 @@ namespace PataNext.Client.Graphics.Animation.Base
 					handles.RemoveAt(i--);
 				}
 			}
+
 			systemCalls.PrepareFrame(this, playable, info);
 		}
 
 		private List<(AsyncOperationHandle handle, Action<AsyncOperationHandle> complete)> handles;
+
 		public void AddAsyncOp(AsyncOperationHandle handle, Action<AsyncOperationHandle> complete)
 		{
 			handles.Add((handle, complete));
@@ -201,20 +206,31 @@ namespace PataNext.Client.Graphics.Animation.Base
 			{
 				if (CacheClipMap.TryGetValue(Presentation.animationCacheId, out var clipMap))
 				{
-					if (clipMap.TryGetValue(key, out clipHandle)) 
+					if (clipMap.TryGetValue(key, out clipHandle))
 						return clipHandle;
 				}
 				else
 					CacheClipMap[key] = new Dictionary<string, AsyncOperationHandle<AnimationClip>>();
 			}
-			
-			// HOW
-			/*foreach (var label in Presentation.animationAssetLabels)
-			{
-				Addressables.LoadAssetAsync<>()
-			}*/
 
-			return Addressables.ResourceManager.CreateCompletedOperation(default(AnimationClip), $"No Animation found with key={key}");
+			var computedFolders = new string[Presentation.animationAssetFolders.Length];
+			if (computedFolders.Length == 0)
+				return Addressables.ResourceManager.CreateCompletedOperation(default(AnimationClip), "(empty folders) no clip found for key=" + key);
+
+			for (var i = 0; i != computedFolders.Length; i++)
+				computedFolders[i] = Presentation.animationAssetFolders[i] + "/" + key + ".anim";
+
+			if (computedFolders.Length == 1)
+				return Addressables.LoadAssetAsync<AnimationClip>(computedFolders[0]);
+
+			return Addressables.ResourceManager.CreateChainOperation(
+				Addressables.LoadAssetsAsync((IEnumerable) computedFolders, (AnimationClip obj) => { }, Addressables.MergeMode.UseFirst),
+				handle =>
+				{
+					if (handle.Result == null || handle.Result.Count == 0)
+						return Addressables.ResourceManager.CreateCompletedOperation(default(AnimationClip), "no clip found for key=" + key);
+					return Addressables.ResourceManager.CreateCompletedOperation(handle.Result[0], null);
+				});
 		}
 	}
 }

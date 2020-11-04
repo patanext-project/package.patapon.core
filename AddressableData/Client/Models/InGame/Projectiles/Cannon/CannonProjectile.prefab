@@ -148,7 +148,9 @@ MonoBehaviour:
   onExplosion:
     animators: []
     trigger: OnExplosion
-  soundOnExplosion: []
+  soundOnExplosion:
+  - {fileID: 8300000, guid: 779a37b2a1eb8d043907ba5be291eae8, type: 3}
+  - {fileID: 8300000, guid: 5368eb37dd332e84ca8f81251e16d5d3, type: 3}
   soundOnExplosionEmitter:
     speakerMode: 0
     volume: 1

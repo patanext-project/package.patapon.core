@@ -3,7 +3,9 @@ using package.stormiumteam.shared.ecs;
 using PataNext.Client.Systems;
 using PataNext.Module.Simulation.GameBase.Physics.Components;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase.GamePlay.Projectiles;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
@@ -70,6 +72,7 @@ namespace PataNext.Client.DataScripts.Models.Projectiles
 			base.OnBackendSet();
 
 			((ProjectileBackend) Backend).letPresentationUpdateTransform = true;
+			((ProjectileBackend) Backend).canBePooled                    = false;
 		}
 
 		public void SetPhase(EPhase phase)
@@ -119,8 +122,8 @@ namespace PataNext.Client.DataScripts.Models.Projectiles
 			if (EntityManager.Exists(entity))
 			{
 				phase = DefaultProjectilePresentation.EPhase.Idle;
-				/*if (EntityManager.HasComponent<ProjectileExplodedEndReason>(entity))
-					phase = DefaultProjectilePresentation.EPhase.Explosion;*/
+				if (EntityManager.HasComponent<ProjectileExplodedEndReason>(entity))
+					phase = DefaultProjectilePresentation.EPhase.Explosion;
 
 				if (EntityManager.TryGetComponentData(entity, out Translation translation))
 					definition.pos = translation.Value;
@@ -143,7 +146,18 @@ namespace PataNext.Client.DataScripts.Models.Projectiles
 			{
 				var sound    = definition.soundOnExplosion[Random.Range(0, definition.soundOnExplosion.Length)];
 				var soundDef = World.GetExistingSystem<ECSoundSystem>().ConvertClip(sound);
-				if (soundDef.IsValid)
+
+				var playSound = true;
+				using (var query = EntityManager.CreateEntityQuery(typeof(ECSoundDefinition)))
+				{
+					foreach (var otherSoundDef in query.ToComponentDataArray<ECSoundDefinition>(Allocator.Temp))
+					{
+						if (soundDef.Index == otherSoundDef.Index)
+							playSound = false;
+					}
+				}
+				
+				if (soundDef.IsValid && playSound)
 				{
 					var soundEntity = EntityManager.CreateEntity(typeof(ECSoundEmitterComponent), typeof(ECSoundDefinition), typeof(ECSoundOneShotTag));
 					var emitter     = definition.soundOnExplosionEmitter;
@@ -156,6 +170,9 @@ namespace PataNext.Client.DataScripts.Models.Projectiles
 
 			definition.SetPhase(phase);
 			backend.transform.SetPositionAndRotation(definition.pos, definition.rot);
+
+			if (definition.CurrentPoolingTime >= definition.poolingDelayBeforeAfterExplosion)
+				backend.canBePooled = true;
 		}
 
 		protected override void ClearValues()

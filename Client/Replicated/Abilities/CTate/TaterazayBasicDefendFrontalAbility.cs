@@ -1,7 +1,7 @@
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using Unity.Entities;
 
-namespace PataNext.Simulation.Mixed.Abilities.CTate
+namespace PataNext.CoreAbilities.Mixed.CTate
 {
 	public struct TaterazayBasicDefendFrontalAbility : IComponentData
 	{

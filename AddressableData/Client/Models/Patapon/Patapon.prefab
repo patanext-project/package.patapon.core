@@ -106,7 +106,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Animator: {fileID: 7264503520024424069}
-  animationAssetLabels: []
+  animationAssetFolders:
+  - cr://st.pn/Models/Patapon
   animationCacheId: 
 --- !u!114 &4640344229551965380
 MonoBehaviour:
@@ -310,6 +311,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4204970251686719068, guid: cc62b25df501583449b7e12df793f272,
         type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4204970251686719068, guid: cc62b25df501583449b7e12df793f272,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -325,6 +331,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4204970251686719068, guid: cc62b25df501583449b7e12df793f272,
         type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4204970251686719068, guid: cc62b25df501583449b7e12df793f272,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
@@ -336,16 +347,6 @@ PrefabInstance:
     - target: {fileID: 4204970251686719068, guid: cc62b25df501583449b7e12df793f272,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4204970251686719068, guid: cc62b25df501583449b7e12df793f272,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4204970251686719068, guid: cc62b25df501583449b7e12df793f272,
-        type: 3}
-      propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4204970251686719068, guid: cc62b25df501583449b7e12df793f272,

@@ -17,7 +17,7 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 {
 	public abstract class UnitVisualPresentation : RuntimeAssetPresentation<UnitVisualPresentation>
 	{
-		public Animator                                     Animator;
+		public Animator Animator;
 
 		/// <summary>
 		/// Return the folders for animation.
@@ -26,7 +26,7 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 		///	The order is the OverrideObject then folders.
 		/// If the first folder does not contains the animation, it will search it on the next.
 		/// </remarks>
-		public AssetLabelReference[] animationAssetLabels;
+		public string[] animationAssetFolders;
 
 		/// <summary>
 		/// Get the cache for animation. If empty, animations will not be re-used

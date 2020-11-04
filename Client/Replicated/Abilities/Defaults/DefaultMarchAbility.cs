@@ -2,7 +2,7 @@ using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using Unity.Entities;
 
-namespace PataNext.Simulation.Mixed.Abilities.Defaults
+namespace PataNext.CoreAbilities.Mixed.Defaults
 {
 	public struct DefaultMarchAbility : IComponentData
 	{

@@ -10,12 +10,14 @@ namespace PataNext.Client.DataScripts.Models.Projectiles
 	public class ProjectileBackend : RuntimeAssetBackend<BaseProjectilePresentation>
 	{
 		public bool letPresentationUpdateTransform;
+		public bool canBePooled;
 
 		public override void OnReset()
 		{
 			base.OnReset();
 
 			letPresentationUpdateTransform = false;
+			canBePooled                    = true;
 		}
 	}
 }

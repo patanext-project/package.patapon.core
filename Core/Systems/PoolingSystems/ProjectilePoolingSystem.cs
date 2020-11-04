@@ -51,6 +51,14 @@ namespace PataNext.Client.Systems.PoolingSystems
 
 		protected override Type[] AdditionalBackendComponents => new[] { typeof(SortingGroup) };
 
+		protected override void ReturnBackend(ProjectileBackend backend)
+		{
+			if (!backend.canBePooled)
+				return;
+			
+			base.ReturnBackend(backend);
+		}
+
 		protected override void SpawnBackend(Entity target)
 		{
 			base.SpawnBackend(target);
