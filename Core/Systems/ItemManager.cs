@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using PataNext.Client.Core.Addressables;
 using StormiumTeam.GameBase.BaseSystems;
+using StormiumTeam.GameBase.Utility.Pooling;
 using UnityEngine;
 using Unity.Serialization.Json;
 using Unity.VectorGraphics;
@@ -14,6 +16,8 @@ namespace PataNext.Client.Systems
 		private Dictionary<string, ItemJsonData>            itemMap;
 		private Dictionary<(string id, string key), Sprite> itemSpriteMap;
 
+		private UnitVisualEquipmentManager equipmentManager;
+
 		public ItemManager()
 		{
 			itemMap       = new Dictionary<string, ItemJsonData>();
@@ -23,6 +27,8 @@ namespace PataNext.Client.Systems
 		protected override void OnCreate()
 		{
 			base.OnCreate();
+			
+			equipmentManager = World.GetExistingSystem<UnitVisualEquipmentManager>();
 
 			// TODO: First it shouldn't be a variable, second there should be an utility for that (with automatic creation of these files)
 			// (We need to replicate the same behavior of GameHost Storages)
@@ -38,9 +44,16 @@ namespace PataNext.Client.Systems
 
 				foreach (var file in directory.GetFiles("*.json", SearchOption.AllDirectories))
 				{
+					Debug.Log($"{file.FullName}; {directory.FullName}");
+					
 					var data = JsonSerialization.FromJson<ItemJsonData>(file);
 					if (string.IsNullOrEmpty(data.masterServerId))
-						data.masterServerId = Path.GetFileNameWithoutExtension(file.Name);
+					{
+						data.masterServerId = AddressBuilder.Client().GetFile(Path.ChangeExtension(file.FullName.Substring(directory.FullName.Length + 1), string.Empty))
+						                                    .Replace('\\', '/');
+						data.masterServerId = data.masterServerId.Substring(0, data.masterServerId.Length - 1);
+					}
+
 					if (string.IsNullOrEmpty(data.displayName))
 						data.displayName = data.masterServerId;
 					if (string.IsNullOrEmpty(data.displayNameTranslationId))
@@ -58,6 +71,18 @@ namespace PataNext.Client.Systems
 					itemMap[data.masterServerId] = data;
 
 					Debug.Log($"Item Found (Id={data.masterServerId}, Name={data.displayName})");
+
+					if (file.FullName.Contains("\\equipments\\"))
+					{
+						data.equipmentResource ??= new Dictionary<string, string>
+						{
+							{string.Empty, data.masterServerId + ".prefab"},
+							{"small", data.masterServerId + "_small.prefab"}
+						};
+
+						foreach (var kvp in data.equipmentResource)
+							equipmentManager.AddPool($"{data.masterServerId}{(string.IsNullOrEmpty(kvp.Key) ? string.Empty : $":{kvp.Key}")}", new AsyncAssetPool<GameObject>(kvp.Value.Replace("equipments/", "Models/Equipments/")));
+					}
 				}
 			}
 		}
@@ -128,6 +153,8 @@ namespace PataNext.Client.Systems
 
 		public string description;
 		public string descriptionTranslationId;
+
+		public Dictionary<string, string> equipmentResource;
 
 		public string                     defaultIconPath;
 		public Dictionary<string, string> iconPathMap;

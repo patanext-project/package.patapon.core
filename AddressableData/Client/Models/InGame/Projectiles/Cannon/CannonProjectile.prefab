@@ -161,4 +161,4 @@ MonoBehaviour:
       z: 0
     minDistance: 10
     maxDistance: 20
-    rollOf: 0
+    rollOf: 1

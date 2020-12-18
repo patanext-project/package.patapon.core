@@ -26,6 +26,8 @@ namespace PataNext.Client.Systems
 			m_PoolByArchetype[addr.GetFile("uberhero_std_unit")]                     = new AsyncAssetPool<GameObject>(uberHeroFolder.GetFile("Character.prefab"));
 			m_PoolByArchetype[addr.Folder("uberhero_std_unit").GetFile("yarida")]    = new AsyncAssetPool<GameObject>(uberHeroFolder.GetFile("CharacterYarida.prefab"));
 			m_PoolByArchetype[addr.Folder("uberhero_std_unit").GetFile("taterazay")] = new AsyncAssetPool<GameObject>(uberHeroFolder.GetFile("CharacterTaterazay.prefab"));
+			m_PoolByArchetype[addr.Folder("uberhero_std_unit").GetFile("guardira")] = new AsyncAssetPool<GameObject>(uberHeroFolder.GetFile("CharacterGuardira.prefab"));
+			m_PoolByArchetype[addr.Folder("uberhero_std_unit").GetFile("wooyari")] = new AsyncAssetPool<GameObject>(uberHeroFolder.GetFile("CharacterWooyari.prefab"));
 
 			m_PoolByArchetype[addr.GetFile("patapon_std_unit")] = new AsyncAssetPool<GameObject>(pataponFolder.GetFile("Patapon.prefab"));
 		}

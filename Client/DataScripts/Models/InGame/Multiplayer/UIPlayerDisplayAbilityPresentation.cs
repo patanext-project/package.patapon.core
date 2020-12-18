@@ -123,7 +123,11 @@ namespace PataNext.Client.Graphics.Models.InGame.Multiplayer
 				definition.Animator.SetTrigger("Show");
 
 				if (relativePlayer.Target == LocalPlayer)
-					m_AudioSource.PlayOneShot(SwitchAbilityAudio);
+				{
+					m_AudioSource.Stop();
+					m_AudioSource.clip = SwitchAbilityAudio;
+					m_AudioSource.Play();
+				}
 			}
 
 			backend.lastAbility         = command.Ability;

@@ -40,6 +40,8 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Abilities
 		public EAbilityActivationType Type;
 		public int                    HeroModeMaxCombo;
 		public int                    HeroModeImperfectLimitBeforeDeactivation;
+		
+		public int DefaultCooldownOnActivation;
 
 		public AbilitySelection Selection;
 

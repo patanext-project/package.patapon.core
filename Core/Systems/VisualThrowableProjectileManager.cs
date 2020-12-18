@@ -9,27 +9,27 @@ namespace PataNext.Client.Systems
 	public struct VisualThrowableDefinition : IComponentData
 	{
 		public bool IsValid => PoolId > 0;
-		
+
 		public uint PoolId;
 	}
 
 	public class VisualThrowableProjectileManager : ComponentSystem
 	{
-		private Dictionary<string, uint> m_DefinitionByAddress;
+		private Dictionary<string, uint>                     m_DefinitionByAddress;
 		private Dictionary<uint, AsyncAssetPool<GameObject>> m_PoolByDefinition;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
-			
+
 			m_DefinitionByAddress = new Dictionary<string, uint>();
-			m_PoolByDefinition = new Dictionary<uint, AsyncAssetPool<GameObject>>();
+			m_PoolByDefinition    = new Dictionary<uint, AsyncAssetPool<GameObject>>();
 		}
 
 		protected override void OnUpdate()
 		{
 		}
-		
+
 		public VisualThrowableDefinition RegisterPool(GameObject prefab)
 		{
 			throw new NotImplementedException("RegisterPool(GameObject) not implemented");
@@ -48,6 +48,11 @@ namespace PataNext.Client.Systems
 			{
 				PoolId = index
 			};
+		}
+
+		public AsyncAssetPool<GameObject> GetPool(VisualThrowableDefinition definition)
+		{
+			return m_PoolByDefinition[definition.PoolId];
 		}
 	}
 }

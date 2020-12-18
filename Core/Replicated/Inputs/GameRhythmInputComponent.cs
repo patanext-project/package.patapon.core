@@ -42,4 +42,19 @@ namespace PataNext.Module.Simulation.Components
 		{
 		}
 	}
+	
+	public struct FreeRoamInputComponent : IComponentData
+	{
+		public float                 HorizontalMovement;
+		public InterFramePressAction Up;
+		public InterFramePressAction Down;
+
+		// Should they be known to the host?
+		/*public InterFramePressAction Confirm;
+		public InterFramePressAction Cancel;*/
+
+		public class Register : RegisterGameHostComponentData<FreeRoamInputComponent>
+		{
+		}
+	}
 }

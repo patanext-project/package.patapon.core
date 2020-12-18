@@ -20,9 +20,9 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Abilities
 			public int LastCommandActiveTime;
 			public int LastActivationTime;
 
-			public GhGameEntity Previous;
-			public GhGameEntity Active;
-			public GhGameEntity Incoming;
+			public GhGameEntitySafe Previous;
+			public GhGameEntitySafe Active;
+			public GhGameEntitySafe Incoming;
 
 			/// <summary>
 			///     Current combo of the entity...
@@ -49,7 +49,7 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Abilities
 
 		public int Size => UnsafeUtility.SizeOf<Replica>();
 
-		public void Deserialize(EntityManager em, NativeHashMap<GhGameEntity, Entity> ghEntityToUEntity, ref OwnerActiveAbility component, ref DataBufferReader reader)
+		public void Deserialize(EntityManager em, NativeHashMap<GhGameEntitySafe, Entity> ghEntityToUEntity, ref OwnerActiveAbility component, ref DataBufferReader reader)
 		{
 			var replica = reader.ReadValue<Replica>();
 			LastActivationTime    = replica.LastActivationTime;

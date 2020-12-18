@@ -77,8 +77,10 @@ namespace PataNext.Client.Graphics.Animation.Units
 			var pressureKey   = -1;
 			var rhythmActions = playerCommand.Actions;
 			for (var i = 0; pressureKey < 0 && i != rhythmActions.Length; i++)
+			{
 				if (interFrame.Range.Contains(rhythmActions[i].InterFrame.Pressed))
 					pressureKey = i;
+			}
 
 			InjectAnimationWithSystemData<SystemData>();
 

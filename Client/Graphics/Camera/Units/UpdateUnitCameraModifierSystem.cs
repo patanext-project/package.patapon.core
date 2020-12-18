@@ -74,6 +74,8 @@ namespace PataNext.Client.Graphics.Camera.Units
 				.ForEach((Entity entity, ref CameraModifierData cameraModifier, ref CameraTargetAnchor anchor, ref CameraData cameraData, in Translation translation, in UnitEnemySeekingState seekingState) =>
 				{
 					var direction = directionFromEntity.TryGet(entity, out _, UnitDirection.Right);
+					if (HasComponent<FreeRoamInputComponent>(entity))
+						direction.Value = 0;
 
 					var targetFocal  = seekingState.Enemy != default ? 7.8f : 5.7f;
 					var targetOffset = seekingState.Enemy != default ? 0.66f : 0.33f;
@@ -82,7 +84,7 @@ namespace PataNext.Client.Graphics.Camera.Units
 					var isSpecial   = false;
 
 					if (abilityControllerFromEntity.TryGet(entity, out var controller)
-					    && abilityActivationFromEntity.TryGet(controller.Incoming, out var activation) && activation.Type.HasFlag(EAbilityActivationType.HeroMode)
+					    && abilityActivationFromEntity.TryGet(controller.Incoming, out var activation) && (activation.Type & EAbilityActivationType.HeroMode) != 0
 					    && abilityStateFromEntity.TryGet(controller.Incoming, out var state) && (state.Phase & EAbilityPhase.ActiveOrChaining) == 0)
 					{
 						if (math.abs(playerInput.Panning) < 0.1f)

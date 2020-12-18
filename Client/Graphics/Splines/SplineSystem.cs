@@ -213,8 +213,8 @@ namespace PataNext.Client.Graphics.Splines
 				}
 
 				var result = ResultFromEntity[entity];
-				result.Capacity = predictedLength + 1;
 				result.Clear();
+				result.Capacity = predictedLength + 1;
 
 				result.Add(new DSplineResult {Position = points[0].Position});
 				CGraphicalCatmullromSplineUtility.CalculateCatmullromSpline

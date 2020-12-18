@@ -1,3 +1,4 @@
+using System;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Components;
 using PataNext.Client.Components.Archetypes;
@@ -48,11 +49,13 @@ namespace PataNext.Client.DataScripts.Models
 			else if (entityMgr.HasComponent<ShooterProjectilePrediction>(dstEntity))
 				entityMgr.RemoveComponent<ShooterProjectilePrediction>(dstEntity);
 
-			if (!Backend.TryGetComponent(out IEquipmentRoot equipRoot))
+			if (!TryGetComponent(out IEquipmentRoot equipRoot))
 				return;
-
+			
 			var previousRoot = m_Root;
 			m_Root = equipRoot.GetRoot(availableRoots[targetRoot]);
+			if (m_Root != null && m_Root.UnitEquipmentBackend == null)
+				m_Root = null;
 
 			ThrowableProjectileComponent throwable;
 			if (previousRoot == m_Root || (throwable = m_Root.UnitEquipmentBackend.GetComponentInChildren<ThrowableProjectileComponent>()) == null)
@@ -63,9 +66,9 @@ namespace PataNext.Client.DataScripts.Models
 			{
 				projectileDefinition = entityMgr.World.GetExistingSystem<VisualThrowableProjectileManager>()
 				                                .Register((string) throwable.assetReference.RuntimeKey);
+				
+				entityMgr.SetComponentData(dstEntity, new ShooterProjectileVisualTarget {Definition = projectileDefinition});
 			}
-
-			entityMgr.SetComponentData(dstEntity, new ShooterProjectileVisualTarget {Definition = projectileDefinition});
 		}
 	}
 }

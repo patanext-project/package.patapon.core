@@ -151,14 +151,17 @@ namespace PataNext.Client.Components.Archetypes
 					foreach (var equipment in displayedEquipment)
 					{
 						EquipmentResource key;
+
+						//Console.WriteLine($"({attachmentModule.GetResourceOrDefault(root.AttachmentId).Entity} == {equipment.Attachment.Entity}) {root.AttachmentId} == {equipment.Attachment.TryGet(resourceMgr, out var res)} {res.Value} ({equipment.Resource.TryGet(resourceMgr, out var ok)} {ok.Value})");
 						if (equipment.Attachment == attachmentModule.GetResourceOrDefault(root.AttachmentId)
 						    && equipment.Resource.TryGet(resourceMgr, out key))
+						{
 							equipmentTarget = key.Value;
-
-						if (equipmentTarget.GetLength() > 0)
 							break;
+						}
 					}
 
+					//Console.WriteLine($"{root.AttachmentId} -> {equipmentTarget}");
 					if (!root.UpdatedEquipmentId.Equals(equipmentTarget) || !root.UnitEquipmentBackend.HasIncomingPresentation)
 					{
 						root.UpdatedEquipmentId = equipmentTarget;

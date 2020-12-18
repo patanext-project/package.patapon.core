@@ -47,6 +47,8 @@ namespace PataNext.Client.DataScripts.Models.Projectiles
 		[Header("Sounds")]
 		public AudioClip[] soundOnExplosion;
 
+		public string[] soundTags;
+		public bool     interruptIfSourceWasPlaying = false;
 		public ECSoundEmitterComponent soundOnExplosionEmitter = new ECSoundEmitterComponent
 		{
 			volume       = 1,
@@ -165,6 +167,14 @@ namespace PataNext.Client.DataScripts.Models.Projectiles
 
 					EntityManager.SetComponentData(soundEntity, emitter);
 					EntityManager.SetComponentData(soundEntity, soundDef);
+
+					if (definition.soundTags?.Length > 0)
+					{
+						EntityManager.AddComponentData(soundEntity, new ECSoundTags {Tags = definition.soundTags});
+					}
+
+					if (definition.interruptIfSourceWasPlaying)
+						EntityManager.AddComponent(soundEntity, typeof(ECSoundInterruptSource));
 				}
 			}
 

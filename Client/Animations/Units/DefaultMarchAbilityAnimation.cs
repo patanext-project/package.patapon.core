@@ -216,12 +216,9 @@ namespace PataNext.Client.Graphics.Animation.Units
 
 			foreach (var kvp in data.MixerMap)
 			{
-				kvp.Value.SetInputWeight((int) SubType.Normal, data.SubTargetAnimation == SubType.Normal || !data.ClipPlayableMap[kvp.Key].ContainsKey(SubType.Ferocious)
-					? 1
-					: 0);
-				kvp.Value.SetInputWeight((int) SubType.Ferocious, data.SubTargetAnimation == SubType.Ferocious
-					? 1
-					: 0);
+				var isNormal = data.SubTargetAnimation == SubType.Normal || !data.ClipPlayableMap[kvp.Key].ContainsKey(SubType.Ferocious);
+				kvp.Value.SetInputWeight((int) SubType.Normal, isNormal ? 1 : 0);
+				kvp.Value.SetInputWeight((int) SubType.Ferocious, !isNormal ? 1 : 0);
 			}
 
 			// why does the mixer report 4 inputs???

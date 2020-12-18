@@ -59,6 +59,7 @@ GameObject:
   - component: {fileID: 1421647470714925021}
   - component: {fileID: 4640344229551965380}
   - component: {fileID: 8943346756093376261}
+  - component: {fileID: 141587789084754364}
   m_Layer: 0
   m_Name: Patapon
   m_TagString: Untagged
@@ -107,7 +108,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Animator: {fileID: 7264503520024424069}
   animationAssetFolders:
-  - cr://st.pn/Models/Patapon
+  - cr://st.pn/Models/Patapon/Data
   animationCacheId: 
 --- !u!114 &4640344229551965380
 MonoBehaviour:
@@ -171,6 +172,23 @@ MonoBehaviour:
     Int: 0
     Float: 0
     Vector: {x: 0, y: 0, z: 0}
+--- !u!114 &141587789084754364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3907668261989327659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab317644f5404cf081066de92b288687, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canPredict: 0
+  targetRoot: 1
+  availableRoots:
+  - {fileID: 2305296188485178215}
+  - {fileID: 4457301820811568403}
 --- !u!95 &7264503520024424069
 Animator:
   serializedVersion: 3

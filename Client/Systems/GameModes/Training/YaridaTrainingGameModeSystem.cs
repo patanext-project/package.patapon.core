@@ -19,7 +19,7 @@ namespace PataNext.Client.GameModes.Training
 			base.OnStartRunning();
 
 			startBubble = EntityManager.CreateEntity();
-			EntityManager.AddComponentData(startBubble, new SpeechBubble {IsEnabled = true});
+			EntityManager.AddComponentData(startBubble, new SpeechBubble {IsEnabled = false});
 			EntityManager.AddComponentData(startBubble, new SpeechBubbleText(@"Welcome to the: 
 <size=16>64 Yarida Challenge!</size>
 
@@ -84,6 +84,8 @@ Now as a bonus, go back to zero!";
 					default:
 						throw new ArgumentOutOfRangeException();
 				}
+				
+				SetComponent(startBubble, new SpeechBubble {IsEnabled = false});
 
 				previousData = gameMode;
 			}).WithoutBurst().Run();

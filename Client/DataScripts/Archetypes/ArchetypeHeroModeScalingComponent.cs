@@ -33,7 +33,7 @@ namespace PataNext.Client.Components.Archetypes
 			// Hero mode scaling shouldn't be done here.
 			if (entityMgr.TryGetComponentData(Backend.DstEntity, out OwnerActiveAbility ownerAbility)
 			    && entityMgr.TryGetComponentData(ownerAbility.Active, out AbilityActivation activation)
-			    && activation.Type.HasFlag(EAbilityActivationType.HeroMode))
+			    && (activation.Type & EAbilityActivationType.HeroMode) != 0)
 			{
 				heroModeScaling = 1.325f;
 			}

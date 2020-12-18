@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using Unity.Entities;
@@ -31,6 +32,11 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Abilities
 		/// This does include bad rhythm'ed commands and commands in <see cref="AbilityCommands.HeroModeAllowedCommands"/>
 		/// </summary>
 		public int HeroModeImperfectCountWhileActive;
+		
+		/// <summary>
+		/// How much commands left before this ability can be re-activated?
+		/// </summary>
+		public int CommandCooldown;
 
 		public int UpdateVersion;
 		public int ActivationVersion;
