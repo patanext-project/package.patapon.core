@@ -17,8 +17,6 @@
         "Unity.TextMeshPro",
         "Unity.InputSystem",
         "Unity.Networking.Transport",
-        "Unity.Addressables",
-        "Unity.ResourceManager",
         "Unity.Entities",
         "Unity.Entities.Hybrid",
         "Unity.Transforms",
@@ -29,7 +27,9 @@
         "Unity.Burst",
         "Unity.RenderPipelines.Universal.Runtime",
         "Unity.InternalAPIEngineBridge.015",
-        "Unity.Serialization"
+        "Unity.Serialization",
+        "Unity.Locus.BundleSystem",
+        "UniTask"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

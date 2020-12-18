@@ -1,4 +1,3 @@
-using System;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using TMPro;
 using UnityEngine;

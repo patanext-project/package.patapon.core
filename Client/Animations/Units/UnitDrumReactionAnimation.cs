@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using GameHost.ShareSimuWorldFeature.Systems;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Graphics.Animation.Base;
@@ -141,7 +142,7 @@ namespace PataNext.Client.Graphics.Animation.Units
 			{
 				behavior.AddAsyncOp(AnimationMap.Resolve(kvp.Key, GetCurrentClipProvider()), handle =>
 				{
-					var cp = AnimationClipPlayable.Create(behavior.Graph, (AnimationClip) handle.Result);
+					var cp = AnimationClipPlayable.Create(behavior.Graph, ((Task<AnimationClip>) handle).Result);
 					if (cp.IsNull())
 						throw new InvalidOperationException("null clip");
 

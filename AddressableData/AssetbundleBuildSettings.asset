@@ -13,17 +13,23 @@ MonoBehaviour:
   m_Name: AssetbundleBuildSettings
   m_EditorClassIdentifier: 
   BundleSettings:
-  - BundleName: core
+  - BundleName: st.pn
     IncludedInPlayer: 1
     Folder:
       guid: 2df6be3f29f43f24092d0b46837c74a1
+    IncludeSubfolder: 1
+    CompressBundle: 0
+  - BundleName: st.pnmaps
+    IncludedInPlayer: 1
+    Folder:
+      guid: 0fe117199c94e98488d4badac7361638
     IncludeSubfolder: 1
     CompressBundle: 0
   AutoCreateSharedBundles: 1
   m_RemoteOutputFolder: RemoteBundles
   m_LocalOutputFolder: LocalBundles
   RemoteURL: http://localhost/
-  EmulateInEditor: 0
+  EmulateInEditor: 1
   EmulateWithoutRemoteURL: 0
   CleanCacheInEditor: 0
   ForceRebuild: 0

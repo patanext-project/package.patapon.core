@@ -1,17 +1,15 @@
 using System;
-using System.Collections.Generic;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
 using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.AssetBackend.Components;
+using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using UnityEngine.Playables;
 using UnityEngine.Rendering;
-using Object = UnityEngine.Object;
 
 namespace PataNext.Client.Graphics.Animation.Units.Base
 {
@@ -26,7 +24,7 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 		///	The order is the OverrideObject then folders.
 		/// If the first folder does not contains the animation, it will search it on the next.
 		/// </remarks>
-		public string[] animationAssetFolders;
+		public AssetPathSerializable[] animationAssetFolders;
 
 		/// <summary>
 		/// Get the cache for animation. If empty, animations will not be re-used
@@ -109,7 +107,7 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 
 	public class UnitVisualBackend : RuntimeAssetBackend<UnitVisualPresentation>
 	{
-		public  string              CurrentArchetype;
+		public  AssetPath              CurrentArchetype;
 		private UnitVisualAnimation m_Animation;
 
 		public UnitVisualAnimation Animation => m_Animation;
@@ -159,7 +157,7 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 				m_Animation = null;
 			}
 
-			CurrentArchetype = string.Empty;
+			CurrentArchetype = AssetPath.Empty;
 		}
 	}
 
@@ -170,10 +168,10 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 	
 	public class UnitVisualBackendSpawnSystem : PoolingSystem<UnitVisualBackend, UnitVisualPresentation>
 	{
-		protected override string AddressableAsset => AddressBuilder.Client()
+		protected override AssetPath AddressableAsset => AddressBuilder.Client()
 		                                                            .Folder("Models")
 		                                                            .Folder("UberHero")
-		                                                            .GetFile("EmptyPresentation.prefab");
+		                                                            .GetAsset("EmptyPresentation");
 
 		protected override Type[] AdditionalBackendComponents => new Type[] {typeof(SortingGroup)};
 

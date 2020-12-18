@@ -1,5 +1,4 @@
 using StormiumTeam.GameBase.Utility.AssetBackend;
-using Unity.Mathematics;
 
 namespace PataNext.Client.DataScripts.Models.Projectiles
 {

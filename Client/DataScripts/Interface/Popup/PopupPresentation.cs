@@ -6,6 +6,7 @@ using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Roles.Components;
 using StormiumTeam.GameBase.Roles.Interfaces;
 using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using TMPro;
@@ -49,11 +50,11 @@ namespace PataNext.Client.DataScripts.Interface.Popup
 	[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation))]
 	public class PopupPoolingSystem : PoolingSystem<PopupBackend, PopupPresentation>
 	{
-		protected override string AddressableAsset =>
+		protected override AssetPath AddressableAsset =>
 			AddressBuilder.Client()
 			              .Interface()
 			              .Folder("Popup")
-			              .GetFile("DarkStyle.prefab");
+			              .GetAsset("DarkStyle");
 
 		protected override Type[] AdditionalBackendComponents => new[] {typeof(RectTransform)};
 

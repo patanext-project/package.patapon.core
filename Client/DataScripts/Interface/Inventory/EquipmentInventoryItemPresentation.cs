@@ -1,7 +1,5 @@
-using System;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace PataNext.Client.DataScripts.Interface.Inventory
 {

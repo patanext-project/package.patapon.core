@@ -1,15 +1,14 @@
 using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
-using PataNext.Client.Graphics.Animation.Base;
 using PataNext.Client.Systems;
 using PataNext.Module.Simulation.Components.GamePlay.Abilities;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;
+using StormiumTeam.GameBase.Utility.Misc;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 
 namespace PataNext.Client.DataScripts.Sounds
 {
@@ -39,8 +38,8 @@ namespace PataNext.Client.DataScripts.Sounds
 			                                   .Folder("Sounds")
 			                                   .Folder("Effects")
 			                                   .Folder("HeroModeActivation")
-			                                   .GetFile("HeroModeStart.wav");
-			m_AsyncOp.Add(Addressables.LoadAssetAsync<AudioClip>(activationFile), new DataOp { });
+			                                   .GetAsset("HeroModeStart.wav");
+			m_AsyncOp.Add(AssetManager.LoadAssetAsync<AudioClip>(activationFile), new DataOp { });
 
 			m_AbilityWithoutInternalQuery = GetEntityQuery(new EntityQueryDesc
 			{

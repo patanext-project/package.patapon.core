@@ -1,7 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace PataNext.Client.Graphics.Animation
 {
@@ -21,7 +22,7 @@ namespace PataNext.Client.Graphics.Animation
 			return GetEnumerator();
 		}
 
-		public abstract AsyncOperationHandle<AnimationClip> Resolve<TProvider>(string key, TProvider provider)
+		public abstract Task<AnimationClip> Resolve<TProvider>(string key, TProvider provider)
 			where TProvider : IAnimationClipProvider;
 	}
 
@@ -39,7 +40,7 @@ namespace PataNext.Client.Graphics.Animation
 			return KeyDataMap.Keys.GetEnumerator();
 		}
 
-		public override AsyncOperationHandle<AnimationClip> Resolve<TProvider>(string key, TProvider provider)
+		public override Task<AnimationClip> Resolve<TProvider>(string key, TProvider provider)
 		{
 			return provider.Provide(Prefix + key);
 		}
@@ -57,6 +58,6 @@ namespace PataNext.Client.Graphics.Animation
 
 	public interface IAnimationClipProvider
 	{
-		AsyncOperationHandle<AnimationClip> Provide(string key);
+		Task<AnimationClip> Provide(string key);
 	}
 }

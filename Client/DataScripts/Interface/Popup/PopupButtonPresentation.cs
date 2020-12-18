@@ -6,6 +6,7 @@ using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Modules;
 using StormiumTeam.GameBase.Roles.Components;
 using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using TMPro;
@@ -96,11 +97,11 @@ namespace PataNext.Client.DataScripts.Interface.Popup
 			}
 		}
 		
-		protected override string AddressableAsset =>
+		protected override AssetPath AddressableAsset =>
 			AddressBuilder.Client()
 			              .Interface()
 			              .Folder("Popup")
-			              .GetFile("DarkStylePopupButton.prefab");
+			              .GetAsset("DarkStylePopupButton");
 
 		protected override Type[] AdditionalBackendComponents => new[] {typeof(RectTransform), typeof(LayoutElement)};
 

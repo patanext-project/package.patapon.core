@@ -2,6 +2,7 @@ using System;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.DataScripts.Interface.Bubble;
 using PataNext.Client.OrderSystems;
+using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using Unity.Transforms;
@@ -13,11 +14,11 @@ namespace PataNext.Client.PoolingSystems
 	{
 		protected override Type[] AdditionalBackendComponents => new Type[] {typeof(SortingGroup)};
 
-		protected override string AddressableAsset =>
+		protected override AssetPath AddressableAsset =>
 			AddressBuilder.Client()
 			              .Folder("Models")
 			              .Folder("UIBubble")
-			              .GetFile("UISpeechBubble.prefab");
+			              .GetAsset("UISpeechBubble");
 
 		protected override EntityQuery GetQuery()
 		{

@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using GameHost;
+﻿using GameHost;
 using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using RevolutionSnapshot.Core.Buffers;

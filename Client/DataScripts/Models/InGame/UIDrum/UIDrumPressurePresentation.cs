@@ -88,7 +88,7 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 			                            .Folder("Models")
 			                            .Folder("InGame")
 			                            .Folder("UIDrum")
-			                            .GetFile("UIDrumPressure.prefab");
+			                            .GetAsset("UIDrumPressure");
 			for (var i = 1; i <= 4; i++)
 			{
 				DrumPresentationPools[i] = new AsyncAssetPool<GameObject>(address);

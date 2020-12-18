@@ -1,4 +1,3 @@
-using System;
 using GameHost.ShareSimuWorldFeature.Systems;
 using package.stormiumteam.shared.ecs;
 using PataNext.Module.Simulation.Components;

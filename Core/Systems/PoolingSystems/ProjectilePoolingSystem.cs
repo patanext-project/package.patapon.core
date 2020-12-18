@@ -4,20 +4,16 @@ using package.stormiumteam.shared.ecs;
 using PataNext.Client.Components;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.DataScripts.Models.Projectiles;
-using PataNext.Module.Simulation.Components.GamePlay;
 using PataNext.Module.Simulation.Components.Roles;
 using PataNext.Module.Simulation.Game.Visuals;
-using PataNext.Module.Simulation.GameBase.Physics.Components;
 using StormiumTeam.GameBase.Modules;
 using StormiumTeam.GameBase.Roles.Components;
+using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
-using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Transforms;
-using UnityEngine;
 using UnityEngine.Rendering;
-using Utility.GameResources;
 
 namespace PataNext.Client.Systems.PoolingSystems
 {
@@ -73,7 +69,7 @@ namespace PataNext.Client.Systems.PoolingSystems
 
 		private GameResourceManager resourceMgr;
 
-		protected override string AddressableAsset => string.Empty;
+		protected override AssetPath AddressableAsset => AssetPath.Empty;
 
 		protected override void OnCreate()
 		{
@@ -89,7 +85,7 @@ namespace PataNext.Client.Systems.PoolingSystems
 			                                                     .Folder("InGame")
 			                                                     .Folder("Projectiles")
 			                                                     .Folder("Cannon")
-			                                                     .GetFile("CannonProjectile.prefab"));
+			                                                     .GetAsset("CannonProjectile"));
 		}
 
 		protected override EntityQuery GetQuery()
@@ -124,7 +120,7 @@ namespace PataNext.Client.Systems.PoolingSystems
 				if (visual.Resource.TryGet(resourceMgr, out var resource))
 				{
 					// TODO: Allocate less GC (char dict?)
-					definition = visualMgr.Register(resource.ToString());
+					definition = visualMgr.Register(new ResPath(resource.ToString()));
 					LastBackend.SetPresentationFromPool(visualMgr.GetPool(definition));
 				}
 			}

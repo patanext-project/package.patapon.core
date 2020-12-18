@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using PataNext.Client.Core.Addressables;
 using StormiumTeam.GameBase.BaseSystems;
+using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling;
 using UnityEngine;
 using Unity.Serialization.Json;
@@ -52,6 +53,9 @@ namespace PataNext.Client.Systems
 						data.masterServerId = AddressBuilder.Client().GetFile(Path.ChangeExtension(file.FullName.Substring(directory.FullName.Length + 1), string.Empty))
 						                                    .Replace('\\', '/');
 						data.masterServerId = data.masterServerId.Substring(0, data.masterServerId.Length - 1);
+						
+						// Assume that it is a core mod?
+						data.masterServerId = "ms://st.pn/" + data.masterServerId;
 					}
 
 					if (string.IsNullOrEmpty(data.displayName))
@@ -76,12 +80,19 @@ namespace PataNext.Client.Systems
 					{
 						data.equipmentResource ??= new Dictionary<string, string>
 						{
-							{string.Empty, data.masterServerId + ".prefab"},
-							{"small", data.masterServerId + "_small.prefab"}
+							{string.Empty, data.masterServerId + ""},
+							{"small", data.masterServerId + "_small"}
 						};
 
 						foreach (var kvp in data.equipmentResource)
-							equipmentManager.AddPool($"{data.masterServerId}{(string.IsNullOrEmpty(kvp.Key) ? string.Empty : $":{kvp.Key}")}", new AsyncAssetPool<GameObject>(kvp.Value.Replace("equipments/", "Models/Equipments/")));
+						{
+							var       resPath   = new ResPath(kvp.Value);
+							var       bundle    = $"{resPath.Author}.{resPath.ModPack}";
+							AssetPath assetPath = (bundle, resPath.Resource.Replace("equipments/", "Models/Equipments/"));
+
+							var pool = new AsyncAssetPool<GameObject>(assetPath);
+							equipmentManager.AddPool($"{data.masterServerId}{(string.IsNullOrEmpty(kvp.Key) ? string.Empty : $":{kvp.Key}")}", pool);
+						}
 					}
 				}
 			}

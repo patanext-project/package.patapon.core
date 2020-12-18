@@ -1,5 +1,4 @@
 ﻿using System;
-using GameHost.Native;
 using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using Unity.Entities;

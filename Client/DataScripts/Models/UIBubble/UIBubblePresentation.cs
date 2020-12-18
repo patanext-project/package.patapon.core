@@ -1,5 +1,4 @@
 using StormiumTeam.GameBase.Utility.AssetBackend;
-using TMPro;
 
 namespace PataNext.Client.DataScripts.Interface.Bubble
 {

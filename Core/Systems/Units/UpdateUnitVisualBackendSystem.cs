@@ -4,7 +4,6 @@ using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Systems;
 using PataNext.Module.Simulation.Components.Units;
-using PataNext.Module.Simulation.Resources;
 using StormiumTeam.GameBase.Utility.Pooling;
 using Unity.Entities;
 using Unity.Transforms;
@@ -74,9 +73,9 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 				}
 
 				if (targetArchetypePool != null
-				    && (backend.CurrentArchetype != targetArchetypePool.AssetId || Input.GetKeyDown(KeyCode.R)))
+				    && (backend.CurrentArchetype != targetArchetypePool.AssetPath || Input.GetKeyDown(KeyCode.R)))
 				{
-					backend.CurrentArchetype = targetArchetypePool.AssetId;
+					backend.CurrentArchetype = targetArchetypePool.AssetPath;
 
 					backend.ReturnPresentation();
 					backend.SetPresentationFromPool(targetArchetypePool);

@@ -10,11 +10,11 @@ namespace PataNext.Client.Core.Addressables
 			where THandleData : struct
 		{
 			var handleDataPair = module.Get<TComponent, THandleData>(index);
-			if (handleDataPair == null || !handleDataPair.Handle.IsValid() || !handleDataPair.Handle.IsDone)
+			if (handleDataPair?.Handle == null || !handleDataPair.Handle.IsCompleted)
 			{
-				if (handleDataPair != null && handleDataPair.Handle.IsValid() == false)
+				if (handleDataPair?.Handle != null)
 				{
-					Debug.LogError(handleDataPair.Handle.OperationException);
+					Debug.LogError(handleDataPair.Handle.Exception);
 					Debug.LogError(handleDataPair.Handle.Status);
 				}
 

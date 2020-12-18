@@ -1,7 +1,6 @@
 using GameHost.ShareSimuWorldFeature.Systems;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
-using PataNext.Client.Graphics.Animation.Base;
 using PataNext.Module.Simulation.Components;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems.Ext;
@@ -9,11 +8,11 @@ using StormiumTeam.GameBase.Modules;
 using StormiumTeam.GameBase.Roles.Components;
 using StormiumTeam.GameBase.Roles.Descriptions;
 using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 
 namespace PataNext.Client.Graphics.Models.InGame.Multiplayer
 {
@@ -82,7 +81,7 @@ namespace PataNext.Client.Graphics.Models.InGame.Multiplayer
 			var path = AddressBuilder.Client()
 			                         .Folder("Sounds")
 			                         .Folder("InGame");
-			m_AsyncOp.Add(Addressables.LoadAssetAsync<AudioClip>(path.GetFile("ability_switch.wav")), new HandleOpData { });
+			m_AsyncOp.Add(AssetManager.LoadAssetAsync<AudioClip>(path.GetAsset("ability_switch.wav")), new HandleOpData { });
 		}
 
 		protected override void PrepareValues()

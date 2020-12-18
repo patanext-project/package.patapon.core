@@ -1,22 +1,17 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Collections.Pooled;
+using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Graphics.Animation.Components;
 using PataNext.Client.Graphics.Animation.Units.Base;
 using PataNext.Client.Modules;
 using StormiumTeam.GameBase.BaseSystems;
-using StormiumTeam.GameBase.Modules;
 using StormiumTeam.GameBase.Utility.Misc;
-using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using UnityEngine.Playables;
-using UnityEngine.Pool;
-using UnityEngine.ResourceManagement;
-using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace PataNext.Client.Graphics.Animation.Base
 {
@@ -154,7 +149,7 @@ namespace PataNext.Client.Graphics.Animation.Base
 		protected override void OnInitialize(IAbilityPlayableSystemCalls init)
 		{
 			systemCalls = init;
-			handles     = new List<(AsyncOperationHandle, Action<AsyncOperationHandle> complete)>();
+			handles     = new List<(Task, Action<Task> complete)>();
 			systemCalls.OnInitialize(this);
 		}
 
@@ -162,7 +157,7 @@ namespace PataNext.Client.Graphics.Animation.Base
 		{
 			for (var i = 0; i != handles.Count; i++)
 			{
-				if (handles[i].handle.IsDone)
+				if (handles[i].handle.IsCompleted)
 				{
 					handles[i].complete(handles[i].handle);
 					handles.RemoveAt(i--);
@@ -172,9 +167,9 @@ namespace PataNext.Client.Graphics.Animation.Base
 			systemCalls.PrepareFrame(this, playable, info);
 		}
 
-		private List<(AsyncOperationHandle handle, Action<AsyncOperationHandle> complete)> handles;
+		private List<(Task handle, Action<Task> complete)> handles;
 
-		public void AddAsyncOp(AsyncOperationHandle handle, Action<AsyncOperationHandle> complete)
+		public void AddAsyncOp(Task handle, Action<Task> complete)
 		{
 			handles.Add((handle, complete));
 		}
@@ -182,24 +177,24 @@ namespace PataNext.Client.Graphics.Animation.Base
 
 	public struct DefaultAnimationProvider : IAnimationClipProvider
 	{
-		public readonly UnitVisualPresentation                                                      Presentation;
-		public readonly Dictionary<string, Dictionary<string, AsyncOperationHandle<AnimationClip>>> CacheClipMap;
+		public readonly UnitVisualPresentation                                         Presentation;
+		public readonly Dictionary<string, Dictionary<string, Task<AnimationClip>>> CacheClipMap;
 
-		public DefaultAnimationProvider(UnitVisualPresentation presentation, Dictionary<string, Dictionary<string, AsyncOperationHandle<AnimationClip>>> cacheClipMap)
+		public DefaultAnimationProvider(UnitVisualPresentation presentation, Dictionary<string, Dictionary<string, Task<AnimationClip>>> cacheClipMap)
 		{
 			Presentation = presentation;
 			CacheClipMap = cacheClipMap;
 		}
 
-		public AsyncOperationHandle<AnimationClip> Provide(string key)
+		public Task<AnimationClip> Provide(string key)
 		{
-			AsyncOperationHandle<AnimationClip> clipHandle;
+			Task<AnimationClip> clipHandle;
 
 			var overrides = Presentation.GetComponents<OverrideObjectComponent>();
 			foreach (var overrideComponent in overrides)
 			{
 				if (overrideComponent.TryGetPresentationObject(key, out AnimationClip clip))
-					return Addressables.ResourceManager.CreateCompletedOperation(clip, null);
+					return Task.FromResult(clip);
 			}
 
 			if (!string.IsNullOrEmpty(Presentation.animationCacheId))
@@ -210,27 +205,37 @@ namespace PataNext.Client.Graphics.Animation.Base
 						return clipHandle;
 				}
 				else
-					CacheClipMap[key] = new Dictionary<string, AsyncOperationHandle<AnimationClip>>();
+					CacheClipMap[key] = new Dictionary<string, Task<AnimationClip>>();
 			}
 
-			var computedFolders = new string[Presentation.animationAssetFolders.Length];
+			var computedFolders = new AssetPath[Presentation.animationAssetFolders.Length];
 			if (computedFolders.Length == 0)
-				return Addressables.ResourceManager.CreateCompletedOperation(default(AnimationClip), "(empty folders) no clip found for key=" + key);
+				return Task.FromException<AnimationClip>(new KeyNotFoundException("(empty folders) no clip found for key=" + key));
 
 			for (var i = 0; i != computedFolders.Length; i++)
-				computedFolders[i] = Presentation.animationAssetFolders[i] + "/" + key + ".anim";
+			{
+				var path = Presentation.animationAssetFolders[i];
+				computedFolders[i] = new AssetPath(path.bundle, path.asset + "/" + key + ".anim");
+			}
 
+			// TODO: Cache?
 			if (computedFolders.Length == 1)
-				return Addressables.LoadAssetAsync<AnimationClip>(computedFolders[0]);
+				return AssetManager.LoadAssetAsync<AnimationClip>(computedFolders[0]).AsTask();
 
-			return Addressables.ResourceManager.CreateChainOperation(
-				Addressables.LoadAssetsAsync((IEnumerable) computedFolders, (AnimationClip obj) => { }, Addressables.MergeMode.UseFirst),
-				handle =>
+			// TODO: Use async in the origin method instead?
+			return UniTask.RunOnThreadPool(async () =>
+			{
+				await UniTask.SwitchToMainThread();
+				
+				foreach (var assetPath in computedFolders)
 				{
-					if (handle.Result == null || handle.Result.Count == 0)
-						return Addressables.ResourceManager.CreateCompletedOperation(default(AnimationClip), "no clip found for key=" + key);
-					return Addressables.ResourceManager.CreateCompletedOperation(handle.Result[0], null);
-				});
+					var result = await AssetManager.LoadAssetAsync<AnimationClip>(assetPath);
+					if (result != null)
+						return result;
+				}
+
+				throw new KeyNotFoundException("(multiple folders) no clip found for key=" + key);
+			}).AsTask();
 		}
 	}
 }

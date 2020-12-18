@@ -15,6 +15,10 @@
     <type fullname="UnityEngine.SpriteRenderer" preserve="all" />
     <type fullname="UnityEngine.Sprite" preserve="all" />
     <type fullname="UnityEngine.RectTransform" preserve="all" />
+    <type fullname="UnityEngine.RenderSettings" preserve="all" />
+    <type fullname="UnityEngine.LightmapSettings" preserve="all" />
+    <type fullname="UnityEngine.Object" preserve="all" />
+    <type fullname="UnityEngine.LightingSettings" preserve="all" />
   </assembly>
   <assembly fullname="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
     <type fullname="UnityEngine.AnimationClip" preserve="all" />
@@ -91,6 +95,7 @@
     <type fullname="package.stormiumteam.shared.ParentConstraintBehaviour" preserve="all" />
     <type fullname="package.stormiumteam.shared.LookAtConstraintBehaviour" preserve="all" />
     <type fullname="package.stormiumteam.shared.PositionConstraintBehaviour" preserve="all" />
+    <type fullname="package.stormiumteam.shared.UpdateManager" preserve="all" />
   </assembly>
   <assembly fullname="Nobi.UiRoundedCorners, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
     <type fullname="ImageWithRoundedCorners" preserve="all" />
@@ -98,10 +103,17 @@
   </assembly>
   <assembly fullname="Unity.Entities.Hybrid, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
     <type fullname="Unity.Entities.GameObjectEntity" preserve="all" />
+    <type fullname="Unity.Entities.ConvertToEntity" preserve="all" />
   </assembly>
   <assembly fullname="package.stormiumteam.gamebase, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
     <type fullname="StormiumTeam.GameBase._2D.BackgroundAssetPresentation" preserve="all" />
     <type fullname="StormiumTeam.GameBase.Utility.Misc.OverrideObjectComponent" preserve="all" />
+    <type fullname="StormiumTeam.GameBase._2D.ParallaxEffect" preserve="all" />
+    <type fullname="StormiumTeam.GameBase.Data.MapMetadataAuthoring" preserve="all" />
+    <type fullname="StormiumTeam.GameBase._2D.CloneBackgroundBehaviour" preserve="all" />
+  </assembly>
+  <assembly fullname="Unity.Physics.Hybrid, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="Unity.Physics.Authoring.PhysicsShapeAuthoring" preserve="all" />
   </assembly>
   <assembly fullname="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
     <type fullname="UnityEngine.Font" preserve="all" />
@@ -117,5 +129,8 @@
   </assembly>
   <assembly fullname="UnityEngine.SpriteShapeModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
     <type fullname="UnityEngine.U2D.SpriteShapeRenderer" preserve="all" />
+  </assembly>
+  <assembly fullname="Unity.ResourceManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="MonoBehaviourCallbackHooks" preserve="all" />
   </assembly>
 </linker>

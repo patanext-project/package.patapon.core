@@ -6,9 +6,6 @@ using PataNext.Module.Simulation.Components.GamePlay.RhythmEngine;
 using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase.Roles.Components;
 using Unity.Entities;
-using UnityEngine;
-using UnityEngine.Animations;
-using UnityEngine.Playables;
 
 namespace PataNext.Client.Graphics.Animation.Base
 {

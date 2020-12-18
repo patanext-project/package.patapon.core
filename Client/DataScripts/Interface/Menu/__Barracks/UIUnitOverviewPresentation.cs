@@ -1,11 +1,9 @@
-using PataNext.Client.DataScripts.Interface.Menu.__Barracks.Controls;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 
 namespace PataNext.Client.DataScripts.Interface.Menu.__Barracks

@@ -1,4 +1,3 @@
-using System;
 using PataNext.Module.Simulation.Components.GamePlay.Units;
 using StormiumTeam.GameBase.BaseSystems;
 using Unity.Entities;

@@ -1,4 +1,3 @@
-using System;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using Unity.Entities;
 using Unity.Mathematics;

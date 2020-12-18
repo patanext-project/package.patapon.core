@@ -1,7 +1,5 @@
-using System;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace PataNext.Client.DataScripts.Interface.Inventory
 {

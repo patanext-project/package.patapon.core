@@ -1,6 +1,7 @@
 using System;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.DataScripts.Interface.Menu.__Barracks;
+using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using UnityEngine;
@@ -11,12 +12,12 @@ namespace PataNext.Client.PoolingSystems
 	{
 		private Canvas m_Canvas;
 		
-		protected override string AddressableAsset =>
+		protected override AssetPath AddressableAsset =>
 			AddressBuilder.Client()
 			              .Interface()
 			              .Menu()
 			              .Folder("__Barracks")
-			              .GetFile("UnitOverview.prefab");
+			              .GetAsset("UnitOverview");
 		
 		protected override Type[] AdditionalBackendComponents => new[] {typeof(RectTransform)};
 

@@ -1,5 +1,4 @@
 using System;
-using Unity.Collections;
 using Unity.Entities;
 
 namespace PataNext.Client.DataScripts.Interface.Bubble

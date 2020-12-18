@@ -5,7 +5,6 @@ using StormiumTeam.GameBase.BaseSystems;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEngine;
 
 namespace PataNext.Client.GameModes.Training
 {

@@ -11,6 +11,7 @@ using StormiumTeam.GameBase.Roles.Components;
 using StormiumTeam.GameBase.Roles.Descriptions;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.DOTS;
+using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using StormiumTeam.GameBase.Utility.Rendering;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
@@ -234,11 +235,11 @@ public class RhythmEngineBeatFramePresentation : RuntimeAssetPresentation<Rhythm
 	public class RhythmEngineBeatFrameCreate : PoolingSystem<RhythmEngineBeatFrameBackend, RhythmEngineBeatFramePresentation>
 	{		
 		private            Canvas m_Canvas;
-		protected override string AddressableAsset => AddressBuilder.Client()
+		protected override AssetPath AddressableAsset => AddressBuilder.Client()
 		                                                            .Interface()
 		                                                            .InGame()
 		                                                            .Folder("RhythmEngine")
-		                                                            .GetFile("BeatEffect.prefab");
+		                                                            .GetAsset("BeatEffect");
 
 		protected override EntityQuery GetQuery()
 		{

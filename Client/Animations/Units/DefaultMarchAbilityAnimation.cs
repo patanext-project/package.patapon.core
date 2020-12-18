@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using package.stormiumteam.shared.ecs;
-using PataNext.Client.Core.Addressables;
 using PataNext.Client.Graphics.Animation.Base;
 using PataNext.Client.Graphics.Animation.Components;
 using PataNext.Client.Graphics.Animation.Units.Base;
@@ -10,7 +10,6 @@ using PataNext.Module.Simulation.Components.GamePlay.Units;
 using PataNext.Module.Simulation.GameBase.Physics.Components;
 using PataNext.CoreAbilities.Mixed.Defaults;
 using StormiumTeam.GameBase.Roles.Components;
-using StormiumTeam.GameBase.Utility.Misc;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
@@ -140,7 +139,7 @@ namespace PataNext.Client.Graphics.Animation.Units
 			{
 				behavior.AddAsyncOp(AnimationMap.Resolve(kvp.Key, GetCurrentClipProvider()), handle =>
 				{
-					var cp = AnimationClipPlayable.Create(behavior.Graph, (AnimationClip) handle.Result);
+					var cp = AnimationClipPlayable.Create(behavior.Graph, ((Task<AnimationClip>) handle).Result);
 					if (cp.IsNull())
 						throw new InvalidOperationException("null clip");
 

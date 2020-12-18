@@ -1,11 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using PataNext.Client.Systems;
 using TMPro;
-using Unity.Entities;
 using Unity.Mathematics;
-using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;

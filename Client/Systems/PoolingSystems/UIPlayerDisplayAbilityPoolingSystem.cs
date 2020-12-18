@@ -5,6 +5,7 @@ using PataNext.Client.OrderSystems;
 using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase.Roles.Components;
 using StormiumTeam.GameBase.Roles.Descriptions;
+using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using UnityEngine.Rendering;
@@ -15,12 +16,12 @@ namespace PataNext.Client.PoolingSystems
 	{
 		protected override Type[] AdditionalBackendComponents => new Type[] {typeof(SortingGroup)};
 		
-		protected override string AddressableAsset =>
+		protected override AssetPath AddressableAsset =>
 			AddressBuilder.Client()
 			              .Folder("Models")
 			              .Folder("InGame")
 			              .Folder("Multiplayer")
-			              .GetFile("MpDisplayAbility.prefab");
+			              .GetAsset("MpDisplayAbility");
 
 		protected override EntityQuery GetQuery()
 		{

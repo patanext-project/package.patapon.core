@@ -1,6 +1,5 @@
-using System;
 using System.Collections.Generic;
-using PataNext.Client.Core.Addressables;
+using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling;
 using Unity.Entities;
 using UnityEngine;
@@ -9,11 +8,11 @@ namespace PataNext.Client.Systems
 {
 	public class UnitVisualEquipmentManager : ComponentSystem
 	{
-		private Dictionary<string, AsyncAssetPool<GameObject>> m_PoolByArchetype;
+		private Dictionary<AssetPath, AsyncAssetPool<GameObject>> m_PoolByArchetype;
 
 		public UnitVisualEquipmentManager()
 		{
-			m_PoolByArchetype = new Dictionary<string, AsyncAssetPool<GameObject>>();
+			m_PoolByArchetype = new Dictionary<AssetPath, AsyncAssetPool<GameObject>>();
 		}
 		
 		protected override void OnCreate()
@@ -49,16 +48,13 @@ namespace PataNext.Client.Systems
 
 		public void AddPool(string masterserverId, AsyncAssetPool<GameObject> pool)
 		{
-			Debug.Log($"adding {masterserverId} -> {pool.AssetId}");
-			m_PoolByArchetype[masterserverId] = pool;
+			Debug.Log($"adding {masterserverId} -> {pool.AssetPath}");
+			m_PoolByArchetype[new ResPath(masterserverId)] = pool;
 		}
 
 		public bool TryGetPool(string archetype, out AsyncAssetPool<GameObject> pool)
 		{
-			if (archetype.StartsWith("ms://"))
-				archetype = archetype.Replace("ms://", "cr://");
-			
-			return m_PoolByArchetype.TryGetValue(archetype, out pool);
+			return m_PoolByArchetype.TryGetValue(new ResPath(archetype), out pool);
 		}
 	}
 }

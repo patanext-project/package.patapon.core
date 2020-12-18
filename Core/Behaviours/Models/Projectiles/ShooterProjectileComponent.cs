@@ -1,9 +1,7 @@
-using System;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Components;
 using PataNext.Client.Components.Archetypes;
 using PataNext.Client.DataScripts.Models.Equipments;
-using PataNext.Client.Graphics.Animation.Units.Base;
 using PataNext.Client.Systems;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using Unity.Mathematics;
@@ -65,7 +63,7 @@ namespace PataNext.Client.DataScripts.Models
 			if (throwable.assetReference != null)
 			{
 				projectileDefinition = entityMgr.World.GetExistingSystem<VisualThrowableProjectileManager>()
-				                                .Register((string) throwable.assetReference.RuntimeKey);
+				                                .Register(throwable.assetReference);
 				
 				entityMgr.SetComponentData(dstEntity, new ShooterProjectileVisualTarget {Definition = projectileDefinition});
 			}

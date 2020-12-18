@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Graphics.Animation.Units.Base;
 using PataNext.Module.Simulation.Components.GamePlay.Abilities;
-using PataNext.Module.Simulation.Components.GamePlay.RhythmEngine;
-using PataNext.Module.Simulation.Components.Roles;
 using StormiumTeam.GameBase.Roles.Components;
 using Unity.Entities;
 using UnityEngine;
@@ -151,14 +150,14 @@ namespace PataNext.Client.Graphics.Animation.Base
 				var index = i;
 				behavior.AddAsyncOp(AnimationMap.Resolve(m_Triggers[i], GetCurrentClipProvider()), handle =>
 				{
-					var cp = AnimationClipPlayable.Create(behavior.Graph, (AnimationClip) handle.Result);
+					var cp = AnimationClipPlayable.Create(behavior.Graph, ((Task<AnimationClip>) handle).Result);
 					if (cp.IsNull())
 						throw new InvalidOperationException("null clip");
 
 					behavior.Graph.Connect(cp, 0, behavior.Mixer, index);
 
 					behavior.Visual.VisualAnimation.GetSystemData<SystemData>(SystemType)
-					        .LoadedClips[m_Triggers[index]] = (AnimationClip) handle.Result;
+					        .LoadedClips[m_Triggers[index]] = ((Task<AnimationClip>) handle).Result;
 				});
 			}
 		}

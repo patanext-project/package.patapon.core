@@ -1,7 +1,5 @@
-﻿using System;
-using GameHost;
+﻿using GameHost;
 using GameHost.Native;
-using GameHost.Native.Fixed;
 using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using GameHost.Simulation.Utility.Resource;

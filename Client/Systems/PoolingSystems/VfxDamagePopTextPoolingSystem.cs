@@ -2,6 +2,7 @@ using System;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.DataScripts.Interface.InGame;
 using StormiumTeam.GameBase.GamePlay.Events;
+using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using UnityEngine;
@@ -13,13 +14,13 @@ namespace PataNext.Client.PoolingSystems
 	{
 		protected override Type[] AdditionalBackendComponents => new Type[] {typeof(SortingGroup)};
 		
-		protected override string AddressableAsset =>
+		protected override AssetPath AddressableAsset =>
 			AddressBuilder.Client()
 			              .Interface()
 			              .Folder("InGame")
 			              .Folder("Effects")
 			              .Folder("VfxDamage")
-			              .GetFile("VfxDamagePopTextDefault.prefab");
+			              .GetAsset("VfxDamagePopTextDefault");
 
 		protected override EntityQuery GetQuery()
 		{

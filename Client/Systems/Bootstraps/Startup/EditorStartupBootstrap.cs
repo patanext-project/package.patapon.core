@@ -1,18 +1,13 @@
-using System;
 using System.Net;
 using GameHost.Core;
 using GameHost.Core.RPC.AvailableRpcCommands;
 using GameHost.InputBackendFeature;
 using GameHost.ShareSimuWorldFeature;
-using PataNext.Client.DataScripts.Interface.Bubble;
-using PataNext.Client.DataScripts.Interface.Menu.__Barracks;
 using RevolutionSnapshot.Core.Buffers;
 using StormiumTeam.GameBase.Bootstrapping;
 using StormiumTeam.GameBase.Data;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Mathematics;
-using Unity.Transforms;
 using UnityEngine;
 using Utilities;
 
