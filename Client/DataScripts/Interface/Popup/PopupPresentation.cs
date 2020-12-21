@@ -31,7 +31,7 @@ namespace PataNext.Client.DataScripts.Interface.Popup
 	
 	public struct PopupDescription : IEntityDescription {}
 
-	public class PopupPresentation : RuntimeAssetPresentation<PopupPresentation>
+	public class PopupPresentation : RuntimeAssetPresentation
 	{
 		public TextMeshProUGUI titleLabel;
 		public TextMeshProUGUI contentLabel;

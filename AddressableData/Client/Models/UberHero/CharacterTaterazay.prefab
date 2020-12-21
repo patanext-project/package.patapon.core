@@ -83,13 +83,23 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 55468396677195880, guid: fa2f42e82e5b14245b5281fd7bfad24d,
         type: 3}
-      propertyPath: animationAssetFolders.Array.data[0].asset
-      value: st.pn
+      propertyPath: animationCacheId
+      value: uh.taterazay
       objectReference: {fileID: 0}
     - target: {fileID: 55468396677195880, guid: fa2f42e82e5b14245b5281fd7bfad24d,
         type: 3}
-      propertyPath: animationAssetFolders.Array.data[0].bundle
+      propertyPath: animationAssetFolders.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 55468396677195880, guid: fa2f42e82e5b14245b5281fd7bfad24d,
+        type: 3}
+      propertyPath: animationAssetFolders.Array.data[1].asset
       value: Models/UberHero/Taterazay
+      objectReference: {fileID: 0}
+    - target: {fileID: 55468396677195880, guid: fa2f42e82e5b14245b5281fd7bfad24d,
+        type: 3}
+      propertyPath: animationAssetFolders.Array.data[1].bundle
+      value: st.pn
       objectReference: {fileID: 0}
     - target: {fileID: 206234230575453835, guid: fa2f42e82e5b14245b5281fd7bfad24d,
         type: 3}

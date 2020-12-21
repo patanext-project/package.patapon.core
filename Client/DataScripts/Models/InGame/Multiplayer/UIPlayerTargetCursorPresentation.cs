@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace PataNext.Client.Graphics.Models.InGame.Multiplayer
 {
-	public class UIPlayerTargetCursorPresentation : RuntimeAssetPresentation<UIPlayerTargetCursorPresentation>
+	public class UIPlayerTargetCursorPresentation : RuntimeAssetPresentation
 	{
 		private bool[] m_ActiveStates;
 

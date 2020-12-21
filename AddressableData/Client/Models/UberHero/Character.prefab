@@ -1174,7 +1174,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Animator: {fileID: 2758844109317685535}
   animationAssetFolders:
-  - cr://st.pn/Models/UberHero/Data
+  - asset: Models/UberHero/Default
+    bundle: st.pn
   animationCacheId: 
 --- !u!114 &4358083776053948735
 MonoBehaviour:

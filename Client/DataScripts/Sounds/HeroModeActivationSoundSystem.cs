@@ -53,7 +53,7 @@ namespace PataNext.Client.DataScripts.Sounds
 			for (var i = 0; i != m_AsyncOp.Handles.Count; i++)
 			{
 				var (handle, data) = DefaultAsyncOperation.InvokeExecute<AudioClip, DataOp>(m_AsyncOp, ref i);
-				if (handle.Result == null)
+				if (handle?.Result == null)
 					continue;
 
 				m_ActivationSound = World.GetOrCreateSystem<ECSoundSystem>()

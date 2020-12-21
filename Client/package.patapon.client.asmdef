@@ -29,7 +29,8 @@
         "Unity.InternalAPIEngineBridge.015",
         "Unity.Serialization",
         "Unity.Locus.BundleSystem",
-        "UniTask"
+        "UniTask",
+        "UIForia.Src"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

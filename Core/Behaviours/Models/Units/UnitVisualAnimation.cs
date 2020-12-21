@@ -2,6 +2,8 @@ using System;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
 using PataNext.Module.Simulation.Components.Roles;
+using PataNext.Module.Simulation.Components.Units;
+using PataNext.Module.Simulation.Resources;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.AssetBackend.Components;
 using StormiumTeam.GameBase.Utility.Misc;
@@ -13,7 +15,7 @@ using UnityEngine.Rendering;
 
 namespace PataNext.Client.Graphics.Animation.Units.Base
 {
-	public abstract class UnitVisualPresentation : RuntimeAssetPresentation<UnitVisualPresentation>
+	public abstract class UnitVisualPresentation : RuntimeAssetPresentation
 	{
 		public Animator Animator;
 
@@ -67,17 +69,19 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 
 		public void OnPresentationSet(UnitVisualPresentation presentation)
 		{
-			Presentation = presentation;
-			
+			Presentation                  = presentation;
+			Presentation.Animator.enabled = true;
+
 			// reset graph ofc when getting a new presentation
 			DestroyPlayableGraph();
 			CreatePlayableGraph($"{Backend.DstEntity}");
-			CreatePlayable();
-			
+			CreatePlayable(presentation.Animator);
+
 			SetAnimatorOutput("standard output", presentation.Animator);
+			m_PlayableGraph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
 
 			CurrAnimation = new TargetAnimation(null);
-			
+
 			m_PlayableGraph.Stop();
 			m_PlayableGraph.Play();
 		}
@@ -107,6 +111,9 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 
 	public class UnitVisualBackend : RuntimeAssetBackend<UnitVisualPresentation>
 	{
+		public UnitKitResource       CurrentKitResource;
+		public UnitArchetypeResource CurrentArchetypeResource;
+
 		public  AssetPath              CurrentArchetype;
 		private UnitVisualAnimation m_Animation;
 

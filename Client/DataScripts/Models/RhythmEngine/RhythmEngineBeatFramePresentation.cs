@@ -23,7 +23,7 @@ using Random = Unity.Mathematics.Random;
 
 namespace PataNext.Client.RhythmEngine
 {
-public class RhythmEngineBeatFramePresentation : RuntimeAssetPresentation<RhythmEngineBeatFramePresentation>
+public class RhythmEngineBeatFramePresentation : RuntimeAssetPresentation
 	{
 		public GameObject[] lines = new GameObject[3];
 

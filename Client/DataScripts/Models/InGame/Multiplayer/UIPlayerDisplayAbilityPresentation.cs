@@ -16,7 +16,7 @@ using UnityEngine;
 
 namespace PataNext.Client.Graphics.Models.InGame.Multiplayer
 {
-	public class UIPlayerDisplayAbilityPresentation : RuntimeAssetPresentation<UIPlayerDisplayAbilityPresentation>
+	public class UIPlayerDisplayAbilityPresentation : RuntimeAssetPresentation
 	{
 		public SpriteRenderer[] Quads;
 		public Animator         Animator;
@@ -89,7 +89,7 @@ namespace PataNext.Client.Graphics.Models.InGame.Multiplayer
 			for (var i = 0; i != m_AsyncOp.Handles.Count; i++)
 			{
 				var (handle, data) = DefaultAsyncOperation.InvokeExecute<AudioClip, HandleOpData>(m_AsyncOp, ref i);
-				if (handle.Result == null)
+				if (handle?.Result == null)
 					continue;
 				SwitchAbilityAudio = handle.Result;
 			}

@@ -26,7 +26,8 @@ namespace PataNext.Client.Bootstraps.Startup
 				{
 					foreach (var con in connectionList)
 					{
-						if (con.Type != "enet")
+						var appName = "client";
+						if (con.Type != "enet" || con.Name != appName)
 							continue;
 
 						World.GetExistingSystem<ConnectToGameHostSimulationSystem>()

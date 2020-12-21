@@ -15,7 +15,7 @@ using UnityEngine.Rendering;
 
 namespace PataNext.Client.DataScripts.Interface.InGame
 {
-	public class VfxDamagePopTextPresentation : RuntimeAssetPresentation<VfxDamagePopTextPresentation>
+	public class VfxDamagePopTextPresentation : RuntimeAssetPresentation
 	{
 		public TextMeshPro[] damageLabels;
 		public Animator      animator;

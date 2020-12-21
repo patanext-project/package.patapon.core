@@ -16,7 +16,7 @@ namespace PataNext.Client.DataScripts.Models.Equipments
 		}
 	}
 
-	public abstract class BaseUnitEquipmentPresentation : RuntimeAssetPresentation<BaseUnitEquipmentPresentation>
+	public abstract class BaseUnitEquipmentPresentation : RuntimeAssetPresentation
 	{
 	}
 }

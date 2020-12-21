@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace PataNext.Client.DataScripts.Interface.Menu.__Barracks.Controls
 {
-	public class UIUnitOverviewCategoryButtonPresentation : RuntimeAssetPresentation<UIUnitOverviewCategoryButtonPresentation>
+	public class UIUnitOverviewCategoryButtonPresentation : RuntimeAssetPresentation
 	{
 		public enum EPhase
 		{

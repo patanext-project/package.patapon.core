@@ -70,14 +70,21 @@ namespace PataNext.Client.Graphics.Camera.Units
 			var abilityStateFromEntity      = GetComponentDataFromEntity<AbilityState>(true);
 			Entities
 				.WithAll<SetUnitArchetypeSystem.IsSet>()
-				.ForEach((Entity entity, ref CameraModifierData cameraModifier, ref CameraTargetAnchor anchor, ref CameraData cameraData, in Translation translation, in UnitEnemySeekingState seekingState) =>
+				.ForEach((Entity entity, ref CameraModifierData cameraModifier, ref CameraTargetAnchor anchor, ref CameraData cameraData, in Translation translation) =>
 				{
 					var direction = directionFromEntity.TryGet(entity, out _, UnitDirection.Right);
 					if (HasComponent<FreeRoamInputComponent>(entity))
 						direction.Value = 0;
 
-					var targetFocal  = seekingState.Enemy != default ? 7.8f : 5.7f;
-					var targetOffset = seekingState.Enemy != default ? 0.66f : 0.33f;
+					float targetFocal = 6f, targetOffset = 0;
+
+					UnitEnemySeekingState seekingState = default;
+					if (HasComponent<UnitEnemySeekingState>(entity))
+					{
+						seekingState = GetComponent<UnitEnemySeekingState>(entity);
+						targetFocal  = seekingState.Enemy != default ? 7.8f : 5.7f;
+						targetOffset = seekingState.Enemy != default ? 0.66f : 0.33f;
+					}
 
 					var isImmediate = false;
 					var isSpecial   = false;
@@ -151,7 +158,7 @@ namespace PataNext.Client.Graphics.Camera.Units
 
 						if (!isImmediate)
 						{
-							var panningModifier = playerInput.Panning * ((cameraModifier.FieldOfView + 4f) * direction.Value);
+							var panningModifier = playerInput.Panning * (cameraModifier.FieldOfView + 4f);
 
 							var interFrameDelta = interFrame.Begin.Delta * (interFrame.End.Frame - interFrame.Begin.Frame + 1);
 							if (interFrameDelta > 0)

@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace PataNext.Client.DataScripts.Models.RhythmEngine.FeverWorm
 {
-	public class FeverWormPresentation : RuntimeAssetPresentation<FeverWormPresentation>
+	public class FeverWormPresentation : RuntimeAssetPresentation
 	{
 		private static readonly int Progression       = Shader.PropertyToID("_SummonPercentage");
 		private static readonly int DirectProgression = Shader.PropertyToID("_SummonDirectPercentage");

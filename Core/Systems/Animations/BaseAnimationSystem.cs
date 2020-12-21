@@ -71,9 +71,11 @@ namespace PataNext.Client.Graphics.Animation.Base
 		// this should return itself
 		protected abstract IAbilityPlayableSystemCalls GetPlayableCalls();
 
+		private DefaultAnimationProvider provider = new DefaultAnimationProvider(new Dictionary<string, Dictionary<string, Task<AnimationClip>>>());
 		public IAnimationClipProvider GetCurrentClipProvider()
 		{
-			return new DefaultAnimationProvider(CurrentVisualAnimation.Presentation, null);
+			provider.Presentation = CurrentVisualAnimation.Presentation;
+			return provider;
 		}
 
 		protected bool InjectAnimationWithSystemData<TSystemData>(VisualAnimation.AddSystem<TSystemData> add = null, VisualAnimation.RemoveSystem<TSystemData> remove = null)
@@ -159,7 +161,15 @@ namespace PataNext.Client.Graphics.Animation.Base
 			{
 				if (handles[i].handle.IsCompleted)
 				{
-					handles[i].complete(handles[i].handle);
+					try
+					{
+						handles[i].complete(handles[i].handle);
+					}
+					catch (Exception ex)
+					{
+						Debug.LogException(ex);
+					}
+					
 					handles.RemoveAt(i--);
 				}
 			}
@@ -175,20 +185,22 @@ namespace PataNext.Client.Graphics.Animation.Base
 		}
 	}
 
-	public struct DefaultAnimationProvider : IAnimationClipProvider
+	public class DefaultAnimationProvider : IAnimationClipProvider
 	{
-		public readonly UnitVisualPresentation                                         Presentation;
+		public UnitVisualPresentation Presentation;
+		
 		public readonly Dictionary<string, Dictionary<string, Task<AnimationClip>>> CacheClipMap;
 
-		public DefaultAnimationProvider(UnitVisualPresentation presentation, Dictionary<string, Dictionary<string, Task<AnimationClip>>> cacheClipMap)
+		public DefaultAnimationProvider(Dictionary<string, Dictionary<string, Task<AnimationClip>>> cacheClipMap)
 		{
-			Presentation = presentation;
 			CacheClipMap = cacheClipMap;
 		}
 
 		public Task<AnimationClip> Provide(string key)
 		{
 			Task<AnimationClip> clipHandle;
+
+			var canAccessToCache = !string.IsNullOrEmpty(Presentation.animationCacheId);
 
 			var overrides = Presentation.GetComponents<OverrideObjectComponent>();
 			foreach (var overrideComponent in overrides)
@@ -197,15 +209,16 @@ namespace PataNext.Client.Graphics.Animation.Base
 					return Task.FromResult(clip);
 			}
 
-			if (!string.IsNullOrEmpty(Presentation.animationCacheId))
+			if (canAccessToCache)
 			{
 				if (CacheClipMap.TryGetValue(Presentation.animationCacheId, out var clipMap))
 				{
+					Console.WriteLine($"{clipMap.TryGetValue(key, out clipHandle)} - {key}");
 					if (clipMap.TryGetValue(key, out clipHandle))
 						return clipHandle;
 				}
 				else
-					CacheClipMap[key] = new Dictionary<string, Task<AnimationClip>>();
+					CacheClipMap[Presentation.animationCacheId] = new Dictionary<string, Task<AnimationClip>>();
 			}
 
 			var computedFolders = new AssetPath[Presentation.animationAssetFolders.Length];
@@ -215,23 +228,38 @@ namespace PataNext.Client.Graphics.Animation.Base
 			for (var i = 0; i != computedFolders.Length; i++)
 			{
 				var path = Presentation.animationAssetFolders[i];
-				computedFolders[i] = new AssetPath(path.bundle, path.asset + "/" + key + ".anim");
+				computedFolders[i] = new AssetPath(path.bundle, path.asset + "/" + key);
 			}
 
 			// TODO: Cache?
 			if (computedFolders.Length == 1)
-				return AssetManager.LoadAssetAsync<AnimationClip>(computedFolders[0]).AsTask();
+			{
+				var task = AssetManager.LoadAssetAsync<AnimationClip>(computedFolders[0]).AsTask();
+				if (canAccessToCache)
+				{
+					CacheClipMap[Presentation.animationCacheId][key] = task;
+				}
+
+				return task;
+			}
 
 			// TODO: Use async in the origin method instead?
 			return UniTask.RunOnThreadPool(async () =>
 			{
 				await UniTask.SwitchToMainThread();
-				
+
 				foreach (var assetPath in computedFolders)
 				{
-					var result = await AssetManager.LoadAssetAsync<AnimationClip>(assetPath);
+					var task   = AssetManager.LoadAssetAsync<AnimationClip>(assetPath).AsTask();
+					var result = await task;
+
 					if (result != null)
+					{
+						if (canAccessToCache)
+							CacheClipMap[Presentation.animationCacheId][key] = task;
+
 						return result;
+					}
 				}
 
 				throw new KeyNotFoundException("(multiple folders) no clip found for key=" + key);

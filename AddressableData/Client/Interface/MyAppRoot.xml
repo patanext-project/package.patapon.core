@@ -1,0 +1,6 @@
+<UITemplate>
+    <Style path="MyAppRoot.style" />
+    <Contents>
+        The safe word is {safeWord}!
+    </Contents>
+</UITemplate> 

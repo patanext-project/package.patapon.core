@@ -8,11 +8,11 @@ namespace PataNext.Client
 {
 	public static class CanvasUtility
 	{
-		public static Canvas Create(World world, int order, string name, float scalerMatchWidthOrHeight = 0.5f)
+		public static Canvas Create(World world, int order, string name, float scalerMatchWidthOrHeight = 0.5f, bool defaultAddRaycaster = false)
 		{
 			var canvasSystem = world.GetOrCreateSystem<ClientCanvasSystem>();
 
-			var canvas = canvasSystem.CreateCanvas(out _, name + " Canvas", defaultAddRaycaster: false);
+			var canvas = canvasSystem.CreateCanvas(out _, name + " Canvas", defaultAddRaycaster: defaultAddRaycaster);
 			canvas.renderMode     = RenderMode.ScreenSpaceCamera;
 			canvas.worldCamera    = world.GetOrCreateSystem<ClientCreateCameraSystem>().Camera;
 			canvas.planeDistance  = 1;

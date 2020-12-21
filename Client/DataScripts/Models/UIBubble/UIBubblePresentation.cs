@@ -8,7 +8,7 @@ namespace PataNext.Client.DataScripts.Interface.Bubble
 		public string Target;
 	}
 
-	public abstract class UIBubblePresentation : RuntimeAssetPresentation<UIBubblePresentation>
+	public abstract class UIBubblePresentation : RuntimeAssetPresentation
 	{
 	}
 

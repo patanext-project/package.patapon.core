@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
 using GameHost.Simulation.Utility.Resource.Systems;
 using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
+using PataNext.Client.Graphics.Animation.Base;
 using PataNext.Client.Systems;
 using PataNext.Module.Simulation.Components.Units;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Utility.Pooling;
 using Unity.Entities;
 using Unity.Transforms;
@@ -11,7 +14,7 @@ using UnityEngine;
 
 namespace PataNext.Client.Graphics.Animation.Units.Base
 {
-	[UpdateInGroup(typeof(PresentationSystemGroup))]
+	[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation), OrderFirst = true)]
 	[AlwaysSynchronizeSystem]
 	public class UpdateUnitVisualBackendSystem : SystemBase
 	{
@@ -62,12 +65,25 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 					if (EntityManager.TryGetComponentData(backend.DstEntity, out UnitCurrentKit currentKit)
 					    && currentKit.Resource.TryGet(resourceMgr, out var kitResourceKey))
 					{
+						if (archetypeResourceKey.Equals(backend.CurrentArchetypeResource)
+						    && kitResourceKey.Equals(backend.CurrentKitResource))
+						{
+							// Same archetype and kit, continue (the next call will alloc)
+							if (!Input.GetKeyDown(KeyCode.R)) return;
+						}
+
 						archetypeMgr.TryGetArchetypePool(archetypeResourceKey.Value.ToString(),
 							kitResourceKey.Value.ToString(),
 							out targetArchetypePool);
 					}
 					else
 					{
+						if (backend.CurrentKitResource.Equals(default) && archetypeResourceKey.Equals(backend.CurrentArchetypeResource))
+						{
+							// Same archetype and kit, continue (the next call will alloc)
+							if (!Input.GetKeyDown(KeyCode.R)) return;
+						}
+
 						archetypeMgr.TryGetArchetypePool(archetypeResourceKey.Value.ToString(), out targetArchetypePool);
 					}
 				}

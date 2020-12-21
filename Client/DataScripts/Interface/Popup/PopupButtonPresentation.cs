@@ -18,7 +18,7 @@ using UnityEngine.UI;
 
 namespace PataNext.Client.DataScripts.Interface.Popup
 {
-	public class PopupButtonPresentation : RuntimeAssetPresentation<PopupButtonPresentation>
+	public class PopupButtonPresentation : RuntimeAssetPresentation
 	{
 		public bool PendingClickEvent { get; set; }
 		

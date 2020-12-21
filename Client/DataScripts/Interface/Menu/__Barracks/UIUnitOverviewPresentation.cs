@@ -15,7 +15,7 @@ namespace PataNext.Client.DataScripts.Interface.Menu.__Barracks
 		public CurrentUnitOverview(Entity target) => this.Target = target;
 	}
 
-	public class UIUnitOverviewPresentation : RuntimeAssetPresentation<UIUnitOverviewPresentation>
+	public class UIUnitOverviewPresentation : RuntimeAssetPresentation
 	{
 		public UIUnitOverviewCategoryRows categories;
 		

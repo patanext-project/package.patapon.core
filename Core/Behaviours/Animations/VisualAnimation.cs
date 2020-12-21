@@ -108,6 +108,8 @@ namespace PataNext.Client.Graphics.Animation
 		protected VisualAnimationPlayable m_Playable;
 		protected PlayableGraph           m_PlayableGraph;
 
+		public PlayableGraph Graph => m_PlayableGraph;
+
 		protected Dictionary<Type, SystemDataBase> m_SystemData = new Dictionary<Type, SystemDataBase>();
 		protected AnimationMixerPlayable           rootMixer => m_Playable.RootMixer;
 
@@ -129,12 +131,12 @@ namespace PataNext.Client.Graphics.Animation
 			m_PlayableGraph = PlayableGraph.Create($"{GetType()}.{name}");
 		}
 
-		public void CreatePlayable()
+		public void CreatePlayable(Animator animator = null)
 		{
 			m_PlayableGraph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
 			m_PlayableGraph.Play();
 			m_Playable                = ScriptPlayable<VisualAnimationPlayable>.Create(m_PlayableGraph).GetBehaviour();
-			m_AnimationPlayableOutput = AnimationPlayableOutput.Create(m_PlayableGraph, "Output", null);
+			m_AnimationPlayableOutput = AnimationPlayableOutput.Create(m_PlayableGraph, "Output", animator);
 			m_AnimationPlayableOutput.SetSourcePlayable(m_Playable.Playable, 0);
 		}
 
@@ -144,6 +146,7 @@ namespace PataNext.Client.Graphics.Animation
 				throw new InvalidOperationException();
 
 			m_AnimationPlayableOutput.SetTarget(animator);
+			animator.runtimeAnimatorController = null;
 		}
 
 		public bool ContainsSystem(Type type)

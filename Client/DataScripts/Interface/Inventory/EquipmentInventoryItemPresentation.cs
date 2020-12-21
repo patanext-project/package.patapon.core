@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PataNext.Client.DataScripts.Interface.Inventory
 {
-	public class EquipmentInventoryItemPresentation : RuntimeAssetPresentation<EquipmentInventoryItemPresentation>
+	public class EquipmentInventoryItemPresentation : RuntimeAssetPresentation
 	{
 		public SVGImage   graphic;
 		public SVGImage   background;

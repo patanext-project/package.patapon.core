@@ -56,7 +56,7 @@ namespace PataNext.Client.Graphics.Animation.Units
 			var abilityEntity = AbilityFinder.GetAbility(backend.DstEntity);
 			if (abilityEntity == default && currAnim.Type == SystemType || currAnim.CanStartAnimationAt(animation.RootTime))
 				animation.SetTargetAnimationWithTypeKeepTransition(null);
-
+			
 			InjectAnimationWithSystemData<SystemData>();
 
 			ref var systemData  = ref animation.GetSystemData<SystemData>(SystemType);

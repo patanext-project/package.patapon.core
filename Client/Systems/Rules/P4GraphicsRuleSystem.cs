@@ -12,17 +12,20 @@ namespace PataNext.Client.Rules
 	{
 		public float RenderScale;
 		public int   MsaaCount;
+		public bool  Vsync;
 	}
 
 	public class P4GraphicsRuleSystem : RuleBaseSystem<P4GraphicsRule>
 	{
 		public RuleProperties<P4GraphicsRule>.Property<float> RenderScale;
 		public RuleProperties<P4GraphicsRule>.Property<int>   MsaaCount;
+		public RuleProperties<P4GraphicsRule>.Property<bool>   Vsync;
 
 		protected override void AddRuleProperties()
 		{
 			RenderScale = Rule.Add(d => d.RenderScale);
 			MsaaCount   = Rule.Add(d => d.MsaaCount);
+			Vsync       = Rule.Add(d => d.Vsync);
 
 			RenderScale.OnVerify += (ref float value) =>
 			{
@@ -31,7 +34,7 @@ namespace PataNext.Client.Rules
 			};
 			MsaaCount.OnVerify += (ref int value) =>
 			{
-				value = math.clamp(value, 0, 4);
+				value = math.clamp(value, 1, 4);
 				return true;
 			};
 
@@ -49,12 +52,15 @@ namespace PataNext.Client.Rules
 			var lowPipeline = (UniversalRenderPipelineAsset) GraphicsSettings.currentRenderPipeline;
 			lowPipeline.renderScale     = RenderScale.Value;
 			lowPipeline.msaaSampleCount = MsaaCount.Value;
+
+			UnityEngine.QualitySettings.vSyncCount = Vsync.Value ? 1 : 0;
 		}
 
 		protected override void SetDefaultProperties()
 		{
-			RenderScale.Value = 2;
-			MsaaCount.Value   = 4;
+			RenderScale.Value = 1.25f;
+			MsaaCount.Value   = 2;
+			Vsync.Value       = true;
 		}
 	}
 }

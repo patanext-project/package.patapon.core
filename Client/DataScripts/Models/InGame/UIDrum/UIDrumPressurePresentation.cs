@@ -29,7 +29,7 @@ using Random = UnityEngine.Random;
 
 namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 {
-	public class UIDrumPressurePresentation : RuntimeAssetPresentation<UIDrumPressurePresentation>
+	public class UIDrumPressurePresentation : RuntimeAssetPresentation
 	{
 		public Animator animator;
 

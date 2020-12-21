@@ -18,13 +18,13 @@ MonoBehaviour:
     Folder:
       guid: 2df6be3f29f43f24092d0b46837c74a1
     IncludeSubfolder: 1
-    CompressBundle: 0
+    CompressBundle: 1
   - BundleName: st.pnmaps
     IncludedInPlayer: 1
     Folder:
       guid: 0fe117199c94e98488d4badac7361638
     IncludeSubfolder: 1
-    CompressBundle: 0
+    CompressBundle: 1
   AutoCreateSharedBundles: 1
   m_RemoteOutputFolder: RemoteBundles
   m_LocalOutputFolder: LocalBundles
@@ -32,7 +32,7 @@ MonoBehaviour:
   EmulateInEditor: 1
   EmulateWithoutRemoteURL: 0
   CleanCacheInEditor: 0
-  ForceRebuild: 0
+  ForceRebuild: 1
   UseCacheServer: 0
   CacheServerHost: 
   CacheServerPort: 0

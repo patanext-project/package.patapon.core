@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace PataNext.Client.DataScripts.Interface.Menu.__Barracks.Controls
 {
-	public class UIUnitStatisticsPresentation : RuntimeAssetPresentation<UIUnitStatisticsPresentation>
+	public class UIUnitStatisticsPresentation : RuntimeAssetPresentation
 	{
 		[SerializeField]
 		private GameObject labelToInstantiate;

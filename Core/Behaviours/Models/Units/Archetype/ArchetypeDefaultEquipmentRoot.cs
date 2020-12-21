@@ -170,7 +170,6 @@ namespace PataNext.Client.Components.Archetypes
 						if (m_EquipmentManager.TryGetPool(equipmentTarget.ToString(), out var pool))
 						{
 							root.UnitEquipmentBackend.SetPresentationFromPool(pool);
-							Console.WriteLine($"SetPresnetationFromPool {equipmentTarget.ToString()}");
 						}
 
 						displayedEquipment = EntityManager.GetBuffer<UnitDisplayedEquipment>(backend.DstEntity);
