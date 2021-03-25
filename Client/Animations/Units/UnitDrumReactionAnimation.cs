@@ -4,13 +4,16 @@ using GameHost.ShareSimuWorldFeature.Systems;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Graphics.Animation.Base;
 using PataNext.Client.Graphics.Animation.Units.Base;
+using PataNext.CoreAbilities.Mixed.Defaults;
 using PataNext.Module.Simulation.Components;
+using PataNext.Module.Simulation.Components.GamePlay.Abilities;
 using PataNext.Module.Simulation.Components.GamePlay.RhythmEngine;
 using PataNext.Module.Simulation.Components.Roles;
 using PataNext.Module.Simulation.Components.Units;
 using PataNext.Module.Simulation.Game.RhythmEngine;
 using StormiumTeam.GameBase.Roles.Components;
 using StormiumTeam.GameBase.Roles.Descriptions;
+using StormiumTeam.GameBase.Systems;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -32,14 +35,13 @@ namespace PataNext.Client.Graphics.Animation.Units
 			};
 		}
 
-		private InterFrame interFrame;
+		private TimeSystem timeSystem;
 
-		protected override bool OnBeforeForEach()
+		protected override void OnCreate()
 		{
-			if (HasSingleton<InterFrame>())
-				interFrame = GetSingleton<InterFrame>();
+			base.OnCreate();
 
-			return base.OnBeforeForEach();
+			timeSystem = World.GetExistingSystem<TimeSystem>();
 		}
 
 		private void UpdatePersistent(UnitVisualAnimation animation)
@@ -58,7 +60,10 @@ namespace PataNext.Client.Graphics.Animation.Units
 		{
 			UpdatePersistent(animation);
 
-			if (!animation.CurrAnimation.AllowOverride)
+			if (!animation.CurrAnimation.AllowOverride
+			    || (EntityManager.TryGetComponentData(targetEntity, out OwnerActiveAbility activeAbility)
+			        && activeAbility.Active != default
+			        && (EntityManager.GetComponentData<AbilityActivation>(activeAbility.Active).Type & EAbilityActivationType.HeroMode) != 0))
 				return;
 
 			if (!EntityManager.TryGetComponentData(targetEntity, out Relative<PlayerDescription> relativePlayer)
@@ -79,7 +84,7 @@ namespace PataNext.Client.Graphics.Animation.Units
 			var rhythmActions = playerCommand.Actions;
 			for (var i = 0; pressureKey < 0 && i != rhythmActions.Length; i++)
 			{
-				if (interFrame.Range.Contains(rhythmActions[i].InterFrame.Pressed))
+				if (timeSystem.GetReport(relativePlayer.Target).Active.Contains(rhythmActions[i].InterFrame.Pressed))
 					pressureKey = i;
 			}
 

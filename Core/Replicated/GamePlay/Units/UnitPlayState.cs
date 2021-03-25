@@ -1,3 +1,4 @@
+using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -19,6 +20,7 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Units
 		public float AttackSeekRange;
 
 		public float Weight;
+		public float KnockbackPower;
 
 		public readonly float GetAcceleration()
 		{
@@ -27,6 +29,7 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Units
 
 		public class Register : RegisterGameHostComponentData<UnitPlayState>
 		{
+			protected override ICustomComponentDeserializer CustomDeserializer => new DefaultSingleDeserializer<UnitPlayState>();
 		}
 	}
 }

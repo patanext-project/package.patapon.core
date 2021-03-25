@@ -104,6 +104,12 @@ namespace PataNext.Client.Behaviors
 				backend.SetTarget(World.DefaultGameObjectInjectionWorld.EntityManager);
 				backend.SetPresentationSingle(element.gameObject);
 			});
+			Backing.onRemoved.AddListener(args =>
+			{
+				var (element, _) = args;
+				element.Backend.gameObject.SetActive(false);
+				backendPool.Enqueue(element.Backend.gameObject);
+			});
 		}
 		
 		public BackendContainerPool(GameObject reference)
@@ -144,7 +150,27 @@ namespace PataNext.Client.Behaviors
 	public class ContainerPool<TAsset> : IContainer<TAsset>,
 	                                     IDisposable
 	{
+		private class IncomingObject
+		{
+			public bool   IsCompleted;
+			public TAsset Result;
+
+			public void SetResult(TAsset asset)
+			{
+				IsCompleted = true;
+				Result      = asset;
+			}
+
+			public bool IsStopped;
+			
+			public void Stop()
+			{
+				IsStopped = true;
+			}
+		}
+		
 		private readonly List<TAsset> activeObjects;
+		private readonly List<IncomingObject> incomingObjects;
 
 		public readonly IAssetPool<TAsset> AssetPool;
 
@@ -156,7 +182,8 @@ namespace PataNext.Client.Behaviors
 		{
 			AssetPool = pool ?? throw new NullReferenceException(nameof(pool));
 
-			activeObjects = new List<TAsset>();
+			activeObjects   = new List<TAsset>();
+			incomingObjects = new List<IncomingObject>();
 
 			onAdded            = new UnityEvent<(TAsset element, int index)>();
 			onCollectionUpdate = new UnityEvent<World.NoAllocReadOnlyCollection<TAsset>>();
@@ -165,25 +192,39 @@ namespace PataNext.Client.Behaviors
 
 		public void SetSize(int count)
 		{
-			if (activeObjects.Count == count)
+			if (incomingObjects.Count == count)
 				return;
 
-			if (count > activeObjects.Count)
+			if (count > incomingObjects.Count)
 			{
-				for (var i = activeObjects.Count; i < count; i++)
+				for (var i = incomingObjects.Count; i < count; i++)
 				{
 					Add();
 				}
 			}
 			else
 			{
-				for (var i = count; i < activeObjects.Count; i++)
+				for (var i = count; i < incomingObjects.Count; i++)
 				{
-					AssetPool.Enqueue(activeObjects[i]);
+					incomingObjects[i].Stop();
+
+					if (incomingObjects[i].Result != null)
+					{
+						AssetPool.Enqueue(incomingObjects[i].Result);
+						onRemoved.Invoke((incomingObjects[i].Result, i));
+					}
 				}
 
-				activeObjects.RemoveRange(count, activeObjects.Count - count);
+				incomingObjects.RemoveRange(count, incomingObjects.Count - count);
 				
+				// Rebuild active objects
+				activeObjects.Clear();
+				foreach (var incoming in incomingObjects)
+				{
+					if (incoming.Result is { } result)
+						activeObjects.Add(result);
+				}
+
 				onCollectionUpdate.Invoke(new World.NoAllocReadOnlyCollection<TAsset>(activeObjects));
 			}
 		}
@@ -196,17 +237,36 @@ namespace PataNext.Client.Behaviors
 		public async UniTask<(TAsset element, int index)> Add()
 		{
 			var completionSource = new UniTaskCompletionSource<TAsset>();
-			var idx              = activeObjects.Count - 1;
+			var incoming         = new IncomingObject();
+
+			var idx = incomingObjects.Count - 1;
+			incomingObjects.Add(incoming);
+
 			AssetPool.Dequeue(obj =>
 			{
-				activeObjects.Add(obj);
+				if (incoming.IsStopped)
+					return;
+
+				incoming.SetResult(obj);
 				completionSource.TrySetResult(obj);
 			});
-			var result = await completionSource.Task;
 
-			var tuple = (result, activeObjects.Count - 1);
+			if (incoming.IsStopped)
+			{
+				return (default, -1);
+			}
+
+			var tuple = (await completionSource.Task, idx);
 			onAdded.Invoke(tuple);
-			
+
+			// Rebuild active objects
+			activeObjects.Clear();
+			foreach (var incomingObject in incomingObjects)
+			{
+				if (incomingObject.Result is { } result)
+					activeObjects.Add(result);
+			}
+
 			onCollectionUpdate.Invoke(new World.NoAllocReadOnlyCollection<TAsset>(activeObjects));
 
 			return tuple;

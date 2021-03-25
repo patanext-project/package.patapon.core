@@ -10,11 +10,12 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Random = UnityEngine.Random;
 
 namespace PataNext.Client.DataScripts.Models.Projectiles
 {
-	public class DefaultProjectilePresentation : BaseProjectilePresentation
+	public class DefaultProjectilePresentation : EntityVisualPresentation
 	{
 		[Serializable]
 		public struct Trigger
@@ -73,8 +74,11 @@ namespace PataNext.Client.DataScripts.Models.Projectiles
 		{
 			base.OnBackendSet();
 
-			((ProjectileBackend) Backend).letPresentationUpdateTransform = true;
-			((ProjectileBackend) Backend).canBePooled                    = false;
+			((EntityVisualBackend) Backend).letPresentationUpdateTransform = true;
+			((EntityVisualBackend) Backend).canBePooled                    = false;
+			
+			Backend.GetComponent<SortingGroup>()
+			       .sortingLayerName = "BattlegroundEffects";
 		}
 
 		public void SetPhase(EPhase phase)
@@ -117,7 +121,7 @@ namespace PataNext.Client.DataScripts.Models.Projectiles
 
 		protected override void Render(DefaultProjectilePresentation definition)
 		{
-			var backend = definition.Backend as ProjectileBackend;
+			var backend = definition.Backend as EntityVisualBackend;
 			var entity  = backend.DstEntity;
 
 			var phase = definition.GetCurrentPhase();
@@ -139,12 +143,13 @@ namespace PataNext.Client.DataScripts.Models.Projectiles
 			else
 			{
 				definition.CurrentPoolingTime += Time.DeltaTime;
+				phase                         =  DefaultProjectilePresentation.EPhase.Explosion;
 			}
 
 			// do explosion sound
 			if (definition.GetCurrentPhase() != phase
 			    && phase == DefaultProjectilePresentation.EPhase.Explosion
-			    && definition.soundOnExplosion != null)
+			    && definition.soundOnExplosion?.Length > 0)
 			{
 				var sound    = definition.soundOnExplosion[Random.Range(0, definition.soundOnExplosion.Length)];
 				var soundDef = World.GetExistingSystem<ECSoundSystem>().ConvertClip(sound);

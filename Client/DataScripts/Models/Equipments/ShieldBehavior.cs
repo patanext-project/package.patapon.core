@@ -26,7 +26,7 @@ namespace PataNext.Client.DataScripts.Models.Equipments
 						return;
 
 					var playState   = EntityManager.GetComponentData<UnitPlayState>(backend.DstEntity);
-					var targetScale = Vector3.one * (1 + (1 - playState.ReceiveDamagePercentage) * 0.8f);
+					var targetScale = Vector3.one * (1 + (1 - playState.ReceiveDamagePercentage) * 0.5f);
 					behavior.m_Scale = Vector3.MoveTowards(behavior.m_Scale, targetScale, Time.DeltaTime * 0.75f);
 					behavior.m_Scale = Vector3.Lerp(behavior.m_Scale, targetScale, Time.DeltaTime);
 					

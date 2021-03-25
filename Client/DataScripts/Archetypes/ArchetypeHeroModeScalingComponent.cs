@@ -1,5 +1,6 @@
 using package.stormiumteam.shared.ecs;
 using PataNext.Module.Simulation.Components.GamePlay.Abilities;
+using PataNext.Module.Simulation.Components.GamePlay.Special;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using Unity.Mathematics;
 using UnityEngine;
@@ -23,6 +24,9 @@ namespace PataNext.Client.Components.Archetypes
 			var time      = entityMgr.World.Time;
 
 			var scale = 1f;
+			if (entityMgr.TryGetComponentData(Backend.DstEntity, out UnitBodyCollider bodyData))
+				scale = bodyData.Scale;
+			
 			// Scaling in general should be done in another system...
 			/*if (EntityManager.TryGetComponentData(backend.DstEntity, out LivableHealth health) && health.IsDead)
 			{

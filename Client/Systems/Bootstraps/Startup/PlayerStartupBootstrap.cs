@@ -5,6 +5,7 @@ using GameHost.Core.RPC.AvailableRpcCommands;
 using GameHost.InputBackendFeature;
 using GameHost.ShareSimuWorldFeature;
 using Mono.Options;
+using PataNext.Client.Systems;
 using RevolutionSnapshot.Core.Buffers;
 using StormiumTeam.GameBase.Bootstrapping;
 using StormiumTeam.GameBase.Data;
@@ -20,25 +21,6 @@ namespace PataNext.Client.Bootstraps.Startup
 
 		protected override void Register(Entity bootstrap)
 		{
-			World.GetExistingSystem<GetDisplayedConnectionRpc>().OnReply += map =>
-			{
-				if (map.TryGetValue("SimulationApplication", out var connectionList))
-				{
-					foreach (var con in connectionList)
-					{
-						var appName = "client";
-						if (con.Type != "enet" || con.Name != appName)
-							continue;
-
-						World.GetExistingSystem<ConnectToGameHostSimulationSystem>()
-						     .Connect(IPEndPointUtility.Parse(con.Address));
-						
-						var request = EntityManager.CreateEntity(typeof(RequestMapLoad));
-						EntityManager.SetComponentData(request, new RequestMapLoad {Key = new FixedString512("arena_of_tolerance")});
-					}
-				}
-			};
-			
 			gameHostConnector = World.GetExistingSystem<GameHostConnector>();
 			EntityManager.SetComponentData(bootstrap, new BootstrapComponent {Name = nameof(PlayerStartupBootstrap)});
 		}
@@ -51,12 +33,26 @@ namespace PataNext.Client.Bootstraps.Startup
 				var cghInputBackend = World.GetExistingSystem<CreateGameHostInputBackendSystem>();
 				cghInputBackend.Create(0);
 
-				gameHostConnector.BroadcastRequest("displayallcon", default);
-
-				using var writer = new DataBufferWriter(0, Allocator.Temp);
-				writer.WriteStaticString("enet");
-				writer.WriteStaticString(new IPEndPoint(IPAddress.Parse("127.0.0.1"), cghInputBackend.Address.Address.Port).ToString());
-				gameHostConnector.BroadcastRequest("addinputsystem", writer);
+				gameHostConnector.RpcClient.SendRequest<GetDisplayedConnectionRpc, GetDisplayedConnectionRpc.Response>(default)
+				         .ContinueWith(t =>
+				         {
+					         var connections = t.Result.Connections;
+					         if (!connections.TryGetValue("SimulationApplication", out var connectionList)) 
+						         return;
+					         
+					         foreach (var con in connectionList)
+					         {
+						         var appName = "client";
+						         if (con.Type != "enet" || con.Name != appName)
+							         continue;
+							         
+						         World.GetExistingSystem<ConnectToGameHostSimulationSystem>()
+						              .Connect(IPEndPointUtility.Parse(con.Address));
+						
+						         var request = EntityManager.CreateEntity(typeof(RequestMapLoad));
+						         EntityManager.SetComponentData(request, new RequestMapLoad {Key = new FixedString512("arena_of_tolerance")});
+					         }
+				         });
 			};
 			
 			var args = Environment.GetCommandLineArgs();
@@ -72,6 +68,8 @@ namespace PataNext.Client.Bootstraps.Startup
 			Console.WriteLine("Args: " + string.Join(" ", args));
 			var r = options.Parse(args);
 			Console.WriteLine("Options: " + string.Join(", ", r));
+			
+			EntityManager.AddComponentData(EntityManager.CreateEntity(), new TestHomeScreenSpawn());
 
 			EntityManager.DestroyEntity(bootstrapSingleton);
 		}

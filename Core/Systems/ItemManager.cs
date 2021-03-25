@@ -76,7 +76,7 @@ namespace PataNext.Client.Systems
 
 					Debug.Log($"Item Found (Id={data.masterServerId}, Name={data.displayName})");
 
-					if (file.FullName.Contains("\\equipments\\"))
+					if (file.FullName.Contains("\\equipment\\"))
 					{
 						data.equipmentResource ??= new Dictionary<string, string>
 						{
@@ -88,7 +88,7 @@ namespace PataNext.Client.Systems
 						{
 							var       resPath   = new ResPath(kvp.Value);
 							var       bundle    = $"{resPath.Author}.{resPath.ModPack}";
-							AssetPath assetPath = (bundle, resPath.Resource.Replace("equipments/", "Models/Equipments/"));
+							AssetPath assetPath = (bundle, resPath.Resource.Replace("equipment/", "Models/Equipments/"));
 
 							var pool = new AsyncAssetPool<GameObject>(assetPath);
 							equipmentManager.AddPool($"{data.masterServerId}{(string.IsNullOrEmpty(kvp.Key) ? string.Empty : $":{kvp.Key}")}", pool);

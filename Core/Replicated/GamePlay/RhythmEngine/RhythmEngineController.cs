@@ -1,4 +1,5 @@
 ﻿using System;
+using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using Unity.Entities;
 
@@ -18,6 +19,7 @@ namespace PataNext.Module.Simulation.Components.GamePlay.RhythmEngine
 
 		public class Register : RegisterGameHostComponentData<RhythmEngineController>
 		{
+			protected override ICustomComponentDeserializer CustomDeserializer => new DefaultSingleDeserializer<RhythmEngineController>();
 		}
 	}
 }

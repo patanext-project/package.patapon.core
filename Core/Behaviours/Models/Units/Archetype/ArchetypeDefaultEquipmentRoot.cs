@@ -44,6 +44,8 @@ namespace PataNext.Client.Components.Archetypes
 		[NonSerialized]
 		public Dictionary<Transform, EquipmentRootData> TransformToRootMap;
 
+		public string suffix;
+
 		public EquipmentRootData GetRoot(Transform fromTransform)
 		{
 			return TransformToRootMap[fromTransform];
@@ -68,13 +70,13 @@ namespace PataNext.Client.Components.Archetypes
 					KnownTypes.RightEquipment => "ms://st.pn/equip_root/r_eq",
 					KnownTypes.Cape => "ms://st.pn/equip_root/cape",
 					KnownTypes.Shoulder => "ms://st.pn/equip_root/shoulder",
-					KnownTypes.Helmet => "ms://st.pn/equip_root/helmet",
+					KnownTypes.Helmet => "ms://st.pn/equip_root/helm",
 					KnownTypes.Hair => "ms://st.pn/equip_root/hair",
 					KnownTypes.Mask => "ms://st.pn/equip_root/mask",
 					_ => throw new NotImplementedException(kvp.known + " was not implemented")
 				};
 
-				var backendGameObject = new GameObject($"'{kvp.known}' Equipment backend", typeof(UnitEquipmentBackend), typeof(GameObjectEntity));
+				var backendGameObject = new GameObject($"Backend", typeof(UnitEquipmentBackend), typeof(GameObjectEntity));
 				root.UnitEquipmentBackend = backendGameObject.GetComponent<UnitEquipmentBackend>();
 				root.UnitEquipmentBackend.transform.SetParent(root.transform, false);
 			}
@@ -119,9 +121,8 @@ namespace PataNext.Client.Components.Archetypes
 
 		private class LocalUpdate : AbsGameBaseSystem
 		{
-			private UnitVisualEquipmentManager                                            m_EquipmentManager;
+			private UnitVisualEquipmentManager                 m_EquipmentManager;
 			private GameResourceModule<UnitAttachmentResource> attachmentModule;
-			private GameResourceModule<EquipmentResource>           equipmentModule;
 
 			private GameResourceManager resourceMgr;
 
@@ -134,7 +135,6 @@ namespace PataNext.Client.Components.Archetypes
 				resourceMgr        = World.GetOrCreateSystem<GameResourceManager>();
 
 				GetModule(out attachmentModule);
-				GetModule(out equipmentModule);
 			}
 
 			public void ForceUpdate(ArchetypeDefaultEquipmentRoot component)
@@ -150,28 +150,33 @@ namespace PataNext.Client.Components.Archetypes
 					var equipmentTarget = default(CharBuffer64);
 					foreach (var equipment in displayedEquipment)
 					{
-						EquipmentResource key;
+						if (equipment.Attachment != attachmentModule.GetResourceOrDefault(root.AttachmentId)
+						    || !equipment.Resource.TryGet(resourceMgr, out var key))
+							continue;
 
-						//Console.WriteLine($"({attachmentModule.GetResourceOrDefault(root.AttachmentId).Entity} == {equipment.Attachment.Entity}) {root.AttachmentId} == {equipment.Attachment.TryGet(resourceMgr, out var res)} {res.Value} ({equipment.Resource.TryGet(resourceMgr, out var ok)} {ok.Value})");
-						if (equipment.Attachment == attachmentModule.GetResourceOrDefault(root.AttachmentId)
-						    && equipment.Resource.TryGet(resourceMgr, out key))
-						{
-							equipmentTarget = key.Value;
-							break;
-						}
+						equipmentTarget = key.Value;
+						break;
 					}
 
-					//Console.WriteLine($"{root.AttachmentId} -> {equipmentTarget}");
 					if (!root.UpdatedEquipmentId.Equals(equipmentTarget) || !root.UnitEquipmentBackend.HasIncomingPresentation)
 					{
 						root.UpdatedEquipmentId = equipmentTarget;
 
 						root.UnitEquipmentBackend.ReturnPresentation();
-						if (m_EquipmentManager.TryGetPool(equipmentTarget.ToString(), out var pool))
+
+						if (!string.IsNullOrEmpty(equipmentTarget.ToString()))
 						{
-							root.UnitEquipmentBackend.SetPresentationFromPool(pool);
+							if (!string.IsNullOrEmpty(component.suffix) && m_EquipmentManager.TryGetPool(equipmentTarget.ToString() + ':' + component.suffix, out var pool))
+							{
+								root.UnitEquipmentBackend.SetPresentationFromPool(pool);
+							}
+							else if (m_EquipmentManager.TryGetPool(equipmentTarget.ToString(), out pool))
+							{
+								root.UnitEquipmentBackend.SetPresentationFromPool(pool);
+							}
 						}
 
+						// structural change... so we need to retake the buffer (aka don't delete this line)
 						displayedEquipment = EntityManager.GetBuffer<UnitDisplayedEquipment>(backend.DstEntity);
 					}
 				}

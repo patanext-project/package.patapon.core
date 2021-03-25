@@ -9,5 +9,11 @@ namespace PataNext.Client.Components
 			GetComponent<Animator>().WriteDefaultValues();
 			GetComponent<Animator>().Rebind();
 		}
+		
+		private void OnDisable()
+		{
+			GetComponent<Animator>().WriteDefaultValues();
+			GetComponent<Animator>().Rebind();
+		}
 	}
 }

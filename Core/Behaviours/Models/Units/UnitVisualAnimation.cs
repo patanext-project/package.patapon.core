@@ -1,4 +1,5 @@
 using System;
+using BundleSystem;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
 using PataNext.Module.Simulation.Components.Roles;
@@ -121,6 +122,9 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 
 		public override void OnTargetUpdate()
 		{
+			CurrentKitResource       = default;
+			CurrentArchetypeResource = default;
+			
 			if (!TryGetComponent(out m_Animation))
 			{
 				m_Animation = gameObject.AddComponent<UnitVisualAnimation>();
@@ -196,7 +200,8 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 			sortingGroup.sortingLayerName = "Entities";
 			sortingGroup.sortingOrder     = 0;
 
-			LastBackend.gameObject.layer = LayerMask.NameToLayer("Entities");
+			LastBackend.gameObject.layer     = LayerMask.NameToLayer("Entities");
+			LastBackend.transform.localScale = new Vector3(1, 1, 0.1f);
 		}
 	}
 }

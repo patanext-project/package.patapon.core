@@ -11,6 +11,6 @@ namespace PataNext.Client.Components
 
 	public struct ShooterProjectileVisualTarget : IComponentData
 	{
-		public VisualThrowableDefinition Definition;
+		public EntityVisualDefinition Definition;
 	}
 }

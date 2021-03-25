@@ -5,8 +5,8 @@ namespace PataNext.Client.DataScripts.Interface.Inventory
 {
 	public class EquipmentInventoryItemPresentation : RuntimeAssetPresentation
 	{
-		public SVGImage   graphic;
-		public SVGImage   background;
+		public Unity.VectorGraphics.SVGImage   graphic;
+		public Unity.VectorGraphics.SVGImage   background;
 		public GameObject selected;
 		public GameObject equipped;
 

@@ -11,8 +11,8 @@ namespace PataNext.Client.DataScripts.Models
 {
 	public class ShooterProjectileComponent : MonoBehaviour, IBackendReceiver
 	{
-		public bool      canPredict;
-		public int targetRoot = -1;
+		public bool canPredict;
+		public int  targetRoot = -1;
 
 		// this is a very ugly solution, but it's currently the best one for animation :|
 		public Transform[] availableRoots;
@@ -38,7 +38,7 @@ namespace PataNext.Client.DataScripts.Models
 
 			if (targetRoot < 0 || targetRoot >= availableRoots.Length)
 				return;
-			
+
 			if (canPredict)
 			{
 				var matrix = availableRoots[targetRoot].localToWorldMatrix;
@@ -47,9 +47,9 @@ namespace PataNext.Client.DataScripts.Models
 			else if (entityMgr.HasComponent<ShooterProjectilePrediction>(dstEntity))
 				entityMgr.RemoveComponent<ShooterProjectilePrediction>(dstEntity);
 
-			if (!TryGetComponent(out IEquipmentRoot equipRoot))
+			if (!TryGetComponent(out IEquipmentRoot equipRoot) && (equipRoot = GetComponentInParent<IEquipmentRoot>()) == null)
 				return;
-			
+
 			var previousRoot = m_Root;
 			m_Root = equipRoot.GetRoot(availableRoots[targetRoot]);
 			if (m_Root != null && m_Root.UnitEquipmentBackend == null)
@@ -59,13 +59,13 @@ namespace PataNext.Client.DataScripts.Models
 			if (previousRoot == m_Root || (throwable = m_Root.UnitEquipmentBackend.GetComponentInChildren<ThrowableProjectileComponent>()) == null)
 				return;
 
-			VisualThrowableDefinition projectileDefinition = default;
+			EntityVisualDefinition visualDefinition = default;
 			if (throwable.assetReference != null)
 			{
-				projectileDefinition = entityMgr.World.GetExistingSystem<VisualThrowableProjectileManager>()
-				                                .Register(throwable.assetReference);
-				
-				entityMgr.SetComponentData(dstEntity, new ShooterProjectileVisualTarget {Definition = projectileDefinition});
+				visualDefinition = entityMgr.World.GetExistingSystem<EntityVisualManager>()
+				                            .Register(throwable.assetReference);
+
+				entityMgr.SetComponentData(dstEntity, new ShooterProjectileVisualTarget {Definition = visualDefinition});
 			}
 		}
 	}

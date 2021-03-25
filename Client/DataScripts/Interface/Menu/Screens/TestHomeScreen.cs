@@ -94,17 +94,17 @@ namespace PataNext.Client.DataScripts.Interface.Menu.Screens
 			return new IPEndPoint(ip, port);
 		}
 
-		private NoticeRpc noticeRpc;
+		private GameHostConnector connector;
 		public override void OnBackendSet()
 		{
 			base.OnBackendSet();
 
-			noticeRpc = Backend.DstEntityManager.World
-			                   .GetExistingSystem<NoticeRpc>();
+			connector = Backend.DstEntityManager.World
+			                   .GetExistingSystem<GameHostConnector>();
 			
-			Attach(noticeRpc.OnNoticeReceived, () =>
+			Attach(connector.GetNotificationEvent<NoticeRpc>(), notice =>
 			{
-				playButton.GetComponentInChildren<TextMeshProUGUI>().text = noticeRpc.Notice.IsConnectedToServer ? "Disconnect" : "Connect";
+				playButton.GetComponentInChildren<TextMeshProUGUI>().text = notice.IsConnectedToServer ? "Disconnect" : "Connect";
 			});
 
 			OnClick(playButton, async () =>
@@ -113,7 +113,9 @@ namespace PataNext.Client.DataScripts.Interface.Menu.Screens
 				                               .GetExistingSystem<GameHostConnector>();
 
 				using var buffer = new DataBufferWriter(128, Allocator.Temp);
-				if (noticeRpc.Notice.IsConnectedToServer)
+				
+				// TODO: REMAKE WITH NEW RPC SYSTEM
+				/*if (noticeRpc.Notice.IsConnectedToServer)
 				{
 					gameHostConnector.BroadcastRequest("disconnect_from_server", buffer);
 				}
@@ -130,7 +132,7 @@ namespace PataNext.Client.DataScripts.Interface.Menu.Screens
 					}));
 
 					gameHostConnector.BroadcastRequest("connect_to_server", buffer);
-				}
+				}*/
 			});
 			OnClick(settingsButton, async () =>
 			{
@@ -194,7 +196,7 @@ namespace PataNext.Client.DataScripts.Interface.Menu.Screens
 
 				if (delaySend < 0)
 				{
-					definition.noticeRpc.Send();
+					//definition.noticeRpc.Send();
 					delaySend = 0.1f;
 				}
 			}

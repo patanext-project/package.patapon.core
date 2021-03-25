@@ -18,14 +18,12 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 	[AlwaysSynchronizeSystem]
 	public class UpdateUnitVisualBackendSystem : SystemBase
 	{
-		private EntityQuery                                         m_BackendQuery;
 		private List<(UnitVisualBackend backend, string archetype)> m_UpdateArchetypeList;
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
-
-			m_BackendQuery        = GetEntityQuery(typeof(Transform), typeof(UnitVisualBackend));
+			
 			m_UpdateArchetypeList = new List<(UnitVisualBackend backend, string archetype)>();
 		}
 
@@ -55,7 +53,7 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 				transform.position = pos;
 
 				EntityManager.TryGetComponentData(backend.DstEntity, out var direction, UnitDirection.Right);
-				transform.localScale = new Vector3(direction.Value, 1, 1);
+				transform.localScale = new Vector3(direction.Value, 1, 0.1f); // make it flat so that it doesn't occupy a large Z buffer range
 
 				// Load presentation
 				AsyncAssetPool<GameObject> targetArchetypePool = default;
@@ -72,9 +70,13 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 							if (!Input.GetKeyDown(KeyCode.R)) return;
 						}
 
-						archetypeMgr.TryGetArchetypePool(archetypeResourceKey.Value.ToString(),
+						if (archetypeMgr.TryGetArchetypePool(archetypeResourceKey.Value.ToString(),
 							kitResourceKey.Value.ToString(),
-							out targetArchetypePool);
+							out targetArchetypePool))
+						{
+							backend.CurrentArchetypeResource = archetypeResourceKey;
+							backend.CurrentKitResource       = kitResourceKey;
+						}
 					}
 					else
 					{
@@ -87,7 +89,7 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 						archetypeMgr.TryGetArchetypePool(archetypeResourceKey.Value.ToString(), out targetArchetypePool);
 					}
 				}
-
+				
 				if (targetArchetypePool != null
 				    && (backend.CurrentArchetype != targetArchetypePool.AssetPath || Input.GetKeyDown(KeyCode.R)))
 				{

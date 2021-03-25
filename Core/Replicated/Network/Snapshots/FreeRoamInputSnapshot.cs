@@ -1,3 +1,4 @@
+using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using GameHost.Simulation.Utility.InterTick;
 using Unity.Entities;
@@ -13,6 +14,7 @@ namespace PataNext.Module.Simulation.Network.Snapshots
 
 		public class Register : RegisterGameHostComponentBuffer<FreeRoamInputSnapshot>
 		{
+			protected override ICustomComponentDeserializer CustomDeserializer => new DefaultBufferDeserializer<FreeRoamInputSnapshot>();
 		}
 	}
 }

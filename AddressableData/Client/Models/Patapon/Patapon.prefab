@@ -45,6 +45,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   IsActive: 1
   Offset: {x: 0, y: 0, z: 0}
+  WorldOffset: {x: 0, y: 0, z: 0}
   Source: {fileID: 9113710623535947787}
 --- !u!1 &3907668261989327659
 GameObject:
@@ -108,7 +109,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Animator: {fileID: 7264503520024424069}
   animationAssetFolders:
-  - cr://st.pn/Models/Patapon/Data
+  - asset: Models/Patapon/Animations
+    bundle: st.pn
   animationCacheId: 
 --- !u!114 &4640344229551965380
 MonoBehaviour:
@@ -135,6 +137,7 @@ MonoBehaviour:
     id: 
     root:
       transform: {fileID: 7979306052820383768}
+  suffix: small
 --- !u!114 &8943346756093376261
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -253,6 +256,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   IsActive: 1
   Offset: {x: 0, y: 0, z: 0}
+  WorldOffset: {x: 0, y: 0, z: 0}
   Source: {fileID: 5720175747114596878}
 --- !u!1 &7413686126608315794
 GameObject:
@@ -299,6 +303,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   IsActive: 1
   Offset: {x: 0, y: 0.315, z: 0}
+  WorldOffset: {x: 0, y: 0, z: 0}
   Source: {fileID: 4536029298824869556}
 --- !u!1001 &4817182261256072576
 PrefabInstance:

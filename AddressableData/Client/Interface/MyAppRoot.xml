@@ -1,6 +1,10 @@
 <UITemplate>
     <Style path="MyAppRoot.style" />
-    <Contents>
-        The safe word is {safeWord}!
+    <Contents style="default-label">
+        <Div style="main-container">
+            <Header style="header-div">
+                <Text style="unit-name">Kamipon</Text>
+            </Header>
+        </Div>
     </Contents>
 </UITemplate> 

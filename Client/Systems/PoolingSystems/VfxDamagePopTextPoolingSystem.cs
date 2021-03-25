@@ -1,16 +1,49 @@
 using System;
+using GameHost.Revolution.NetCode.Components;
+using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.DataScripts.Interface.InGame;
+using Replicated.NetCode;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.GamePlay.Events;
+using StormiumTeam.GameBase.Modules;
+using StormiumTeam.GameBase.Roles.Descriptions;
 using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
+using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace PataNext.Client.PoolingSystems
 {
-	public class VfxDamagePopTextPoolingSystem : PoolingSystem<VfxDamagePopTextBackend, VfxDamagePopTextPresentation>
+	public struct FalseIfReplicatedLocal : ICheckValidity
+	{
+		[ReadOnly] public ComponentDataFromEntity<SnapshotEntity> snapshotEntityFromEntity;
+
+		public int LocalInstigatorId;
+
+		public void OnSetup(ComponentSystemBase system)
+		{
+			LocalInstigatorId = -1;
+			if (system.HasSingleton<LocalInstigatorId>())
+				LocalInstigatorId = system.GetSingleton<LocalInstigatorId>().Value;
+
+			snapshotEntityFromEntity = system.GetComponentDataFromEntity<SnapshotEntity>();
+		}
+
+		public bool IsValid(Entity target)
+		{
+			if (snapshotEntityFromEntity.TryGet(target, out var snapshotEntity)
+			    && snapshotEntity.InstigatorId == LocalInstigatorId)
+				return false;
+
+			return true;
+		}
+	}
+
+	[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation))]
+	public class VfxDamagePopTextPoolingSystem : PoolingSystem<VfxDamagePopTextBackend, VfxDamagePopTextPresentation, FalseIfReplicatedLocal>
 	{
 		protected override Type[] AdditionalBackendComponents => new Type[] {typeof(SortingGroup)};
 		

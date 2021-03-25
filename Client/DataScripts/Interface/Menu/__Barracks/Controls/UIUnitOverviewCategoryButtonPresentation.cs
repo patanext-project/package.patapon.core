@@ -13,7 +13,7 @@ namespace PataNext.Client.DataScripts.Interface.Menu.__Barracks.Controls
 			Active
 		}
 
-		public SVGImage[]        iconQuad;
+		public Unity.VectorGraphics.SVGImage[]        iconQuad;
 		public TextMeshProUGUI[] label;
 
 		public GameObject onNoneGameObject;

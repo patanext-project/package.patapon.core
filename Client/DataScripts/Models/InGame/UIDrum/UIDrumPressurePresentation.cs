@@ -14,6 +14,7 @@ using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.BaseSystems.Ext;
 using StormiumTeam.GameBase.Roles.Components;
 using StormiumTeam.GameBase.Roles.Descriptions;
+using StormiumTeam.GameBase.Systems;
 using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.DOTS;
 using StormiumTeam.GameBase.Utility.DOTS.xMonoBehaviour;
@@ -33,8 +34,8 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 	{
 		public Animator animator;
 
-		public SVGImage   drumImage;
-		public SVGImage[] effectImages;
+		public Unity.VectorGraphics.SVGImage   drumImage;
+		public Unity.VectorGraphics.SVGImage[] effectImages;
 
 		public Sprite[] sprites;
 		public Color[]  colors;
@@ -74,6 +75,8 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 		private EntityQuery m_CameraQuery;
 		private EntityQuery m_EngineQuery;
 
+		private TimeSystem timeSystem;
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -96,6 +99,8 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 				DrumVariantCount[i]      = 0;
 			}
 
+			timeSystem = World.GetExistingSystem<TimeSystem>();
+
 			m_EngineQuery = GetEntityQuery(typeof(RhythmEngineDescription), typeof(Relative<PlayerDescription>));
 		}
 
@@ -106,6 +111,11 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 
 			m_Canvas.sortingLayerID = SortingLayer.NameToID("OverlayUI");
 			m_Canvas.sortingOrder   = (int) World.GetOrCreateSystem<UIDrumPressureOrderingSystem>().Order;
+		}
+
+		private void Destroy()
+		{
+			Entities.ForEach((UIDrumPressureBackend backend) => { backend.Return(true, true); }).WithStructuralChanges().Run();
 		}
 
 		protected override void OnUpdate()
@@ -121,7 +131,10 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 
 			var player = this.GetFirstSelfGamePlayer();
 			if (!EntityManager.TryGetComponentData(player, out GameRhythmInputComponent playerCommand))
+			{
+				Destroy();
 				return;
+			}
 
 			var cameraState = this.GetComputedCameraState();
 
@@ -157,24 +170,26 @@ namespace PataNext.Client.Graphics.Models.InGame.UIDrum
 				engine = PlayerComponentFinder.GetRelativeChild<RhythmEngineDescription>(EntityManager, m_EngineQuery, cameraState.StateData.Target, player);
 			else
 				engine = PlayerComponentFinder.FromQueryFindPlayerChild(m_EngineQuery, player);
-			
+
 			if (engine == default)
+			{
+				Destroy();
 				return;
+			}
 
 			var process  = EntityManager.GetComponentData<RhythmEngineLocalState>(engine);
 			var settings = EntityManager.GetComponentData<RhythmEngineSettings>(engine);
 
 			if (!EntityManager.HasComponent<RhythmEngineIsPlaying>(engine) || RhythmEngineUtility.GetFlowBeat(process.Elapsed, settings.BeatInterval) < 0)
 			{
-				// destroy everything!
-				Entities.ForEach((UIDrumPressureBackend backend) => { backend.Return(true, true); }).WithStructuralChanges().Run();
+				Destroy();
 				return;
 			}
 
 			var key = 1;
 			foreach (var ac in playerCommand.Actions)
 			{
-				if (!ac.InterFrame.HasBeenPressed(GetSingleton<InterFrame>().Range))
+				if (!ac.InterFrame.HasBeenPressed(timeSystem.GetReport(player).Active))
 				{
 					key++;
 					continue;

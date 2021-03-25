@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Karambolo.Common;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Graphics.Animation.Units.Base;
 using PataNext.Module.Simulation.Components.GamePlay.Abilities;
@@ -32,7 +33,21 @@ namespace PataNext.Client.Graphics.Animation.Base
 			public Dictionary<string, AnimationClip> LoadedClips;
 		}
 
-		protected virtual string        AnimationPrefix      => $"{typeof(TAbility).Name}/Animations/";
+		protected virtual string AnimationPrefix
+		{
+			get
+			{
+				var name = typeof(TAbility).Name;
+				if (name == "State" && typeof(TAbility).DeclaringType is { } declaringType
+				                    && declaringType.HasInterface(typeof(IComponentData)))
+				{
+					name = declaringType.Name;
+				}
+
+				return $"{name}/Animations/";
+			}
+		}
+
 		public virtual    EAbilityPhase KeepAnimationAtPhase => EAbilityPhase.ActiveOrChaining;
 
 		public virtual bool AllowOverride => true;

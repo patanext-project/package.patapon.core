@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using PataNext.Client.Asset;
 using PataNext.Client.Core.Addressables;
@@ -13,19 +14,36 @@ using UIForia;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.UI;
+using Application = UIForia.Application;
 
 namespace PataNext.Client.Systems
 {
 	public class TestUIForia : SystemBase
 	{
+		private Application app;
+		
 		protected override void OnStartRunning()
 		{
-			//EntityManager.AddComponentData(EntityManager.CreateEntity(), new TestSettings());
-			EntityManager.AddComponentData(EntityManager.CreateEntity(), new TestHomeScreenSpawn());
+			/*TemplateSettings settings = new TemplateSettings();
+			settings.rootType                   = typeof(Test);
+			settings.applicationName            = "PataNext";
+			settings.assemblyName               = "package.patapon.client";
+			settings.outputPath                 = Path.Combine(UnityEngine.Application.dataPath, "UIForiaGenerated2");
+			settings.codeFileExtension          = "generated.cs";
+			settings.templateResolutionBasePath = "Packages/package.patapon.core/AddressableData/Client/Interface";
+			//settings.dynamicallyCreatedTypes    = new List<Type>() {typeof(Test)};
+
+			app = GameApplication.CreateFromRuntimeTemplates(settings, World.GetExistingSystem<ClientCreateCameraSystem>().UICamera, element => {});*/
 		}
 
 		protected override void OnUpdate()
 		{
+			if (app == null)
+				return;
+		
+			app.Update();
+			if (Input.GetKeyDown(KeyCode.R))
+				app.Refresh();
 		}
 	}
 	

@@ -1,10 +1,16 @@
+using System;
+using PataNext.Client.Asset;
 using Unity.Mathematics;
 using UnityEngine;
 
 namespace PataNext.Client.DataScripts.Interface.Inventory
 {
-	public abstract class UIInventory<TItem> : MonoBehaviour
+	public abstract class UIInventory<TItem> : UIPresentation<TItem>
 	{
+		protected override void OnDataUpdate(TItem data)
+		{
+		}
+
 		[SerializeField]
 		private GameObject prefabToSpawn;
 
@@ -40,6 +46,17 @@ namespace PataNext.Client.DataScripts.Interface.Inventory
 				clone.SetActive(true);
 
 				spawnedColumn[x, y] = clone;
+			}
+		}
+
+		private void OnDisable()
+		{
+			if (spawnedColumn != null)
+			{
+				foreach (var obj in spawnedColumn)
+					Destroy(obj);
+
+				spawnedColumn = null;
 			}
 		}
 

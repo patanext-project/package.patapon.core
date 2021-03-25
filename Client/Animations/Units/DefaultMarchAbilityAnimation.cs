@@ -9,6 +9,7 @@ using PataNext.Module.Simulation.Components.GamePlay.Abilities;
 using PataNext.Module.Simulation.Components.GamePlay.Units;
 using PataNext.Module.Simulation.GameBase.Physics.Components;
 using PataNext.CoreAbilities.Mixed.Defaults;
+using PataNext.CoreAbilities.Mixed.Subset;
 using StormiumTeam.GameBase.Roles.Components;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -76,7 +77,7 @@ namespace PataNext.Client.Graphics.Animation.Units
 			var targetAnimation = math.abs(velocity.Value.x) > 0.1f || abilityActive ? TargetType.Walking : TargetType.Idle;
 			if (targetAnimation == TargetType.Walking)
 				systemData.LastWalk = Time.ElapsedTime;
-			else if (systemData.LastWalk + 1.0f > Time.ElapsedTime || idleTime.Value < 2.5f)
+			else if (systemData.LastWalk + 1.0f > Time.ElapsedTime || idleTime.Value < 4f)
 				targetAnimation = TargetType.Walking;
 
 			var subType = SubType.Normal;
@@ -89,8 +90,12 @@ namespace PataNext.Client.Graphics.Animation.Units
 
 			if (!doAnimation)
 				return;
+			
+			var newTarget = new TargetAnimation(SystemType, 
+				transitionStart: currAnim.TransitionStart, transitionEnd: currAnim.TransitionEnd,
+				previousType: currAnim.PreviousType);
 
-			animation.SetTargetAnimation(new TargetAnimation(SystemType, transitionStart: currAnim.TransitionStart, transitionEnd: currAnim.TransitionEnd, previousType: currAnim.PreviousType));
+			animation.SetTargetAnimation(newTarget);
 		}
 
 		protected override IAbilityPlayableSystemCalls GetPlayableCalls()
@@ -100,7 +105,11 @@ namespace PataNext.Client.Graphics.Animation.Units
 
 		protected override EntityQuery GetAbilityQuery()
 		{
-			return GetEntityQuery(typeof(DefaultMarchAbility), typeof(Owner));
+			return GetEntityQuery(new EntityQueryDesc
+			{
+				All = new ComponentType[] {typeof(Owner)},
+				Any = new ComponentType[] {typeof(DefaultMarchAbility), typeof(DefaultSubsetMarch)},
+			});
 		}
 
 		public struct SystemData
@@ -139,11 +148,16 @@ namespace PataNext.Client.Graphics.Animation.Units
 			{
 				behavior.AddAsyncOp(AnimationMap.Resolve(kvp.Key, GetCurrentClipProvider()), handle =>
 				{
+					if (((Task<AnimationClip>) handle).Result == null)
+					{
+						Debug.LogError("null clip");
+						return;
+					}
+					
 					var cp = AnimationClipPlayable.Create(behavior.Graph, ((Task<AnimationClip>) handle).Result);
-					if (cp.IsNull())
-						throw new InvalidOperationException("null clip");
 
 					behavior.Graph.Connect(cp, 0, systemData.MixerMap[kvp.Value.target], (int) kvp.Value.sub);
+					systemData.ClipPlayableMap[kvp.Value.target][kvp.Value.sub] = cp;
 				});
 			}
 
@@ -162,11 +176,10 @@ namespace PataNext.Client.Graphics.Animation.Units
 			if (bv.Visual.CurrAnimation.Type != typeof(DefaultMarchAbilityAnimation) && !bv.Visual.CurrAnimation.CanBlend(global))
 				weight = 0;
 
-			if ((weight >= 1) & (data.PreviousAnimation != data.TargetAnimation))
+			if ((weight >= 1) & (data.PreviousAnimation != data.TargetAnimation) /*&& data.PreviousAnimation == TargetType.Walking*/)
 			{
 				var offset = 0f;
-				if (data.PreviousAnimation == TargetType.Walking           // walking
-				&& data.ClipPlayableMap[data.PreviousAnimation].Count > 0) // it's possible that there are no animation at the moment
+				/*if (data.ClipPlayableMap[data.PreviousAnimation].Count > 0) // it's possible that there are no animation at the moment
 				{
 					var clipPlayable = (AnimationClipPlayable) data
 					                                           .MixerMap[data.PreviousAnimation]
@@ -193,7 +206,7 @@ namespace PataNext.Client.Graphics.Animation.Units
 						if (offset < 0)
 							offset += length * 0.25f;
 					}
-				}
+				}*/
 
 				data.PreviousAnimation = data.TargetAnimation;
 

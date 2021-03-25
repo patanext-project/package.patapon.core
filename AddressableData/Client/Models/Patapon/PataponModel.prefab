@@ -185,7 +185,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 428534531316876152}
-  m_LocalRotation: {x: -0, y: -0.70710677, z: -0, w: -0.7071069}
+  m_LocalRotation: {x: -0, y: -0.70710677, z: 0, w: -0.7071069}
   m_LocalPosition: {x: 0.635, y: 0.566, z: 0.0000000037252903}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -1964,6 +1964,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   IsActive: 1
   Offset: {x: 0, y: 0, z: 0}
+  WorldOffset: {x: 0, y: 0, z: 0}
   Source: {fileID: 6849150848585151553}
 --- !u!1 &6267000027628478332
 GameObject:
@@ -2059,6 +2060,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2898715792804983225}
+  - component: {fileID: 4774893957537111241}
   m_Layer: 0
   m_Name: Body
   m_TagString: Untagged
@@ -2082,6 +2084,41 @@ Transform:
   m_Father: {fileID: 4204970251686719068}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4774893957537111241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7893233572832737297}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0dd600761c12a9441a97a5b231f40f81, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animationState:
+    customizeEyelid: 0
+    customizeBodyDirection: 0
+    customizeEyeDirection: 0
+  idleProfile:
+    eyelidTexture: {fileID: 0}
+    eyelidStrength: 0
+    customEyeDirection: 0
+    eyeDirection: {x: 0, y: 0}
+    customBodyDirection: 0
+    bodyDirection: {x: 0, y: 0}
+  enemyOnSightProfile:
+    eyelidTexture: {fileID: 2800000, guid: bb482eb87def6704496fb94c41b431da, type: 3}
+    eyelidStrength: 0.425
+    customEyeDirection: 1
+    eyeDirection: {x: 75, y: 0}
+    customBodyDirection: 0
+    bodyDirection: {x: 5, y: 0}
+  controllers:
+  - {fileID: 2523075688198006719}
+  - {fileID: 1161329551137857810}
+  editorPreview: 0
+  editorIsEnemyOnSightPreview: 0
 --- !u!1 &7992481130942322294
 GameObject:
   m_ObjectHideFlags: 0
@@ -2210,6 +2247,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   IsActive: 1
   Offset: {x: 0, y: 0, z: 0}
+  WorldOffset: {x: 0, y: 0, z: 0}
   Source: {fileID: 6358025460233630259}
 --- !u!1 &8208083254241177146
 GameObject:

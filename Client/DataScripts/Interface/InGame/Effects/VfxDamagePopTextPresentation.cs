@@ -1,5 +1,7 @@
+using System;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.OrderSystems.Vfx;
+using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.BaseSystems.Ext;
 using StormiumTeam.GameBase.GamePlay.Events;
 using StormiumTeam.GameBase.Roles.Components;
@@ -12,6 +14,7 @@ using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Random = UnityEngine.Random;
 
 namespace PataNext.Client.DataScripts.Interface.InGame
 {
@@ -19,6 +22,8 @@ namespace PataNext.Client.DataScripts.Interface.InGame
 	{
 		public TextMeshPro[] damageLabels;
 		public Animator      animator;
+
+		public GameObject defaultHitVfx, criticalHitVfx, healVfx;
 
 		public Color damageColor;
 		public Color healColor;
@@ -47,6 +52,7 @@ namespace PataNext.Client.DataScripts.Interface.InGame
 		}
 	}
 
+	[UpdateInGroup(typeof(OrderGroup.Presentation.InterfaceRendering))]
 	public class VfxDamagePopTextRenderSystem : BaseRenderSystem<VfxDamagePopTextPresentation>
 	{
 		[UpdateAfter(typeof(ByOtherOrder))]
@@ -81,6 +87,9 @@ namespace PataNext.Client.DataScripts.Interface.InGame
 				foreach (var label in definition.damageLabels)
 				{
 					label.maxVisibleCharacters = count;
+					if (Time.ElapsedTime + 10 > backend.startTime) 
+						continue;
+					
 					label.ForceMeshUpdate(true);
 
 					var textInfo = label.textInfo;
@@ -119,20 +128,22 @@ namespace PataNext.Client.DataScripts.Interface.InGame
 			var dmg = backend.eventData.Damage;
 			foreach (var label in definition.damageLabels)
 			{
-				label.text                 = (dmg > 0 ? "+" : string.Empty) + math.abs(dmg);
+				label.text                 = (dmg > 0 ? "+" : string.Empty) + math.abs((int) math.round(dmg));
 				label.maxVisibleCharacters = 0;
 			}
-
-			Debug.Log("dmg -> " + dmg);
-
+			
 			backend.lastDamage = (int) dmg;
 
 			definition.animator.SetTrigger("OnHit");
 
 			Translation translationTarget;
 			if (!EntityManager.TryGetComponentData(backend.DstEntity, out translationTarget))
+			{
 				if (!EntityManager.TryGetComponentData(backend.eventData.Victim, out translationTarget))
 					translationTarget = default;
+				else
+					translationTarget.Value.y += 0.25f;
+			}
 
 			backend.isPlayQueued = false;
 			backend.startTime    = Time.ElapsedTime;
@@ -144,20 +155,57 @@ namespace PataNext.Client.DataScripts.Interface.InGame
 			};
 
 			dmg                          = math.abs(dmg);
-			backend.transform.localScale = Vector3.one * (dmg < 10 ? 0.4f : (dmg > 100 ? 0.6f : 0.5f));
 
 			var selfRelated = EntityManager.TryGetComponentData(backend.eventData.Victim, out Relative<PlayerDescription> destPlayer) && destPlayer.Target == LocalPlayer
 			                  || EntityManager.TryGetComponentData(backend.eventData.Instigator, out Relative<PlayerDescription> originPlayer) && originPlayer.Target == LocalPlayer;
 
+			var scale = 0.45f;
+			if (selfRelated)
+			{
+				if (dmg >= 10)
+					scale += 0.09f;
+				if (dmg >= 50)
+					scale += 0.07f;
+				if (dmg >= 75)
+					scale += 0.05f;
+				if (dmg >= 100)
+					scale += 0.03f;
+			}
+			else
+			{
+				scale = 0.475f;
+			}
+
+			backend.transform.localScale = Vector3.one * scale;
+			
+			var hitType = HitType.None;
+			if (backend.eventData.Damage <= 0)
+				hitType = HitType.Default;
+			else if (backend.eventData.Damage > 0)
+				hitType = HitType.Heal;
+
 			foreach (var label in definition.damageLabels)
 			{
-				var color = backend.eventData.Damage > 0 ? definition.healColor : definition.damageColor;
+				var color = hitType == HitType.Heal ? definition.healColor : definition.damageColor;
 				if (!selfRelated)
 					color = Color.Lerp(color, Color.black, 0.225f);
 
-				label.color     = color;
-				//label.faceColor = color;
+				label.color = color;
 			}
+
+			definition.defaultHitVfx.SetActive(hitType == HitType.Default);
+			definition.defaultHitVfx.GetComponentInChildren<Animator>()
+			          .SetTrigger("OnHit");
+
+			definition.defaultHitVfx.transform.Rotate(0, 0, 25 * Random.value);
+			
+			definition.healVfx.SetActive(hitType == HitType.Heal);
+			definition.healVfx.GetComponentInChildren<Animator>()
+			          .SetTrigger("OnHit");
+			
+			definition.criticalHitVfx.SetActive(hitType == HitType.Critical);
+			definition.criticalHitVfx.GetComponentInChildren<Animator>()
+			          .SetTrigger("OnHit");
 
 			if (selfRelated)
 				sortingGroup.sortingOrder = m_SelfOrder;
@@ -168,6 +216,14 @@ namespace PataNext.Client.DataScripts.Interface.InGame
 		protected override void ClearValues()
 		{
 
+		}
+
+		enum HitType
+		{
+			None,
+			Default,
+			Critical,
+			Heal
 		}
 	}
 }

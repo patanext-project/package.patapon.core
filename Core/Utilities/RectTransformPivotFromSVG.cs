@@ -3,17 +3,17 @@ using UnityEngine;
 namespace PataNext.Client.Components
 {
 	[RequireComponent(typeof(RectTransform))]
-	[RequireComponent(typeof(SVGImage))]
+	[RequireComponent(typeof(Unity.VectorGraphics.SVGImage))]
 	[ExecuteAlways]
 	public class RectTransformPivotFromSVG : MonoBehaviour
 	{
-		private SVGImage      m_Image;
+		private Unity.VectorGraphics.SVGImage      m_Image;
 		private RectTransform m_RectTransform;
 
 		private void OnEnable()
 		{
 			m_RectTransform = GetComponent<RectTransform>();
-			m_Image         = GetComponent<SVGImage>();
+			m_Image         = GetComponent<Unity.VectorGraphics.SVGImage>();
 		}
 
 		private void Update()

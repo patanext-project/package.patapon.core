@@ -3,13 +3,14 @@ using GameHost.ShareSimuWorldFeature.Systems;
 using PataNext.Client.Graphics.Animation.Base;
 using PataNext.CoreAbilities.Mixed;
 using PataNext.Module.Simulation.Components.GamePlay.Abilities;
+using StormiumTeam.GameBase.Systems;
 using Unity.Entities;
 using Unity.Mathematics;
 
 namespace PataNext.Client.Graphics.Animation.Units.Base
 {
 	public abstract class TriggerAnimationAbilityOnAttack<TAbility> : TriggerAnimationAbilitySystem<TAbility, TimeSpan>
-		where TAbility : struct, IComponentData, ISimpleAttackAbility
+		where TAbility : struct, IComponentData, SimpleAttackAbility.IState
 	{
 		private readonly string attackTrigger = "OnActivate";
 
@@ -21,6 +22,15 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 		public override bool AllowOverride => false;
 
 		public virtual float StopOffset => 0.2f;
+
+		private TimeSystem timeSystem;
+
+		protected override void OnCreate()
+		{
+			base.OnCreate();
+
+			timeSystem = World.GetExistingSystem<TimeSystem>();
+		}
 
 		protected override void OnUpdate(Entity targetEntity, UnitVisualBackend backend, UnitVisualAnimation animation, Entity abilityEntity, AbilityState abilityState)
 		{
@@ -40,7 +50,7 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 			}
 
 			ref var systemData = ref animation.GetSystemData<SystemData>(SystemType);
-			if (!systemData.LoadedClips.TryGetValue(attackTrigger, out var clip))
+			if (!systemData.LoadedClips.TryGetValue(attackTrigger, out var clip) || clip == null)
 				return;
 
 			if (ability.AttackStart != systemData.Supplements)

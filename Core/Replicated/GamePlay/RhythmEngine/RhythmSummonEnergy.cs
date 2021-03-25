@@ -1,3 +1,4 @@
+using GameHost.ShareSimuWorldFeature;
 using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using Unity.Entities;
 
@@ -9,6 +10,7 @@ namespace PataNext.Simulation.Mixed.Components.GamePlay.RhythmEngine
 
 		public class Register : RegisterGameHostComponentData<RhythmSummonEnergy>
 		{
+			protected override ICustomComponentDeserializer CustomDeserializer => new DefaultSingleDeserializer<RhythmSummonEnergy>();
 		}
 	}
 
@@ -18,6 +20,7 @@ namespace PataNext.Simulation.Mixed.Components.GamePlay.RhythmEngine
 
 		public class Register : RegisterGameHostComponentData<RhythmSummonEnergyMax>
 		{
+			protected override ICustomComponentDeserializer CustomDeserializer => new DefaultSingleDeserializer<RhythmSummonEnergyMax>();
 		}
 	}
 }

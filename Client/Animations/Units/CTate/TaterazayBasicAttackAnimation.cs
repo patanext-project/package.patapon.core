@@ -7,7 +7,8 @@ namespace PataNext.Client.Graphics.Animation.Units.CTate
 {
 	[UpdateInGroup(typeof(ClientUnitAnimationGroup))]
 	[UpdateAfter(typeof(DefaultMarchAbilityAnimation))]
-	public class TaterazayBasicAttackAnimation : TriggerAnimationAbilityOnAttack<TaterazayBasicAttackAbility>
+	public class TaterazayBasicAttackAnimation : TriggerAnimationAbilityOnAttack<TaterazayBasicAttackAbility.State>
 	{
+		protected override string AnimationPrefix => $"TaterazayBasicAttackAbility/Animations/";
 	}
 }

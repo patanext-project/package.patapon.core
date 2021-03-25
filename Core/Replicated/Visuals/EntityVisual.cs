@@ -1,4 +1,5 @@
-﻿using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
+﻿using GameHost.ShareSimuWorldFeature;
+using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using GameHost.Simulation.Utility.Resource;
 using PataNext.Module.Simulation.Components.GamePlay;
  using Unity.Entities;
@@ -38,7 +39,7 @@ using PataNext.Module.Simulation.Components.GamePlay;
 
 		public class Register : RegisterGameHostComponentData<EntityVisual>
 		{
-
+			protected override ICustomComponentDeserializer CustomDeserializer => new DefaultSingleDeserializer<EntityVisual>();
 		}
 	}
 }

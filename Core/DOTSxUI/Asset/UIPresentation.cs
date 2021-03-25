@@ -24,16 +24,27 @@ namespace PataNext.Client.Asset
 			set => ((IDataStorage<TData>) Backend).Data = value;
 		}
 		
-		private List<(Action<UnityAction> remove, UnityAction action)> removeOnReset = new List<(Action<UnityAction> remove, UnityAction action)>();
+		private List<(Action remove, Delegate action)> removeOnReset = new List<(Action remove, Delegate action)>();
 
 		// Attach(button.onClick.AddListener, () => {});
-		protected void Attach(in Action<UnityAction> origin, in Action<UnityAction> remove, in UnityAction unityAction)
+		protected void Attach(Action<UnityAction> origin, Action<UnityAction> remove, UnityAction unityAction)
 		{
 			origin(unityAction);
-			removeOnReset.Add((remove, unityAction));
+			removeOnReset.Add((() => remove(unityAction), unityAction));
+		}
+		
+		protected void Attach<T>(Action<UnityAction<T>> origin, Action<UnityAction<T>> remove, UnityAction<T> unityAction)
+		{
+			origin(unityAction);
+			removeOnReset.Add((() => remove(unityAction), unityAction));
 		}
 
 		protected void Attach(UnityEvent ev, UnityAction action)
+		{
+			Attach(ev.AddListener, ev.RemoveListener, action);
+		}
+		
+		protected void Attach<T>(UnityEvent<T> ev, UnityAction<T> action)
 		{
 			Attach(ev.AddListener, ev.RemoveListener, action);
 		}
@@ -48,7 +59,7 @@ namespace PataNext.Client.Asset
 			base.OnReset();
 
 			foreach (var item in removeOnReset)
-				item.remove(item.action);
+				item.remove();
 			removeOnReset.Clear();
 		}
 	}

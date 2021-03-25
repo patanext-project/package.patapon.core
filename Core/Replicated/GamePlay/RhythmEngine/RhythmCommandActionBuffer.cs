@@ -1,4 +1,5 @@
-﻿using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
+﻿using GameHost.ShareSimuWorldFeature;
+using GameHost.Simulation.Features.ShareWorldState.BaseSystems;
 using PataNext.Module.Simulation.Components.GamePlay.RhythmEngine.Structures;
 using Unity.Entities;
 
@@ -15,6 +16,7 @@ namespace PataNext.Module.Simulation.Game.RhythmEngine
 
 		public class Register : RegisterGameHostComponentBuffer<RhythmCommandActionBuffer>
 		{
+			protected override ICustomComponentDeserializer CustomDeserializer => new DefaultBufferDeserializer<RhythmCommandActionBuffer>();
 		}
 	}
 }

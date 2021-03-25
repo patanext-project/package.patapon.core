@@ -200,7 +200,8 @@ namespace PataNext.Client.Graphics.Animation.Base
 		{
 			Task<AnimationClip> clipHandle;
 
-			var canAccessToCache = !string.IsNullOrEmpty(Presentation.animationCacheId);
+			var                                     cacheId = Presentation.animationCacheId;
+			Dictionary<string, Task<AnimationClip>> cache   = null;
 
 			var overrides = Presentation.GetComponents<OverrideObjectComponent>();
 			foreach (var overrideComponent in overrides)
@@ -209,35 +210,36 @@ namespace PataNext.Client.Graphics.Animation.Base
 					return Task.FromResult(clip);
 			}
 
-			if (canAccessToCache)
+			if (!string.IsNullOrEmpty(cacheId))
 			{
-				if (CacheClipMap.TryGetValue(Presentation.animationCacheId, out var clipMap))
+				if (CacheClipMap.TryGetValue(cacheId, out cache))
 				{
-					Console.WriteLine($"{clipMap.TryGetValue(key, out clipHandle)} - {key}");
-					if (clipMap.TryGetValue(key, out clipHandle))
+					Console.WriteLine($"{cache.TryGetValue(key, out clipHandle)} - {key}");
+					if (cache.TryGetValue(key, out clipHandle))
 						return clipHandle;
 				}
 				else
-					CacheClipMap[Presentation.animationCacheId] = new Dictionary<string, Task<AnimationClip>>();
+					CacheClipMap[cacheId] = cache = new Dictionary<string, Task<AnimationClip>>();
 			}
 
 			var computedFolders = new AssetPath[Presentation.animationAssetFolders.Length];
 			if (computedFolders.Length == 0)
 				return Task.FromException<AnimationClip>(new KeyNotFoundException("(empty folders) no clip found for key=" + key));
 
-			for (var i = 0; i != computedFolders.Length; i++)
+			// reverse (last folder is prioritized)
+			for (var i = 0; i < computedFolders.Length; i++)
 			{
 				var path = Presentation.animationAssetFolders[i];
-				computedFolders[i] = new AssetPath(path.bundle, path.asset + "/" + key);
+				computedFolders[computedFolders.Length - 1 - i] = new AssetPath(path.bundle, path.asset + "/" + key);
 			}
 
 			// TODO: Cache?
 			if (computedFolders.Length == 1)
 			{
 				var task = AssetManager.LoadAssetAsync<AnimationClip>(computedFolders[0]).AsTask();
-				if (canAccessToCache)
+				if (cache is {} validCache)
 				{
-					CacheClipMap[Presentation.animationCacheId][key] = task;
+					validCache[key] = task;
 				}
 
 				return task;
@@ -255,14 +257,15 @@ namespace PataNext.Client.Graphics.Animation.Base
 
 					if (result != null)
 					{
-						if (canAccessToCache)
-							CacheClipMap[Presentation.animationCacheId][key] = task;
+						if (cache is { } validCache)
+							validCache[key] = task;
 
 						return result;
 					}
 				}
 
-				throw new KeyNotFoundException("(multiple folders) no clip found for key=" + key);
+				return default;
+				//throw new KeyNotFoundException("(multiple folders) no clip found for key=" + key);
 			}).AsTask();
 		}
 	}

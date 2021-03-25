@@ -7,6 +7,7 @@ using PataNext.Module.Simulation.Components.GamePlay.RhythmEngine;
 using PataNext.Module.Simulation.Components.Roles;
 using PataNext.Simulation.Mixed.Components.GamePlay.RhythmEngine;
 using StormiumTeam.GameBase.BaseSystems.Ext;
+using StormiumTeam.GameBase.Network.Authorities;
 using StormiumTeam.GameBase.Roles.Components;
 using StormiumTeam.GameBase.Roles.Descriptions;
 using StormiumTeam.GameBase.Utility.AssetBackend;
@@ -243,7 +244,7 @@ public class RhythmEngineBeatFramePresentation : RuntimeAssetPresentation
 
 		protected override EntityQuery GetQuery()
 		{
-			return GetEntityQuery(typeof(RhythmEngineDescription), typeof(IsSimulationOwned));
+			return GetEntityQuery(typeof(RhythmEngineDescription), typeof(SimulationAuthority));
 		}
 
 		protected override void SpawnBackend(Entity target)

@@ -3,6 +3,7 @@ using GameHost.Core;
 using GameHost.Core.RPC.AvailableRpcCommands;
 using GameHost.InputBackendFeature;
 using GameHost.ShareSimuWorldFeature;
+using PataNext.Client.Systems;
 using RevolutionSnapshot.Core.Buffers;
 using StormiumTeam.GameBase.Bootstrapping;
 using StormiumTeam.GameBase.Data;
@@ -33,42 +34,37 @@ namespace PataNext.Client.Bootstraps.Startup
 			var connector = World.GetExistingSystem<GameHostConnector>();
 			if (step == 0)
 			{
+				EntityManager.AddComponentData(EntityManager.CreateEntity(), new TestHomeScreenSpawn());
+				
 				connector.Connect(new IPEndPoint(IPAddress.Parse("127.0.0.1"), int.Parse(param[0])));
 				step++;
 			}
 
-			if (step == 1 && connector.Client.ConnectedPeersCount > 0)
+			if (step == 1 && connector.IsConnected)
 			{
-				World.GetExistingSystem<GetDisplayedConnectionRpc>().OnReply += map =>
-				{
-					if (map.TryGetValue("SimulationApplication", out var connectionList))
-					{
-						foreach (var con in connectionList)
-						{
-							var appName = "client";
-							if (param.Length == 2)
-								appName = param[1];
-							
-							if (con.Type != "enet" || con.Name != appName)
-								continue;
-
-							World.GetExistingSystem<ConnectToGameHostSimulationSystem>()
-							     .Connect(IPEndPointUtility.Parse(con.Address));
-						}
-					}
-				};
-
 				var cghInputBackend = World.GetExistingSystem<CreateGameHostInputBackendSystem>();
 				cghInputBackend.Create(0);
 
-				connector.BroadcastRequest("displayallcon", default);
+				connector.RpcClient.SendRequest<GetDisplayedConnectionRpc, GetDisplayedConnectionRpc.Response>(default)
+				         .ContinueWith(t =>
+				         {
+					         var connections = t.Result.Connections;
+					         if (connections.TryGetValue("SimulationApplication", out var connectionList))
+					         {
+						         foreach (var con in connectionList)
+						         {
+							         var appName = "client";
+							         if (param.Length == 2)
+								         appName = param[1];
+							
+							         if (con.Type != "enet" || con.Name != appName)
+								         continue;
 
-				using (var writer = new DataBufferWriter(0, Allocator.Temp))
-				{
-					writer.WriteStaticString("enet");
-					writer.WriteStaticString(new IPEndPoint(IPAddress.Parse("127.0.0.1"), cghInputBackend.Address.Address.Port).ToString());
-					connector.BroadcastRequest("addinputsystem", writer);
-				}
+							         World.GetExistingSystem<ConnectToGameHostSimulationSystem>()
+							              .Connect(IPEndPointUtility.Parse(con.Address));
+						         }
+					         }
+				         });
 
 				var request = EntityManager.CreateEntity(typeof(RequestMapLoad));
 				EntityManager.SetComponentData(request, new RequestMapLoad {Key = new FixedString512("arena_of_tolerance")});
