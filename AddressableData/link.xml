@@ -1,0 +1,136 @@
+<linker>
+  <assembly fullname="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.GameObject" preserve="all" />
+    <type fullname="UnityEngine.Transform" preserve="all" />
+    <type fullname="UnityEngine.Material" preserve="all" />
+    <type fullname="UnityEngine.MeshRenderer" preserve="all" />
+    <type fullname="UnityEngine.Texture2D" preserve="all" />
+    <type fullname="UnityEngine.MeshFilter" preserve="all" />
+    <type fullname="UnityEngine.Mesh" preserve="all" />
+    <type fullname="UnityEngine.Shader" preserve="all" />
+    <type fullname="UnityEngine.MonoBehaviour" preserve="all" />
+    <type fullname="UnityEngine.LineRenderer" preserve="all" />
+    <type fullname="UnityEngine.SkinnedMeshRenderer" preserve="all" />
+    <type fullname="UnityEngine.Rendering.SortingGroup" preserve="all" />
+    <type fullname="UnityEngine.SpriteRenderer" preserve="all" />
+    <type fullname="UnityEngine.Sprite" preserve="all" />
+    <type fullname="UnityEngine.RectTransform" preserve="all" />
+    <type fullname="UnityEngine.RenderSettings" preserve="all" />
+    <type fullname="UnityEngine.LightmapSettings" preserve="all" />
+    <type fullname="UnityEngine.Object" preserve="all" />
+    <type fullname="UnityEngine.LightingSettings" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.AnimationClip" preserve="all" />
+    <type fullname="UnityEngine.Avatar" preserve="all" />
+    <type fullname="UnityEngine.Animator" preserve="all" />
+    <type fullname="UnityEngine.Animations.LookAtConstraint" preserve="all" />
+    <type fullname="UnityEngine.Animations.ParentConstraint" preserve="all" />
+    <type fullname="UnityEngine.Animations.PositionConstraint" preserve="all" />
+    <type fullname="UnityEngine.Animations.RotationConstraint" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.AudioModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.AudioClip" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.UI.Button" preserve="all" />
+    <type fullname="UnityEngine.UI.Outline" preserve="all" />
+    <type fullname="UnityEngine.UI.GraphicRaycaster" preserve="all" />
+    <type fullname="UnityEngine.UI.Shadow" preserve="all" />
+    <type fullname="UnityEngine.UI.VerticalLayoutGroup" preserve="all" />
+    <type fullname="UnityEngine.UI.CanvasScaler" preserve="all" />
+    <type fullname="UnityEngine.UI.Image" preserve="all" />
+    <type fullname="UnityEngine.UI.LayoutElement" preserve="all" />
+    <type fullname="UnityEngine.UI.HorizontalLayoutGroup" preserve="all" />
+    <type fullname="UnityEngine.UI.Mask" preserve="all" />
+    <type fullname="UnityEngine.UI.RectMask2D" preserve="all" />
+  </assembly>
+  <assembly fullname="package.patapon.core, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="PataNext.Client.DataScripts.Models.Equipments.ThrowableProjectileComponent" preserve="all" />
+    <type fullname="PataNext.Client.Components.RectTransformPivotFromSVG" preserve="all" />
+    <type fullname="PataNext.Client.DataScripts.Models.Equipments.UnitEquipmentPresentation" preserve="all" />
+    <type fullname="PataNext.Client.Components.Archetypes.DefaultUnitVisualPresentation" preserve="all" />
+    <type fullname="PataNext.Client.Components.Archetypes.ArchetypeDefaultEquipmentRoot" preserve="all" />
+    <type fullname="PataNext.Client.DataScripts.Models.ShooterProjectileComponent" preserve="all" />
+  </assembly>
+  <assembly fullname="package.patapon.client, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="PataNext.Client.DataScripts.Models.Equipments.ShieldBehavior" preserve="all" />
+    <type fullname="PataNext.Client.Graphics.UI.UICircle" preserve="all" />
+    <type fullname="PataNext.Client.DataScripts.Interface.Menu.__Barracks.Controls.UIUnitOverviewCategoryButtonPresentation" preserve="all" />
+    <type fullname="PataNext.Client.DataScripts.Interface.Popup.PopupButtonPresentation" preserve="all" />
+    <type fullname="PataNext.Client.DataScripts.Interface.ButtonPendingEventBehaviour" preserve="all" />
+    <type fullname="PataNext.Client.Graphics.UI.UITrianglePoint" preserve="all" />
+    <type fullname="PataNext.Client.DataScripts.Models.RhythmEngine.FeverWorm.FeverWormPresentation" preserve="all" />
+    <type fullname="PataNext.Client.Graphics.Models.InGame.UIDrum.UIDrumPressurePresentation" preserve="all" />
+    <type fullname="PataNext.Client.DataScripts.Interface.Menu.__Barracks.UIUnitOverviewPresentation" preserve="all" />
+    <type fullname="PataNext.Client.DataScripts.Interface.Inventory.EquipmentInventoryItemPresentation" preserve="all" />
+    <type fullname="PataNext.Client.Graphics.Models.InGame.Multiplayer.UIPlayerDisplayAbilityPresentation" preserve="all" />
+    <type fullname="PataNext.Client.DataScripts.Interface.Inventory.EquipmentInventory" preserve="all" />
+    <type fullname="PataNext.Client.Graphics.Models.PataponBodyController" preserve="all" />
+    <type fullname="PataNext.Client.DataScripts.Interface.InGame.VfxDamagePopTextPresentation" preserve="all" />
+    <type fullname="PataNext.Client.Components.Archetypes.ArchetypeHeroModeScalingComponent" preserve="all" />
+    <type fullname="PataNext.Client.DataScripts.Interface.Bubble.UISpeechBubblePresentation" preserve="all" />
+    <type fullname="PataNext.Client.DataScripts.Interface.Menu.__Barracks.Controls.UIUnitStatisticsPresentation" preserve="all" />
+    <type fullname="PataNext.Client.DataScripts.Interface.Popup.PopupPresentation" preserve="all" />
+    <type fullname="PataNext.Client.DataScripts.Models.Projectiles.DefaultProjectilePresentation" preserve="all" />
+    <type fullname="PataNext.Client.DataScripts.Interface.Menu.__Barracks.UIUnitOverviewCategoryRows" preserve="all" />
+    <type fullname="PataNext.Client.Graphics.Models.InGame.Multiplayer.UIPlayerTargetCursorPresentation" preserve="all" />
+    <type fullname="PataNext.Client.Graphics.Splines.SplineRendererBehaviour" preserve="all" />
+    <type fullname="PataNext.Client.RhythmEngine.RhythmEngineBeatFramePresentation" preserve="all" />
+  </assembly>
+  <assembly fullname="Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="TMPro.TextMeshPro" preserve="all" />
+    <type fullname="TMPro.TextMeshProUGUI" preserve="all" />
+    <type fullname="TMPro.TMP_SubMeshUI" preserve="all" />
+    <type fullname="TMPro.TMP_FontAsset" preserve="all" />
+  </assembly>
+  <assembly fullname="Unity.VectorGraphics, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="SVGImage" preserve="all" />
+  </assembly>
+  <assembly fullname="Unity.2D.SpriteShape.Runtime, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.U2D.SpriteShapeController" preserve="all" />
+    <type fullname="UnityEngine.U2D.SpriteShape" preserve="all" />
+  </assembly>
+  <assembly fullname="package.guerro.shared, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="package.stormiumteam.shared.ParentConstraintBehaviour" preserve="all" />
+    <type fullname="package.stormiumteam.shared.LookAtConstraintBehaviour" preserve="all" />
+    <type fullname="package.stormiumteam.shared.PositionConstraintBehaviour" preserve="all" />
+    <type fullname="package.stormiumteam.shared.UpdateManager" preserve="all" />
+  </assembly>
+  <assembly fullname="Nobi.UiRoundedCorners, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="ImageWithRoundedCorners" preserve="all" />
+    <type fullname="ImageWithIndependentRoundedCorners" preserve="all" />
+  </assembly>
+  <assembly fullname="Unity.Entities.Hybrid, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="Unity.Entities.GameObjectEntity" preserve="all" />
+    <type fullname="Unity.Entities.ConvertToEntity" preserve="all" />
+  </assembly>
+  <assembly fullname="package.stormiumteam.gamebase, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="StormiumTeam.GameBase._2D.BackgroundAssetPresentation" preserve="all" />
+    <type fullname="StormiumTeam.GameBase.Utility.Misc.OverrideObjectComponent" preserve="all" />
+    <type fullname="StormiumTeam.GameBase._2D.ParallaxEffect" preserve="all" />
+    <type fullname="StormiumTeam.GameBase.Data.MapMetadataAuthoring" preserve="all" />
+    <type fullname="StormiumTeam.GameBase._2D.CloneBackgroundBehaviour" preserve="all" />
+  </assembly>
+  <assembly fullname="Unity.Physics.Hybrid, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="Unity.Physics.Authoring.PhysicsShapeAuthoring" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.Font" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.ParticleSystemModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.ParticleSystem" preserve="all" />
+    <type fullname="UnityEngine.ParticleSystemRenderer" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.CanvasRenderer" preserve="all" />
+    <type fullname="UnityEngine.Canvas" preserve="all" />
+    <type fullname="UnityEngine.CanvasGroup" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.SpriteShapeModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.U2D.SpriteShapeRenderer" preserve="all" />
+  </assembly>
+  <assembly fullname="Unity.ResourceManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="MonoBehaviourCallbackHooks" preserve="all" />
+  </assembly>
+</linker>

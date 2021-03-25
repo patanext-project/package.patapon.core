@@ -1,0 +1,10 @@
+<UITemplate>
+    <Style path="MyAppRoot.style" />
+    <Contents style="default-label">
+        <Div style="main-container">
+            <Header style="header-div">
+                <Text style="unit-name">Kamipon</Text>
+            </Header>
+        </Div>
+    </Contents>
+</UITemplate> 

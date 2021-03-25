@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DataScripts.Interface
+namespace PataNext.Client.DataScripts.Interface
 {
 	public class ButtonPendingEventBehaviour : MonoBehaviour
 	{

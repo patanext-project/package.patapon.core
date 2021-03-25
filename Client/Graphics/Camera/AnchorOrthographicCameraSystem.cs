@@ -1,12 +1,11 @@
 ﻿using System;
 using StormiumTeam.GameBase;
+using StormiumTeam.GameBase._Camera;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEngine;
 
-namespace package.patapon.core
+namespace PataNext.Client.Graphics.Camera
 {
 	[UpdateInGroup(typeof(OrderGroup.Presentation.UpdateCamera))]
 	[UpdateAfter(typeof(SynchronizeCameraStateSystem))]
@@ -15,7 +14,7 @@ namespace package.patapon.core
 	{
 		protected override void OnUpdate()
 		{
-			Entities.ForEach((Camera camera, ref Translation tr, ref AnchorOrthographicCameraData data, in ComputedCameraState computed) =>
+			Entities.ForEach((UnityEngine.Camera camera, ref Translation tr, ref AnchorOrthographicCameraData data, in ComputedCameraState computed) =>
 			{
 				camera.orthographicSize = computed.Focus;
 
@@ -27,7 +26,7 @@ namespace package.patapon.core
 			
 			Entities.ForEach((ref Translation translation, in AnchorOrthographicCameraData cameraData, in ComputedCameraState computed) =>
 			{
-				if (!targetAnchorFromEntity.Exists(computed.StateData.Target))
+				if (!targetAnchorFromEntity.HasComponent(computed.StateData.Target))
 					return;
 
 				var anchor    = targetAnchorFromEntity[computed.StateData.Target];

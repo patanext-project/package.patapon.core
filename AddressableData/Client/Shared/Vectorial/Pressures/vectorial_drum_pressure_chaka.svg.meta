@@ -18,9 +18,9 @@ ScriptedImporter:
   viewportOptions: 0
   preserveViewport: 0
   advancedMode: 0
-  predefinedResolutionIndex: 1
-  targetResolution: 1080
-  resolutionMultiplier: 1
+  predefinedResolutionIndex: 3
+  targetResolution: 480
+  resolutionMultiplier: 0.1
   stepDistance: 10
   samplingStepDistance: 100
   maxCordDeviationEnabled: 1
@@ -35,6 +35,7 @@ ScriptedImporter:
   filterMode: 1
   sampleCount: 4
   preserveSVGImageAspect: 0
+  useSVGPixelsPerUnit: 0
   spriteData:
     TessellationDetail: 0
     SpriteRect:

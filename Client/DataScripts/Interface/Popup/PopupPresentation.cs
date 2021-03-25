@@ -1,21 +1,23 @@
 using System;
-using DataScripts.Interface.Popup;
-using DefaultNamespace;
 using package.stormiumteam.shared.ecs;
-using Patapon.Client.PoolingSystems;
+using PataNext.Client.Core.Addressables;
+using PataNext.Client.DataScripts.Interface.Popup;
 using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Roles.Components;
+using StormiumTeam.GameBase.Roles.Interfaces;
+using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Misc;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
+using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using TMPro;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.UI;
-using Object = UnityEngine.Object;
 
 [assembly: RegisterGenericComponentType(typeof(Relative<PopupDescription>))]
 
-namespace DataScripts.Interface.Popup
+namespace PataNext.Client.DataScripts.Interface.Popup
 {
 	public class UIPopup : IComponentData
 	{
@@ -29,7 +31,7 @@ namespace DataScripts.Interface.Popup
 	
 	public struct PopupDescription : IEntityDescription {}
 
-	public class PopupPresentation : RuntimeAssetPresentation<PopupPresentation>
+	public class PopupPresentation : RuntimeAssetPresentation
 	{
 		public TextMeshProUGUI titleLabel;
 		public TextMeshProUGUI contentLabel;
@@ -44,16 +46,15 @@ namespace DataScripts.Interface.Popup
 	{
 		public override bool PresentationWorldTransformStayOnSpawn => false;
 	}
-
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
+	
 	[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation))]
 	public class PopupPoolingSystem : PoolingSystem<PopupBackend, PopupPresentation>
 	{
-		protected override string AddressableAsset =>
+		protected override AssetPath AddressableAsset =>
 			AddressBuilder.Client()
 			              .Interface()
 			              .Folder("Popup")
-			              .GetFile("DarkStyle.prefab");
+			              .GetAsset("DarkStyle");
 
 		protected override Type[] AdditionalBackendComponents => new[] {typeof(RectTransform)};
 

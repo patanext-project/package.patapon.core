@@ -1,14 +1,15 @@
 using package.stormiumteam.shared.ecs;
 using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
-using StormiumTeam.GameBase.Data;
-using StormiumTeam.GameBase.Misc;
+using StormiumTeam.GameBase._Camera;
+using StormiumTeam.GameBase.Roles.Descriptions;
+using StormiumTeam.GameBase.Utility.DOTS.xCamera;
+using StormiumTeam.GameBase.Utility.DOTS.xMonoBehaviour;
+using StormiumTeam.GameBase.Utility.Rendering;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
 
-namespace package.patapon.core
+namespace PataNext.Client.Graphics.Camera
 {
 	public struct CurrentCameraStateSource : IComponentData
 	{
@@ -17,7 +18,7 @@ namespace package.patapon.core
 
 	public class CameraModifyTargetSystemGroup : ComponentSystemGroup
 	{
-		
+
 	}
 
 	[UpdateInGroup(typeof(OrderGroup.Presentation.UpdateCamera))]
@@ -42,7 +43,7 @@ namespace package.patapon.core
 		{
 			if (!m_CameraWithoutUpdateComp.IsEmptyIgnoreFilter) EntityManager.AddComponent(m_CameraWithoutUpdateComp, typeof(SystemData));
 
-			Entity defaultCamera                             = default;
+			Entity defaultCamera = default;
 			if (HasSingleton<DefaultCamera>())
 			{
 				defaultCamera = GetSingletonEntity<DefaultCamera>();
@@ -65,7 +66,7 @@ namespace package.patapon.core
 				.ForEach((Entity entity, in LocalCameraState cameraState) =>
 				{
 					var camera                                        = defaultCamera;
-					if (cameraTargetFromEntity.Exists(entity)) camera = cameraTargetFromEntity[entity].Value;
+					if (cameraTargetFromEntity.HasComponent(entity)) camera = cameraTargetFromEntity[entity].Value;
 
 					var updater = updateFromEntity.GetUpdater(camera);
 					if (!updater.Out(out var cameraStateUpdate).possess)
@@ -87,11 +88,11 @@ namespace package.patapon.core
 				.Run(); // use ScheduleSingle() when it will be out.
 
 			Entities
-				.WithAll<GamePlayerLocalTag>()
+				.WithAll<PlayerIsLocal>()
 				.ForEach((Entity entity, in ServerCameraState cameraState) =>
 				{
 					var camera                                        = defaultCamera;
-					if (cameraTargetFromEntity.Exists(entity)) camera = cameraTargetFromEntity[entity].Value;
+					if (cameraTargetFromEntity.HasComponent(entity)) camera = cameraTargetFromEntity[entity].Value;
 
 					var updater = updateFromEntity.GetUpdater(camera);
 					if (!updater.Out(out var cameraStateUpdate).possess)
@@ -111,15 +112,15 @@ namespace package.patapon.core
 				.WithName("Check_ServerCameraState_AndReplaceSystemData")
 				.WithReadOnly(cameraTargetFromEntity)
 				.Run(); // use ScheduleSingle() when it will be out.
-			
+
 			Entities.ForEach((ref ComputedCameraState computed, in SystemData systemData) =>
 			{
 				computed.UseModifier = true;
-				
+
 				computed.Focus       = systemData.Focus;
 				computed.StateData   = systemData.StateData;
 				computed.StateEntity = systemData.StateEntity;
-				
+
 				if (!math.all(computed.StateData.Offset.rot.value))
 					computed.StateData.Offset.rot = quaternion.identity;
 			}).Run();
@@ -142,7 +143,9 @@ namespace package.patapon.core
 					else
 					{
 						modifier.Rotation    = quaternion.identity;
-						modifier.FieldOfView = 0;
+						modifier.FieldOfView = 8;
+
+						computed.Focus = modifier.FieldOfView;
 					}
 
 					translation.Value = modifier.Position + offset.pos;

@@ -1,4 +1,4 @@
-﻿namespace package.patapon.core
+﻿namespace PataNext.Client.Graphics
 {
 	public enum EActivationType
 	{

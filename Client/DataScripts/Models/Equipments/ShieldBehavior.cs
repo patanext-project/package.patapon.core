@@ -1,10 +1,9 @@
-using Patapon.Mixed.Units;
-using StormiumTeam.GameBase;
+using PataNext.Module.Simulation.Components.GamePlay.Units;
+using StormiumTeam.GameBase.BaseSystems;
 using Unity.Entities;
-using Unity.Mathematics;
 using UnityEngine;
 
-namespace DataScripts.Models.Equipments
+namespace PataNext.Client.DataScripts.Models.Equipments
 {
 	public class ShieldBehavior : MonoBehaviour
 	{
@@ -27,10 +26,10 @@ namespace DataScripts.Models.Equipments
 						return;
 
 					var playState   = EntityManager.GetComponentData<UnitPlayState>(backend.DstEntity);
-					var targetScale = Vector3.one * (1 + (1 - playState.ReceiveDamagePercentage) * 0.8f);
+					var targetScale = Vector3.one * (1 + (1 - playState.ReceiveDamagePercentage) * 0.5f);
 					behavior.m_Scale = Vector3.MoveTowards(behavior.m_Scale, targetScale, Time.DeltaTime * 0.75f);
 					behavior.m_Scale = Vector3.Lerp(behavior.m_Scale, targetScale, Time.DeltaTime);
-
+					
 					presentation.transform.localScale = behavior.m_Scale;
 				}).WithoutBurst().Run();
 			}

@@ -1,23 +1,24 @@
 using System;
-using DataScripts.Interface.Menu.UIECS;
-using DefaultNamespace;
 using package.stormiumteam.shared.ecs;
-using Patapon.Client.PoolingSystems;
+using PataNext.Client.Core.Addressables;
+using PataNext.Client.Core.DOTSxUI.Components;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.Modules;
-using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Roles.Components;
+using StormiumTeam.GameBase.Utility.AssetBackend;
+using StormiumTeam.GameBase.Utility.Misc;
+using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
+using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using TMPro;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Mathematics;
-using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace DataScripts.Interface.Popup
+namespace PataNext.Client.DataScripts.Interface.Popup
 {
-	public class PopupButtonPresentation : RuntimeAssetPresentation<PopupButtonPresentation>
+	public class PopupButtonPresentation : RuntimeAssetPresentation
 	{
 		public bool PendingClickEvent { get; set; }
 		
@@ -73,8 +74,7 @@ namespace DataScripts.Interface.Popup
 			}
 		}
 	}
-
-	[UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
+	
 	public class PopupButtonPoolingSystem : PoolingSystem<PopupButtonBackend, PopupButtonPresentation, PopupButtonPoolingSystem.CheckValidity>
 	{
 		public struct CheckValidity : ICheckValidity
@@ -93,15 +93,15 @@ namespace DataScripts.Interface.Popup
 
 			public bool IsValid(Entity target)
 			{
-				return !DisabledFromEntity.Exists(target) && !DisabledFromEntity.Exists(PopupFromEntity[target].Target);
+				return !DisabledFromEntity.HasComponent(target) && !DisabledFromEntity.HasComponent(PopupFromEntity[target].Target);
 			}
 		}
 		
-		protected override string AddressableAsset =>
+		protected override AssetPath AddressableAsset =>
 			AddressBuilder.Client()
 			              .Interface()
 			              .Folder("Popup")
-			              .GetFile("DarkStylePopupButton.prefab");
+			              .GetAsset("DarkStylePopupButton");
 
 		protected override Type[] AdditionalBackendComponents => new[] {typeof(RectTransform), typeof(LayoutElement)};
 

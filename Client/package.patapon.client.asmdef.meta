@@ -2,6 +2,6 @@ fileFormatVersion: 2
 guid: d8dcc6ac43c169e489d6977d5dce223f
 AssemblyDefinitionImporter:
   externalObjects: {}
-  userData: 
+  userData: '{"IgnoreAccessChecks":true,"ModifySymbols":"","CustomCompiler":""}'
   assetBundleName: 
   assetBundleVariant: 

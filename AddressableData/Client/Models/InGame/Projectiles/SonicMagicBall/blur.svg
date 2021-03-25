@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="256"
+   height="256"
+   viewBox="0 0 67.733332 67.733335"
+   version="1.1"
+   id="svg2145"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   sodipodi:docname="blur.svg"
+   inkscape:export-filename="C:\Users\guerr\Documents\Projets\Common\Packages\package.patapon.core\AddressableData\Client\Models\InGame\Projectiles\SonicMagicBall\blur.png"
+   inkscape:export-xdpi="48.000004"
+   inkscape:export-ydpi="48.000004">
+  <defs
+     id="defs2139">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient846">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0.40000001"
+         offset="0"
+         id="stop842" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0"
+         offset="1"
+         id="stop844" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient846"
+       id="linearGradient1241"
+       x1="183.97998"
+       y1="82.540413"
+       x2="199.38266"
+       y2="82.540413"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(-1.3002693,0,0,1,490.2625,65.626256)" />
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter1464"
+       x="-0.30476486"
+       width="1.6095297"
+       y="-0.29538184"
+       height="1.5907637">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="22.857365"
+         id="feGaussianBlur1466" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#262626"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="22.708345"
+     inkscape:cy="103.60872"
+     inkscape:document-units="mm"
+     inkscape:current-layer="g2741"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:pagecheckerboard="true" />
+  <metadata
+     id="metadata2142">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g2741"
+       transform="translate(-208.79405,-114.3)">
+      <path
+         id="path1422"
+         style="fill:#fefefe;fill-opacity:1;stroke:none;stroke-width:0.999999px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter1464)"
+         d="M 131.78516,37.857422 C 88.265824,37.425838 40,130.71484 40,130.71484 c 0,0 48.265824,93.28901 91.78516,92.85743 C 159.86293,223.29383 220,205.35775 220,130.71484 220,56.071971 159.86293,38.13586 131.78516,37.857422 Z"
+         transform="matrix(0.21370211,0,0,0.21370211,214.87944,120.23263)"
+         inkscape:export-xdpi="48.000004"
+         inkscape:export-ydpi="48.000004" />
+    </g>
+  </g>
+</svg>

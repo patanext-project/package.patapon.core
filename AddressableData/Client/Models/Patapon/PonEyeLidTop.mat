@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: PonEyeLidTop
+  m_Shader: {fileID: -6465566751694194690, guid: 89abf9d70013d2842b7bcadf3e572871,
+    type: 3}
+  m_ShaderKeywords: ETC1_EXTERNAL_ALPHA
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _AlphaTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EyeTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MaskTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - Boolean_1cf804dc248440e89f3a220a07976c6a: 0
+    - Boolean_5F03583D: 0
+    - _AlpahThreshold: 0.45
+    - _EnableExternalAlpha: 0
+    - _EyeSize: 0.7
+    - _EyeTextureStep: 0.632
+    - _IrisSize: 0.073
+    m_Colors:
+    - _BodyColor: {r: 0, g: 0, b: 0, a: 1}
+    - _BodyDirection: {r: 0, g: 0, b: -1, a: 0}
+    - _BodyRoundness: {r: 1, g: 1, b: 1, a: 0}
+    - _BodyTarget: {r: 10, g: 0, b: 0, a: 0}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EyeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EyeDirection: {r: 1, g: -0, b: -1, a: 0}
+    - _EyeRoundness: {r: 1, g: 1, b: 1, a: 0}
+    - _Flip: {r: 1, g: 1, b: 1, a: 1}
+    - _IrisColor: {r: 0, g: 0, b: 0, a: 1}
+    - _IrisRoundness: {r: 1, g: 1, b: 1, a: 0}
+    - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []

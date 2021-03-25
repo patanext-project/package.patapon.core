@@ -1,9 +1,8 @@
-using DataScripts.Interface.Menu.UIECS;
-using StormiumTeam.GameBase;
+using PataNext.Client.Core.DOTSxUI.Components;
+using StormiumTeam.GameBase.Roles.Components;
 using Unity.Entities;
-using Unity.Jobs;
 
-namespace DataScripts.Interface.Popup
+namespace PataNext.Client.DataScripts.Interface.Popup
 {
 	public struct SetEnableStatePopupAction : IComponentData
 	{
@@ -30,7 +29,7 @@ namespace DataScripts.Interface.Popup
 			Entities.WithAll<UIButton.ClickedEvent>().ForEach((Entity entity, in SetEnableStatePopupAction state) =>
 			{
 				var popup = state.Popup;
-				if (popup == default && relativePopupFromEntity.Exists(entity))
+				if (popup == default && relativePopupFromEntity.HasComponent(entity))
 					popup = relativePopupFromEntity[entity].Target; 
 				
 				EntityManager.SetEnabled(popup, state.Value);

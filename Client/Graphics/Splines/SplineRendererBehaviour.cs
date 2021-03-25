@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using package.stormiumteam.shared;
 using Unity.Entities;
 using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 #if UNITY_EDITOR
-using UnityEditor;
 
 #endif
 
-namespace package.patapon.core
+namespace PataNext.Client.Graphics.Splines
 {
 	// TODO: UPGRADE
 	[Serializable]
@@ -76,7 +76,9 @@ namespace package.patapon.core
 		// Fields
 		// -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
 		public int   Step    = 6;
-		public float Tension = 0.5f;
+		
+		[Range(-1, 1)]
+		public float Tension = 0;
 
 		// -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
 		// Unity Methods
@@ -116,10 +118,17 @@ namespace package.patapon.core
 			IsLooping = false;
 			
 			var goEntity = GetComponent<GameObjectEntity>();
-			if (!Application.isPlaying || goEntity?.EntityManager == null)
+			if (!Application.isPlaying || goEntity == null || goEntity.EntityManager != default)
 				return;
 
-			goEntity.EntityManager.SetComponentData(goEntity.Entity, GetData());
+			try
+			{
+				goEntity.EntityManager.SetComponentData(goEntity.Entity, GetData());
+			}
+			catch (NullReferenceException nullRef)
+			{
+			}
+
 			MarkDirty();
 		}
 
@@ -150,7 +159,7 @@ namespace package.patapon.core
 			
 			if (lineRendererArray == null || lineRendererArray.Length == 0) lineRendererArray = new[] {lineRenderer};
 
-			var currCam = Camera.current;
+			var currCam = UnityEngine.Camera.current;
 
 			var isSelected = Selection.activeGameObject == gameObject;
 			Gizmos.color = isSelected ? Color.blue : Color.magenta;
@@ -234,7 +243,7 @@ namespace package.patapon.core
 			void Pop()
 			{
 				// kinda weird to do a check on World, but there were some problems with it
-				if (m_EntityManager?.World == null)
+				if (m_EntityManager.World?.IsCreated == false)
 					return;
 
 				if (!m_EntityManager.Exists(m_Entity))

@@ -1,0 +1,40 @@
+style main-container
+{
+	PreferredSize = 1000px, 250px;
+	BackgroundColor = white;
+	TransformRotation = 0;
+	BorderRadius = 10%;
+	ShadowIntensity = 0;
+	ShadowOpacity = 0.75;
+	ShadowColor = rgba(0, 0, 0, 100);
+	ShadowOffsetY = 7;
+	ShadowOffsetX = 7;
+}
+
+style header-div
+{
+	PreferredSize = 1pca, 50px;
+	Padding = 0, 50;
+}
+
+style default-label
+{
+	TextColor = rgb(49, 29, 22);
+	
+	TextFontAsset = url("Fonts/ARCena/ARCena");
+}
+
+style unit-name
+{
+	TextFontSize = 32;
+	TextAlignment = Center;
+	
+	TextUnderlayColor = red;
+	TextUnderlaySoftness = 0;
+	TextUnderlayX = 5;
+	TextUnderlayY = 5;
+	
+	TextGlowColor = red;
+	TextGlowOuter = 1;
+	TextGlowOffset = 1;
+}

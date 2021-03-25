@@ -1,8 +1,8 @@
-using StormiumTeam.GameBase;
+using StormiumTeam.GameBase._Camera;
 using Unity.Entities;
 using UnityEngine;
 
-namespace Graphics.Camera
+namespace PataNext.Client.Graphics.Camera
 {
 	public class LocalCameraTest : ComponentSystem
 	{
@@ -15,7 +15,11 @@ namespace Graphics.Camera
 
 		protected override void OnUpdate()
 		{
-			Entities.WithAll<Local>().ForEach((ref LocalCameraState state) => { state.Data.Offset.pos.x += Input.GetAxis("Horizontal"); });
+			var dt = Time.DeltaTime;
+			Entities.WithAll<Local>().ForEach((ref LocalCameraState state) =>
+			{
+				state.Data.Offset.pos.x += Input.GetAxis("Horizontal") * dt;
+			});
 		}
 
 		public struct Local : IComponentData

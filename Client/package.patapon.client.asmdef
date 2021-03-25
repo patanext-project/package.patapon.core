@@ -1,5 +1,6 @@
 {
     "name": "package.patapon.client",
+    "rootNamespace": "PataNext.Client",
     "references": [
         "package.patapon.mixed",
         "package.guerro.shared",
@@ -7,6 +8,8 @@
         "package.stormiumteam.gamebase",
         "package.stormiumteam.networking",
         "patapon.masterserver.shared",
+        "package.patapon.core",
+        "Unity.Build",
         "Unity.VectorGraphics",
         "Revolution.NetCode",
         "Revolution.Snapshot",
@@ -14,10 +17,6 @@
         "Unity.TextMeshPro",
         "Unity.InputSystem",
         "Unity.Networking.Transport",
-        "Unity.Addressables",
-        "Unity.ResourceManager",
-        "Unity.Physics",
-        "Unity.Physics.Hybrid",
         "Unity.Entities",
         "Unity.Entities.Hybrid",
         "Unity.Transforms",
@@ -26,7 +25,12 @@
         "Unity.Collections",
         "Unity.Jobs",
         "Unity.Burst",
-        "Unity.RenderPipelines.Universal.Runtime"
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.InternalAPIEngineBridge.015",
+        "Unity.Serialization",
+        "Unity.Locus.BundleSystem",
+        "UniTask",
+        "UIForia.Src"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -37,7 +41,8 @@
         "Karambolo.Common.dll",
         "Karambolo.PO.dll",
         "System.Memory.dll",
-        "System.Runtime.CompilerServices.Unsafe.dll"
+        "System.Runtime.CompilerServices.Unsafe.dll",
+        "Mono.Options.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

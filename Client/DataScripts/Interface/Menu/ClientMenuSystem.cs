@@ -1,12 +1,11 @@
 using System;
 using Karambolo.Common;
-using package.patapon.core.Animation;
-using Patapon.Client.PoolingSystems;
+using PataNext.Client.Graphics.Animation;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DataScripts.Interface.Menu
+namespace PataNext.Client.DataScripts.Interface.Menu
 {
 	public struct MenuData : IComponentData
 	{
@@ -36,7 +35,7 @@ namespace DataScripts.Interface.Menu
 			m_QuadBackground = bgGo.GetComponent<Image>();
 			CanvasUtility.ExtendRectTransform(m_QuadBackground.GetComponent<RectTransform>());
 
-			SetBackgroundCanvasColor(Color.black);
+			SetBackgroundCanvasColor(Color.clear);
 		}
 
 		protected override void OnUpdate()

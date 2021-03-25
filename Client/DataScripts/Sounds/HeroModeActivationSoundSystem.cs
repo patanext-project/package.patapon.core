@@ -1,18 +1,16 @@
-using DefaultNamespace;
-using package.patapon.core.Animation.Units;
 using package.stormiumteam.shared;
 using package.stormiumteam.shared.ecs;
-using Patapon.Client.Systems;
-using Patapon.Mixed.GamePlay.Abilities;
-using StormiumTeam.GameBase;
-using StormiumTeam.GameBase.Components;
+using PataNext.Client.Core.Addressables;
+using PataNext.Client.Systems;
+using PataNext.Module.Simulation.Components.GamePlay.Abilities;
+using StormiumTeam.GameBase.BaseSystems;
+using StormiumTeam.GameBase.Modules;
+using StormiumTeam.GameBase.Utility.Misc;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Transforms;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 
-namespace DataScripts.Sounds
+namespace PataNext.Client.DataScripts.Sounds
 {
 	public class HeroModeActivationSoundSystem : AbsGameBaseSystem
 	{
@@ -40,8 +38,8 @@ namespace DataScripts.Sounds
 			                                   .Folder("Sounds")
 			                                   .Folder("Effects")
 			                                   .Folder("HeroModeActivation")
-			                                   .GetFile("HeroModeStart.wav");
-			m_AsyncOp.Add(Addressables.LoadAssetAsync<AudioClip>(activationFile), new DataOp { });
+			                                   .GetAsset("HeroModeStart.wav");
+			m_AsyncOp.Add(AssetManager.LoadAssetAsync<AudioClip>(activationFile), new DataOp { });
 
 			m_AbilityWithoutInternalQuery = GetEntityQuery(new EntityQueryDesc
 			{
@@ -55,7 +53,7 @@ namespace DataScripts.Sounds
 			for (var i = 0; i != m_AsyncOp.Handles.Count; i++)
 			{
 				var (handle, data) = DefaultAsyncOperation.InvokeExecute<AudioClip, DataOp>(m_AsyncOp, ref i);
-				if (handle.Result == null)
+				if (handle?.Result == null)
 					continue;
 
 				m_ActivationSound = World.GetOrCreateSystem<ECSoundSystem>()
@@ -72,7 +70,7 @@ namespace DataScripts.Sounds
 			var playSoundAllocation = UnsafeAllocation.From(ref playSound);
 			Entities.ForEach((Entity ent, ref AbilityInternalData internalData, in AbilityState state, in AbilityActivation activation) =>
 			{
-				if (activation.Type == EActivationType.Normal || (state.Phase & EAbilityPhase.HeroActivation) == 0)
+				if ((activation.Type & EAbilityActivationType.HeroMode) == 0 || (state.Phase & EAbilityPhase.HeroActivation) == 0)
 				{
 					internalData.HeroActive = false;
 					return;

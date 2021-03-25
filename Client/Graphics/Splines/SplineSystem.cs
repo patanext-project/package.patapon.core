@@ -7,17 +7,16 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
-using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 
-namespace package.patapon.core
+namespace PataNext.Client.Graphics.Splines
 {
 	[UpdateInGroup(typeof(PresentationSystemGroup))]
-	public class UpdateSplinePointsSystem : ComponentSystem
+	public class UpdateSplinePointsSystem : SystemBase
 	{
-		protected override void OnUpdate()
+		protected override unsafe void OnUpdate()
 		{
 			Entities.WithAll<DSplineValidTag>().ForEach((SplineRendererBehaviour renderer, DynamicBuffer<DSplinePoint> points) =>
 			{
@@ -25,14 +24,11 @@ namespace package.patapon.core
 				var length     = transforms.Length;
 
 				points.ResizeUninitialized(length);
-				for (var i = 0; i != length; i++) points[i] = new DSplinePoint {Position = transforms[i].localPosition};
-			});
-		}
 
-		[UpdateInGroup(typeof(PresentationSystemGroup))]
-		[UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
-		public class DefaultWorldUpdateSplinePointsSystem : UpdateSplinePointsSystem
-		{
+				var unsafePoints = (DSplinePoint*) points.GetUnsafePtr();
+				for (var i = 0; i != length; i++)
+					unsafePoints[i].Position = transforms[i].localPosition;
+			}).WithoutBurst().Run();
 		}
 	}
 
@@ -47,7 +43,7 @@ namespace package.patapon.core
 
 		private EntityQuery m_SplineQuery;
 
-		private Dictionary<Camera, NativeArray<bool>> m_ValidSplinePerCamera;
+		private Dictionary<UnityEngine.Camera, NativeArray<bool>> m_ValidSplinePerCamera;
 
 		// -------- -------- -------- -------- -------- -------- -------- -------- -------- /.
 		// Methods
@@ -61,7 +57,7 @@ namespace package.patapon.core
 				typeof(DSplineBoundsData),
 				typeof(DSplineResult)
 			);
-			m_ValidSplinePerCamera = new Dictionary<Camera, NativeArray<bool>>();
+			m_ValidSplinePerCamera = new Dictionary<UnityEngine.Camera, NativeArray<bool>>();
 			ArrayPoolBySize        = new FastDictionary<int, Vector3[]>();
 
 			RenderPipelineManager.beginFrameRendering  += OnBeginFrameRendering;
@@ -78,8 +74,9 @@ namespace package.patapon.core
 			RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
 		}
 
-		private void OnBeginFrameRendering(ScriptableRenderContext ctx, Camera[] cameras)
+		private void OnBeginFrameRendering(ScriptableRenderContext ctx, UnityEngine.Camera[] cameras)
 		{
+			Profiler.BeginSample("SplineSystem -");
 			foreach (var previous in m_ValidSplinePerCamera) previous.Value.Dispose();
 			m_ValidSplinePerCamera.Clear();
 
@@ -94,13 +91,15 @@ namespace package.patapon.core
 					ValidSplines = m_ValidSplinePerCamera[cameras[cam]]
 				}.Schedule(m_SplineQuery, m_LastJobHandle);
 			}
+			Profiler.EndSample();
 		}
 
-		private unsafe void OnBeginCameraRendering(ScriptableRenderContext ctx, Camera cam)
+		private unsafe void OnBeginCameraRendering(ScriptableRenderContext ctx, UnityEngine.Camera cam)
 		{
 			//< -------- -------- -------- -------- -------- -------- -------- ------- //
 			// Finish the current job
 			//> -------- -------- -------- -------- -------- -------- -------- ------- //
+			Profiler.BeginSample("SplineSystem +");
 			m_LastJobHandle.Complete();
 
 			var previousCount = -1;
@@ -157,6 +156,7 @@ namespace package.patapon.core
 			}
 
 			Profiler.EndSample();
+			Profiler.EndSample();
 
 			entities.Dispose();
 		}
@@ -168,13 +168,6 @@ namespace package.patapon.core
 				PointsFromEntity = GetBufferFromEntity<DSplinePoint>(true),
 				ResultFromEntity = GetBufferFromEntity<DSplineResult>()
 			}.Schedule(m_SplineQuery, Dependency);
-		}
-
-		[UpdateInGroup(typeof(PresentationSystemGroup))]
-		[UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
-		[UpdateAfter(typeof(UpdateSplinePointsSystem))]
-		public class DefaultWorldSplineSystem : SplineSystem
-		{
 		}
 
 		[BurstCompile]
@@ -220,8 +213,8 @@ namespace package.patapon.core
 				}
 
 				var result = ResultFromEntity[entity];
-				result.Capacity = predictedLength + 1;
 				result.Clear();
+				result.Capacity = predictedLength + 1;
 
 				result.Add(new DSplineResult {Position = points[0].Position});
 				CGraphicalCatmullromSplineUtility.CalculateCatmullromSpline

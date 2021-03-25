@@ -12,7 +12,6 @@
 		"package.stormiumteam.gamebase": "https://github.com/StormiumTeam/package.stormiumteam.gamebase.git",
 
 		"com.unity.entities": "0.3.0-preview.4",
-		"com.unity.render-pipelines.universal": "7.1.7",
-		"com.unity.physics": "0.2.5-preview"
+		"com.unity.render-pipelines.universal": "7.1.7"
 	}
 }

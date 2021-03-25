@@ -323,7 +323,23 @@ AnimationClip:
     path: Worm/_start
   m_ScaleCurves: []
   m_FloatCurves: []
-  m_PPtrCurves: []
+  m_PPtrCurves:
+  - curve:
+    - time: 0
+      value: {fileID: -4089281722856244738, guid: e9457c78706c77b40a2efa0a0eaa99a6,
+        type: 3}
+    attribute: m_Sprite
+    path: Worm/Eyes/Eye/Effect
+    classID: 212
+    script: {fileID: 0}
+  - curve:
+    - time: 0
+      value: {fileID: -4089281722856244738, guid: e9457c78706c77b40a2efa0a0eaa99a6,
+        type: 3}
+    attribute: m_Sprite
+    path: Worm/Eyes/Eye (1)/Effect
+    classID: 212
+    script: {fileID: 0}
   m_SampleRate: 60
   m_WrapMode: 0
   m_Bounds:
@@ -394,7 +410,23 @@ AnimationClip:
       typeID: 4
       customType: 4
       isPPtrCurve: 0
-    pptrCurveMapping: []
+    - serializedVersion: 2
+      path: 1254395459
+      attribute: 0
+      script: {fileID: 0}
+      typeID: 212
+      customType: 23
+      isPPtrCurve: 1
+    - serializedVersion: 2
+      path: 1241057234
+      attribute: 0
+      script: {fileID: 0}
+      typeID: 212
+      customType: 23
+      isPPtrCurve: 1
+    pptrCurveMapping:
+    - {fileID: -4089281722856244738, guid: e9457c78706c77b40a2efa0a0eaa99a6, type: 3}
+    - {fileID: -4089281722856244738, guid: e9457c78706c77b40a2efa0a0eaa99a6, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
