@@ -111,8 +111,8 @@ TextureImporter:
   textureSettings:
     serializedVersion: 2
     filterMode: 2
-    aniso: -1
-    mipBias: -100
+    aniso: 1
+    mipBias: 0
     wrapU: 1
     wrapV: 1
     wrapW: 1
@@ -451,6 +451,20 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      tower_destroyed_spritesheet_1: -274721001783535523
+      tower_destroyed_spritesheet_4: 5316327502692712766
+      tower_destroyed_spritesheet_5: 8579476259261323098
+      tower_destroyed_spritesheet_2: 6761387621516630939
+      tower_destroyed_spritesheet_0: -8355324579335106382
+      tower_destroyed_spritesheet_8: -3199535769505208724
+      tower_destroyed_spritesheet_6: -8835462550862464447
+      tower_destroyed_spritesheet_12: 6717783332149123441
+      tower_destroyed_spritesheet_9: -7285057271540595649
+      tower_destroyed_spritesheet_10: 5305102875449078562
+      tower_destroyed_spritesheet_3: -4593500099373129214
+      tower_destroyed_spritesheet_11: 2494271475471629592
+      tower_destroyed_spritesheet_7: 7878847874019899668
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

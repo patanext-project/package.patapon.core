@@ -67,6 +67,9 @@ namespace PataNext.Client.Graphics.Models
 		private PataponBodyController[] controllers;
 
 		[SerializeField]
+		private bool flipNormalsOnNegativeScale;
+		
+		[SerializeField]
 		private bool editorPreview;
 
 		[SerializeField]
@@ -124,9 +127,15 @@ namespace PataNext.Client.Graphics.Models
 			{
 				CurrentProfile = seekingState.Enemy != default ? enemyOnSightProfile : idleProfile;
 			}
+
+			if (flipNormalsOnNegativeScale)
+			{
+				foreach (var controller in controllers)
+					controller.transform.localScale = new Vector3(Backend.transform.localScale.x, 1, 1);
+			}
 		}
 
-		private void Update()
+		/*private void Update()
 		{
 			// TODO: Make sure that in the future those "previous" states are still done before the animation phase
 			for (var i = 0; i < controllers.Length; i++)
@@ -185,6 +194,6 @@ namespace PataNext.Client.Graphics.Models
 						controller.bodyDirection.localRotation = Quaternion.Lerp(controller.bodyDirection.localRotation, next, Time.deltaTime * 1);
 				}
 			}
-		}
+		}*/
 	}
 }

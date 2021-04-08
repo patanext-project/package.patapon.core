@@ -176,7 +176,7 @@ namespace PataNext.Client.Graphics.Animation.Units
 			if (bv.Visual.CurrAnimation.Type != typeof(DefaultMarchAbilityAnimation) && !bv.Visual.CurrAnimation.CanBlend(global))
 				weight = 0;
 
-			if ((weight >= 1) & (data.PreviousAnimation != data.TargetAnimation) /*&& data.PreviousAnimation == TargetType.Walking*/)
+			if (/*(weight >= 1) &*/ (data.PreviousAnimation != data.TargetAnimation) /*&& data.PreviousAnimation == TargetType.Walking*/)
 			{
 				var offset = 0f;
 				/*if (data.ClipPlayableMap[data.PreviousAnimation].Count > 0) // it's possible that there are no animation at the moment

@@ -20,6 +20,9 @@ namespace PataNext.Client.DataScripts.Interface.Menu.__Barracks.Categories
 
 	public class UnitCategoryView : UIPresentation<CategoryViewData>
 	{
+		[SerializeField]
+		private Animator animator;
+		
 		protected override void OnDataUpdate(CategoryViewData data)
 		{
 			Backend.transform.SetParent(data.CategoryTransform, false);

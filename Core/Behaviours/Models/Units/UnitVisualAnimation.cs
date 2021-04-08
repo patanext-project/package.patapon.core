@@ -2,6 +2,7 @@ using System;
 using BundleSystem;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
+using PataNext.Module.Simulation.Components.GamePlay;
 using PataNext.Module.Simulation.Components.Roles;
 using PataNext.Module.Simulation.Components.Units;
 using PataNext.Module.Simulation.Resources;
@@ -115,15 +116,17 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 		public UnitKitResource       CurrentKitResource;
 		public UnitArchetypeResource CurrentArchetypeResource;
 
-		public  AssetPath              CurrentArchetype;
+		public  AssetPath           CurrentArchetype;
+		public  GameGraphicResource CurrentGameGraphicResource;
 		private UnitVisualAnimation m_Animation;
 
 		public UnitVisualAnimation Animation => m_Animation;
 
 		public override void OnTargetUpdate()
 		{
-			CurrentKitResource       = default;
-			CurrentArchetypeResource = default;
+			CurrentKitResource         = default;
+			CurrentArchetypeResource   = default;
+			CurrentGameGraphicResource = default;
 			
 			if (!TryGetComponent(out m_Animation))
 			{

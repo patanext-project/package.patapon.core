@@ -4,6 +4,7 @@ using package.stormiumteam.shared.ecs;
 using PataNext.Client.Components;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.DataScripts.Models.Projectiles;
+using PataNext.Client.Graphics.Animation.Units.Base;
 using PataNext.Module.Simulation.Components.Roles;
 using PataNext.Module.Simulation.Game.Visuals;
 using StormiumTeam.GameBase;
@@ -20,6 +21,7 @@ using UnityEngine.Rendering;
 namespace PataNext.Client.Systems.PoolingSystems
 {
 	[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation), OrderFirst = true)]
+	[UpdateAfter(typeof(UpdateUnitVisualBackendSystem))]
 	public class EntityVisualPoolingSystem : PoolingSystem<EntityVisualBackend, EntityVisualPresentation, EntityVisualPoolingSystem.Validator>
 	{
 		public struct Validator : ICheckValidity
