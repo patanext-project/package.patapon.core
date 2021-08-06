@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using P4TLB.MasterServer;
 using PataNext.Client.Core.Addressables;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Modules;
@@ -31,11 +30,11 @@ namespace PataNext.Client.Systems
 			                            .Folder("Sounds")
 			                            .Folder("Effects")
 			                            .Folder("HeroModeActivation");
-			m_AsyncOp.Add(AssetManager.LoadAssetAsync<AudioClip>(builder.GetAsset(nameof(P4OfficialAbilities.TateEnergyField) + ".ogg")), new DataOp
+			m_AsyncOp.Add(AssetManager.LoadAssetAsync<AudioClip>(builder.GetAsset("TateEnergyField" + ".ogg")), new DataOp
 			{
 				Key = nameof(P4OfficialAbilities.TateEnergyField)
 			});
-			m_AsyncOp.Add(AssetManager.LoadAssetAsync<AudioClip>(builder.GetAsset(nameof(P4OfficialAbilities.YariFearSpear) + ".ogg")), new DataOp
+			m_AsyncOp.Add(AssetManager.LoadAssetAsync<AudioClip>(builder.GetAsset("YariFearSpear" + ".ogg")), new DataOp
 			{
 				Key = nameof(P4OfficialAbilities.YariFearSpear)
 			});
