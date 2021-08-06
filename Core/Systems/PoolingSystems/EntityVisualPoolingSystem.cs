@@ -99,7 +99,7 @@ namespace PataNext.Client.Systems.PoolingSystems
 			return GetEntityQuery(typeof(EntityVisual), typeof(Translation));
 		}
 
-		protected override Type[] AdditionalBackendComponents => new[] {typeof(SortingGroup)};
+		//protected override Type[] AdditionalBackendComponents => new[] {typeof(SortingGroup)};
 
 		protected override void ReturnBackend(EntityVisualBackend backend)
 		{

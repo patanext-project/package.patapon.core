@@ -1,18 +1,14 @@
 using System;
 using package.stormiumteam.shared.ecs;
-using PataNext.Client.Systems;
 using PataNext.Client.Systems.PoolingSystems;
-using PataNext.Module.Simulation.GameBase.Physics.Components;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.GamePlay.Projectiles;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Random = UnityEngine.Random;
 
 namespace PataNext.Client.DataScripts.Models.Projectiles
 {
@@ -65,8 +61,7 @@ namespace PataNext.Client.DataScripts.Models.Projectiles
 			((EntityVisualBackend) Backend).letPresentationUpdateTransform = true;
 			((EntityVisualBackend) Backend).canBePooled                    = false;
 			
-			Backend.GetComponent<SortingGroup>()
-			       .sortingLayerName = "BattlegroundEffects";
+			GetSortingGroup().sortingLayerName = "BattlegroundEffects";
 		}
 
 		public void SetPhase(EPhase phase)

@@ -1,9 +1,5 @@
-using System;
 using PataNext.Client.Asset;
 using PataNext.Client.Behaviors;
-using StormiumTeam.GameBase.Utility.Misc;
-using StormiumTeam.GameBase.Utility.Pooling;
-using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using TMPro;
 using Unity.Entities;
 using UnityEngine;

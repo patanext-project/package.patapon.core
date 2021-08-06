@@ -13,11 +13,13 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Units
 		private struct Replica
 		{
 			public GhGameEntitySafe Enemy;
-			public float            Distance;
+			public float            RelativeDistance;
+			public float            SelfDistance;
 		}
 
 		public Entity Enemy;
-		public float  Distance;
+		public float  RelativeDistance;
+		public float  SelfDistance;
 
 		public class Register : RegisterGameHostComponentData<UnitEnemySeekingState>
 		{
@@ -29,7 +31,8 @@ namespace PataNext.Module.Simulation.Components.GamePlay.Units
 		public void Deserialize(EntityManager em, NativeHashMap<GhGameEntitySafe, Entity> ghEntityToUEntity, ref UnitEnemySeekingState component, ref DataBufferReader reader)
 		{
 			var replica = reader.ReadValue<Replica>();
-			Distance = replica.Distance;
+			RelativeDistance = replica.RelativeDistance;
+			SelfDistance     = replica.SelfDistance;
 			ghEntityToUEntity.TryGetValue(replica.Enemy, out Enemy);
 
 			component = this;

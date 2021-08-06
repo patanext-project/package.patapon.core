@@ -1,19 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using PataNext.Client.Asset;
 using PataNext.Client.Core.Addressables;
-using PataNext.Client.DataScripts.Interface;
 using PataNext.Client.DataScripts.Interface.Menu.Screens;
-using PataNext.Client.DataScripts.Interface.Menu.Settings;
 using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
-using StormiumTeam.GameBase.Utility.Rendering;
-using StormiumTeam.GameBase.Utility.uGUI.Systems;
-using UIForia;
 using Unity.Entities;
 using UnityEngine;
-using UnityEngine.UI;
 using Application = UIForia.Application;
 
 namespace PataNext.Client.Systems

@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using PataNext.Client.Core.Addressables;
 using StormiumTeam.GameBase.BaseSystems;
 using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling;
+using Unity.Entities;
 using UnityEngine;
 using Unity.Serialization.Json;
 using Unity.VectorGraphics;
@@ -71,6 +73,8 @@ namespace PataNext.Client.Systems
 						data.defaultIconPath = file.FullName.Replace(".json", ".svg");
 
 					data.iconPathMap["default_icon"] = data.defaultIconPath;
+					if (!data.iconPathMap.ContainsKey("small"))
+						data.iconPathMap["small"] = file.DirectoryName + "/" + Path.GetFileNameWithoutExtension(file.Name) + "_small.svg";
 
 					itemMap[data.masterServerId] = data;
 
@@ -111,11 +115,28 @@ namespace PataNext.Client.Systems
 				Object.Destroy(sprite);
 		}
 
+		public bool TryGetDetails(string itemId, out ReadOnlyItemDetails itemDetails)
+		{
+			if (!itemMap.TryGetValue(itemId, out var value))
+			{
+				itemDetails = default;
+				return false;
+			}
+
+			itemDetails.MasterServerId           = value.masterServerId;
+			itemDetails.DisplayNameFallback      = value.displayName;
+			itemDetails.DisplayNameTranslationId = value.displayNameTranslationId;
+			itemDetails.DescriptionFallback      = value.description;
+			itemDetails.DescriptionTranslationId = value.descriptionTranslationId;
+			return true;
+		}
+
 		public Sprite GetSpriteOf(string itemId, string category, int tier)
 		{
 			return GetSpriteOf(itemId, $"{category}:{tier}");
 		}
 
+		private HashSet<(string, string)> exceptionSet = new HashSet<(string, string)>();
 		public Sprite GetSpriteOf(string itemId, string key)
 		{
 			const string defaultIcon = "default_icon";
@@ -126,25 +147,34 @@ namespace PataNext.Client.Systems
 			if (itemMap.TryGetValue(itemId, out var data)
 			    && data.iconPathMap.TryGetValue(key, out var path))
 			{
-				Console.WriteLine("item: " + path);
-				
-				using var stream = new StreamReader(path);
-
-				var sceneInfo = SVGParser.ImportSVG(stream, ViewportOptions.PreserveViewport, 0, 1, 100, 100);
-				var rect      = sceneInfo.SceneViewport;
-
-				var tessOptions = new VectorUtils.TessellationOptions
+				try
 				{
-					MaxCordDeviation     = float.MaxValue,
-					MaxTanAngleDeviation = 1f,
-					SamplingStepSize     = 1.0f / 100.0f,
-					StepDistance         = 0.75f
-				};
+					using var stream = new StreamReader(path);
 
-				var geometry = VectorUtils.TessellateScene(sceneInfo.Scene, tessOptions, sceneInfo.NodeOpacity);
-				sprite = VectorUtils.BuildSprite(geometry, rect, 100, VectorUtils.Alignment.Center, default, 64, true);
+					var sceneInfo = SVGParser.ImportSVG(stream, ViewportOptions.PreserveViewport, 0, 1, 100, 100);
+					var rect      = sceneInfo.SceneViewport;
 
-				itemSpriteMap[(itemId, key)] = sprite;
+					var tessOptions = new VectorUtils.TessellationOptions
+					{
+						MaxCordDeviation     = float.MaxValue,
+						MaxTanAngleDeviation = 1f,
+						SamplingStepSize     = 1.0f / 100.0f,
+						StepDistance         = 0.75f
+					};
+
+					var geometry = VectorUtils.TessellateScene(sceneInfo.Scene, tessOptions, sceneInfo.NodeOpacity);
+					sprite = VectorUtils.BuildSprite(geometry, rect, 100, VectorUtils.Alignment.Center, default, 64, true);
+
+					itemSpriteMap[(itemId, key)] = sprite;
+				}
+				catch (Exception ex)
+				{
+					if (!exceptionSet.Contains((itemId, key)))
+					{
+						Debug.LogException(ex);
+						exceptionSet.Add((itemId, key));
+					}
+				}
 			}
 
 			if (sprite == null && key != defaultIcon)
@@ -171,5 +201,15 @@ namespace PataNext.Client.Systems
 		public Dictionary<string, string> iconPathMap;
 
 		public string json;
+	}
+
+	public struct ReadOnlyItemDetails
+	{
+		public string MasterServerId;
+		public string DisplayNameFallback;
+		public string DisplayNameTranslationId;
+
+		public string DescriptionFallback;
+		public string DescriptionTranslationId;
 	}
 }

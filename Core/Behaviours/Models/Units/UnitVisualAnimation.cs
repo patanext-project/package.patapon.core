@@ -120,10 +120,15 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 		public  GameGraphicResource CurrentGameGraphicResource;
 		private UnitVisualAnimation m_Animation;
 
+		// TODO: This should be a component
+		// The reason why it exist is so that BarracksLocation can modify the position of the backend
+		public bool AutomaticTransform { get; set; } = true;
+
 		public UnitVisualAnimation Animation => m_Animation;
 
 		public override void OnTargetUpdate()
 		{
+			CurrentArchetype           = default;
 			CurrentKitResource         = default;
 			CurrentArchetypeResource   = default;
 			CurrentGameGraphicResource = default;

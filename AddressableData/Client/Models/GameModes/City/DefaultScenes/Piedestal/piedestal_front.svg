@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="200cm"
+   height="30cm"
+   viewBox="0 0 2000 299.99999"
+   version="1.1"
+   id="svg3736"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   sodipodi:docname="piedestal_front.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview3738"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     units="cm"
+     inkscape:snap-nodes="false"
+     inkscape:zoom="0.092648709"
+     inkscape:cx="2358.3707"
+     inkscape:cy="-286.02665"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs3733" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 282.72115,28.557691 65.68268,-65.68269 214.18269,4.283654 59.97118,49.97596 139.93267,2.855769 35.69713,-58.543268 304.1394,4.283654 38.5529,47.120191 122.7981,-1.427884 37.125,-55.6875 362.6827,15.706732 35.6971,49.97596 -1143.73559,21.41827 -274.15383,-7.139424 z"
+       id="path4669" />
+  </g>
+</svg>

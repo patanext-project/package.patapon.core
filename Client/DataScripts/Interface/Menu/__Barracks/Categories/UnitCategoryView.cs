@@ -1,20 +1,6 @@
-using System;
-using PataNext.Client.Asset;
-using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.UI;
-
 namespace PataNext.Client.DataScripts.Interface.Menu.__Barracks.Categories
 {
-	public struct CategoryViewData
-	{
-		public Action    QuitView;
-		public Transform CategoryTransform;
-	}
-
-	public class UnitCategoryViewBackend : UIBackend<CategoryViewData, UnitCategoryView>
+	/*public class UnitCategoryViewBackend : UIBackend<CategoryViewData, UnitCategoryView>
 	{
 	}
 
@@ -35,8 +21,8 @@ namespace PataNext.Client.DataScripts.Interface.Menu.__Barracks.Categories
 
 			protected override void PrepareValues()
 			{
-				var inputSystem = EventSystem.current.GetComponent<InputSystemUIInputModule>();
-				triggerQuit = inputSystem.cancel.action.ReadValue<float>() > 0.1f;
+				var inputSystem = EventSystem.current.GetComponent<StandaloneInputModule>();
+				triggerQuit = Input.GetButton(inputSystem.cancelButton);
 			}
 
 			protected override void Render(UnitCategoryView definition)
@@ -50,5 +36,5 @@ namespace PataNext.Client.DataScripts.Interface.Menu.__Barracks.Categories
 				triggerQuit = false;
 			}
 		}
-	}
+	}*/
 }

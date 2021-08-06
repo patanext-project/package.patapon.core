@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using DefaultNamespace.Utility.DOTS;
-using GameHost.ShareSimuWorldFeature.Systems;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Core.Addressables;
 using PataNext.Client.OrderSystems;

@@ -123,12 +123,13 @@ Material:
     - _UseUIAlphaClip: 0
     - _WorkflowMode: 1
     - _ZWrite: 1
+    - _outline: 8
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
-    - _halfSize: {r: 330, g: 35, b: 0, a: 0}
+    - _halfSize: {r: 330, g: 218, b: 0, a: 0}
     - _r: {r: 30, g: 30, b: 30, a: 30}
-    - _rect2props: {r: 0.000030517578, g: 0, b: 236.88078, a: 236.88078}
+    - _rect2props: {r: 0.000030517578, g: -0.000061035156, b: 366.28134, a: 366.28134}
   m_BuildTextureStacks: []

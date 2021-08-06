@@ -9,7 +9,6 @@ using StormiumTeam.GameBase.BaseSystems.Ext;
 using StormiumTeam.GameBase.GamePlay.Health;
 using StormiumTeam.GameBase.Roles.Components;
 using StormiumTeam.GameBase.Roles.Descriptions;
-using StormiumTeam.GameBase.Utility.AssetBackend;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using StormiumTeam.GameBase.Utility.Rendering.MaterialProperty;
 using Unity.Entities;
@@ -78,8 +77,7 @@ namespace PataNext.Client.DataScripts.Models.InGame.Structures
 		{
 			base.OnBackendSet();
 			
-			Backend.GetComponent<SortingGroup>()
-			       .sortingLayerName = "MovableStructures";
+			GetSortingGroup().sortingLayerName = "MovableStructures";
 		}
 
 		protected virtual void OnEnable()

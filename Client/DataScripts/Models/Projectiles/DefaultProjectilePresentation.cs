@@ -77,7 +77,7 @@ namespace PataNext.Client.DataScripts.Models.Projectiles
 			((EntityVisualBackend) Backend).letPresentationUpdateTransform = true;
 			((EntityVisualBackend) Backend).canBePooled                    = false;
 			
-			Backend.GetComponent<SortingGroup>()
+			GetSortingGroup()
 			       .sortingLayerName = "BattlegroundEffects";
 		}
 

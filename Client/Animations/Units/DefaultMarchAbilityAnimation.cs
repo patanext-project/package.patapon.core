@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using package.stormiumteam.shared.ecs;
@@ -73,7 +72,8 @@ namespace PataNext.Client.Graphics.Animation.Units
 			if (abilityActive)
 				systemData.ForceAnimation = true;
 
-			var velocity        = EntityManager.GetComponentData<Velocity>(backend.DstEntity);
+			EntityManager.TryGetComponentData(backend.DstEntity, out Velocity velocity);
+
 			var targetAnimation = math.abs(velocity.Value.x) > 0.1f || abilityActive ? TargetType.Walking : TargetType.Idle;
 			if (targetAnimation == TargetType.Walking)
 				systemData.LastWalk = Time.ElapsedTime;

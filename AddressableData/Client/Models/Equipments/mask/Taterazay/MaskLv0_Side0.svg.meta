@@ -1,0 +1,70 @@
+fileFormatVersion: 2
+guid: 20784e872f520d745a83d33bf94d471b
+ScriptedImporter:
+  internalIDToNameTable:
+  - first:
+      1: 100000
+    second: gameObject/MaskLv0_Side0
+  - first:
+      4: 400000
+    second: gameObject/MaskLv0_Side0/Transform
+  - first:
+      212: 21200000
+    second: gameObject/MaskLv0_Side0/SpriteRenderer
+  - first:
+      213: 21300000
+    second: sprite
+  - first:
+      1001: 100100000
+    second: gameObject
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: a57477913897c46af95d590f580878bd, type: 3}
+  svgType: 0
+  texturedSpriteMeshType: 0
+  svgPixelsPerUnit: 100
+  gradientResolution: 128
+  alignment: 0
+  customPivot: {x: 0, y: 0}
+  generatePhysicsShape: 0
+  viewportOptions: 1
+  preserveViewport: 0
+  advancedMode: 0
+  predefinedResolutionIndex: 1
+  targetResolution: 1080
+  resolutionMultiplier: 1
+  stepDistance: 10
+  samplingStepDistance: 100
+  maxCordDeviationEnabled: 0
+  maxCordDeviation: 1
+  maxTangentAngleEnabled: 0
+  maxTangentAngle: 5
+  keepTextureAspectRatio: 1
+  textureSize: 256
+  textureWidth: 256
+  textureHeight: 256
+  wrapMode: 0
+  filterMode: 1
+  sampleCount: 4
+  preserveSVGImageAspect: 0
+  useSVGPixelsPerUnit: 0
+  spriteData:
+    TessellationDetail: 0
+    SpriteRect:
+      name: MaskLv0_Side0Sprite
+      originalName: 
+      pivot: {x: 0.999202, y: 0.5001352}
+      alignment: 0
+      border: {x: 0, y: 0, z: 0, w: 0}
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 115
+        height: 130
+      spriteID: 6819a0c942ed1324ea870fee75f0bf6a
+      internalID: 0
+    PhysicsOutlines: []

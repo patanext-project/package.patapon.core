@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="400"
+   height="200"
+   viewBox="0 0 374.99995 187.49997"
+   id="svg5590"
+   version="1.1"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   sodipodi:docname="MaskLv1_Side0.svg"
+   inkscape:export-filename="C:\Users\Guerro\Documents\Patapon\Patapon4Rewrite\Assets\Resources\Textures\Masks\taterazay.png"
+   inkscape:export-xdpi="192"
+   inkscape:export-ydpi="192">
+  <defs
+     id="defs5592" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.9798992"
+     inkscape:cx="173.27924"
+     inkscape:cy="136.68265"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1680"
+     inkscape:window-height="987"
+     inkscape:window-x="1912"
+     inkscape:window-y="14"
+     inkscape:window-maximized="1"
+     showguides="false"
+     units="px"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata5595">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Calque2"
+     transform="translate(-372.27333,-698.66389)" />
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-372.27333,-698.66389)">
+    <path
+       inkscape:connector-curvature="0"
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.33318996px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 469.18738,718.61323 c 11.85483,45.3233 53.35325,90.64995 90.58592,90.4669 v 54.03991 l -27.63061,-20.06286 c -6.90238,-0.50227 -17.72461,6.51122 -17.72461,6.51122 0,0 4.16319,-12.06028 6.66871,-14.53857 -19.9197,0.56101 -26.4273,-1.51801 -37.37549,-8.09692 12.46138,0.38949 23.62754,-1.53136 31.66259,-9.0454 -30.97004,-22.64982 -43.06703,-57.95211 -46.18651,-99.27428 z"
+       id="path7127-2"
+       sodipodi:nodetypes="ccccccccc" />
+  </g>
+</svg>

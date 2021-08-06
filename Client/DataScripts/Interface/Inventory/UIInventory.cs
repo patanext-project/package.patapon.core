@@ -1,4 +1,3 @@
-using System;
 using PataNext.Client.Asset;
 using Unity.Mathematics;
 using UnityEngine;
@@ -30,6 +29,8 @@ namespace PataNext.Client.DataScripts.Interface.Inventory
 
 		protected abstract void OnSpawnGameObject(GameObject go);
 
+		protected virtual bool SwapAxis => false;
+
 		private void OnEnable()
 		{
 			spawnedColumn = new GameObject[displayedSizeTable.x, displayedSizeTable.y];
@@ -39,7 +40,12 @@ namespace PataNext.Client.DataScripts.Interface.Inventory
 				var clone = Instantiate(prefabToSpawn, ItemContainer == null ? transform : ItemContainer);
 				clone.name = $"Row={x} Column={y}";
 				if (clone.TryGetComponent(out RectTransform rt))
-					rt.anchoredPosition = new Vector2(x * Size.x, y * Size.y);
+				{
+					if (SwapAxis)
+						rt.anchoredPosition = new Vector2(y * Size.x, x * Size.y);
+					else
+						rt.anchoredPosition = new Vector2(x * Size.x, y * Size.y);
+				}
 
 				OnSpawnGameObject(clone);
 				
@@ -148,12 +154,14 @@ namespace PataNext.Client.DataScripts.Interface.Inventory
 
 		public int2 ViewAsTable => view + displayedSizeTable;
 
-		protected abstract void OnAdded(TItem item, int2 position);
-
+		protected abstract void OnAdded(TItem  item, int2 position);
+		protected abstract void OnRemoved(int2 position);
+		
 		public virtual void Clear()
 		{
-			ItemRange = default;
-			Cursor    = Cursor;
+			ItemRange       = default;
+			MaxItemPosition = default;
+			Cursor          = Cursor;
 		}
 
 		public void Add(TItem item, int2 position)

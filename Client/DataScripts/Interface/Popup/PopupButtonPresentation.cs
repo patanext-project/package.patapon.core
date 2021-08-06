@@ -75,6 +75,8 @@ namespace PataNext.Client.DataScripts.Interface.Popup
 		}
 	}
 	
+	[UpdateInGroup(typeof(OrderGroup.Presentation.AfterSimulation))]
+	[UpdateAfter(typeof(PopupPoolingSystem))]
 	public class PopupButtonPoolingSystem : PoolingSystem<PopupButtonBackend, PopupButtonPresentation, PopupButtonPoolingSystem.CheckValidity>
 	{
 		public struct CheckValidity : ICheckValidity

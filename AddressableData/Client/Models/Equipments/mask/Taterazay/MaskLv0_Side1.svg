@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="400"
+   height="200"
+   viewBox="0 0 374.99995 187.49997"
+   id="svg5590"
+   version="1.1"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   sodipodi:docname="MaskLv0_Side1.svg"
+   inkscape:export-filename="C:\Users\guerr\Documents\Projets\Patapon\Experiments\PataponMPExperiment_RythmAndMovement\Assets\Textures\Taterazay\MaskLv0_raster.png"
+   inkscape:export-xdpi="192"
+   inkscape:export-ydpi="192">
+  <defs
+     id="defs5592" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="227.44253"
+     inkscape:cy="144.24589"
+     inkscape:document-units="px"
+     inkscape:current-layer="g22823"
+     showgrid="false"
+     inkscape:window-width="1680"
+     inkscape:window-height="987"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     showguides="false"
+     units="px"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata5595">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Calque2"
+     transform="translate(-372.27333,-698.66389)" />
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-372.27333,-698.66389)">
+    <g
+       id="g22823">
+      <g
+         id="g1511">
+        <path
+           sodipodi:nodetypes="cccccccccccccc"
+           inkscape:connector-curvature="0"
+           id="path23473-7"
+           d="m 655.59453,743.84517 c -3.62856,21.09423 -6.9407,34.04471 -13.3319,54.04541 8.81569,2.38153 16.88846,-4.90061 25.23742,-8.573 -10.7702,12.41274 -22.91451,24.23312 -41.90185,33.09264 -4.47169,5.98894 -8.75878,10.26216 -15.71228,14.5221 5.01538,5.96339 8.12109,13.51737 7.76001,23.96117 -10.38477,-5.54071 -16.98298,-13.93987 -36.73095,-12.40539 l -21.14135,17.26501 -4e-5,-81.77672 1.35858,6.45264 v 2.22106 c 7.59752,9.88748 12.91508,12.69851 19.9475,17.14234 23.0594,-9.25412 47.34471,-27.28537 74.51474,-65.94726 z"
+           style="fill:#d7801c;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.33318996px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+        <path
+           id="path6961-9-7-5"
+           d="m 620.97662,799.70698 c -5.28839,12.52822 -13.949,22.27373 -22.64099,27.94555 l 6.22925,15.7379 -19.10706,-6.14317 -25.68235,18.01023 -0.002,-0.002 v -10.63843 l 0.002,0.007 8.17381,-34.14551 6.22742,14.89929 c 12.59868,-0.14919 31.42825,-10.41153 46.79992,-25.67074 z"
+           style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.33318996px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           inkscape:connector-curvature="0" />
+        <path
+           style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.33318985px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 625.36194,792.29442 7.4397,4.16624 5.11845,-16.01008 z"
+           id="path6963-9-4-0-1"
+           inkscape:connector-curvature="0" />
+      </g>
+    </g>
+  </g>
+</svg>

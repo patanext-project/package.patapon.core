@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using GameHost.ShareSimuWorldFeature.Systems;
 using package.stormiumteam.shared.ecs;
 using PataNext.Client.Graphics.Animation.Base;
 using PataNext.Client.Graphics.Animation.Units.Base;
-using PataNext.CoreAbilities.Mixed.Defaults;
 using PataNext.Module.Simulation.Components;
 using PataNext.Module.Simulation.Components.GamePlay.Abilities;
 using PataNext.Module.Simulation.Components.GamePlay.RhythmEngine;
@@ -16,6 +14,7 @@ using PataNext.Module.Simulation.Game.RhythmEngine;
 using StormiumTeam.GameBase.Roles.Components;
 using StormiumTeam.GameBase.Roles.Descriptions;
 using StormiumTeam.GameBase.Systems;
+using StormiumTeam.GameBase.Utility.Misc;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -105,6 +104,15 @@ namespace PataNext.Client.Graphics.Animation.Units
 
 			ref var data = ref animation.GetSystemData<SystemData>(SystemType);
 			// If either there is no input, or that the clip with this drum isn't yet loaded: stop here.
+			// If we queued a pressure, then virtually modify the pressure key
+			if (pressureKey != -1)
+				data.Queue = -1;
+			
+			if (data.Queue > 0)
+			{
+				data.Queue  = -1;
+				pressureKey = data.CurrentKey - 1;
+			}
 
 			pressureKey++; // Increase by one since drums start at 1
 			if (pressureKey <= 0 || data.ClipPlayableMap[pressureKey].Count == 0)
@@ -144,6 +152,29 @@ namespace PataNext.Client.Graphics.Animation.Units
 			if (clip == null)
 				return;
 
+			var rand = 0f;
+			if (animation.Presentation.TryGetComponent(out OverrideObjectComponent overrides)
+			    && overrides.TryGetFloat("ReactionTime_Max", out var randMax))
+			{
+				if (UnityEngine.Random.Range(0, 10) > 8)
+					randMax *= 0.8f;
+				if (UnityEngine.Random.Range(0, 10) > 6)
+					randMax *= 0.6f;
+				if (UnityEngine.Random.Range(0, 10) > 4)
+					randMax *= 0.4f;
+				if (UnityEngine.Random.Range(0, 10) > 2)
+					randMax *= 0.2f;
+				
+				rand = UnityEngine.Random.Range(0, randMax);
+			}
+
+			if (rand > Time.DeltaTime)
+			{
+				data.CurrentKey = pressureKey;
+				data.Queue      = Time.ElapsedTime + rand;
+				return;
+			}
+
 			var transitionStart = clip.length * 0.825f + animation.RootTime;
 			var transitionEnd   = clip.length + animation.RootTime;
 
@@ -164,13 +195,16 @@ namespace PataNext.Client.Graphics.Animation.Units
 			public EType CurrentType;
 
 			public Dictionary<int, Dictionary<EType, AnimationClipPlayable>> ClipPlayableMap;
-			public Dictionary<int, AnimationMixerPlayable>                 MixerMap;
+			public Dictionary<int, AnimationMixerPlayable>                   MixerMap;
 
 			public double TransitionStart;
 			public double TransitionEnd;
 
 			public PlayableInnerCall bv;
+
+			public double Queue;
 		}
+
 
 		void IAbilityPlayableSystemCalls.OnInitialize(PlayableInnerCall behavior)
 		{

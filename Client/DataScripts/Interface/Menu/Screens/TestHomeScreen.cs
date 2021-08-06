@@ -1,10 +1,8 @@
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using Cysharp.Threading.Tasks;
 using GameHost.Core;
-using Newtonsoft.Json;
 using PataNext.Client.Asset;
 using PataNext.Client.Behaviors;
 using PataNext.Client.Core.Addressables;
@@ -15,7 +13,6 @@ using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;
 using TMPro;
 using Unity.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace PataNext.Client.DataScripts.Interface.Menu.Screens
@@ -171,7 +168,7 @@ namespace PataNext.Client.DataScripts.Interface.Menu.Screens
 
 			protected override void Render(TestHomeScreen definition)
 			{
-				if (Keyboard.current.escapeKey.wasPressedThisFrame)
+				if (Input.GetKeyDown(KeyCode.Escape))
 				{
 					definition.IsHidden = !definition.IsHidden;
 				}

@@ -1,5 +1,4 @@
 using PataNext.Client.Graphics.Animation.Base;
-using PataNext.CoreAbilities.Mixed.CTate;
 using PataNext.CoreAbilities.Mixed.Defaults;
 using Unity.Entities;
 

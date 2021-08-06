@@ -1,5 +1,3 @@
-using Cysharp.Threading.Tasks;
-using PataNext.Client.Asset;
 using PataNext.Client.DataScripts.Interface.Menu.Screens;
 using PataNext.Client.Rules;
 using Unity.Mathematics;

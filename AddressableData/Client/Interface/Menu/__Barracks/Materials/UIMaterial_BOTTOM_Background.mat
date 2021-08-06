@@ -45,11 +45,12 @@ Material:
     - _StencilReadMask: 255
     - _StencilWriteMask: 255
     - _UseUIAlphaClip: 0
+    - _outline: 0
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
-    - _halfSize: {r: 590, g: 208.32, b: 0, a: 0}
+    - _halfSize: {r: 590, g: 206.2495, b: 0, a: 0}
     - _r: {r: 0, g: 0, b: 25, a: 25}
-    - _rect2props: {r: 0.000061035156, g: 12.499939, b: 555.6587, a: 555.6587}
+    - _rect2props: {r: 0.000061035156, g: 12.499939, b: 554.19464, a: 554.19464}
   m_BuildTextureStacks: []

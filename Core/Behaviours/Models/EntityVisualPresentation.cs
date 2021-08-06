@@ -5,12 +5,12 @@ namespace PataNext.Client.DataScripts.Models.Projectiles
 {
 	public class EntityVisualPresentation : RuntimeAssetPresentation
 	{
-		public override void OnBackendSet()
+		public SortingGroup GetSortingGroup()
 		{
-			base.OnBackendSet();
-			
-			Backend.GetComponent<SortingGroup>()
-			       .sortingLayerName = "MovableStructures";
+			if (!TryGetComponent(out SortingGroup sortingGroup))
+				sortingGroup = gameObject.AddComponent<SortingGroup>();
+
+			return sortingGroup;
 		}
 	}
 

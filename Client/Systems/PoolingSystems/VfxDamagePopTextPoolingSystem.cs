@@ -7,7 +7,6 @@ using Replicated.NetCode;
 using StormiumTeam.GameBase;
 using StormiumTeam.GameBase.GamePlay.Events;
 using StormiumTeam.GameBase.Modules;
-using StormiumTeam.GameBase.Roles.Descriptions;
 using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Collections;

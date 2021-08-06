@@ -38,7 +38,8 @@ namespace PataNext.Client.Systems
 			var ponMap = new Dictionary<string, AsyncAssetPool<GameObject>>
 			{
 				[string.Empty]              = new AsyncAssetPool<GameObject>(pataponFolder.GetAsset("Patapon")),
-				[kitAddr.GetFile("yarida")] = new AsyncAssetPool<GameObject>(pataponFolder.GetAsset("PataponYarida"))
+				[kitAddr.GetFile("yarida")] = new AsyncAssetPool<GameObject>(pataponFolder.GetAsset("PataponYarida")),
+				[kitAddr.GetFile("taterazay")] = new AsyncAssetPool<GameObject>(pataponFolder.GetAsset("PataponTaterazay"))
 			};
 
 			m_PoolByArchetype[archAddr.GetFile("uberhero_std_unit")] = uberHeroMap;
@@ -61,11 +62,18 @@ namespace PataNext.Client.Systems
 
 		private bool tryGet(string archetype, string kit, out AsyncAssetPool<GameObject> pool)
 		{
-			var archInspect = ResPath.Inspect(archetype);
-			var kitInspect  = ResPath.Inspect(kit);
+			ResPath.Inspection archInspect, kitInspect;
+			try
+			{
+				archInspect = ResPath.Inspect(archetype);
+				kitInspect  = ResPath.Inspect(kit);
+			}
+			catch (InvalidOperationException ex) // catch parse error
+			{
+				pool = null;
+				return false;
+			}
 
-			Debug.LogError($"tryGet {archetype}, {kit}");
-			
 			pool = null;
 			if (!m_PoolByArchetype.TryGetValue(archInspect.ResourcePath, out var kitMap))
 				return false;

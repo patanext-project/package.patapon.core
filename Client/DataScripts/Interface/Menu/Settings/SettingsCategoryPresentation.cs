@@ -1,10 +1,7 @@
 using System;
-using System.Linq;
 using Cysharp.Threading.Tasks;
-using package.stormiumteam.shared.ecs;
 using PataNext.Client.Asset;
 using PataNext.Client.Behaviors;
-using PataNext.Client.Core.DOTSxUI.Components;
 using PataNext.Client.DataScripts.Interface.Menu.Screens;
 using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Rendering.BaseSystems;

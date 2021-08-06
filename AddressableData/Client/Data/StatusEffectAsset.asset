@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6dfd403b30c3484fafe2238ba0af27c, type: 3}
+  m_Name: StatusEffectAsset
+  m_EditorClassIdentifier: 
+  defaultColor: {r: 0, g: 0.6509434, b: 0.2527093, a: 1}
+  idToColors:
+  - key: critical
+    value: {r: 0.18823531, g: 0.30980393, b: 0.3137255, a: 1}
+  - key: piercing
+    value: {r: 0.18823531, g: 0.30980393, b: 0.3137255, a: 1}
+  - key: knockback
+    value: {r: 0.34901962, g: 0.4156863, b: 0.08627451, a: 1}
+  - key: stagger
+    value: {r: 0.34901962, g: 0.4156863, b: 0.08627451, a: 1}
+  - key: burn
+    value: {r: 0.49411768, g: 0, b: 0.039215688, a: 1}
+  - key: sleep
+    value: {r: 0.48235297, g: 0.34901962, b: 0.019607844, a: 1}
+  - key: freeze
+    value: {r: 0, g: 0.4156863, b: 0.5019608, a: 1}
+  - key: poison
+    value: {r: 0.003921569, g: 0.5058824, b: 0.003921569, a: 1}
+  defaultIcon: {fileID: 3286163911610860551, guid: 810ff42427a65894f9272bd3c9077a9e,
+    type: 3}
+  idToIcons:
+  - key: critical
+    value: {fileID: 3286163911610860551, guid: 810ff42427a65894f9272bd3c9077a9e, type: 3}
+  - key: piercing
+    value: {fileID: 3286163911610860551, guid: 8918c7cc6ee96cb4c8eea967d8d0e6e1, type: 3}
+  - key: knockback
+    value: {fileID: 3286163911610860551, guid: 5fb094f2e28d7f24e97733a422170737, type: 3}
+  - key: stagger
+    value: {fileID: 3286163911610860551, guid: a7d1d57a0073e4f4986d3b7cdea028ee, type: 3}
+  - key: burn
+    value: {fileID: 3286163911610860551, guid: e1f0e74dc61aa294b8cd89e49305d057, type: 3}
+  - key: sleep
+    value: {fileID: 3286163911610860551, guid: 314acca0d8ae2d54fb05443cafa46610, type: 3}
+  - key: freeze
+    value: {fileID: 3286163911610860551, guid: 3bf0fae838c2a4c4d980450aa7af149a, type: 3}
+  - key: poison
+    value: {fileID: 3286163911610860551, guid: 2bdb90fa6f5f70d47af5db7b068c44c8, type: 3}

@@ -1,4 +1,3 @@
-using System;
 using PataNext.Client.DataScripts.Interface.Menu.Screens;
 using PataNext.Client.Rules;
 using UnityEngine;

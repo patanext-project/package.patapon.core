@@ -8,7 +8,6 @@
     "dependencies": 
     {
 		"com.unity.textmeshpro": "2.0.1",
-		"com.unity.inputsystem": "0.9.0-preview",
 		"package.stormiumteam.gamebase": "https://github.com/StormiumTeam/package.stormiumteam.gamebase.git",
 
 		"com.unity.entities": "0.3.0-preview.4",

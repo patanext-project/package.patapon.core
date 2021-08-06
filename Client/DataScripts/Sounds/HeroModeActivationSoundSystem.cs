@@ -38,7 +38,7 @@ namespace PataNext.Client.DataScripts.Sounds
 			                                   .Folder("Sounds")
 			                                   .Folder("Effects")
 			                                   .Folder("HeroModeActivation")
-			                                   .GetAsset("HeroModeStart.wav");
+			                                   .GetAsset("HeroModeStart");
 			m_AsyncOp.Add(AssetManager.LoadAssetAsync<AudioClip>(activationFile), new DataOp { });
 
 			m_AbilityWithoutInternalQuery = GetEntityQuery(new EntityQueryDesc

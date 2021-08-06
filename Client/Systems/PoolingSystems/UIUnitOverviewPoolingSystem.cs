@@ -26,7 +26,7 @@ namespace PataNext.Client.PoolingSystems
 			// TODO: Filter it by barracks
 			return GetEntityQuery(typeof(CurrentUnitOverview));
 		}
-		
+
 		protected override void SpawnBackend(Entity target)
 		{
 			if (m_Canvas == null)
@@ -37,6 +37,11 @@ namespace PataNext.Client.PoolingSystems
 			base.SpawnBackend(target);
 
 			LastBackend.transform.SetParent(m_Canvas.transform, false);
+			LastBackend.Data = new UnitOverviewData()
+			{
+				TargetUnitEntity = GetComponent<CurrentUnitOverview>(target).Target
+			};
+
 			CanvasUtility.ExtendRectTransform(LastBackend.GetComponent<RectTransform>());
 		}
 	}

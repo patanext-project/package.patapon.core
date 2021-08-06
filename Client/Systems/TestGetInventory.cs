@@ -1,11 +1,6 @@
-using System;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using GameHost.Core;
-using PataNext.Simulation.Client.Rpc;
-using PataNext.UnityCore.Rpc;
 using Unity.Entities;
-using UnityEngine;
 
 namespace PataNext.Client.Systems
 {
@@ -33,7 +28,7 @@ namespace PataNext.Client.Systems
 
 		private async UniTask test()
 		{
-			Debug.Log("GetInventory 0");
+			/*Debug.Log("GetInventory 0");
 			await Task.Delay(3000);
 			Debug.Log("Get Inventory 1");
 
@@ -60,7 +55,7 @@ namespace PataNext.Client.Systems
 						Preset = preset.Id,
 						Unit = new MasterServerUnitId("8d969b25-0144-44b6-ac2e-a9ac70a9d125")
 					});
-			}
+			}*/
 		}
 	}
 }

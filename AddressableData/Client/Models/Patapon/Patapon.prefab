@@ -151,6 +151,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   presentationObjects:
+  - Key: ReactionTime_Max
+    Object: {fileID: 0}
+    String: 
+    Int: 0
+    Float: 0.5
+    Vector: {x: 0, y: 0, z: 0}
   - Key: DefaultMarchAbility/Animations/IdleNormal
     Object: {fileID: 7400000, guid: 57c775ba8ffb0394e929c4f822038490, type: 2}
     String: 
@@ -171,6 +177,18 @@ MonoBehaviour:
     Vector: {x: 0, y: 0, z: 0}
   - Key: DrumReaction/Animations/Pon
     Object: {fileID: 7400000, guid: a7e5a3e984d344e4da33d26e41bf0aec, type: 2}
+    String: 
+    Int: 0
+    Float: 0
+    Vector: {x: 0, y: 0, z: 0}
+  - Key: DrumReaction/Animations/Don
+    Object: {fileID: 7400000, guid: 4867ddfcc099ac546a3b60cb30b21c63, type: 2}
+    String: 
+    Int: 0
+    Float: 0
+    Vector: {x: 0, y: 0, z: 0}
+  - Key: DrumReaction/Animations/Chaka
+    Object: {fileID: 7400000, guid: 1d24ef0cb5fcc8e4c8709ada37335933, type: 2}
     String: 
     Int: 0
     Float: 0

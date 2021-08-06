@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="400"
+   height="200"
+   viewBox="0 0 374.99995 187.49997"
+   id="svg5590"
+   version="1.1"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   sodipodi:docname="MaskLv0_Side0.svg"
+   inkscape:export-filename="C:\Users\guerr\Documents\Projets\Patapon\Experiments\PataponMPExperiment_RythmAndMovement\Assets\Textures\Taterazay\MaskLv0_raster.png"
+   inkscape:export-xdpi="192"
+   inkscape:export-ydpi="192">
+  <defs
+     id="defs5592" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.8284271"
+     inkscape:cx="146.86515"
+     inkscape:cy="117.38497"
+     inkscape:document-units="px"
+     inkscape:current-layer="g22823"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     showguides="false"
+     units="px"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata5595">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Calque2"
+     transform="translate(-372.27333,-698.66389)" />
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-372.27333,-698.66389)">
+    <g
+       id="g22823">
+      <path
+         style="fill:#d7801c;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.42206967px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 97.791016,48.193359 c 3.870464,22.500516 7.403414,36.314365 14.220704,57.648441 -9.40341,2.5403 -18.014364,-5.22731 -26.919923,-9.144534 11.488215,13.240264 24.442143,25.848664 44.695313,35.298824 4.7698,6.3882 9.3427,10.94631 16.75977,15.49024 -5.34974,6.36095 -8.6625,14.41853 -8.27735,25.55859 11.07709,-5.91009 18.11518,-14.8692 39.17969,-13.23242 L 200,178.22852 200.00004,91 l -1.44915,6.882812 v 2.369138 c -8.10401,10.54665 -13.77609,13.54508 -21.27734,18.28516 -24.5967,-9.87106 -50.50103,-29.104395 -79.482404,-70.343751 z"
+         id="path23473"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccccccccccccc"
+         transform="matrix(0.93749986,0,0,0.93749986,372.27333,698.66389)" />
+      <path
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.42206967px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="M 134.7168 107.7793 C 140.35775 121.14274 149.59573 131.53795 158.86719 137.58789 L 152.22266 154.375 L 172.60352 147.82227 L 199.99805 167.0332 L 200 167.03125 L 200 155.68359 L 199.99805 155.69141 L 191.2793 119.26953 L 184.63672 135.16211 C 171.19812 135.00229 151.11325 124.05579 134.7168 107.7793 z "
+         transform="matrix(0.93749986,0,0,0.93749986,372.27333,698.66389)"
+         id="path6961-9-7" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path6963-9-4-0"
+         d="m 494.185,792.29442 -7.4397,4.16624 -5.11845,-16.01008 z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.33319008px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    </g>
+  </g>
+</svg>

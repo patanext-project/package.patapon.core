@@ -1,10 +1,8 @@
 using System.Net;
 using GameHost.Core;
 using GameHost.Core.RPC.AvailableRpcCommands;
-using GameHost.InputBackendFeature;
 using GameHost.ShareSimuWorldFeature;
 using PataNext.Client.Systems;
-using RevolutionSnapshot.Core.Buffers;
 using StormiumTeam.GameBase.Bootstrapping;
 using StormiumTeam.GameBase.Data;
 using Unity.Collections;
@@ -42,9 +40,6 @@ namespace PataNext.Client.Bootstraps.Startup
 
 			if (step == 1 && connector.IsConnected)
 			{
-				var cghInputBackend = World.GetExistingSystem<CreateGameHostInputBackendSystem>();
-				cghInputBackend.Create(0);
-
 				connector.RpcClient.SendRequest<GetDisplayedConnectionRpc, GetDisplayedConnectionRpc.Response>(default)
 				         .ContinueWith(t =>
 				         {

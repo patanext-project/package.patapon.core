@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using PataNext.Client.Systems;
 using TMPro;
 using Unity.Mathematics;
+using Unity.VectorGraphics;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
 
 namespace PataNext.Client.DataScripts.Interface.Inventory
@@ -14,7 +15,10 @@ namespace PataNext.Client.DataScripts.Interface.Inventory
 		public struct SelectedEquipment
 		{
 			public RectTransform   indicator;
+			public RectTransform   quadBackground;
 			public TextMeshProUGUI label;
+			public TextMeshProUGUI description;
+			public SVGImage        icon;
 		}
 
 		[Serializable]
@@ -34,23 +38,26 @@ namespace PataNext.Client.DataScripts.Interface.Inventory
 		{
 			audioSource = gameObject.AddComponent<AudioSource>();
 			
-			AddLast(new EquipmentInventoryItem {masterServerId = 1, customName = "Standard Bow"});
+			/*AddLast(new EquipmentInventoryItem {masterServerId = 1, customName = "Standard Bow"});
 			AddLast(new EquipmentInventoryItem {masterServerId = 4, customName = "Iron Bow"});
 			AddLast(new EquipmentInventoryItem {masterServerId = 5, customName = "Iron Bow"});
-			AddLast(new EquipmentInventoryItem {masterServerId = 6, customName = "Magilian's Aftermath"});
+			AddLast(new EquipmentInventoryItem {masterServerId = 6, customName = "Magilian's Aftermath"});*/
 		}
 
-		public long CurrentEquippedItemId { get; set; } = 4;
+		public DentEntity CurrentEquippedItemId { get; set; }
 
 		public override void Clear()
 		{
 			base.Clear();
 
+			itemMap.Clear();
 			foreach (var go in spawnedColumn)
 			{
 				var presentation = go.GetComponent<EquipmentInventoryItemPresentation>();
 				presentation.SetSprite(null);
 			}
+
+			UpdateSelectedEquipmentData();
 		}
 
 		public override EquipmentInventoryItem Get(int2 position)
@@ -68,13 +75,14 @@ namespace PataNext.Client.DataScripts.Interface.Inventory
 		private void Update()
 		{
 			var c = default(int2);
-			if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
+			// TODO: fix
+			if (Input.GetKeyDown(KeyCode.LeftArrow))
 				c.x--;
-			if (Keyboard.current.rightArrowKey.wasPressedThisFrame)
+			if (Input.GetKeyDown(KeyCode.RightArrow))
 				c.x++;
-			if (Keyboard.current.upArrowKey.wasPressedThisFrame)
+			if (Input.GetKeyDown(KeyCode.UpArrow))
 				c.y--;
-			if (Keyboard.current.downArrowKey.wasPressedThisFrame)
+			if (Input.GetKeyDown(KeyCode.DownArrow))
 				c.y++;
 			if (c.x != 0 || c.y != 0)
 				MoveCursorDelta(c);
@@ -97,8 +105,8 @@ namespace PataNext.Client.DataScripts.Interface.Inventory
 					presentation.SetSprite(item.sprite);
 					presentation.graphic.color    = item.sprite == null ? Color.clear : Color.white;
 					presentation.background.color = Color.white;
-					
-					presentation.SetEquipped(item.masterServerId == CurrentEquippedItemId);
+
+					presentation.SetEquipped(item.itemEntity.Equals(CurrentEquippedItemId));
 				}
 				else
 				{
@@ -139,8 +147,12 @@ namespace PataNext.Client.DataScripts.Interface.Inventory
 			{
 				// TODO: if customName is null, use the name from masterserver resources
 				se.label.text = item.customName;
+				se.description.text = item.description;
 				se.indicator.gameObject.SetActive(true);
-				se.indicator.anchoredPosition = new Vector2(-(se.label.preferredWidth + 20), 0);
+				se.quadBackground.sizeDelta = new Vector2(se.label.preferredWidth + 15, se.quadBackground.sizeDelta.y);
+
+				se.icon.sprite = item.sprite;
+				se.icon.color  = Color.white;
 				
 				se.label.transform.localScale     = Vector3.one * 1.1f;
 				se.indicator.transform.localScale = Vector3.one * 1.1f;
@@ -149,12 +161,26 @@ namespace PataNext.Client.DataScripts.Interface.Inventory
 			{
 				se.label.text = null;
 				se.indicator.gameObject.SetActive(false);
+
+				se.description.text = string.Empty;
+				se.icon.color = Color.clear;
 			}
 		}
 
 		protected override void OnAdded(EquipmentInventoryItem item, int2 position)
 		{
 			itemMap[position] = item;
+			
+			if (position.Equals(AbsoluteCursor))
+				UpdateSelectedEquipmentData();
+		}
+
+		protected override void OnRemoved(int2 position)
+		{
+			itemMap.Remove(position);
+			
+			if (position.Equals(AbsoluteCursor))
+				UpdateSelectedEquipmentData();
 		}
 	}
 }

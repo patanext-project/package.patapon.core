@@ -47,22 +47,28 @@ namespace PataNext.Client.Graphics.Animation.Units.Base
 			var indexArray = UnsafeAllocation.From(ref __i);
 			Entities.ForEach((Transform transform, UnitVisualBackend backend) =>
 			{
-				if (backend.DstEntity == Entity.Null || !EntityManager.Exists(backend.DstEntity) || !EntityManager.HasComponent<Translation>(backend.DstEntity))
+				if (backend.DstEntity == Entity.Null || !EntityManager.Exists(backend.DstEntity))
 				{
 					Debug.Log("null? " + backend.DstEntity);
 					return;
 				}
 
-				ref var i = ref indexArray.AsRef();
+				if (backend.AutomaticTransform)
+				{
+					if (EntityManager.HasComponent<Translation>(backend.DstEntity))
+					{
+						ref var i = ref indexArray.AsRef();
 
-				var pos = EntityManager.GetComponentData<Translation>(backend.DstEntity).Value;
-				Debug.DrawRay(pos, Vector3.up, Color.green);
-				pos.z = i++ * 2;
+						var pos = EntityManager.GetComponentData<Translation>(backend.DstEntity).Value;
+						Debug.DrawRay(pos, Vector3.up, Color.green);
+						pos.z = i++ * 2;
 
-				transform.position = pos;
+						transform.position = pos;
+					}
 
-				EntityManager.TryGetComponentData(backend.DstEntity, out var direction, UnitDirection.Right);
-				transform.localScale = new Vector3(direction.Value, 1, 0.1f); // make it flat so that it doesn't occupy a large Z buffer range
+					EntityManager.TryGetComponentData(backend.DstEntity, out var direction, UnitDirection.Right);
+					transform.localScale = new Vector3(direction.Value, 1, 0.1f); // make it flat so that it doesn't occupy a large Z buffer range
+				}
 
 				if (EntityManager.TryGetComponentData(backend.DstEntity, out EntityVisual visual))
 				{

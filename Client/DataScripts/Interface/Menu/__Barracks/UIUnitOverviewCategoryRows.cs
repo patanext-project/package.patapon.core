@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
-using GameHost.Transports.enet;
 using JetBrains.Annotations;
 using PataNext.Client.Asset;
 using PataNext.Client.Behaviors;
@@ -24,9 +23,9 @@ namespace PataNext.Client.DataScripts.Interface.Menu.__Barracks
 		public AssetPathSerializable spritePath;
 		public AssetPathSerializable viewPath;
 
-		private IContainer<UnitCategoryView> viewContainer;
+		private IContainer<UIOverviewModuleBase> viewContainer;
 
-		public IContainer<UnitCategoryView> ViewContainer
+		public IContainer<UIOverviewModuleBase> ViewContainer
 		{
 			get
 			{
@@ -57,7 +56,7 @@ namespace PataNext.Client.DataScripts.Interface.Menu.__Barracks
 			}
 		}
 
-		public void SetViewContainer(Func<UnitOverviewCategoryRow, IContainer<UnitCategoryView>> container)
+		public void SetViewContainer(Func<UnitOverviewCategoryRow, IContainer<UIOverviewModuleBase>> container)
 		{
 			if (!(viewContainer is null))
 			{
@@ -133,19 +132,24 @@ namespace PataNext.Client.DataScripts.Interface.Menu.__Barracks
 		{
 			itemMap[position.x] = item;
 
-			item.SetViewContainer(row => ContainerPool.FromPresentation<UnitCategoryViewBackend, UnitCategoryView>(row.viewPath));
+			item.SetViewContainer(row => ContainerPool.FromPresentation<UIOverviewModuleBackend, UIOverviewModuleBase>(row.viewPath));
 			item.ViewContainer.Warm();
 			item.ViewContainer.onCollectionUpdate.AddListener(collection =>
 			{
 				foreach (var view in collection)
 				{
-					view.Data = new CategoryViewData
+					view.Data = new ModuleViewData
 					{
 						QuitView          = () => CurrentlySelectedId = null, 
 						CategoryTransform = GetAt(position).transform
 					};
 				}
 			});
+		}
+
+		protected override void OnRemoved(int2 position)
+		{
+			throw new NotImplementedException();
 		}
 
 		public override void Clear()

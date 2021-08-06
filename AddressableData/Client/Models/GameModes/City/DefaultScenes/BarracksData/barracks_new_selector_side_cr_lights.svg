@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="30.33202mm"
+   height="10.40247mm"
+   viewBox="0 0 30.33202 10.40247"
+   version="1.1"
+   id="svg3382"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   sodipodi:docname="barracks_new_selector_side_cr_lights.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview3384"
+     pagecolor="#bebebe"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="true"
+     inkscape:document-units="mm"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="11.859035"
+     inkscape:cx="52.997568"
+     inkscape:cy="19.689629"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g4126-3" />
+  <defs
+     id="defs3379" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-140.74109,-159.93986)">
+    <g
+       id="g4126-3"
+       style="display:inline"
+       transform="translate(-130.84374,-74.186792)">
+      <circle
+         style="display:inline;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.882487;stroke-linecap:round;paint-order:stroke fill markers"
+         id="path36518-4-2-9-46-5-6"
+         cx="286.75085"
+         cy="238.22157"
+         r="1.4176279" />
+      <circle
+         style="display:inline;fill:#ffffff;fill-opacity:0.75;fill-rule:evenodd;stroke:none;stroke-width:0.573663;stroke-linecap:round;paint-order:stroke fill markers"
+         id="path36518-4-2-9-46-3-7-2"
+         cx="283.3963"
+         cy="240.04059"
+         r="0.92153418" />
+      <ellipse
+         style="display:inline;fill:#ffffff;fill-opacity:0.75;fill-rule:evenodd;stroke:none;stroke-width:0.573664;stroke-linecap:round;paint-order:stroke fill markers"
+         id="path36518-4-2-9-46-3-3-7-6"
+         cx="290.10538"
+         cy="240.04059"
+         rx="0.92199999"
+         ry="0.92153418" />
+    </g>
+  </g>
+</svg>

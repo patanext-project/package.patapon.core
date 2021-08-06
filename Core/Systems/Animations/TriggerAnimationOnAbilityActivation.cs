@@ -23,14 +23,19 @@ namespace PataNext.Client.Graphics.Animation.Base
 
 		protected override void OnUpdate(Entity targetEntity, UnitVisualBackend backend, UnitVisualAnimation animation, Entity abilityEntity, AbilityState abilityState)
 		{
-			if (!EntityManager.TryGetComponentData(EntityManager.GetComponentData<Owner>(abilityEntity).Target, out Relative<RhythmEngineDescription> engineRelative))
-				return;
+			var isIndependantUnit = false;
+			isIndependantUnit = !EntityManager.TryGetComponentData(EntityManager.GetComponentData<Owner>(abilityEntity).Target, out Relative<RhythmEngineDescription> engineRelative);
 
-			var commandState   = EntityManager.GetComponentData<GameCommandState>(engineRelative.Target);
-			var processMs      = (int) (EntityManager.GetComponentData<RhythmEngineLocalState>(engineRelative.Target).Elapsed.Ticks / TimeSpan.TicksPerMillisecond);
-			var beatIntervalMs = (int) (EntityManager.GetComponentData<RhythmEngineSettings>(engineRelative.Target).BeatInterval.Ticks / TimeSpan.TicksPerMillisecond);
+			var canBeTransitioned = false;
+			if (!isIndependantUnit)
+			{
+				var commandState   = EntityManager.GetComponentData<GameCommandState>(engineRelative.Target);
+				var processMs      = (int)(EntityManager.GetComponentData<RhythmEngineLocalState>(engineRelative.Target).Elapsed.Ticks / TimeSpan.TicksPerMillisecond);
+				var beatIntervalMs = (int)(EntityManager.GetComponentData<RhythmEngineSettings>(engineRelative.Target).BeatInterval.Ticks / TimeSpan.TicksPerMillisecond);
 
-			var canBeTransitioned = commandState.IsInputActive(processMs, beatIntervalMs);
+				canBeTransitioned = commandState.IsInputActive(processMs, beatIntervalMs);
+			}
+
 			if (!animation.CurrAnimation.AllowOverride || animation.CurrAnimation.Type != SystemType && canBeTransitioned)
 				return;
 

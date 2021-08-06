@@ -2,7 +2,6 @@ using System;
 using package.stormiumteam.shared.ecs;
 using PataNext.Module.Simulation.Components.GamePlay.Units;
 using StormiumTeam.GameBase.Utility.AssetBackend;
-using Unity.Mathematics;
 using UnityEngine;
 
 namespace PataNext.Client.Graphics.Models
