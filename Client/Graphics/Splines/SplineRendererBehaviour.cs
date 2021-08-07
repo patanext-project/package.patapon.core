@@ -253,7 +253,7 @@ namespace PataNext.Client.Graphics.Splines
 			}
 
 			Pop();
-			m_EntityManager = null;
+			m_EntityManager = default;
 		}
 
 		// -------- -------- -------- -------- -------- -------- -------- -------- -------- /.

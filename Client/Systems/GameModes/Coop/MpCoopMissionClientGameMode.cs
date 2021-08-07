@@ -90,9 +90,11 @@ namespace PataNext.Client.Systems.GameModes.Coop
 					{
 						const int resPathTypePlusProtocolLength = 5;
 						fixed (char* ptr = data.Path.FullString)
-							str.CopyFrom(ptr + resPathTypePlusProtocolLength, (ushort)(data.Path.FullString.Length - resPathTypePlusProtocolLength));
+						{
+							str.Append((byte*) ptr + resPathTypePlusProtocolLength, sizeof(char) * (ushort)(data.Path.FullString.Length - resPathTypePlusProtocolLength));
+						}
 					}
-					
+
 					var switchMap = !HasSingleton<ExecutingMapData>();
 					if (!switchMap && !GetSingleton<ExecutingMapData>().Key.Equals(str))
 						switchMap = true;

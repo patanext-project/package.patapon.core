@@ -6,10 +6,12 @@ namespace PataNext.Client.Behaviors
 {
 	public class UIButtonActionTarget : IComponentData
 	{
-		public Action Value;
+		public delegate void OnClick();
+		
+		public OnClick Value;
 
 		public UIButtonActionTarget() {}
-		public UIButtonActionTarget(Action action) => Value = action;
+		public UIButtonActionTarget(OnClick action) => Value = action;
 
 		[UpdateInGroup(typeof(InteractionButtonSystemGroup))]
 		[AlwaysSynchronizeSystem]

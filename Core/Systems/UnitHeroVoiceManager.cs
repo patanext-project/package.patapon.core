@@ -32,11 +32,11 @@ namespace PataNext.Client.Systems
 			                            .Folder("HeroModeActivation");
 			m_AsyncOp.Add(AssetManager.LoadAssetAsync<AudioClip>(builder.GetAsset("TateEnergyField" + ".ogg")), new DataOp
 			{
-				Key = nameof(P4OfficialAbilities.TateEnergyField)
+				Key = "TateEnergyField"
 			});
 			m_AsyncOp.Add(AssetManager.LoadAssetAsync<AudioClip>(builder.GetAsset("YariFearSpear" + ".ogg")), new DataOp
 			{
-				Key = nameof(P4OfficialAbilities.YariFearSpear)
+				Key = "YariFearSpear"
 			});
 		}
 
