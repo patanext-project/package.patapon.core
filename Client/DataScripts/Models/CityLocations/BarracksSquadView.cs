@@ -8,7 +8,6 @@ using PataNext.Module.Simulation.Components.GamePlay.Units;
 using PataNext.UnityCore.Utilities;
 using StormiumTeam.GameBase.Roles.Components;
 using StormiumTeam.GameBase.Utility.DOTS.xCamera;
-using UIForia.Systems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;

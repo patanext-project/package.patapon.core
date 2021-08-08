@@ -5,39 +5,9 @@ using StormiumTeam.GameBase.Utility.Misc;
 using StormiumTeam.GameBase.Utility.Pooling.BaseSystems;
 using Unity.Entities;
 using UnityEngine;
-using Application = UIForia.Application;
 
 namespace PataNext.Client.Systems
 {
-	public class TestUIForia : SystemBase
-	{
-		private Application app;
-		
-		protected override void OnStartRunning()
-		{
-			/*TemplateSettings settings = new TemplateSettings();
-			settings.rootType                   = typeof(Test);
-			settings.applicationName            = "PataNext";
-			settings.assemblyName               = "package.patapon.client";
-			settings.outputPath                 = Path.Combine(UnityEngine.Application.dataPath, "UIForiaGenerated2");
-			settings.codeFileExtension          = "generated.cs";
-			settings.templateResolutionBasePath = "Packages/package.patapon.core/AddressableData/Client/Interface";
-			//settings.dynamicallyCreatedTypes    = new List<Type>() {typeof(Test)};
-
-			app = GameApplication.CreateFromRuntimeTemplates(settings, World.GetExistingSystem<ClientCreateCameraSystem>().UICamera, element => {});*/
-		}
-
-		protected override void OnUpdate()
-		{
-			if (app == null)
-				return;
-		
-			app.Update();
-			if (Input.GetKeyDown(KeyCode.R))
-				app.Refresh();
-		}
-	}
-	
 	struct TestSettings : IComponentData {}
 	struct TestHomeScreenSpawn : IComponentData {}
 	
