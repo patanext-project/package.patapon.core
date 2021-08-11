@@ -29,7 +29,7 @@ MonoBehaviour:
   m_RemoteOutputFolder: RemoteBundles
   m_LocalOutputFolder: LocalBundles
   RemoteURL: http://localhost/
-  EmulateInEditor: 1
+  EmulateInEditor: 0
   EmulateWithoutRemoteURL: 0
   CleanCacheInEditor: 0
   ForceRebuild: 1

@@ -61,6 +61,8 @@ Material:
     - _EyeSize: 0.7
     - _EyeTextureStep: 0.632
     - _IrisSize: 0.073
+    - _QueueControl: 0
+    - _QueueOffset: 0
     m_Colors:
     - _BodyColor: {r: 0, g: 0, b: 0, a: 1}
     - _BodyDirection: {r: 0, g: 0, b: -1, a: 0}

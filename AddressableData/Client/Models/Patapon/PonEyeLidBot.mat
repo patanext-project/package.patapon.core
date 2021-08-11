@@ -53,6 +53,18 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - Boolean_1cf804dc248440e89f3a220a07976c6a: 1
@@ -62,6 +74,8 @@ Material:
     - _EyeSize: 0.7
     - _EyeTextureStep: 0.632
     - _IrisSize: 0.073
+    - _QueueControl: 0
+    - _QueueOffset: 0
     m_Colors:
     - _BodyColor: {r: 0, g: 0, b: 0, a: 1}
     - _BodyDirection: {r: 0, g: 0, b: -1, a: 0}

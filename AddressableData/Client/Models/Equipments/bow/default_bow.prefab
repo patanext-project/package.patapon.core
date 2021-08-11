@@ -28,8 +28,9 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 234983278533327297}
+  - {fileID: 7472792468789101280}
   - {fileID: 3275060110287885362}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -125,12 +126,17 @@ PrefabInstance:
       propertyPath: m_Name
       value: default_bow
       objectReference: {fileID: 0}
+    - target: {fileID: 8742538545776668643, guid: a0e378d9ea9c05c45a3f5c7dd3f2c73c,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.215
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 7243324766535440047, guid: a0e378d9ea9c05c45a3f5c7dd3f2c73c,
     type: 3}
---- !u!4 &234983278533327297 stripped
+--- !u!4 &7472792468789101280 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 2136352601701913794, guid: a0e378d9ea9c05c45a3f5c7dd3f2c73c,
+  m_CorrespondingSourceObject: {fileID: 8742538545776668643, guid: a0e378d9ea9c05c45a3f5c7dd3f2c73c,
     type: 3}
   m_PrefabInstance: {fileID: 2226763198110772483}
   m_PrefabAsset: {fileID: 0}
@@ -145,6 +151,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Tension
+      objectReference: {fileID: 0}
+    - target: {fileID: 5732113489002593548, guid: 13357fb76ec54f8469036716a130fcd9,
+        type: 3}
+      propertyPath: lineRendererArray.Array.size
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8842544503091207541, guid: 13357fb76ec54f8469036716a130fcd9,
         type: 3}

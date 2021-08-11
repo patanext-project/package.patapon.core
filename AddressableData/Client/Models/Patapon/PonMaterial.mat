@@ -68,6 +68,8 @@ Material:
     - _EnableExternalAlpha: 0
     - _EyeSize: 0.7
     - _IrisSize: 0.45
+    - _QueueControl: 0
+    - _QueueOffset: 0
     m_Colors:
     - _BodyColor: {r: 0, g: 0, b: 0, a: 1}
     - _BodyDirection: {r: 0, g: 0, b: -1, a: 0}
